@@ -1,7 +1,6 @@
 from pathlib import Path
 
 import yaml
-from pydantic import ValidationError
 
 from xfeeds.models import Registry
 
@@ -23,12 +22,8 @@ def load_registry(yaml_path: Path) -> Registry:
                     if k not in source:
                         source[k] = v
 
-    try:
-        registry = Registry.model_validate(raw_data)
-        return registry
-    except ValidationError:
-        # Wrap or re-raise; caller will handle it
-        raise
+    registry = Registry.model_validate(raw_data)
+    return registry
 
 
 def get_active_voting_classes(registry: Registry) -> set[str]:

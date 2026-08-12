@@ -9,41 +9,38 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.python-version == '3.14' }}
     strategy:
       matrix:
-        python-version: ["3.11", "3.12", "3.13"]
-        include:
-          - python-version: "3.14"
-            continue-on-error: true
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@v9
         with:
-          version: "0.4.30"
+          version: "0.12.3"
           enable-cache: true
 
       - name: Set up Python ${{ matrix.python-version }}
         run: uv python install ${{ matrix.python-version }}
 
       - name: Install dependencies
-        run: uv sync --all-extras --dev
+        run: uv sync --dev
 
       - name: Check formatting
-        continue-on-error: ${{ matrix.continue-on-error == true }}
         run: uv run ruff format --check .
 
       - name: Run linter
-        continue-on-error: ${{ matrix.continue-on-error == true }}
         run: uv run ruff check .
 
       - name: Run type checker
-        continue-on-error: ${{ matrix.continue-on-error == true }}
         run: uv run mypy --strict src tests
 
       - name: Run tests
-        continue-on-error: ${{ matrix.continue-on-error == true }}
         run: uv run pytest
+
+      - name: Validate source registry
+        run: uv run xfeeds validate

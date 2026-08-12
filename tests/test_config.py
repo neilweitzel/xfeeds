@@ -20,10 +20,11 @@ def test_load_real_sources_yaml() -> None:
     abuseipdb = next((s for s in registry.sources if s.name == "abuseipdb_blacklist"), None)
     threatfox = next((s for s in registry.sources if s.name == "threatfox"), None)
 
-    if abuseipdb:
-        assert abuseipdb.enabled is False
-    if threatfox:
-        assert threatfox.enabled is False
+    assert abuseipdb is not None, "abuseipdb_blacklist source missing from sources.yaml"
+    assert abuseipdb.enabled is False
+
+    assert threatfox is not None, "threatfox source missing from sources.yaml"
+    assert threatfox.enabled is False
 
 
 def test_duplicate_source_name() -> None:
@@ -120,3 +121,17 @@ def test_voting_source_weight_zero() -> None:
                 "allowlist_sources": [],
             }
         )
+
+
+def test_xfeeds_validate_from_other_dir(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Ensure `xfeeds validate` works when run from a different directory."""
+    monkeypatch.chdir(tmp_path)
+    from typer.testing import CliRunner
+
+    from xfeeds.cli import app
+
+    runner = CliRunner()
+    result = runner.invoke(app, ["validate"])
+    assert result.exit_code == 0
+    assert "Successfully loaded" in result.stdout
+    assert "Active voting classes: 7" in result.stdout

@@ -34,7 +34,9 @@ Getting this wrong produces a feed that looks highly corroborated and is actuall
 4. **Deterministic output.** Sort by IP as an integer, not as a string. Running the pipeline twice on the same input must produce byte-identical files, or every scheduled run creates diff noise.
 5. **A failing source degrades the run; it never fails it.** One dead upstream must not stop the other eleven. Record the failure in the manifest.
 6. **Never commit secrets.** All API keys come from environment variables, and every keyed source must work — or cleanly skip — when its key is absent.
-7. **Preserve upstream attribution.** Spamhaus requires that credit and the date/copy text remain with the data. Emitters must carry per-source attribution into the output headers.
+7. **Never make a failing check pass by weakening the check.** Do not add lint ignores, relax type settings, mark tests `xfail`, lower a threshold, or delete an assertion in order to get green. Fix the code. If you genuinely believe a check is wrong, leave it enabled and say so in your task summary. Configuration is where suppressed failures hide, so every change to `pyproject.toml` or a workflow file gets read closely.
+8. **Branch from the current `main`.** Fetch before you start. If a previous task's work has already merged, build on it — do not re-create files that already exist, or the result will diverge and cannot be merged.
+9. **Preserve upstream attribution.** Spamhaus requires that credit and the date/copy text remain with the data. Emitters must carry per-source attribution into the output headers.
 
 ## Conventions
 

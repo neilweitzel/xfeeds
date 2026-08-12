@@ -13,33 +13,25 @@ dependencies = [
     "typer>=0.15.1",
 ]
 
-[project.optional-dependencies]
-dev = [
-    "mypy>=1.14.1",
-    "pytest>=8.3.4",
-    "pytest-httpx>=0.35.0",
-    "ruff>=0.9.3",
-]
-
 [project.scripts]
 xfeeds = "xfeeds.cli:app"
 
 [tool.ruff]
 line-length = 100
-target-version = "py313"
+target-version = "py311"
 
 [tool.mypy]
 strict = true
-python_version = "3.13"
+python_version = "3.11"
 
 [dependency-groups]
 dev = [
-    "mypy>=2.3.0",
+    "mypy>=1.14.1",
+    "pytest>=8.3.4",
+    "pytest-httpx>=0.35.0",
+    "ruff>=0.9.3",
     "types-pyyaml>=6.0.12.20260724",
 ]
-
-[tool.ruff.lint]
-ignore = ["B008", "BLE001", "TRY203"]
 
 [build-system]
 requires = ["hatchling"]

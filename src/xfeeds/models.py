@@ -93,6 +93,12 @@ class Registry(BaseModel):
             if source.vote and source.weight == 0.0:
                 raise ValueError(f"Source {source.name} is a voting source but has weight 0.0")
 
+        for allowlist_source in self.allowlist_sources:
+            if allowlist_source.parser not in VALID_PARSERS:
+                raise ValueError(
+                    f"Unknown parser '{allowlist_source.parser}' for allowlist source {allowlist_source.name}"
+                )
+
         return self
 
 
