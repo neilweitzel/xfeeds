@@ -1,9 +1,28 @@
 import ipaddress
 import os
 from datetime import datetime
+from enum import Enum
 from typing import Any
 
 from pydantic import BaseModel, Field, model_validator
+
+IPAddress = ipaddress.IPv4Address | ipaddress.IPv6Address
+IPNetwork = ipaddress.IPv4Network | ipaddress.IPv6Network
+IPOrNet = IPAddress | IPNetwork
+
+
+class Band(str, Enum):
+    """Publication tier for an indicator.
+
+    HIGH is safe to drop traffic on. MEDIUM is for challenge or rate-limit
+    rather than a hard block. WITHHELD is never published - it is retained only
+    so it can corroborate a future observation.
+    """
+
+    HIGH = "high"
+    MEDIUM = "medium"
+    WITHHELD = "withheld"
+
 
 VALID_PARSERS = {
     "abuseipdb",
@@ -128,3 +147,34 @@ class IndicatorRecord(BaseModel):
     last_seen: datetime
     categories: list[str]
     tags: list[str] = Field(default_factory=list)
+
+
+class ScoredIndicator(BaseModel):
+    """One indicator after all observations of it have been collapsed and scored."""
+
+    ip_or_cidr: IPOrNet
+    score: float
+    band: Band
+    independence_classes: list[str]
+    """Distinct classes that voted. Length drives the band, not the source count."""
+    sources: list[str]
+    categories: list[str]
+    tags: list[str] = Field(default_factory=list)
+    first_seen: datetime
+    last_seen: datetime
+    promoted_by: str | None = None
+    """Set when a high-precision source bypassed the corroboration threshold."""
+
+    def sort_key(self) -> tuple[int, int, int]:
+        """Integer sort key.
+
+        Sorting as strings puts 10.0.0.1 before 9.9.9.9, which makes diffs
+        between runs unreadable and defeats the churn guard.
+        """
+        if isinstance(self.ip_or_cidr, (ipaddress.IPv4Address, ipaddress.IPv6Address)):
+            return (self.ip_or_cidr.version, int(self.ip_or_cidr), 128)
+        return (
+            self.ip_or_cidr.version,
+            int(self.ip_or_cidr.network_address),
+            self.ip_or_cidr.prefixlen,
+        )

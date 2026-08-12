@@ -60,7 +60,8 @@ sources:
     vote: false
     redistribute: false
     categories: [criminal-asn]
-    notes: "426 ASNs. Annotation only in Phase 2a - we do not expand ASN to prefixes (needs BGP data, huge blast radius)."
+    enabled: false
+    notes: "426 ASNs. DISABLED - annotation only in Phase 2a - we do not expand ASN to prefixes (needs BGP data, huge blast radius)."
 
   # ------------------------------------------------------- botnet C2 (precise)
   - name: feodo_tracker
@@ -85,7 +86,12 @@ sources:
     categories: [botnet-c2, malicious-tls]
     ttl_days: 7
     license_url: https://sslbl.abuse.ch/
-    notes: "Currently 0 entries. Harmless to keep wired up."
+    enabled: false
+    vote: false
+    notes: >
+      DISABLED. The payload states "ATTENTION: This list has been deprecated on
+      2025-01-03" and its last-updated header is frozen at 2025-01-02. Retired,
+      not merely quiet. The abusech class is carried by feodo_tracker and threatfox.
 
   - name: threatfox
     url: https://threatfox-api.abuse.ch/api/v1/
@@ -190,6 +196,23 @@ sources:
       blacklist verbatim. Used as a scoring/corroboration signal only until the
       terms are confirmed in writing. See docs/DECISIONS.md ADR-012.
 
+  - name: stopforumspam_toxic
+    url: https://www.stopforumspam.com/downloads/toxic_ip_cidr.txt
+    parser: plain_text
+    independence_class: stopforumspam
+    weight: 0.5
+    categories: [spam-source, abuse]
+    ttl_days: 30
+    license: "Non-commercial use only; Creative Commons for remaining terms"
+    license_url: https://www.stopforumspam.com/legal
+    license_risk: medium
+    redistribute: false
+    notes: >
+      Toxic CIDR ranges - whole networks the operator considers irredeemable.
+      Independent of the attack-sensor feeds. NOT redistributed: the terms
+      require non-commercial use, which we cannot impose on downstream consumers
+      of a public feed. Used as a scoring signal only.
+
   # ------------------------------------------ corroboration only (never votes)
   - name: ipsum_levels
     url: https://raw.githubusercontent.com/stamparm/ipsum/master/levels/{level}.txt
@@ -253,6 +276,41 @@ sources:
       would attach viral terms to any output containing it. Only 20 /24 blocks
       anyway. Excluded until relicensed or a separate NC-SA feed is justified.
       See docs/DECISIONS.md ADR-012.
+
+  - name: turris_greylist
+    url: https://view.sentinel.turris.cz/greylist-data/greylist-latest.csv
+    parser: plain_text
+    independence_class: turris
+    weight: 0.0
+    vote: false
+    redistribute: false
+    enabled: false
+    license: "CC BY-NC-SA 4.0"
+    license_url: https://view.sentinel.turris.cz/greylist-data/LICENSE.txt
+    license_risk: high
+    notes: >
+      DISABLED on licensing grounds. ~9,700 IPs from the Turris router sensor
+      network - genuinely independent and technically attractive - but licensed
+      CC BY-NC-SA 4.0. ShareAlike would attach viral terms to any output derived
+      from it, so it is excluded entirely rather than merely un-redistributed.
+      (parser is a placeholder; the source is never fetched)
+
+  - name: dataplane_sshpwauth
+    url: https://dataplane.org/sshpwauth.txt
+    parser: plain_text
+    independence_class: dataplane
+    weight: 0.0
+    vote: false
+    redistribute: false
+    enabled: false
+    license: "Non-commercial only; redistribution expressly prohibited"
+    license_url: https://dataplane.org/
+    license_risk: high
+    notes: >
+      DISABLED. The payload states "Redistribution of the sshpwauth report in
+      whole or in part without the express permission of Dataplane.org is
+      expressly prohibited." Not ingested at all - a compiled feed is arguably
+      redistribution "in part", and this project will not test that argument.
 
   # ---------------------------------------------------- annotation, not blocks
   - name: tor_exits

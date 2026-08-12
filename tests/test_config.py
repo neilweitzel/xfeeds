@@ -14,7 +14,7 @@ def test_load_real_sources_yaml() -> None:
     active_classes = get_active_voting_classes(registry)
 
     # Assert exactly 7 voting classes are active on a fresh clone.
-    assert len(active_classes) == 7
+    assert len(active_classes) == 8
 
     # Verify no API keys are present (enabled should be False for abuseipdb/threatfox)
     abuseipdb = next((s for s in registry.sources if s.name == "abuseipdb_blacklist"), None)
@@ -134,4 +134,4 @@ def test_xfeeds_validate_from_other_dir(tmp_path: Path, monkeypatch: pytest.Monk
     result = runner.invoke(app, ["validate"])
     assert result.exit_code == 0
     assert "Successfully loaded" in result.stdout
-    assert "Active voting classes: 7" in result.stdout
+    assert "Active voting classes: 8" in result.stdout

@@ -1,0 +1,48 @@
+name: Publish to Pages
+
+# Pages is the canonical distribution point rather than raw.githubusercontent,
+# which is capped near 5,000 requests/hour/IP and blocks the IP for 30 minutes
+# when exceeded. A feed pulled by many hosts behind shared NAT is exactly the
+# traffic shape that trips that limit; Pages is CDN-backed with no such cap.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "feeds/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Prepare site
+        run: |
+          mkdir -p _site
+          cp -r feeds/* _site/
+          # .txt must serve as text/plain so browsers and curl treat the feeds
+          # as data rather than offering a download or guessing.
+          cat > _site/.htaccess <<'EOF'
+          AddType text/plain .txt
+          EOF
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4

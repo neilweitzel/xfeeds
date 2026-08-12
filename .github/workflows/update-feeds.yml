@@ -1,0 +1,128 @@
+name: Update feeds
+
+# Every 6 hours, offset off the hour so we are not part of a thundering herd
+# hitting these upstreams on the hour. The cadence is set by the tightest
+# external constraint: AbuseIPDB allows 5 blacklist calls per day on the free
+# tier, and Spamhaus requires automated fetches at least an hour apart.
+on:
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Bypass the churn guard (use when a large change is expected)"
+        type: boolean
+        default: false
+
+# A run in progress is always less valuable than the newest one.
+concurrency:
+  group: update-feeds
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: astral-sh/setup-uv@v9.0.0
+        with:
+          version: "0.12.3"
+          enable-cache: true
+
+      - name: Install Python and dependencies
+        run: |
+          uv python install 3.13
+          uv sync --dev
+
+      # Restores both the HTTP conditional-request cache and the run state that
+      # carries first_seen forward. A cold cache degrades gracefully: state is
+      # reseeded from the committed feeds/all.json.
+      - name: Restore caches
+        uses: actions/cache@v4
+        with:
+          path: .cache
+          key: xfeeds-cache-${{ github.run_id }}
+          restore-keys: |
+            xfeeds-cache-
+
+      - name: Refresh feeds
+        id: refresh
+        env:
+          ABUSEIPDB_API_KEY: ${{ secrets.ABUSEIPDB_API_KEY }}
+          THREATFOX_AUTH_KEY: ${{ secrets.THREATFOX_AUTH_KEY }}
+        run: |
+          set +e
+          uv run xfeeds run ${{ inputs.force && '--force' || '' }} 2>&1 | tee run.log
+          echo "exit_code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+
+      - name: Commit refreshed feeds
+        if: steps.refresh.outputs.exit_code == '0'
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add feeds/
+          if git diff --cached --quiet; then
+            echo "No change in feeds; nothing to commit."
+            exit 0
+          fi
+          ADDED=$(grep -oP '\+\K[0-9]+(?= / -)' run.log | head -1 || echo 0)
+          REMOVED=$(grep -oP '/ -\K[0-9]+' run.log | head -1 || echo 0)
+          git commit -m "chore(feeds): refresh $(date -u +%Y-%m-%dT%H:%MZ) (+${ADDED}/-${REMOVED})"
+          git push
+
+      # A tripped churn guard (exit 2) means an upstream probably broke. Surface
+      # it as an issue rather than failing silently in the Actions tab.
+      - name: Report a problem
+        if: steps.refresh.outputs.exit_code != '0'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const log = fs.readFileSync('run.log', 'utf8').slice(-8000);
+            const code = '${{ steps.refresh.outputs.exit_code }}';
+            const title = code === '2'
+              ? 'xfeeds: churn guard tripped'
+              : 'xfeeds: feed refresh failed';
+            const body = [
+              code === '2'
+                ? 'The run would have changed more than 25% of the high-confidence feed, '
+                  + 'so it was aborted and the existing feeds were left untouched. '
+                  + 'This usually means an upstream source broke or a parser regressed.'
+                : 'The scheduled feed refresh failed.',
+              '',
+              `Run: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}`
+                + `/actions/runs/${context.runId}`,
+              '',
+              '<details><summary>Log tail</summary>',
+              '',
+              '```',
+              log,
+              '```',
+              '</details>',
+            ].join('\n');
+
+            // Update the existing open issue instead of opening a duplicate every
+            // 6 hours - a broken upstream would otherwise create four a day.
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo,
+              state: 'open', labels: 'automated',
+            });
+            const match = existing.data.find(i => i.title === title);
+            if (match) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: match.number, body,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner, repo: context.repo.repo,
+                title, body, labels: ['automated'],
+              });
+            }
+            core.setFailed(`xfeeds run exited ${code}`);
