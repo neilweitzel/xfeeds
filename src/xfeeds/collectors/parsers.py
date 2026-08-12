@@ -5,13 +5,9 @@ from datetime import datetime
 
 import structlog
 
-from xfeeds.models import VALID_PARSERS, IndicatorRecord, SourceConfig
+from xfeeds.models import VALID_PARSERS, IndicatorRecord, IPOrNet, SourceConfig
 
 logger = structlog.get_logger(__name__)
-
-IPOrNet = (
-    ipaddress.IPv4Address | ipaddress.IPv6Address | ipaddress.IPv4Network | ipaddress.IPv6Network
-)
 
 _UPSTREAM_ATTRIBUTION: dict[str, dict[str, str]] = {}
 """Attribution text harvested from source payloads, keyed by source name.

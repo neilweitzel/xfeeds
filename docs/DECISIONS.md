@@ -184,6 +184,70 @@ Withholding single-source IPs discards more than three quarters of the raw input
 
 ---
 
+---
+
+## Licensing, revisited after building it (ADR-030)
+
+Verifying licences against the live feeds — rather than their documentation pages
+— changed the source list materially. **Most "free" public IP feeds do not permit
+redistribution.** Since republishing is the entire product, this is the binding
+constraint on the project, not an afterthought.
+
+What the payloads actually say:
+
+| Source | Finding | Outcome |
+|---|---|---|
+| **dataplane.org** | "Redistribution of the sshpwauth report in whole or in part without the express permission of Dataplane.org is expressly prohibited" | **Not ingested at all.** A compiled feed is arguably redistribution "in part"; this project will not test that argument. |
+| **Turris Sentinel** | CC BY-NC-SA 4.0 ([LICENSE.txt](https://view.sentinel.turris.cz/greylist-data/LICENSE.txt)) | **Excluded.** ~9,700 IPs from a genuinely independent router sensor network, but ShareAlike would attach viral terms to any derived output. |
+| **DShield / SANS** | CC BY-NC-SA 2.5, declared in the feed header | **Excluded**, same reasoning. |
+| **StopForumSpam** | Non-commercial use only | **Scoring only.** Corroborates, never republished. |
+| **Binary Defense** | "may not be used for commercial resale" | **Scoring only.** |
+| **AbuseIPDB** | terms restrict republishing the blacklist | **Scoring only.** |
+| **Spamhaus DROP** | free for all, attribution required, fetch ≥1h apart | **Redistributed** with attribution carried into every output header. |
+| **CINS Army** | no formal licence; "parse and use in any way you see fit" | **Redistributed**, flagged `license_risk: medium`, droppable on request. |
+
+The `redistribute` flag is enforced in `filters.py` and tested, not merely
+documented. A record whose only evidence comes from non-redistributable sources
+is dropped from every published artifact regardless of how confident we are about
+it. Feed headers list redistributed sources as contributors and name
+corroboration-only sources separately, so a header can never imply that data we
+may not publish is present in the file.
+
+**ShareAlike is treated as more dangerous than NonCommercial.** xfeeds is not
+sold, so NC terms are satisfiable for our own use — we simply do not pass that
+data on. ShareAlike cannot be contained that way: it would attach obligations to
+output that other people rely on being freely usable.
+
+## What the first real run produced (ADR-031)
+
+Measured on 2026-08-12 against live sources, 8 active voting classes and no API
+keys configured:
+
+| Metric | Value |
+|---|---|
+| Unique indicators observed | 53,479 |
+| Published | 3,763 |
+| — high confidence | 1,907 |
+| — medium confidence | 1,856 |
+| Withheld (single source) | 49,716 (93%) |
+| Promoted by a high-precision source | 1,780 |
+| Dropped by allowlist | 4,139 |
+| Dropped by CIDR width cap | 8 |
+| Dropped for licensing | 51 |
+
+The high-confidence tier landed at 1,907 — the same order of magnitude as the
+original 2,973-entry 2022 dataset, and within the 2,000–4,000 range ADR-020
+predicted before any of this was built.
+
+Note that the withheld share is 93% rather than the 77% estimated earlier. The
+estimate was computed over seven sources; the live run ingests more, and the
+additional volume is overwhelmingly single-source. That is the filter doing its
+job: republishing the union of public blocklists is a solved and worthless
+problem, and 93% of the raw input does not meet the bar.
+
+Corroboration distribution among published records: 1 class 1,779 (all
+promoted), 2 classes 1,857, 3 classes 119, 4 classes 8.
+
 ## Open items
 
 - [ ] Confirm AbuseIPDB redistribution terms in writing; flip `redistribute` if permitted.

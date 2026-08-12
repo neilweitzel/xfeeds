@@ -122,28 +122,55 @@ Expected published high-confidence feed: **~2,000–4,000 entries** — the same
 
 ---
 
-## Published feeds
+## Using the feeds
 
-Canonical base URL is GitHub Pages; `raw.githubusercontent.com` is a mirror. Pages is used because raw is capped near 5,000 requests/hour/IP and does not honour authentication — the wrong shape for a feed pulled by many hosts behind shared NAT.
+Live at **https://neilweitzel.github.io/xfeeds/** — a dashboard with current
+counts, history and per-source status, plus every artifact below.
 
-| File | Contents |
+Pages is the canonical URL rather than `raw.githubusercontent.com`, which caps
+near 5,000 requests/hour/IP and blocks the IP for 30 minutes when exceeded.
+
+| File | Use |
 |---|---|
-| `feeds/high-confidence.txt` | One IP/CIDR per line. Safe-to-block tier. |
-| `feeds/medium-confidence.txt` | Challenge / rate-limit tier. |
-| `feeds/all.csv` | `ip,score,classes,sources,categories,first_seen,last_seen` — MISP CSV and OpenCTI CSV mappers |
-| `feeds/all.json` + `feeds/schema.json` | Full provenance, with a published pydantic-generated schema |
-| `feeds/stix-bundle.json` | STIX 2.1 — OpenCTI, Elastic, most TIPs |
-| `feeds/misp-manifest.json` | Native MISP feed |
-| `feeds/nftables.conf`, `iptables.ipset`, `cloudflare.txt` | Enforcement-ready |
-| `feeds/manifest.json` | Timestamps, per-source status and licence, counts, deltas |
-| `feeds/CHANGELOG.md` | Human-readable per-run diff |
+| `high-confidence.txt` | Safe-to-block. One IP or CIDR per line, `#` comments. |
+| `medium-confidence.txt` | Challenge or rate-limit rather than a hard block. |
+| `all.csv` | MISP CSV feeds, OpenCTI CSV mappers, Splunk lookups. |
+| `all.json` + `schema.json` | Full provenance, with a published JSON Schema. |
+| `stix-bundle.json` | STIX 2.1 — OpenCTI, Elastic, most TIPs. |
+| `misp-manifest.json` | Native MISP feed. |
+| `nftables.conf`, `iptables.ipset` | Enforcement-ready firewall formats. |
+| `manifest.json` | Per-source status, licences, counts, deltas. |
+| `history.json` | Rolling per-run history behind the charts. |
+
+**ipset / iptables**
 
 ```bash
-curl -sS https://neilweitzel.github.io/xfeeds/high-confidence.txt \
-  | grep -v '^#' | sudo ipset restore -! -
+curl -sS https://neilweitzel.github.io/xfeeds/iptables.ipset | sudo ipset restore -!
+sudo iptables -I INPUT -m set --match-set xfeeds src -j DROP
 ```
 
----
+**nftables**
+
+```bash
+curl -sSO https://neilweitzel.github.io/xfeeds/nftables.conf
+sudo nft -f nftables.conf
+```
+
+**Anything else** — pfSense and OPNsense URL tables, MikroTik address lists,
+Cloudflare lists, nginx `deny` maps: point them at `high-confidence.txt`.
+
+Pull every 6 hours or less often. The feed is rebuilt on a 6-hour cadence, so
+polling faster only wastes both our bandwidth.
+
+### Why an address is or is not listed
+
+```bash
+uv run xfeeds explain 45.33.32.156
+```
+
+Prints the sources that reported it, their independence classes and weights, the
+score, and — if it was excluded — which specific rule excluded it. This is the
+tool for triaging a false-positive report.
 
 ## Safety rails (non-negotiable)
 
@@ -200,32 +227,29 @@ The 6-hour cadence is set by the tightest external constraint: AbuseIPDB allows 
 
 ## Roadmap
 
-**Phase 2a — aggregation MVP**
-- [ ] `sources.yaml` loader + collectors for the nine voting classes
-- [ ] Normalizer, live allowlist fetching, CIDR caps, `redistribute` enforcement
-- [ ] Independence-weighted scoring + aging with persisted state
-- [ ] `high-confidence.txt`, `all.csv`, `all.json`, `schema.json`, `manifest.json`
-- [ ] `update-feeds.yml` on a 6-hour cron with churn guard; Pages deploy
-- [ ] Unit tests with recorded fixtures; CI on PR
-- [ ] `xfeeds explain <ip>` — why an IP is or isn't in the feed
+**Phase 2a — aggregation MVP** ✅ shipped
+- [x] Source registry, collectors and parsers for every voting class
+- [x] Live allowlist fetching, CIDR caps, `redistribute` enforcement
+- [x] Independence-weighted scoring, recency decay, ageing with persisted state
+- [x] All output formats, manifest, rolling history
+- [x] Churn guard, run report, `xfeeds explain`
+- [x] 6-hour scheduled refresh, self-committing, Pages dashboard
+- [x] 52 tests, no network access in the suite
 
-**Phase 2b — enrichment & interop**
-- [ ] AbuseIPDB and ThreatFox collectors with quota-aware caching
-- [ ] GreyNoise RIOT suppression on sampled top candidates (see open items in the ADR)
-- [ ] ASN/country annotation
-- [ ] STIX 2.1, MISP manifest, nftables, ipset, Cloudflare emitters
-- [ ] `CHANGELOG.md` generation
+**Phase 2b — enrichment**
+- [ ] AbuseIPDB and ThreatFox collectors (quota-aware; keys needed)
+- [ ] ASN and country annotation
+- [ ] GreyNoise RIOT suppression on sampled top candidates
 
 **Phase 2c — enforcement integrations**
 - [ ] Reference `fail2ban` action and Cloudflare IP Access Rules sync
-- [ ] nginx/HAProxy deny-map output
 - [ ] False-positive PR workflow against `allowlist.txt`
-- [ ] Status badge generated from `manifest.json`
+- [ ] Source health monitor with automatic issue filing
 
 **Phase 3 — original telemetry**
-- [ ] Honeypot collectors (SSH/HTTP tarpit) feeding xfeeds a tenth, first-party independence class — restoring the original-research character of the 2022 dataset without a commercial WAF.
-
----
+- [ ] Honeypot collectors feeding xfeeds a first-party independence class,
+      restoring the original-research character of the 2022 dataset without a
+      commercial WAF.
 
 ## Non-goals
 

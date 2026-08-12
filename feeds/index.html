@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>xfeeds — public IP threat intelligence</title>
+<style>
+  :root {
+    --bg: #0d1117; --panel: #161b22; --line: #30363d;
+    --text: #e6edf3; --muted: #8b949e;
+    --high: #f85149; --medium: #d29922; --ok: #3fb950; --accent: #58a6ff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.6 ui-sans-serif, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 32px 20px 64px; }
+  header { border-bottom: 1px solid var(--line); padding-bottom: 20px; margin-bottom: 28px; }
+  h1 { margin: 0 0 6px; font-size: 26px; letter-spacing: -0.01em; }
+  h2 { font-size: 15px; text-transform: uppercase; letter-spacing: 0.08em;
+       color: var(--muted); margin: 36px 0 14px; font-weight: 600; }
+  .sub { color: var(--muted); margin: 0; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px; }
+  .card .n { font-size: 30px; font-weight: 650; line-height: 1.1; }
+  .card .l { color: var(--muted); font-size: 13px; margin-top: 4px; }
+  .high { color: var(--high); } .medium { color: var(--medium); } .ok { color: var(--ok); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); }
+  th { color: var(--muted); font-weight: 600; font-size: 12px;
+        text-transform: uppercase; letter-spacing: 0.05em; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .pill { display: inline-block; padding: 1px 8px; border-radius: 999px;
+           font-size: 12px; border: 1px solid var(--line); }
+  .pill.ok { color: var(--ok); border-color: #1f6f3d; }
+  .pill.warn { color: var(--medium); border-color: #6b5117; }
+  .pill.bad { color: var(--high); border-color: #7d2b28; }
+  .pill.no { color: var(--muted); }
+  code { background: var(--panel); border: 1px solid var(--line);
+          padding: 2px 6px; border-radius: 5px; font-size: 13px; }
+  pre { background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+         padding: 14px; overflow-x: auto; font-size: 13px; }
+  .bar { display: flex; height: 10px; border-radius: 5px; overflow: hidden; background: var(--panel); }
+  .bar span { display: block; height: 100%; }
+  .note { color: var(--muted); font-size: 13px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+  @media (max-width: 760px) { .grid2 { grid-template-columns: 1fr; } }
+  svg text { fill: var(--muted); font-size: 10px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>xfeeds</h1>
+  <p class="sub">Corroborated public IP threat intelligence, rebuilt every 6 hours ·
+     <a href="https://github.com/neilweitzel/xfeeds">source</a></p>
+  <p class="sub" style="margin-top:6px">Last run: <strong>2026-08-12 14:42:03 UTC</strong></p>
+</header>
+
+<div class="cards">
+  <div class="card"><div class="n high">1,907</div><div class="l">high confidence</div></div>
+  <div class="card"><div class="n medium">1,854</div><div class="l">medium confidence</div></div>
+  <div class="card"><div class="n">93%</div><div class="l">withheld (single source)</div></div>
+  <div class="card"><div class="n ok">10/11</div><div class="l">sources healthy</div></div>
+  <div class="card"><div class="n">+3,761 / −0</div><div class="l">change this run</div></div>
+</div>
+
+<h2>Feed size over time</h2>
+<p class="note">Not enough history yet — charts appear after a few runs.</p>
+
+<h2>Additions and removals per run</h2>
+<p class="note">Not enough history yet — charts appear after a few runs.</p>
+
+<div class="grid2">
+<div>
+<h2>Corroboration</h2>
+<p class="note">How many <em>independent</em> source families reported each published
+address. Three or more is the safe-to-block tier.</p>
+<table><tr><th>Corroboration</th><th class="num">Addresses</th><th></th></tr><tr><td>1 independent source <span class="note">(high-precision source, promoted)</span></td><td class="num">1,779</td><td style="width:45%"><div class="bar"><span style="width:47.3%;background:#d29922"></span></div></td></tr><tr><td>2 independent sources</td><td class="num">1,855</td><td style="width:45%"><div class="bar"><span style="width:49.3%;background:#d29922"></span></div></td></tr><tr><td>3 independent sources</td><td class="num">119</td><td style="width:45%"><div class="bar"><span style="width:3.2%;background:#3fb950"></span></div></td></tr><tr><td>4 independent sources</td><td class="num">8</td><td style="width:45%"><div class="bar"><span style="width:0.2%;background:#3fb950"></span></div></td></tr></table><p class="note">1,780 of these were promoted by a single high-precision source — Spamhaus DROP hijacked netblocks and active abuse.ch command-and-control servers do not need a second opinion. Everything else required agreement across independent sources.</p>
+</div>
+<div>
+<h2>Downloads</h2>
+<table>
+<tr><th>File</th><th>Use</th></tr>
+<tr><td><a href="high-confidence.txt">high-confidence.txt</a></td><td>firewall block list</td></tr>
+<tr><td><a href="medium-confidence.txt">medium-confidence.txt</a></td><td>challenge / rate-limit</td></tr>
+<tr><td><a href="all.csv">all.csv</a></td><td>MISP, OpenCTI, Splunk</td></tr>
+<tr><td><a href="all.json">all.json</a></td><td>full provenance</td></tr>
+<tr><td><a href="stix-bundle.json">stix-bundle.json</a></td><td>STIX 2.1 for TIPs</td></tr>
+<tr><td><a href="nftables.conf">nftables.conf</a></td><td>nftables sets</td></tr>
+<tr><td><a href="iptables.ipset">iptables.ipset</a></td><td>ipset restore</td></tr>
+<tr><td><a href="manifest.json">manifest.json</a></td><td>run metadata</td></tr>
+</table>
+<pre>curl -sS https://neilweitzel.github.io/xfeeds/high-confidence.txt \
+  | grep -v '^#' | sudo ipset restore -!</pre>
+</div>
+</div>
+
+<h2>Sources</h2>
+<table>
+<tr><th>Source</th><th>Independence class</th><th class="num">Records</th>
+    <th>Status</th><th>Vote</th><th>Redistributed</th></tr>
+<tr><td>binary_defense</td><td>binary_defense</td><td class="num">3,301</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>blocklist_de</td><td>blocklist_de</td><td class="num">31,622</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>bruteforceblocker</td><td>bruteforceblocker</td><td class="num">548</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>cins_army</td><td>cins</td><td class="num">15,000</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>feodo_tracker</td><td>abusech</td><td class="num">5</td><td><span class="pill warn">stale</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>greensnow</td><td>greensnow</td><td class="num">3,039</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>ipsum_levels</td><td>META_aggregate</td><td class="num">26,319</td><td><span class="pill ok">ok</span></td><td><span class="pill no">no</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>spamhaus_drop_v4</td><td>spamhaus</td><td class="num">1,687</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>spamhaus_drop_v6</td><td>spamhaus</td><td class="num">91</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>stopforumspam_toxic</td><td>stopforumspam</td><td class="num">60</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill no">scoring only</span></td></tr><tr><td>tor_exits</td><td>tor</td><td class="num">1,336</td><td><span class="pill ok">ok</span></td><td><span class="pill no">no</span></td><td><span class="pill ok">yes</span></td></tr>
+</table>
+<p class="note">
+  <strong>Independence matters.</strong> Many public blocklists copy from each other,
+  so counting files as votes manufactures false confidence. Sources that share
+  upstream data share a class, and each class votes at most once.
+  Sources marked <em>scoring only</em> inform confidence but their data is never
+  republished here, because their licences do not permit it.
+</p>
+
+<h2>Safety filters applied this run</h2>
+<table>
+<tr><th>Rule</th><th class="num">Dropped</th><th>Why it exists</th></tr>
+<tr><td>allowlist</td><td class="num">4,139</td>
+    <td>cloud, CDN, crawler and resolver ranges must never be blocked</td></tr>
+<tr><td>CIDR too wide</td><td class="num">8</td>
+    <td>a single over-broad prefix can black-hole an entire ISP</td></tr>
+<tr><td>non-global</td><td class="num">0</td>
+    <td>private and reserved space is never publishable</td></tr>
+<tr><td>licence</td><td class="num">51</td>
+    <td>evidence came only from sources we may not republish</td></tr>
+<tr><td>annotation only</td><td class="num">1,076</td>
+    <td>Tor exits are tagged, never blocked — that is the consumer's choice</td></tr>
+</table>
+
+<h2>Licensing</h2>
+<p class="note">
+  xfeeds compiles publicly available feeds and is not sold. Sources whose terms
+  forbid redistribution, or attach ShareAlike obligations, are either used for
+  scoring only or excluded outright — Spamhaus attribution travels with the data
+  as its terms require. See
+  <a href="https://github.com/neilweitzel/xfeeds/blob/main/docs/DECISIONS.md">DECISIONS.md</a> for the
+  per-source reasoning.
+</p>
+
+<p class="note" style="margin-top:36px">
+  Found a false positive? <a href="https://github.com/neilweitzel/xfeeds/issues">Open an issue</a> — those are
+  triaged first. To see why any address is listed, run
+  <code>xfeeds explain &lt;ip&gt;</code>.
+</p>
+</div>
+</body>
+</html>

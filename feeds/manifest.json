@@ -1,0 +1,246 @@
+{
+  "active_voting_classes": [
+    "abusech",
+    "binary_defense",
+    "blocklist_de",
+    "bruteforceblocker",
+    "cins",
+    "greensnow",
+    "spamhaus",
+    "stopforumspam"
+  ],
+  "corroboration_histogram": {
+    "1": 1779,
+    "2": 1855,
+    "3": 119,
+    "4": 8
+  },
+  "counts": {
+    "high": 1907,
+    "medium": 1854,
+    "promoted": 1780,
+    "published": 3761,
+    "withheld": 49723
+  },
+  "deltas": {
+    "added": 3761,
+    "added_examples": [
+      "1.10.16.0/20",
+      "1.19.0.0/16",
+      "1.212.225.99",
+      "1.227.228.131",
+      "1.250.67.114",
+      "1.255.171.167",
+      "1.32.128.0/18",
+      "1.32.52.191",
+      "1.53.84.222",
+      "1.83.125.247",
+      "100.27.18.199",
+      "100.54.213.131",
+      "100.59.0.92",
+      "101.0.16.0/20",
+      "101.100.216.61",
+      "101.108.50.179",
+      "101.126.159.233",
+      "101.134.0.0/15",
+      "101.192.68.0/22",
+      "101.192.72.0/22"
+    ],
+    "removed": 0,
+    "removed_examples": []
+  },
+  "filters": {
+    "allowlisted": 4139,
+    "examples": {
+      "allowlisted": [
+        "172.70.206.0/23",
+        "172.70.214.0/23",
+        "104.154.147.43",
+        "104.155.154.215",
+        "104.155.70.187"
+      ],
+      "not_redistributable": [
+        "103.81.182.0/24",
+        "109.200.1.0/24",
+        "109.200.2.0/23",
+        "109.200.4.0/22",
+        "146.185.223.0/24"
+      ],
+      "tag_only": [
+        "198.98.51.189",
+        "5.45.102.93",
+        "192.42.116.99",
+        "192.42.116.44",
+        "87.118.116.103"
+      ],
+      "too_wide": [
+        "109.200.8.0/21",
+        "109.200.16.0/20",
+        "176.227.192.0/19",
+        "212.129.0.0/18",
+        "23.106.192.0/20"
+      ]
+    },
+    "non_global": 0,
+    "not_redistributable": 51,
+    "tag_only": 1076,
+    "too_wide": 8
+  },
+  "generated_at": "2026-08-12T14:42:03.610017+00:00",
+  "project": "https://github.com/neilweitzel/xfeeds",
+  "sources": {
+    "binary_defense": {
+      "cached": false,
+      "error": null,
+      "independence_class": "binary_defense",
+      "last_modified": "2026-08-11T23:55:32+00:00",
+      "license": "Free for non-commercial use per Artillery/Banlist terms",
+      "license_risk": "medium",
+      "license_url": null,
+      "records": 3301,
+      "redistributable": true,
+      "status": "ok",
+      "votes": true,
+      "weight": 0.6
+    },
+    "blocklist_de": {
+      "cached": false,
+      "error": null,
+      "independence_class": "blocklist_de",
+      "last_modified": "2026-08-12T14:24:02+00:00",
+      "license": "Free, non-commercial reporting service",
+      "license_risk": null,
+      "license_url": "https://blocklist.de/",
+      "records": 31622,
+      "redistributable": true,
+      "status": "ok",
+      "votes": true,
+      "weight": 0.8
+    },
+    "bruteforceblocker": {
+      "cached": false,
+      "error": null,
+      "independence_class": "bruteforceblocker",
+      "last_modified": "2026-08-12T14:37:52+00:00",
+      "license": null,
+      "license_risk": null,
+      "license_url": null,
+      "records": 548,
+      "redistributable": true,
+      "status": "ok",
+      "votes": true,
+      "weight": 0.6
+    },
+    "cins_army": {
+      "cached": false,
+      "error": null,
+      "independence_class": "cins",
+      "last_modified": "2026-08-12T14:04:01+00:00",
+      "license": "No formal license published; site states the list is shared with the community to 'parse and use in any way you see fit'",
+      "license_risk": "medium",
+      "license_url": "https://cinsscore.com/#list",
+      "records": 15000,
+      "redistributable": true,
+      "status": "ok",
+      "votes": true,
+      "weight": 0.8
+    },
+    "feodo_tracker": {
+      "cached": false,
+      "error": null,
+      "independence_class": "abusech",
+      "last_modified": "2026-06-30T04:53:05+00:00",
+      "license": "abuse.ch - free, see terms",
+      "license_risk": null,
+      "license_url": "https://feodotracker.abuse.ch/blocklist/",
+      "records": 5,
+      "redistributable": true,
+      "status": "stale",
+      "votes": true,
+      "weight": 1.0
+    },
+    "greensnow": {
+      "cached": false,
+      "error": null,
+      "independence_class": "greensnow",
+      "last_modified": "2026-08-12T14:42:05+00:00",
+      "license": null,
+      "license_risk": null,
+      "license_url": "https://blocklist.greensnow.co/",
+      "records": 3039,
+      "redistributable": true,
+      "status": "ok",
+      "votes": true,
+      "weight": 0.6
+    },
+    "ipsum_levels": {
+      "cached": false,
+      "error": null,
+      "independence_class": "META_aggregate",
+      "license": null,
+      "license_risk": null,
+      "license_url": null,
+      "records": 26319,
+      "redistributable": true,
+      "status": "ok",
+      "votes": false,
+      "weight": 0.0
+    },
+    "spamhaus_drop_v4": {
+      "cached": false,
+      "error": null,
+      "independence_class": "spamhaus",
+      "last_modified": "2026-08-11T11:17:49+00:00",
+      "license": "Free to use; credit to The Spamhaus Project required, date and copy text must remain with the data",
+      "license_risk": null,
+      "license_url": "https://check.spamhaus.org/faqs/do-not-route-or-peer-drop/",
+      "records": 1687,
+      "redistributable": true,
+      "status": "ok",
+      "votes": true,
+      "weight": 1.0
+    },
+    "spamhaus_drop_v6": {
+      "cached": false,
+      "error": null,
+      "independence_class": "spamhaus",
+      "last_modified": "2026-08-01T05:35:55+00:00",
+      "license": "Free to use; attribution required",
+      "license_risk": null,
+      "license_url": null,
+      "records": 91,
+      "redistributable": true,
+      "status": "ok",
+      "votes": true,
+      "weight": 1.0
+    },
+    "stopforumspam_toxic": {
+      "cached": false,
+      "error": null,
+      "independence_class": "stopforumspam",
+      "last_modified": "2026-08-12T13:53:12+00:00",
+      "license": "Non-commercial use only; Creative Commons for remaining terms",
+      "license_risk": "medium",
+      "license_url": "https://www.stopforumspam.com/legal",
+      "records": 60,
+      "redistributable": false,
+      "status": "ok",
+      "votes": true,
+      "weight": 0.5
+    },
+    "tor_exits": {
+      "cached": false,
+      "error": null,
+      "independence_class": "tor",
+      "last_modified": "2026-08-12T13:57:41+00:00",
+      "license": null,
+      "license_risk": null,
+      "license_url": null,
+      "records": 1336,
+      "redistributable": true,
+      "status": "ok",
+      "votes": false,
+      "weight": 0.0
+    }
+  }
+}
