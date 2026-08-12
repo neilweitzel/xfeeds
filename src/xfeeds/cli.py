@@ -60,6 +60,6 @@ def validate(
 if __name__ == "__main__":
     app()
 @app.command()
-def run():
+def run() -> None:
     """Dummy command to make typer create a subcommand group."""
     pass
