@@ -1,0 +1,295 @@
+# xfeeds source registry
+#
+# This file is the ONLY place feeds are configured. Adding a source means adding
+# an entry here plus (if the format is new) a parser in src/xfeeds/collectors/.
+#
+# independence_class: sources that share upstream data MUST share a class. The
+#   scorer counts at most ONE vote per class, which is what stops composite
+#   feeds from manufacturing fake corroboration. See docs/DECISIONS.md ADR-010.
+# weight: contribution to confidence when this class votes (0..1).
+# vote: false => the source may enrich or corroborate but never adds confidence.
+# redistribute: false => data may inform scoring but MUST NOT appear in published
+#   feeds. Enforced in emit/, not just documented.
+#
+# Verified reachable and parsed 2026-08-11. Counts are from that probe.
+
+version: 1
+
+defaults:
+  timeout_seconds: 25
+  user_agent: "xfeeds/2.0 (+https://github.com/neilweitzel/xfeeds)"
+  retries: 3
+  ttl_days: 14
+  vote: true
+  redistribute: true
+  enabled: true
+
+sources:
+
+  # ---------------------------------------------------------------- netblocks
+  - name: spamhaus_drop_v4
+    url: https://www.spamhaus.org/drop/drop_v4.json
+    parser: spamhaus_json
+    independence_class: spamhaus
+    weight: 1.0
+    categories: [hijacked-netblock, criminal-hosting]
+    ttl_days: 30
+    min_interval_seconds: 3600   # Spamhaus: automated downloads >= 1h apart
+    license: "Free to use; credit to The Spamhaus Project required, date and copy text must remain with the data"
+    license_url: https://check.spamhaus.org/faqs/do-not-route-or-peer-drop/
+    attribution_required: true
+    notes: "1687 CIDRs / ~14.97M addresses. Highest-trust source. Auto-promotes to high confidence."
+
+  - name: spamhaus_drop_v6
+    url: https://www.spamhaus.org/drop/drop_v6.json
+    parser: spamhaus_json
+    independence_class: spamhaus
+    weight: 1.0
+    categories: [hijacked-netblock, criminal-hosting]
+    ttl_days: 30
+    min_interval_seconds: 3600
+    license: "Free to use; attribution required"
+    attribution_required: true
+    notes: "92 IPv6 CIDRs."
+
+  - name: spamhaus_asndrop
+    url: https://www.spamhaus.org/drop/asndrop.json
+    parser: spamhaus_asn_json
+    independence_class: spamhaus
+    weight: 0.5
+    vote: false
+    redistribute: false
+    categories: [criminal-asn]
+    notes: "426 ASNs. Annotation only in Phase 2a - we do not expand ASN to prefixes (needs BGP data, huge blast radius)."
+
+  # ------------------------------------------------------- botnet C2 (precise)
+  - name: feodo_tracker
+    url: https://feodotracker.abuse.ch/downloads/ipblocklist.txt
+    parser: plain_text
+    independence_class: abusech
+    weight: 1.0
+    categories: [botnet-c2]
+    ttl_days: 7
+    license: "abuse.ch - free, see terms"
+    license_url: https://feodotracker.abuse.ch/blocklist/
+    notes: >
+      Only 5 IPs and header says last updated 2026-03-04 - effectively dormant.
+      Tiny but near-zero false positive. Keep; do not rely on it for volume.
+      A staleness warning must fire if last-updated header is >30d old.
+
+  - name: sslbl
+    url: https://sslbl.abuse.ch/blacklist/sslipblacklist.txt
+    parser: plain_text
+    independence_class: abusech
+    weight: 1.0
+    categories: [botnet-c2, malicious-tls]
+    ttl_days: 7
+    license_url: https://sslbl.abuse.ch/
+    notes: "Currently 0 entries. Harmless to keep wired up."
+
+  - name: threatfox
+    url: https://threatfox-api.abuse.ch/api/v1/
+    parser: threatfox_api
+    method: POST
+    auth: header
+    auth_header: Auth-Key
+    auth_secret: THREATFOX_AUTH_KEY
+    independence_class: abusech
+    weight: 1.0
+    categories: [botnet-c2, malware-infrastructure]
+    ttl_days: 7
+    enabled: false   # flip on once THREATFOX_AUTH_KEY is in repo secrets
+    notes: >
+      abuse.ch made authentication mandatory on 2025-06-30 across its APIs.
+      Static /downloads/ paths still answer unauthenticated but that is not
+      guaranteed - always send the free Auth-Key. Key is free from
+      https://auth.abuse.ch/ . abuse.ch is now operated under Spamhaus.
+
+  # ------------------------------------------------- primary attacker sensors
+  - name: blocklist_de
+    url: https://lists.blocklist.de/lists/all.txt
+    parser: plain_text
+    independence_class: blocklist_de
+    weight: 0.8
+    categories: [brute-force, scanning, web-attack]
+    ttl_days: 10
+    license: "Free, non-commercial reporting service"
+    license_url: https://blocklist.de/
+    notes: "28,605 IPs. Largest genuinely independent sensor network (fail2ban reporters). Refreshes ~30m."
+
+  - name: cins_army
+    url: https://cinsscore.com/list/ci-badguys.txt
+    parser: plain_text
+    independence_class: cins
+    weight: 0.8
+    categories: [scanning, brute-force]
+    ttl_days: 10
+    license: "No formal license published; site states the list is shared with the community to 'parse and use in any way you see fit'"
+    license_url: https://cinsscore.com/#list
+    license_risk: medium
+    notes: >
+      15,000 IPs, fixed-size list. No explicit redistribution grant - the stated
+      intent is permissive but it is not a formal license. Attribute clearly and
+      be prepared to drop on request. Tracked in docs/DECISIONS.md ADR-012.
+
+  - name: greensnow
+    url: https://blocklist.greensnow.co/greensnow.txt
+    parser: plain_text
+    independence_class: greensnow
+    weight: 0.6
+    categories: [brute-force, scanning]
+    ttl_days: 10
+    license_url: https://blocklist.greensnow.co/
+    notes: "3,595 IPs."
+
+  - name: binary_defense
+    url: https://www.binarydefense.com/banlist.txt
+    parser: plain_text
+    independence_class: binary_defense
+    weight: 0.6
+    categories: [scanning, malware-infrastructure]
+    ttl_days: 10
+    require_user_agent: true
+    license: "Free for non-commercial use per Artillery/Banlist terms"
+    license_risk: medium
+    notes: >
+      3,300 IPs. Returns 301 to an HTML page without a browser-like User-Agent -
+      the collector MUST send the configured UA and MUST reject text/html responses.
+
+  - name: bruteforceblocker
+    url: https://danger.rulez.sk/projects/bruteforceblocker/blist.php
+    parser: bruteforceblocker
+    independence_class: bruteforceblocker
+    weight: 0.6
+    categories: [brute-force, ssh-attack]
+    ttl_days: 10
+    notes: "549 IPs. Tab-separated: ip, last-seen, count. Upstream of ET compromised-ips."
+
+  - name: abuseipdb_blacklist
+    url: https://api.abuseipdb.com/api/v2/blacklist
+    parser: abuseipdb
+    auth: header
+    auth_header: Key
+    auth_secret: ABUSEIPDB_API_KEY
+    params:
+      confidenceMinimum: 100    # free tier cannot lower this
+      limit: 10000              # free tier hard cap
+    independence_class: abuseipdb
+    weight: 0.9
+    categories: [reported-abuse]
+    ttl_days: 10
+    min_interval_seconds: 21600   # 5 blacklist calls/day on free tier -> 6h floor
+    cache_response: true
+    license: "AbuseIPDB free tier; redistribution of the blacklist is restricted"
+    license_url: https://www.abuseipdb.com/legal
+    redistribute: false
+    enabled: false   # flip on once ABUSEIPDB_API_KEY is in repo secrets
+    notes: >
+      Free tier: 5 blacklist calls/day, 10,000 IPs, confidenceMinimum locked at 100.
+      redistribute:false by default - AbuseIPDB terms restrict republishing their
+      blacklist verbatim. Used as a scoring/corroboration signal only until the
+      terms are confirmed in writing. See docs/DECISIONS.md ADR-012.
+
+  # ------------------------------------------ corroboration only (never votes)
+  - name: ipsum_levels
+    url: https://raw.githubusercontent.com/stamparm/ipsum/master/levels/{level}.txt
+    parser: ipsum_levels
+    levels: [3, 4, 5, 6, 7, 8]
+    independence_class: META_aggregate
+    weight: 0.0
+    vote: false
+    categories: [aggregate]
+    notes: >
+      IPsum aggregates 30+ public lists including most of ours - counting it as a
+      vote double-counts. Levels are strictly nested (verified: L8 subset of L5
+      subset of L3) and the level number IS the upstream corroboration count.
+      Used as a Bayesian prior only: level>=5 adds a bounded bonus, never a vote.
+      Sizes: L3=17,078 L4=7,045 L5=2,092 L6=517 L7=131 L8=31.
+
+  - name: firehol_level1
+    url: https://iplists.firehol.org/files/firehol_level1.netset
+    parser: netset
+    independence_class: META_aggregate
+    weight: 0.0
+    vote: false
+    redistribute: false
+    categories: [aggregate]
+    enabled: false
+    notes: >
+      DISABLED. Its own header declares it is composed of dshield + feodo +
+      fullbogons + spamhaus_drop - every one already a direct source here.
+      It also carries 224.0.0.0/3 (536,870,912 addresses, multicast/reserved)
+      and 615 routable blocks wider than /22 totalling ~557M addresses.
+      Blindly merging it would be catastrophic. Retained only as an optional
+      offline cross-check. See docs/DECISIONS.md ADR-011.
+
+  # ------------------------------------------------ excluded, kept documented
+  - name: et_compromised
+    url: https://rules.emergingthreats.net/blockrules/compromised-ips.txt
+    parser: plain_text
+    independence_class: bruteforceblocker   # same class - NOT independent
+    weight: 0.0
+    vote: false
+    enabled: false
+    notes: >
+      DISABLED as a duplicate. Measured Jaccard 0.953 against bruteforceblocker
+      (531 of 539 IPs identical). It is a mirror, not a second opinion.
+      Class-pinned to bruteforceblocker so it can never double-vote if re-enabled.
+
+  - name: dshield_block
+    url: https://feeds.dshield.org/block.txt
+    parser: dshield
+    independence_class: dshield
+    weight: 0.0
+    vote: false
+    redistribute: false
+    enabled: false
+    license: "CC BY-NC-SA 2.5"
+    license_url: http://creativecommons.org/licenses/by-nc-sa/2.5/
+    license_risk: high
+    notes: >
+      DISABLED on licensing grounds. The feed header declares CC BY-NC-SA 2.5.
+      NonCommercial conflicts with unrestricted downstream use and ShareAlike
+      would attach viral terms to any output containing it. Only 20 /24 blocks
+      anyway. Excluded until relicensed or a separate NC-SA feed is justified.
+      See docs/DECISIONS.md ADR-012.
+
+  # ---------------------------------------------------- annotation, not blocks
+  - name: tor_exits
+    url: https://check.torproject.org/torbulkexitlist
+    parser: plain_text
+    independence_class: tor
+    weight: 0.0
+    vote: false
+    tag_only: true
+    categories: [tor-exit]
+    ttl_days: 2
+    notes: >
+      1,367 exits. NEVER blocked, NEVER scored - tagged only. Measured
+      contamination in other feeds: IPsum L3 lists 265 of them, binary_defense 64,
+      blocklist_de 49, greensnow 48. Any IP tagged tor-exit is capped below the
+      high-confidence threshold. See docs/DECISIONS.md ADR-013.
+
+# ----------------------------------------------------------------- allowlists
+# Fetched fresh each run and applied AFTER every other stage. A miss here is a
+# customer-visible outage for somebody, so these are hard failures, not warnings.
+allowlist_sources:
+  - name: cloudflare
+    url: https://api.cloudflare.com/client/v4/ips
+    parser: cloudflare_json
+  - name: google_cloud
+    url: https://www.gstatic.com/ipranges/goog.json
+    parser: google_json
+  - name: googlebot
+    url: https://developers.google.com/static/search/apis/ipranges/googlebot.json
+    parser: google_json
+  - name: bingbot
+    url: https://www.bing.com/toolbox/bingbot.json
+    parser: google_json
+  - name: github
+    url: https://api.github.com/meta
+    parser: github_meta
+  - name: static
+    path: allowlist.txt
+    parser: plain_text
+    notes: "RFC1918, bogons, public resolvers (1.1.1.1 8.8.8.8 9.9.9.9), root/TLD DNS, manual entries."
