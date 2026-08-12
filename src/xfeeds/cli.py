@@ -7,7 +7,9 @@ from pydantic import ValidationError
 from xfeeds.config import get_active_voting_classes, load_registry
 from xfeeds.models import SourceConfig
 
-app = typer.Typer(help="xfeeds: A self-updating, open threat intelligence feed.", no_args_is_help=True)
+app = typer.Typer(
+    help="xfeeds: A self-updating, open threat intelligence feed.", no_args_is_help=True
+)
 
 
 @app.command()
@@ -59,7 +61,8 @@ def validate(
 
 if __name__ == "__main__":
     app()
+
+
 @app.command()
 def run() -> None:
     """Dummy command to make typer create a subcommand group."""
-    pass
