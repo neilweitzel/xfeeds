@@ -83,21 +83,21 @@ color:var(--muted);border-radius:6px;padding:3px 9px;font-size:11.5px;cursor:poi
 firewall. Compiled from public threat intelligence, rebuilt every 6 hours, and
 filtered so only addresses that <strong>independent sources agree on</strong> get
 published.</p>
-<p class="sub" style="margin-top:8px">Updated 2026-08-12 20:03 UTC
+<p class="sub" style="margin-top:8px">Updated 2026-08-12 22:24 UTC
 · <a href="https://github.com/neilweitzel/xfeeds">source and docs</a></p>
 </header>
 
 <div class="cards">
-<div class="card"><div class="n high">2,403</div>
+<div class="card"><div class="n high">2,658</div>
   <div class="l">safe to block</div></div>
-<div class="card"><div class="n med">1,837</div>
+<div class="card"><div class="n med">867</div>
   <div class="l">worth challenging</div></div>
-<div class="card"><div class="n">92%</div>
+<div class="card"><div class="n">93%</div>
   <div class="l">rejected as uncorroborated</div></div>
-<div class="card"><div class="n ok">11/12</div>
+<div class="card"><div class="n ok">12/13</div>
   <div class="l">sources healthy</div></div>
-<div class="card"><div class="n">+37 /
-  &minus;21</div>
+<div class="card"><div class="n">+130 /
+  &minus;845</div>
   <div class="l">changed this run</div></div>
 </div>
 
@@ -189,56 +189,56 @@ custom lists, so the high-confidence tier is the right one to use.</p>
 <tr><th>File</th><th>What it is</th><th class="num">Entries</th></tr>
 <tr><td><a href="high-confidence.txt">high-confidence.txt</a></td>
     <td>Safe to block. Corroborated across independent sources.</td>
-    <td class="num">2,403</td></tr>
+    <td class="num">2,658</td></tr>
 <tr><td><a href="medium-confidence.txt">medium-confidence.txt</a></td>
     <td>Two independent sources. Challenge or rate-limit rather than drop.</td>
-    <td class="num">1,837</td></tr>
+    <td class="num">867</td></tr>
 <tr><td><a href="all.csv">all.csv</a></td>
     <td>Both tiers with scores, sources and dates.</td>
-    <td class="num">4,240</td></tr>
+    <td class="num">3,525</td></tr>
 <tr><td><a href="all.json">all.json</a></td><td>Full provenance per address.</td>
-    <td class="num">4,240</td></tr>
+    <td class="num">3,525</td></tr>
 <tr><td><a href="stix-bundle.json">stix-bundle.json</a></td><td>STIX 2.1 bundle.</td>
-    <td class="num">2,403</td></tr>
+    <td class="num">2,658</td></tr>
 <tr><td><a href="misp-manifest.json">misp-manifest.json</a></td><td>MISP feed.</td>
-    <td class="num">2,403</td></tr>
+    <td class="num">2,658</td></tr>
 <tr><td><a href="nftables.conf">nftables.conf</a></td><td>nftables sets.</td>
-    <td class="num">2,403</td></tr>
+    <td class="num">2,658</td></tr>
 <tr><td><a href="iptables.ipset">iptables.ipset</a></td><td>ipset restore format.</td>
-    <td class="num">2,403</td></tr>
+    <td class="num">2,658</td></tr>
 <tr><td><a href="manifest.json">manifest.json</a></td>
     <td>Run metadata, per-source status and licences.</td><td class="num">—</td></tr>
 <tr><td><a href="history.json">history.json</a></td><td>Per-run history.</td>
-    <td class="num">7</td></tr>
+    <td class="num">8</td></tr>
 </table>
 
 <h2>Safe-to-block list over time</h2>
-<svg viewBox="0 0 1020 92" width="100%" height="92" role="img" aria-label="feed size over time"><polygon points="24,68 24.0,67.0 186.0,67.0 348.0,67.0 510.0,68.0 672.0,68.0 834.0,25.2 996.0,24.0 996.0,68" fill="#f85149" opacity="0.13"/><polyline points="24.0,67.0 186.0,67.0 348.0,67.0 510.0,68.0 672.0,68.0 834.0,25.2 996.0,24.0" fill="none" stroke="#f85149" stroke-width="2"/><text x="24" y="12">2026-08-12</text><text x="996" y="12" text-anchor="end">2026-08-12</text><text x="24" y="87">low 1,896</text><text x="996" y="87" text-anchor="end">high 2,403</text></svg>
+<svg viewBox="0 0 1020 92" width="100%" height="92" role="img" aria-label="feed size over time"><polygon points="24,68 24.0,67.4 162.9,67.4 301.7,67.4 440.6,68.0 579.4,68.0 718.3,39.5 857.1,38.7 996.0,24.0 996.0,68" fill="#f85149" opacity="0.13"/><polyline points="24.0,67.4 162.9,67.4 301.7,67.4 440.6,68.0 579.4,68.0 718.3,39.5 857.1,38.7 996.0,24.0" fill="none" stroke="#f85149" stroke-width="2"/><text x="24" y="12">2026-08-12</text><text x="996" y="12" text-anchor="end">2026-08-12</text><text x="24" y="87">low 1,896</text><text x="996" y="87" text-anchor="end">high 2,658</text></svg>
 
 <h2>Added and removed each run</h2>
-<svg viewBox="0 0 1020 108" width="100%" height="108" role="img" aria-label="additions and removals per run"><rect x="20.0" y="20.0" width="86.8" height="34.0" fill="#3fb950" opacity="0.85"/><rect x="160.0" y="54.0" width="86.8" height="0.0" fill="#3fb950" opacity="0.85"/><rect x="160.0" y="54.0" width="86.8" height="0.0" fill="#f85149" opacity="0.85"/><rect x="300.0" y="53.9" width="86.8" height="0.1" fill="#3fb950" opacity="0.85"/><rect x="300.0" y="54.0" width="86.8" height="0.0" fill="#f85149" opacity="0.85"/><rect x="440.0" y="50.9" width="86.8" height="3.1" fill="#3fb950" opacity="0.85"/><rect x="440.0" y="54.0" width="86.8" height="3.3" fill="#f85149" opacity="0.85"/><rect x="580.0" y="54.0" width="86.8" height="0.0" fill="#3fb950" opacity="0.85"/><rect x="580.0" y="54.0" width="86.8" height="0.0" fill="#f85149" opacity="0.85"/><rect x="720.0" y="49.6" width="86.8" height="4.4" fill="#3fb950" opacity="0.85"/><rect x="720.0" y="54.0" width="86.8" height="0.0" fill="#f85149" opacity="0.85"/><rect x="860.0" y="53.7" width="86.8" height="0.3" fill="#3fb950" opacity="0.85"/><rect x="860.0" y="54.0" width="86.8" height="0.2" fill="#f85149" opacity="0.85"/><line x1="20" y1="54.0" x2="1000" y2="54.0" stroke="#30363d"/><text x="20" y="12">added</text><text x="20" y="104">removed</text></svg>
+<svg viewBox="0 0 1020 108" width="100%" height="108" role="img" aria-label="additions and removals per run"><rect x="20.0" y="20.0" width="76.0" height="34.0" fill="#3fb950" opacity="0.85"/><rect x="142.5" y="54.0" width="76.0" height="0.0" fill="#3fb950" opacity="0.85"/><rect x="142.5" y="54.0" width="76.0" height="0.0" fill="#f85149" opacity="0.85"/><rect x="265.0" y="53.9" width="76.0" height="0.1" fill="#3fb950" opacity="0.85"/><rect x="265.0" y="54.0" width="76.0" height="0.0" fill="#f85149" opacity="0.85"/><rect x="387.5" y="50.9" width="76.0" height="3.1" fill="#3fb950" opacity="0.85"/><rect x="387.5" y="54.0" width="76.0" height="3.3" fill="#f85149" opacity="0.85"/><rect x="510.0" y="54.0" width="76.0" height="0.0" fill="#3fb950" opacity="0.85"/><rect x="510.0" y="54.0" width="76.0" height="0.0" fill="#f85149" opacity="0.85"/><rect x="632.5" y="49.6" width="76.0" height="4.4" fill="#3fb950" opacity="0.85"/><rect x="632.5" y="54.0" width="76.0" height="0.0" fill="#f85149" opacity="0.85"/><rect x="755.0" y="53.7" width="76.0" height="0.3" fill="#3fb950" opacity="0.85"/><rect x="755.0" y="54.0" width="76.0" height="0.2" fill="#f85149" opacity="0.85"/><rect x="877.5" y="52.8" width="76.0" height="1.2" fill="#3fb950" opacity="0.85"/><rect x="877.5" y="54.0" width="76.0" height="7.6" fill="#f85149" opacity="0.85"/><line x1="20" y1="54.0" x2="1000" y2="54.0" stroke="#30363d"/><text x="20" y="12">added</text><text x="20" y="104">removed</text></svg>
 
 <div class="grid2">
 <div>
 <h2>How much agreement</h2>
 <p class="note">How many <em>independent</em> source families reported each
 published address.</p>
-<table><tr><th>Independent sources</th><th class="num">Addresses</th><th></th></tr><tr><td>1 source <span class="note">— promoted, high precision</span></td><td class="num">2,283</td><td style="width:42%"><div class="bar"><span style="width:53.8%;background:#d29922"></span></div></td></tr><tr><td>2 sources</td><td class="num">1,840</td><td style="width:42%"><div class="bar"><span style="width:43.4%;background:#d29922"></span></div></td></tr><tr><td>3 sources</td><td class="num">105</td><td style="width:42%"><div class="bar"><span style="width:2.5%;background:#3fb950"></span></div></td></tr><tr><td>4 sources</td><td class="num">12</td><td style="width:42%"><div class="bar"><span style="width:0.3%;background:#3fb950"></span></div></td></tr></table><p class="note">2,287 were promoted by a single high-precision source — Spamhaus DROP hijacked netblocks and active abuse.ch command-and-control servers do not need a second opinion. Everything else required agreement across independent sources.</p>
+<table><tr><th>Independent sources</th><th class="num">Addresses</th><th></th></tr><tr><td>1 source <span class="note">— promoted, high precision</span></td><td class="num">2,285</td><td style="width:42%"><div class="bar"><span style="width:64.8%;background:#d29922"></span></div></td></tr><tr><td>2 sources</td><td class="num">1,211</td><td style="width:42%"><div class="bar"><span style="width:34.4%;background:#d29922"></span></div></td></tr><tr><td>3 sources</td><td class="num">28</td><td style="width:42%"><div class="bar"><span style="width:0.8%;background:#3fb950"></span></div></td></tr><tr><td>4 sources</td><td class="num">1</td><td style="width:42%"><div class="bar"><span style="width:0.0%;background:#3fb950"></span></div></td></tr></table><p class="note">2,287 were promoted by a single high-precision source — Spamhaus DROP hijacked netblocks and active abuse.ch command-and-control servers do not need a second opinion. Everything else required agreement across independent sources.</p>
 </div>
 <div>
 <h2>What got filtered out</h2>
 <table>
 <tr><th>Rule</th><th class="num">Dropped</th></tr>
 <tr><td>On the allowlist<div class="note">cloud, CDN, crawlers, public
-    resolvers</div></td><td class="num">4,124</td></tr>
+    resolvers</div></td><td class="num">4,339</td></tr>
 <tr><td>Prefix too wide<div class="note">one bad /8 can black-hole an
     ISP</div></td><td class="num">8</td></tr>
 <tr><td>Private or reserved</td>
     <td class="num">0</td></tr>
 <tr><td>Licence<div class="note">evidence came only from sources we may not
-    republish</div></td><td class="num">51</td></tr>
+    republish</div></td><td class="num">6,480</td></tr>
 <tr><td>Tor exits<div class="note">tagged, never blocked — that is your
-    call</div></td><td class="num">1,080</td></tr>
+    call</div></td><td class="num">1,102</td></tr>
 </table>
 </div>
 </div>
@@ -247,7 +247,7 @@ published address.</p>
 <table>
 <tr><th>Source</th><th>Independence class</th><th class="num">Records</th>
     <th>Status</th><th>Votes</th><th>Republished</th></tr>
-<tr><td>binary_defense</td><td>binary_defense</td><td class="num">3,301</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>blocklist_de</td><td>blocklist_de</td><td class="num">31,487</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>bruteforceblocker</td><td>bruteforceblocker</td><td class="num">545</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>cins_army</td><td>cins</td><td class="num">15,000</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>feodo_tracker<div class="note stale">upstream has not updated recently</div></td><td>abusech</td><td class="num">5</td><td><span class="pill warn">stale</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>greensnow</td><td>greensnow</td><td class="num">3,016</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>ipsum_levels</td><td>META_aggregate</td><td class="num">26,319</td><td><span class="pill ok">ok</span></td><td><span class="pill no">no</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>spamhaus_drop_v4</td><td>spamhaus</td><td class="num">1,687</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>spamhaus_drop_v6</td><td>spamhaus</td><td class="num">91</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>stopforumspam_toxic</td><td>stopforumspam</td><td class="num">60</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill no">scoring only</span></td></tr><tr><td>threatfox</td><td>abusech</td><td class="num">1,048</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>tor_exits</td><td>tor</td><td class="num">1,335</td><td><span class="pill ok">ok</span></td><td><span class="pill no">no</span></td><td><span class="pill ok">yes</span></td></tr>
+<tr><td>binary_defense</td><td>binary_defense</td><td class="num">3,301</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill no">scoring only</span></td></tr><tr><td>blocklist_de</td><td>blocklist_de</td><td class="num">31,488</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>bruteforceblocker</td><td>bruteforceblocker</td><td class="num">547</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>cins_army</td><td>cins</td><td class="num">14,999</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>feodo_tracker<div class="note stale">upstream has not updated recently</div></td><td>abusech</td><td class="num">5</td><td><span class="pill warn">stale</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>greensnow</td><td>greensnow</td><td class="num">3,025</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>ipsum_levels</td><td>META_aggregate</td><td class="num">26,319</td><td><span class="pill ok">ok</span></td><td><span class="pill no">no</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>spamhaus_drop_v4</td><td>spamhaus</td><td class="num">1,687</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>spamhaus_drop_v6</td><td>spamhaus</td><td class="num">91</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>stopforumspam_toxic</td><td>stopforumspam</td><td class="num">60</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill no">scoring only</span></td></tr><tr><td>threatfox</td><td>abusech</td><td class="num">1,048</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>tor_exits</td><td>tor</td><td class="num">1,336</td><td><span class="pill ok">ok</span></td><td><span class="pill no">no</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>turris_greylist</td><td>turris</td><td class="num">9,529</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill no">scoring only</span></td></tr>
 </table>
 <p class="note"><strong>Why "independence class" matters.</strong> Many public
 blocklists copy from each other, so counting files as votes manufactures false
@@ -349,6 +349,7 @@ function lookup(){
     return;
   }
   var band=hit[3], cls=hit[4], score=hit[2], label=hit[5], srcs=hit[6];
+  var rst=hit[7]||0;  // classes that corroborated under a non-redistributable licence
   var css = band==='high' ? 'hit-high' : 'hit-med';
   var head = band==='high'
     ? esc(q)+' is listed — high confidence'
@@ -360,6 +361,12 @@ function lookup(){
     advice='Safe to block. Reported by a high-precision source — a Spamhaus DROP '+
       'hijacked netblock or an active abuse.ch command-and-control server. Those '+
       'do not need a second opinion.';
+  } else if(band==='high' && rst>0){
+    // Some sources are licensed for our own use but not for republication, so we
+    // can count their agreement without naming them.
+    advice='Safe to block. Corroborated by '+(cls+rst)+' independent sources, '+
+      (rst===1?'one of which is':rst+' of which are')+' licensed for our own use '+
+      'but not for republication, so '+(rst===1?'it is':'they are')+' not named here.';
   } else if(band==='high'){
     advice='Safe to block. Corroborated by '+cls+' independent sources.';
   } else {
@@ -371,7 +378,8 @@ function lookup(){
     '<dl class="kv">'+
     '<dt>Matched entry</dt><dd><code>'+esc(label)+'</code></dd>'+
     '<dt>Score</dt><dd>'+score+' / 100</dd>'+
-    '<dt>Independent sources</dt><dd>'+cls+(cls===1?' (promoted)':'')+'</dd>'+
+    '<dt>Independent sources</dt><dd>'+(cls+rst)+(cls===1&&rst===0?' (promoted)':'')+
+      (rst>0?' <span class="note">('+rst+' unnamed)</span>':'')+'</dd>'+
     '<dt>Reported by</dt><dd>'+esc(srcs)+'</dd>'+
     '</dl>'+
     '<div class="note" style="margin-top:11px">Think this is wrong? '+
