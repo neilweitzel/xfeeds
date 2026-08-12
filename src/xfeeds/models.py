@@ -1,4 +1,5 @@
 import ipaddress
+import os
 from datetime import datetime
 from typing import Any
 
@@ -28,6 +29,7 @@ class SourceConfig(BaseModel):
     weight: float
     categories: list[str] = Field(default_factory=list)
     ttl_days: int = 14
+    timeout_seconds: int | None = None
     min_interval_seconds: int | None = None
     license: str | None = None
     license_url: str | None = None
@@ -46,8 +48,19 @@ class SourceConfig(BaseModel):
     params: dict[str, Any] | None = None
     cache_response: bool | None = None
     levels: list[int] | None = None
-    tag_only: bool | None = None
-    require_user_agent: bool | None = None
+    tag_only: bool = False
+    require_user_agent: bool = False
+
+    def resolved_auth_secret(self) -> str | None:
+        """Return this source's API key from the environment, or None if unset.
+
+        Secrets are never stored in config. A missing key is not an error at load
+        time - keyed sources are expected to skip cleanly when their key is
+        absent, so the pipeline still runs on the unauthenticated sources.
+        """
+        if not self.auth_secret:
+            return None
+        return os.environ.get(self.auth_secret) or None
 
 
 class AllowlistSourceConfig(BaseModel):
@@ -92,6 +105,12 @@ class Registry(BaseModel):
 
             if source.vote and source.weight == 0.0:
                 raise ValueError(f"Source {source.name} is a voting source but has weight 0.0")
+
+        for allowlist_source in self.allowlist_sources:
+            if allowlist_source.parser not in VALID_PARSERS:
+                raise ValueError(
+                    f"Unknown parser '{allowlist_source.parser}' for allowlist source {allowlist_source.name}"
+                )
 
         return self
 
