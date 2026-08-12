@@ -71,7 +71,7 @@ Deliberately **not** used: `netaddr` (stdlib `ipaddress` suffices), `orjson`/`pa
 
 Configured entirely in [`sources.yaml`](sources.yaml). Adding a source means adding a YAML entry and, if the format is new, a parser — never a pipeline change.
 
-**Nine independent voting classes.** Each is a distinct sensor network, reporter community, or research team.
+**Nine independent voting classes**, each a distinct sensor network, reporter community, or research team. Seven are active on a fresh clone — AbuseIPDB and ThreatFox ship disabled until their free API keys are in repo secrets, so the pipeline must be correct without them and simply gain accuracy when they're added.
 
 | Source | Class | Weight | Volume | Notes |
 |---|---|---|---|---|

@@ -141,7 +141,9 @@ Note that Feodo Tracker currently carries **5 IPs** and a last-updated header of
 | ET compromised-ips | `bruteforceblocker` | ❌ disabled | ❌ | — |
 | DShield | `dshield` | ❌ disabled | ❌ licence | — |
 
-Nine voting classes. Every one is a distinct sensor network, reporter community, or research team.
+**Nine voting classes are defined; seven are active on a fresh clone.** `abuseipdb` and the ThreatFox member of `abusech` ship disabled until their free API keys are in repo secrets. The pipeline must therefore be correct with seven classes and gain accuracy — not change behaviour — when the remaining two are enabled. `xfeeds validate` prints the active class count so this is never ambiguous.
+
+Every class is a distinct sensor network, reporter community, or research team.
 
 ---
 
@@ -169,6 +171,8 @@ Exponential saturation means one loud source can never alone produce a "block th
 | 3 | 1,656 (3.1%) | high |
 | 4 | 214 (0.4%) | high |
 | 5+ | 43 (0.1%) | high |
+
+Measured across the seven currently-active classes, so these are floor figures — enabling AbuseIPDB and ThreatFox moves IPs up, never down.
 
 Total unique across non-Tor voting sources: **54,241**. At ≥2 classes: **12,207**. At ≥3: **1,913**.
 
