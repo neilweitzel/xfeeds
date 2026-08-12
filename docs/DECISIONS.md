@@ -293,7 +293,7 @@ Probed a further 20 candidate feeds looking for additional independent classes.
 | C2IntelFeeds | 243 | GitHub reports `NOASSERTION` — no explicit licence grant. Good data, no permission to republish. |
 | montysecurity/C2-Tracker | — | No licence file. |
 | dataplane.org | — | Redistribution expressly prohibited (ADR-030). |
-| Turris Sentinel | ~9,700 | CC BY-NC-SA 4.0 (ADR-030). |
+| Turris Sentinel | ~9,700 | CC BY-NC-SA 4.0 (ADR-030). **Superseded by ADR-035**: now enabled as a scoring-only source. |
 | ELLIO community | — | Now requires authentication; the open CDN endpoint is retired. |
 | botvrij.eu | 4 | Too small to matter. |
 | blocklist.de strongips | 346 | Same operator as `blocklist_de` — shares its class, adds nothing. |
@@ -328,9 +328,147 @@ needs to block bad IPs and has no threat intelligence platform to do it with:
 - Copy buttons on every command, per-source failure reasons surfaced inline, and
   entry counts against every download so the tiers are self-explanatory.
 
+## Restricted sources may upgrade a band, never admit a record (ADR-035)
+
+**Status:** accepted (2026-08-12)
+
+The `vote` / `redistribute` split already lets a source corroborate without its
+rows being emitted. Reviewed under that lens, the Turris Sentinel greylist —
+excluded outright in ADR-030 for being CC BY-NC-SA — becomes usable for scoring.
+
+Why it is worth the trouble, measured rather than assumed:
+
+- 9,529–9,719 addresses from the CZ.NIC Turris consumer-router sensor network: a
+  different vantage point from the server-side honeypots that dominate our set.
+- Overlap with our published feed is **7.7%** (548 exact, 203 inside a published
+  CIDR). It is not a reshuffle of data we already have.
+- It corroborates **477 of 1,837** medium-confidence records.
+
+**The licensing reasoning.** NonCommercial is satisfied; we do not sell. ShareAlike
+attaches when you *Share* Adapted Material, and vote-only use shares nothing. The
+CC 4.0 database provision makes a database Adapted Material when it contains "all
+or a substantial portion of the database contents"; a numeric confidence
+adjustment contains none of it.
+
+**The gap that reasoning leaves.** A vote can still change *whether* a record is
+published, because one class is withheld and two is medium. If a Turris vote
+lifted a record from withheld to medium, our decision to publish that address
+would have been caused by a list we may not republish, and the feed would disclose
+greylist membership one address at a time.
+
+**Decision.** Restricted classes are excluded from the count that admits a record
+and may only upgrade one that already qualifies: medium → high, never withheld →
+medium. Three containments, all enforced in code and tested:
+
+1. `_band()` counts only redistributable classes toward the publication threshold.
+2. Restricted source names and classes are stripped from published records,
+   replaced by a `restricted_corroboration` count. Publishing `turris` against an
+   address would disclose the very membership the licence protects.
+3. `filters.py` continues to drop any record with no redistributable source.
+
+Measured on a live run with identical inputs, the rule behaves exactly as intended:
+enabling Turris moved **high 1,903 → 2,398 (+495)** while leaving the total
+published count **unchanged at 3,721**. Upgrades only, no admissions. That
+invariant is the test worth keeping.
+
+Rejected: full voting rights (larger recall gain, but the publish decision becomes
+attributable to a restricted list) and precision-only use (no confidence gain).
+
+## Binary Defense is not redistributable either (ADR-036)
+
+**Status:** accepted (2026-08-12)
+
+Found during the ADR-035 review. `binary_defense` was configured with
+`license: "Free for non-commercial use"`, `license_risk: medium`, and no
+`redistribute` flag — so it defaulted to **true**. `stopforumspam_toxic` carries
+materially the same non-commercial term and was correctly set to `false`, with the
+reasoning that we cannot impose a non-commercial restriction on downstream
+consumers of a public feed.
+
+Two sources, the same term, opposite treatment. The permissive one was wrong.
+
+`redistribute: false`. This costs real coverage — published records fall from
+3,721 to **3,019 (−702)** because records whose only corroboration came from
+Binary Defense no longer reach two redistributable classes. It is still the right
+call: those are precisely the records we had no clear licence to publish. Binary
+Defense keeps voting and can still upgrade a band under ADR-035.
+
+Reversible in one line if the terms are ever confirmed as permitting
+redistribution, which is now tracked as an open item.
+
+## A source that misses a run keeps voting, decayed (ADR-037)
+
+**Status:** accepted (2026-08-12)
+
+`recency_factor()` was **inert in production**. Scoring only ever saw records
+collected in the current run, so `last_seen` was always today and the factor was
+always 1.00. Verified against the live feed: 4,240 of 4,240 published records had
+`last_seen == today`. The decay curve was computed, tested, and never applied, and
+the per-source `ttl_days` values were close to decorative.
+
+The consequence was not wrong output but brittle output. A source having a bad
+fetch day took its whole independence class with it and silently demoted every
+record that depended on it. The churn guard catches this when a large source fails
+(losing Spamhaus is 40% of the feed, over the 25% limit) but not a smaller one —
+GreenSnow is 21% and would pass while quietly demoting records.
+
+**Decision.** State now persists per-source sighting dates, and
+`carried_observations()` re-casts a vote from any source that missed the current
+run, at the decayed weight `recency_factor` produces, until that source's
+`ttl_days` expires. Bounded, so nothing accumulates.
+
+Two limits keep it honest:
+
+- Only indicators reported by *some* source in the current run are eligible.
+  Nothing is resurrected; the feed still contains only addresses somebody reports
+  today.
+- Carried observations cannot promote. Promotion asserts that a source's word alone
+  is enough, which requires it to be saying so now rather than up to 30 days ago.
+
+On a cold CI cache the sighting map cannot be rebuilt from `feeds/all.json`, so no
+votes are carried on the first run afterwards. That under-reports confidence rather
+than over-reporting it, which is the correct direction to fail.
+
+## No independent retention window; 90 days would be harmful (ADR-038)
+
+**Status:** accepted (2026-08-12)
+
+Asked how long an address should live on the list, with 90 days proposed.
+
+Publication is already source-driven and stays that way: an address leaves the feed
+on the next run after its last source stops reporting it. Effective retention for
+publication is zero days. `ttl_days` governs vote decay (ADR-037) and state
+accounting, not membership.
+
+The measurement literature is consistent and points away from long windows:
+
+- 86.4% of blocklisted IPs are short-lived offenders, averaging about one week of
+  presence ([A Decade of Mal-Activity Reporting, AsiaCCS 2019](https://internetmaliciousactivity.github.io/submission/asiaccs2019_accepted_paper.pdf)).
+- Blocklisted addresses are removed within ~9 days on average; **dynamically
+  allocated addresses within ~3 days**. Reused addresses can sit in lists for up to
+  **44 days** and affect as many as **78 legitimate users**; ~60% of blocklists
+  contain at least one NATed address ([Quantifying the Impact of Blocklisting in the Age of Address Reuse, IMC 2020](https://www.isi.edu/people-mirkovic/wp-content/uploads/sites/52/2023/10/imc2020.pdf)).
+
+A 90-day window would hold entries roughly 10× longer than the median offender
+stays active, squarely inside the range where ISP reassignment turns an entry into
+a false positive against a residential customer. For a feed whose audience will
+drop traffic on it without a review step, that is the wrong direction.
+
+The counter-argument is real but does not change the decision: the most recurrent
+offenders have a ~5.5 week report cycle, so aggressive delisting does lose repeat
+infrastructure. That argues for *remembering* history, not for *publishing* stale
+entries — which `first_seen` retention already provides.
+
+Per-source TTLs stay short and differentiated: 7d abuse.ch C2 and Turris, 10d
+brute-force sensors, 30d Spamhaus DROP (hijacked netblocks are a slow structural
+signal), 2d Tor.
+
+
 ## Open items
 
 - [ ] Confirm AbuseIPDB redistribution terms in writing; flip `redistribute` if permitted.
 - [ ] Decide whether a separately-licensed NC-SA feed variant is worth shipping to reclaim DShield.
 - [ ] Free-tier GreyNoise API keys require a business email address; a personal-domain account may be limited to unauthenticated lookups (~10/day). Confirm what tier is actually obtainable before wiring GreyNoise enrichment in Phase 2b.
 - [ ] Evaluate ELLIO community feed and dataplane.org as additional independent classes.
+- [ ] Confirm whether Binary Defense's terms permit redistribution; ADR-036 is reversible in one line if so.
+- [ ] Re-check DShield: independent and PGP-signed, but `block.txt` is only the top 20 /24 subnets, so it is not worth a collector at that volume.

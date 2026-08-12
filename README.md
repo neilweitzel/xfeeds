@@ -110,6 +110,8 @@ score = 100 × (1 − exp(−raw))
 
 One vote per class, and exponential saturation, so no single source can alone reach the top band. Spamhaus DROP membership and active abuse.ch C2 listings promote directly — justified by precision rather than agreement.
 
+Only classes we are licensed to republish count toward the threshold that admits a record. Sources under a non-redistributable licence (currently AbuseIPDB, Binary Defense, StopForumSpam and the Turris Sentinel greylist) can raise a record from medium to high, but can never bring one into the feed on their own, and their names are withheld from published records so the feed cannot disclose their membership. See ADR-035.
+
 Measured against live data on 2026-08-11, of 54,241 unique candidate IPs:
 
 | Distinct classes | IPs | Share | Band |
@@ -180,6 +182,14 @@ tool for triaging a false-positive report.
 - **Redistribution flags enforced in code.** Sources marked `redistribute: false` inform scoring and never reach an emitter.
 - **Provenance always.** No IP ships without a named source in `all.json`.
 - **Staleness detection.** A source whose last-updated header exceeds 30 days raises a warning, so a dead upstream is never mistaken for a quiet internet.
+
+### How long an address stays listed
+
+**Only while a source still reports it.** An address leaves the feed on the next run after its last source delists it — there is no independent retention window, and nothing is held for 30, 60 or 90 days.
+
+This is deliberate. Around 86% of blocklisted addresses are short-lived offenders averaging about a week of activity, and dynamically allocated addresses are typically delisted upstream within three days ([AsiaCCS 2019](https://internetmaliciousactivity.github.io/submission/asiaccs2019_accepted_paper.pdf), [IMC 2020](https://www.isi.edu/people-mirkovic/wp-content/uploads/sites/52/2023/10/imc2020.pdf)). Holding entries longer mostly accumulates addresses that have since been reassigned to somebody innocent: reused addresses have been measured sitting in public blocklists for up to 44 days, affecting as many as 78 legitimate users. If you are going to drop traffic on this feed without reviewing it, that is the failure mode that matters.
+
+What we do keep is history. `first_seen` survives delisting and re-listing, so a repeat offender is visible as one, and `ttl_days` lets a source's vote decay gracefully rather than vanish if that source misses a fetch (ADR-037).
 
 ---
 

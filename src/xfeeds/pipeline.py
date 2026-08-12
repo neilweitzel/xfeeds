@@ -23,7 +23,7 @@ from xfeeds.emit import append_history, build_manifest, emit_all
 from xfeeds.filters import apply_filters
 from xfeeds.models import Band, IndicatorRecord, Registry, ScoredIndicator
 from xfeeds.score import score_indicators
-from xfeeds.state import load_state, merge_with_state, save_state
+from xfeeds.state import carried_observations, load_state, merge_with_state, save_state
 
 logger = structlog.get_logger(__name__)
 
@@ -202,9 +202,14 @@ def run(
     report.source_status = status
     report.warnings = warnings
 
-    scored = score_indicators(records, registry, observed_on)
-
+    # State is loaded before scoring so a source that missed this run can still
+    # vote, at a weight decayed by how long ago it last saw the address. Only
+    # addresses something reported in this run are eligible; see
+    # carried_observations.
     previous = load_state()
+    carried = carried_observations(records, previous, registry, observed_on)
+    scored = score_indicators(records + carried, registry, observed_on)
+
     previous_high = sum(1 for r in previous.values() if r.band is Band.HIGH)
     previously_published = {k for k, v in previous.items() if v.band is not Band.WITHHELD}
     ageing = merge_with_state(scored, previous, registry, observed_on)
@@ -215,6 +220,7 @@ def run(
 
     report.counts = {
         "collected": len(records),
+        "carried_forward": len(carried),
         "indicators": len(scored),
         "published": len(publishable),
         "high": high_count,
@@ -254,7 +260,7 @@ def run(
     emit_all(publishable, registry, manifest, now, feeds_dir=feeds_dir)
     # Compact state, including withheld sightings so a second independent source
     # can promote them later.
-    save_state(kept)
+    save_state(kept, records + carried)
     append_history(feeds_dir / "history.json", manifest)
     (feeds_dir / "run-report.txt").write_text(report.summary() + "\n", encoding="utf-8")
 

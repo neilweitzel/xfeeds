@@ -171,6 +171,7 @@ function lookup(){
     return;
   }
   var band=hit[3], cls=hit[4], score=hit[2], label=hit[5], srcs=hit[6];
+  var rst=hit[7]||0;  // classes that corroborated under a non-redistributable licence
   var css = band==='high' ? 'hit-high' : 'hit-med';
   var head = band==='high'
     ? esc(q)+' is listed — high confidence'
@@ -182,6 +183,12 @@ function lookup(){
     advice='Safe to block. Reported by a high-precision source — a Spamhaus DROP '+
       'hijacked netblock or an active abuse.ch command-and-control server. Those '+
       'do not need a second opinion.';
+  } else if(band==='high' && rst>0){
+    // Some sources are licensed for our own use but not for republication, so we
+    // can count their agreement without naming them.
+    advice='Safe to block. Corroborated by '+(cls+rst)+' independent sources, '+
+      (rst===1?'one of which is':rst+' of which are')+' licensed for our own use '+
+      'but not for republication, so '+(rst===1?'it is':'they are')+' not named here.';
   } else if(band==='high'){
     advice='Safe to block. Corroborated by '+cls+' independent sources.';
   } else {
@@ -193,7 +200,8 @@ function lookup(){
     '<dl class="kv">'+
     '<dt>Matched entry</dt><dd><code>'+esc(label)+'</code></dd>'+
     '<dt>Score</dt><dd>'+score+' / 100</dd>'+
-    '<dt>Independent sources</dt><dd>'+cls+(cls===1?' (promoted)':'')+'</dd>'+
+    '<dt>Independent sources</dt><dd>'+(cls+rst)+(cls===1&&rst===0?' (promoted)':'')+
+      (rst>0?' <span class="note">('+rst+' unnamed)</span>':'')+'</dd>'+
     '<dt>Reported by</dt><dd>'+esc(srcs)+'</dd>'+
     '</dl>'+
     '<div class="note" style="margin-top:11px">Think this is wrong? '+
@@ -364,6 +372,7 @@ def build_lookup_index(records: list[ScoredIndicator]) -> dict[str, Any]:
                 len(r.independence_classes),
                 str(item),
                 ", ".join(r.sources),
+                r.restricted_corroboration,
             ]
         )
     return {"v": 1, "r": rows}

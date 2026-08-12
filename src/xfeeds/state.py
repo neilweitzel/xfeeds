@@ -19,7 +19,7 @@ from pathlib import Path
 
 import structlog
 
-from xfeeds.models import Band, Registry, ScoredIndicator
+from xfeeds.models import Band, IndicatorRecord, Registry, ScoredIndicator
 
 logger = structlog.get_logger(__name__)
 
@@ -44,6 +44,12 @@ class StateEntry:
     last_seen: datetime
     band: Band
     class_count: int
+    sightings: dict[str, datetime] = field(default_factory=dict)
+    """Per-source date of last sighting, used to carry a vote through an outage.
+
+    Kept per *source* rather than per class because the decay window is the
+    source's own ttl_days.
+    """
 
 
 @dataclass
@@ -57,14 +63,31 @@ class AgeingResult:
     aged_out: int = 0
 
 
-def save_state(records: list[ScoredIndicator], path: Path = STATE_PATH) -> None:
+def save_state(
+    records: list[ScoredIndicator],
+    observations: list[IndicatorRecord] | None = None,
+    path: Path = STATE_PATH,
+) -> None:
     """Persist compact state.
 
     Deliberately minimal: only what the next run cannot recompute. Storing full
     provenance for every withheld single-source sighting produced a 24 MB file
     per run, which would bloat the repository within weeks. Short keys keep it
     small enough that git deltas stay cheap.
+
+    ``observations`` carries the per-source sighting dates that
+    :func:`carried_observations` needs on the next run. Without them a source that
+    misses a fetch cannot be distinguished from a source that dropped the address
+    deliberately.
     """
+    sightings: dict[str, dict[str, str]] = {}
+    for observation in observations or []:
+        key = str(observation.ip_or_cidr)
+        current = sightings.setdefault(key, {})
+        stamp = observation.last_seen.isoformat()
+        if stamp > current.get(observation.source, ""):
+            current[observation.source] = stamp
+
     payload = {
         "version": 1,
         "note": "Compact run state. Published artifacts are all.json and the .txt feeds.",
@@ -74,6 +97,7 @@ def save_state(records: list[ScoredIndicator], path: Path = STATE_PATH) -> None:
                 "l": r.last_seen.isoformat(),
                 "b": r.band.value,
                 "c": len(r.independence_classes),
+                "s": sightings.get(str(r.ip_or_cidr), {}),
             }
             for r in sorted(records, key=lambda r: r.sort_key())
         },
@@ -87,6 +111,10 @@ def _seed_from_published(path: Path = PUBLISHED_PATH) -> dict[str, StateEntry]:
 
     Used when the CI cache is cold. Everything we have ever published carries its
     own first_seen in all.json, so the visible history is preserved.
+
+    Per-source sightings are not recoverable this way, so ``sightings`` is empty
+    and no votes are carried on the first run after a cold cache. That is the safe
+    direction to fail: it under-reports confidence rather than over-reporting it.
     """
     if not path.exists():
         return {}
@@ -129,11 +157,70 @@ def load_state(path: Path = STATE_PATH) -> dict[str, StateEntry]:
                 last_seen=datetime.fromisoformat(raw["l"]),
                 band=Band(raw["b"]),
                 class_count=int(raw.get("c", 0)),
+                sightings={
+                    name: datetime.fromisoformat(stamp)
+                    for name, stamp in (raw.get("s") or {}).items()
+                },
             )
         except (KeyError, ValueError) as e:
             logger.warning("state_entry_invalid", key=key, error=str(e))
     logger.info("state_loaded", indicators=len(entries))
     return entries
+
+
+def carried_observations(
+    fresh: list[IndicatorRecord],
+    previous: dict[str, StateEntry],
+    registry: Registry,
+    now: datetime,
+) -> list[IndicatorRecord]:
+    """Re-cast recent sightings from sources that missed the current run.
+
+    Feeds are frequently briefly unavailable, and until now a source dropping out
+    took its whole independence class with it, silently demoting every record that
+    relied on it. Here a source that saw an address within its TTL keeps voting, at
+    the decayed weight ``recency_factor`` produces, until that TTL expires.
+
+    Two limits keep this honest:
+
+    * Only indicators some source reported *in this run* are eligible. With no
+      current evidence at all there is nothing to corroborate, so nothing is
+      resurrected: the feed still contains only addresses somebody reports today.
+    * Carried records are flagged, and a flagged record cannot promote.
+    """
+    by_source = {s.name: s for s in registry.sources if s.enabled and s.vote}
+    reported_now: dict[str, set[str]] = {}
+    for record in fresh:
+        reported_now.setdefault(str(record.ip_or_cidr), set()).add(record.source)
+
+    carried: list[IndicatorRecord] = []
+    for key, seen_by in sorted(reported_now.items()):
+        prior = previous.get(key)
+        if prior is None:
+            continue
+        for source_name, last_seen in sorted(prior.sightings.items()):
+            if source_name in seen_by:
+                continue
+            config = by_source.get(source_name)
+            if config is None or config.ttl_days <= 0:
+                continue
+            age_days = (now - last_seen).total_seconds() / 86400.0
+            if age_days <= 0.0 or age_days > config.ttl_days:
+                continue
+            carried.append(
+                IndicatorRecord(
+                    ip_or_cidr=key,  # type: ignore[arg-type]
+                    source=source_name,
+                    independence_class=config.independence_class,
+                    first_seen=prior.first_seen,
+                    last_seen=last_seen,
+                    categories=list(config.categories),
+                    carried=True,
+                )
+            )
+
+    logger.info("carried_forward", observations=len(carried))
+    return carried
 
 
 def merge_with_state(
