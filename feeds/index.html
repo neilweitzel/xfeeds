@@ -1,148 +1,386 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>xfeeds — public IP threat intelligence</title>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>xfeeds — free, corroborated IP block lists</title>
+<meta name="description" content="A free, automatically updated list of known-bad
+IP addresses, compiled from public threat intelligence and corroborated across
+independent sources.">
 <style>
-  :root {
-    --bg: #0d1117; --panel: #161b22; --line: #30363d;
-    --text: #e6edf3; --muted: #8b949e;
-    --high: #f85149; --medium: #d29922; --ok: #3fb950; --accent: #58a6ff;
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0; background: var(--bg); color: var(--text);
-    font: 15px/1.6 ui-sans-serif, -apple-system, "Segoe UI", Roboto, sans-serif;
-  }
-  .wrap { max-width: 1100px; margin: 0 auto; padding: 32px 20px 64px; }
-  header { border-bottom: 1px solid var(--line); padding-bottom: 20px; margin-bottom: 28px; }
-  h1 { margin: 0 0 6px; font-size: 26px; letter-spacing: -0.01em; }
-  h2 { font-size: 15px; text-transform: uppercase; letter-spacing: 0.08em;
-       color: var(--muted); margin: 36px 0 14px; font-weight: 600; }
-  .sub { color: var(--muted); margin: 0; }
-  a { color: var(--accent); text-decoration: none; }
-  a:hover { text-decoration: underline; }
-  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
-  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px; }
-  .card .n { font-size: 30px; font-weight: 650; line-height: 1.1; }
-  .card .l { color: var(--muted); font-size: 13px; margin-top: 4px; }
-  .high { color: var(--high); } .medium { color: var(--medium); } .ok { color: var(--ok); }
-  table { width: 100%; border-collapse: collapse; font-size: 14px; }
-  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); }
-  th { color: var(--muted); font-weight: 600; font-size: 12px;
-        text-transform: uppercase; letter-spacing: 0.05em; }
-  td.num { text-align: right; font-variant-numeric: tabular-nums; }
-  .pill { display: inline-block; padding: 1px 8px; border-radius: 999px;
-           font-size: 12px; border: 1px solid var(--line); }
-  .pill.ok { color: var(--ok); border-color: #1f6f3d; }
-  .pill.warn { color: var(--medium); border-color: #6b5117; }
-  .pill.bad { color: var(--high); border-color: #7d2b28; }
-  .pill.no { color: var(--muted); }
-  code { background: var(--panel); border: 1px solid var(--line);
-          padding: 2px 6px; border-radius: 5px; font-size: 13px; }
-  pre { background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
-         padding: 14px; overflow-x: auto; font-size: 13px; }
-  .bar { display: flex; height: 10px; border-radius: 5px; overflow: hidden; background: var(--panel); }
-  .bar span { display: block; height: 100%; }
-  .note { color: var(--muted); font-size: 13px; }
-  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
-  @media (max-width: 760px) { .grid2 { grid-template-columns: 1fr; } }
-  svg text { fill: var(--muted); font-size: 10px; }
-</style>
-</head>
-<body>
-<div class="wrap">
+:root{--bg:#0d1117;--panel:#161b22;--panel2:#1c2129;--line:#30363d;--text:#e6edf3;
+--muted:#8b949e;--high:#f85149;--med:#d29922;--ok:#3fb950;--accent:#58a6ff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);
+font:15px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:1080px;margin:0 auto;padding:34px 20px 72px}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+header{border-bottom:1px solid var(--line);padding-bottom:22px;margin-bottom:30px}
+h1{margin:0 0 6px;font-size:28px;letter-spacing:-.02em}
+h2{font-size:13px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);
+margin:40px 0 14px;font-weight:600}
+h3{font-size:15px;margin:20px 0 8px}
+.sub{color:var(--muted);margin:0}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:15px}
+.card .n{font-size:29px;font-weight:650;line-height:1.1;font-variant-numeric:tabular-nums}
+.card .l{color:var(--muted);font-size:12.5px;margin-top:3px}
+.high{color:var(--high)}.med{color:var(--med)}.ok{color:var(--ok)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:600;font-size:11.5px;text-transform:uppercase;
+letter-spacing:.05em}
+td.num{text-align:right;font-variant-numeric:tabular-nums}
+.pill{display:inline-block;padding:1px 8px;border-radius:999px;font-size:11.5px;
+border:1px solid var(--line);white-space:nowrap}
+.pill.ok{color:var(--ok);border-color:#1f6f3d}
+.pill.warn{color:var(--med);border-color:#6b5117}
+.pill.bad{color:var(--high);border-color:#7d2b28}
+.pill.no{color:var(--muted)}
+code{background:var(--panel);border:1px solid var(--line);padding:2px 6px;
+border-radius:5px;font-size:13px}
+pre{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:13px;
+overflow-x:auto;font-size:12.5px;margin:0;position:relative}
+pre code{background:none;border:none;padding:0}
+.bar{display:flex;height:9px;border-radius:5px;overflow:hidden;background:var(--panel2)}
+.bar span{display:block;height:100%}
+.note{color:var(--muted);font-size:13px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:30px}
+svg text{fill:var(--muted);font-size:10px}
+.tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:-1px}
+.tab{padding:7px 13px;border:1px solid var(--line);border-bottom:none;
+border-radius:7px 7px 0 0;background:var(--panel2);color:var(--muted);cursor:pointer;
+font-size:13.5px}
+.tab[aria-selected=true]{background:var(--panel);color:var(--text);
+box-shadow:inset 0 2px 0 var(--accent)}
+.panel{border:1px solid var(--line);border-radius:0 8px 8px 8px;padding:16px;
+background:var(--panel)}
+.panel pre{background:var(--panel2)}
+#look{display:flex;gap:8px;flex-wrap:wrap}
+#ip{flex:1;min-width:220px;background:var(--panel);border:1px solid var(--line);
+color:var(--text);padding:11px 13px;border-radius:8px;font-size:15px;
+font-family:ui-monospace,monospace}
+#ip:focus{outline:none;border-color:var(--accent)}
+#go{background:var(--accent);color:#06121f;border:0;padding:11px 22px;border-radius:8px;
+font-weight:650;cursor:pointer;font-size:14.5px}
+#go:hover{filter:brightness(1.1)}
+#res{margin-top:14px}
+.verdict{border:1px solid var(--line);border-radius:9px;padding:15px;background:var(--panel)}
+.verdict.hit-high{border-color:#7d2b28;background:#1b1113}
+.verdict.hit-med{border-color:#6b5117;background:#1b1710}
+.verdict.miss{border-color:#1f6f3d;background:#101a13}
+.vt{font-size:17px;font-weight:650;margin-bottom:6px}
+.kv{display:grid;grid-template-columns:130px 1fr;gap:3px 12px;font-size:13.5px;margin-top:10px}
+.kv dt{color:var(--muted)}.kv dd{margin:0}
+.copy{position:absolute;top:7px;right:7px;background:var(--panel2);border:1px solid var(--line);
+color:var(--muted);border-radius:6px;padding:3px 9px;font-size:11.5px;cursor:pointer}
+.copy:hover{color:var(--text);border-color:var(--accent)}
+.stale{color:var(--med)}
+@media(max-width:760px){.grid2{grid-template-columns:1fr}.kv{grid-template-columns:1fr}}
+</style></head><body><div class="wrap">
+
 <header>
-  <h1>xfeeds</h1>
-  <p class="sub">Corroborated public IP threat intelligence, rebuilt every 6 hours ·
-     <a href="https://github.com/neilweitzel/xfeeds">source</a></p>
-  <p class="sub" style="margin-top:6px">Last run: <strong>2026-08-12 19:34:35 UTC</strong></p>
+<h1>xfeeds</h1>
+<p class="sub">A free list of known-bad IP addresses you can drop straight into a
+firewall. Compiled from public threat intelligence, rebuilt every 6 hours, and
+filtered so only addresses that <strong>independent sources agree on</strong> get
+published.</p>
+<p class="sub" style="margin-top:8px">Updated 2026-08-12 20:03 UTC
+· <a href="https://github.com/neilweitzel/xfeeds">source and docs</a></p>
 </header>
 
 <div class="cards">
-  <div class="card"><div class="n high">2,389</div><div class="l">high confidence</div></div>
-  <div class="card"><div class="n medium">1,835</div><div class="l">medium confidence</div></div>
-  <div class="card"><div class="n">92%</div><div class="l">withheld (single source)</div></div>
-  <div class="card"><div class="n ok">11/12</div><div class="l">sources healthy</div></div>
-  <div class="card"><div class="n">+492 / −2</div><div class="l">change this run</div></div>
+<div class="card"><div class="n high">2,403</div>
+  <div class="l">safe to block</div></div>
+<div class="card"><div class="n med">1,837</div>
+  <div class="l">worth challenging</div></div>
+<div class="card"><div class="n">92%</div>
+  <div class="l">rejected as uncorroborated</div></div>
+<div class="card"><div class="n ok">11/12</div>
+  <div class="l">sources healthy</div></div>
+<div class="card"><div class="n">+37 /
+  &minus;21</div>
+  <div class="l">changed this run</div></div>
 </div>
 
-<h2>Feed size over time</h2>
-<svg viewBox="0 0 1040 90" width="100%" height="90" role="img" aria-label="trend"><polygon points="24,66 24.0,65.1 222.4,65.1 420.8,65.1 619.2,66.0 817.6,66.0 1016.0,24.0 1016.0,66" fill="#f85149" opacity="0.13"/><polyline points="24.0,65.1 222.4,65.1 420.8,65.1 619.2,66.0 817.6,66.0 1016.0,24.0" fill="none" stroke="#f85149" stroke-width="2"/><text x="24" y="12">2026-08-12</text><text x="1016" y="12" text-anchor="end">2026-08-12</text><text x="24" y="84">min 1,896</text><text x="1016" y="84" text-anchor="end">max 2,389</text></svg>
+<h2>Check an address</h2>
+<div id="look">
+  <input id="ip" type="text" placeholder="e.g. 45.33.32.156" spellcheck="false"
+         autocomplete="off" aria-label="IP address to check">
+  <button id="go">Check</button>
+</div>
+<div id="res"></div>
+<p class="note" style="margin-top:10px">Runs entirely in your browser. Nothing is
+sent anywhere, and no query is logged.</p>
 
-<h2>Additions and removals per run</h2>
-<svg viewBox="0 0 1040 110" width="100%" height="110" role="img" aria-label="additions and removals"><rect x="20.0" y="20.0" width="100.0" height="35.0" fill="#3fb950" opacity="0.85"/><rect x="186.7" y="55.0" width="100.0" height="0.0" fill="#3fb950" opacity="0.85"/><rect x="186.7" y="55.0" width="100.0" height="0.0" fill="#f85149" opacity="0.85"/><rect x="353.3" y="54.9" width="100.0" height="0.1" fill="#3fb950" opacity="0.85"/><rect x="353.3" y="55.0" width="100.0" height="0.0" fill="#f85149" opacity="0.85"/><rect x="520.0" y="51.8" width="100.0" height="3.2" fill="#3fb950" opacity="0.85"/><rect x="520.0" y="55.0" width="100.0" height="3.4" fill="#f85149" opacity="0.85"/><rect x="686.7" y="55.0" width="100.0" height="0.0" fill="#3fb950" opacity="0.85"/><rect x="686.7" y="55.0" width="100.0" height="0.0" fill="#f85149" opacity="0.85"/><rect x="853.3" y="50.4" width="100.0" height="4.6" fill="#3fb950" opacity="0.85"/><rect x="853.3" y="55.0" width="100.0" height="0.0" fill="#f85149" opacity="0.85"/><line x1="20" y1="55.0" x2="1020" y2="55.0" stroke="#30363d" stroke-width="1"/><text x="20" y="12">added</text><text x="20" y="106">removed</text></svg>
+<h2>Set it up</h2>
+<div class="tabs" role="tablist">
+  <button class="tab" role="tab" aria-selected="true" data-panel="p-lin">Linux</button>
+  <button class="tab" role="tab" aria-selected="false" data-panel="p-nft">nftables</button>
+  <button class="tab" role="tab" aria-selected="false" data-panel="p-pf">pfSense / OPNsense</button>
+  <button class="tab" role="tab" aria-selected="false" data-panel="p-mt">MikroTik</button>
+  <button class="tab" role="tab" aria-selected="false" data-panel="p-cf">Cloudflare</button>
+  <button class="tab" role="tab" aria-selected="false" data-panel="p-tip">SIEM / TIP</button>
+</div>
+
+<div class="panel">
+<div class="tabpanel" id="p-lin">
+<h3>iptables with ipset</h3>
+<p class="note">Loads the list into an ipset and drops matching traffic. Re-run the
+first command from cron every 6 hours to stay current.</p>
+<pre><code>curl -sS https://neilweitzel.github.io/xfeeds/iptables.ipset | sudo ipset restore -!
+sudo iptables -I INPUT -m set --match-set xfeeds src -j DROP</code></pre>
+<h3>Keep it updated</h3>
+<pre><code># /etc/cron.d/xfeeds
+17 */6 * * * root curl -sS https://neilweitzel.github.io/xfeeds/iptables.ipset | ipset restore -!</code></pre>
+</div>
+
+<div class="tabpanel" id="p-nft" hidden>
+<h3>nftables</h3>
+<pre><code>curl -sSO https://neilweitzel.github.io/xfeeds/nftables.conf
+sudo nft -f nftables.conf</code></pre>
+<p class="note">Then reference the set in your ruleset:</p>
+<pre><code>nft add rule inet filter input ip saddr @blocklist4 drop</code></pre>
+</div>
+
+<div class="tabpanel" id="p-pf" hidden>
+<h3>pfSense or OPNsense</h3>
+<p class="note">Both can fetch a URL table on a schedule — no scripting needed.</p>
+<pre><code>Firewall &rarr; Aliases &rarr; Add
+  Type: URL Table (IPs)
+  URL:  https://neilweitzel.github.io/xfeeds/high-confidence.txt
+  Update frequency: 1 day
+
+Then Firewall &rarr; Rules &rarr; WAN &rarr; Add
+  Action: Block
+  Source: the alias you just created</code></pre>
+</div>
+
+<div class="tabpanel" id="p-mt" hidden>
+<h3>MikroTik RouterOS</h3>
+<pre><code>/tool fetch url="https://neilweitzel.github.io/xfeeds/high-confidence.txt" dst-path=xfeeds.txt
+/import file-name=xfeeds.txt</code></pre>
+<p class="note">Or use an address list with a scheduled script. Note that RouterOS
+does not skip <code>#</code> comment lines automatically — strip them first.</p>
+</div>
+
+<div class="tabpanel" id="p-cf" hidden>
+<h3>Cloudflare</h3>
+<p class="note">Create an IP Access Rule list from the feed. The free plan caps
+custom lists, so the high-confidence tier is the right one to use.</p>
+<pre><code>curl -sS https://neilweitzel.github.io/xfeeds/high-confidence.txt | grep -v '^#' &gt; xfeeds.txt
+# Then: Cloudflare dashboard &rarr; Manage Account &rarr; Configurations
+#       &rarr; Lists &rarr; Create new list &rarr; upload xfeeds.txt</code></pre>
+</div>
+
+<div class="tabpanel" id="p-tip" hidden>
+<h3>MISP</h3>
+<pre><code>Sync Actions &rarr; Feeds &rarr; Add Feed
+  Input Source: Network
+  Format: MISP
+  URL: https://neilweitzel.github.io/xfeeds/misp-manifest.json</code></pre>
+<h3>OpenCTI, Elastic and other STIX consumers</h3>
+<pre><code>https://neilweitzel.github.io/xfeeds/stix-bundle.json</code></pre>
+<h3>Splunk, Sentinel, or a spreadsheet</h3>
+<pre><code>https://neilweitzel.github.io/xfeeds/all.csv</code></pre>
+</div>
+</div>
+
+<h2>All downloads</h2>
+<table>
+<tr><th>File</th><th>What it is</th><th class="num">Entries</th></tr>
+<tr><td><a href="high-confidence.txt">high-confidence.txt</a></td>
+    <td>Safe to block. Corroborated across independent sources.</td>
+    <td class="num">2,403</td></tr>
+<tr><td><a href="medium-confidence.txt">medium-confidence.txt</a></td>
+    <td>Two independent sources. Challenge or rate-limit rather than drop.</td>
+    <td class="num">1,837</td></tr>
+<tr><td><a href="all.csv">all.csv</a></td>
+    <td>Both tiers with scores, sources and dates.</td>
+    <td class="num">4,240</td></tr>
+<tr><td><a href="all.json">all.json</a></td><td>Full provenance per address.</td>
+    <td class="num">4,240</td></tr>
+<tr><td><a href="stix-bundle.json">stix-bundle.json</a></td><td>STIX 2.1 bundle.</td>
+    <td class="num">2,403</td></tr>
+<tr><td><a href="misp-manifest.json">misp-manifest.json</a></td><td>MISP feed.</td>
+    <td class="num">2,403</td></tr>
+<tr><td><a href="nftables.conf">nftables.conf</a></td><td>nftables sets.</td>
+    <td class="num">2,403</td></tr>
+<tr><td><a href="iptables.ipset">iptables.ipset</a></td><td>ipset restore format.</td>
+    <td class="num">2,403</td></tr>
+<tr><td><a href="manifest.json">manifest.json</a></td>
+    <td>Run metadata, per-source status and licences.</td><td class="num">—</td></tr>
+<tr><td><a href="history.json">history.json</a></td><td>Per-run history.</td>
+    <td class="num">7</td></tr>
+</table>
+
+<h2>Safe-to-block list over time</h2>
+<svg viewBox="0 0 1020 92" width="100%" height="92" role="img" aria-label="feed size over time"><polygon points="24,68 24.0,67.0 186.0,67.0 348.0,67.0 510.0,68.0 672.0,68.0 834.0,25.2 996.0,24.0 996.0,68" fill="#f85149" opacity="0.13"/><polyline points="24.0,67.0 186.0,67.0 348.0,67.0 510.0,68.0 672.0,68.0 834.0,25.2 996.0,24.0" fill="none" stroke="#f85149" stroke-width="2"/><text x="24" y="12">2026-08-12</text><text x="996" y="12" text-anchor="end">2026-08-12</text><text x="24" y="87">low 1,896</text><text x="996" y="87" text-anchor="end">high 2,403</text></svg>
+
+<h2>Added and removed each run</h2>
+<svg viewBox="0 0 1020 108" width="100%" height="108" role="img" aria-label="additions and removals per run"><rect x="20.0" y="20.0" width="86.8" height="34.0" fill="#3fb950" opacity="0.85"/><rect x="160.0" y="54.0" width="86.8" height="0.0" fill="#3fb950" opacity="0.85"/><rect x="160.0" y="54.0" width="86.8" height="0.0" fill="#f85149" opacity="0.85"/><rect x="300.0" y="53.9" width="86.8" height="0.1" fill="#3fb950" opacity="0.85"/><rect x="300.0" y="54.0" width="86.8" height="0.0" fill="#f85149" opacity="0.85"/><rect x="440.0" y="50.9" width="86.8" height="3.1" fill="#3fb950" opacity="0.85"/><rect x="440.0" y="54.0" width="86.8" height="3.3" fill="#f85149" opacity="0.85"/><rect x="580.0" y="54.0" width="86.8" height="0.0" fill="#3fb950" opacity="0.85"/><rect x="580.0" y="54.0" width="86.8" height="0.0" fill="#f85149" opacity="0.85"/><rect x="720.0" y="49.6" width="86.8" height="4.4" fill="#3fb950" opacity="0.85"/><rect x="720.0" y="54.0" width="86.8" height="0.0" fill="#f85149" opacity="0.85"/><rect x="860.0" y="53.7" width="86.8" height="0.3" fill="#3fb950" opacity="0.85"/><rect x="860.0" y="54.0" width="86.8" height="0.2" fill="#f85149" opacity="0.85"/><line x1="20" y1="54.0" x2="1000" y2="54.0" stroke="#30363d"/><text x="20" y="12">added</text><text x="20" y="104">removed</text></svg>
 
 <div class="grid2">
 <div>
-<h2>Corroboration</h2>
-<p class="note">How many <em>independent</em> source families reported each published
-address. Three or more is the safe-to-block tier.</p>
-<table><tr><th>Corroboration</th><th class="num">Addresses</th><th></th></tr><tr><td>1 independent source <span class="note">(high-precision source, promoted)</span></td><td class="num">2,269</td><td style="width:45%"><div class="bar"><span style="width:53.7%;background:#d29922"></span></div></td></tr><tr><td>2 independent sources</td><td class="num">1,838</td><td style="width:45%"><div class="bar"><span style="width:43.5%;background:#d29922"></span></div></td></tr><tr><td>3 independent sources</td><td class="num">105</td><td style="width:45%"><div class="bar"><span style="width:2.5%;background:#3fb950"></span></div></td></tr><tr><td>4 independent sources</td><td class="num">12</td><td style="width:45%"><div class="bar"><span style="width:0.3%;background:#3fb950"></span></div></td></tr></table><p class="note">2,273 of these were promoted by a single high-precision source — Spamhaus DROP hijacked netblocks and active abuse.ch command-and-control servers do not need a second opinion. Everything else required agreement across independent sources.</p>
+<h2>How much agreement</h2>
+<p class="note">How many <em>independent</em> source families reported each
+published address.</p>
+<table><tr><th>Independent sources</th><th class="num">Addresses</th><th></th></tr><tr><td>1 source <span class="note">— promoted, high precision</span></td><td class="num">2,283</td><td style="width:42%"><div class="bar"><span style="width:53.8%;background:#d29922"></span></div></td></tr><tr><td>2 sources</td><td class="num">1,840</td><td style="width:42%"><div class="bar"><span style="width:43.4%;background:#d29922"></span></div></td></tr><tr><td>3 sources</td><td class="num">105</td><td style="width:42%"><div class="bar"><span style="width:2.5%;background:#3fb950"></span></div></td></tr><tr><td>4 sources</td><td class="num">12</td><td style="width:42%"><div class="bar"><span style="width:0.3%;background:#3fb950"></span></div></td></tr></table><p class="note">2,287 were promoted by a single high-precision source — Spamhaus DROP hijacked netblocks and active abuse.ch command-and-control servers do not need a second opinion. Everything else required agreement across independent sources.</p>
 </div>
 <div>
-<h2>Downloads</h2>
+<h2>What got filtered out</h2>
 <table>
-<tr><th>File</th><th>Use</th></tr>
-<tr><td><a href="high-confidence.txt">high-confidence.txt</a></td><td>firewall block list</td></tr>
-<tr><td><a href="medium-confidence.txt">medium-confidence.txt</a></td><td>challenge / rate-limit</td></tr>
-<tr><td><a href="all.csv">all.csv</a></td><td>MISP, OpenCTI, Splunk</td></tr>
-<tr><td><a href="all.json">all.json</a></td><td>full provenance</td></tr>
-<tr><td><a href="stix-bundle.json">stix-bundle.json</a></td><td>STIX 2.1 for TIPs</td></tr>
-<tr><td><a href="nftables.conf">nftables.conf</a></td><td>nftables sets</td></tr>
-<tr><td><a href="iptables.ipset">iptables.ipset</a></td><td>ipset restore</td></tr>
-<tr><td><a href="manifest.json">manifest.json</a></td><td>run metadata</td></tr>
+<tr><th>Rule</th><th class="num">Dropped</th></tr>
+<tr><td>On the allowlist<div class="note">cloud, CDN, crawlers, public
+    resolvers</div></td><td class="num">4,124</td></tr>
+<tr><td>Prefix too wide<div class="note">one bad /8 can black-hole an
+    ISP</div></td><td class="num">8</td></tr>
+<tr><td>Private or reserved</td>
+    <td class="num">0</td></tr>
+<tr><td>Licence<div class="note">evidence came only from sources we may not
+    republish</div></td><td class="num">51</td></tr>
+<tr><td>Tor exits<div class="note">tagged, never blocked — that is your
+    call</div></td><td class="num">1,080</td></tr>
 </table>
-<pre>curl -sS https://neilweitzel.github.io/xfeeds/high-confidence.txt \
-  | grep -v '^#' | sudo ipset restore -!</pre>
 </div>
 </div>
 
-<h2>Sources</h2>
+<h2>Where the data comes from</h2>
 <table>
 <tr><th>Source</th><th>Independence class</th><th class="num">Records</th>
-    <th>Status</th><th>Vote</th><th>Redistributed</th></tr>
-<tr><td>binary_defense</td><td>binary_defense</td><td class="num">3,301</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>blocklist_de</td><td>blocklist_de</td><td class="num">31,649</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>bruteforceblocker</td><td>bruteforceblocker</td><td class="num">545</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>cins_army</td><td>cins</td><td class="num">15,000</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>feodo_tracker</td><td>abusech</td><td class="num">5</td><td><span class="pill warn">stale</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>greensnow</td><td>greensnow</td><td class="num">3,028</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>ipsum_levels</td><td>META_aggregate</td><td class="num">26,319</td><td><span class="pill ok">ok</span></td><td><span class="pill no">no</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>spamhaus_drop_v4</td><td>spamhaus</td><td class="num">1,687</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>spamhaus_drop_v6</td><td>spamhaus</td><td class="num">91</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>stopforumspam_toxic</td><td>stopforumspam</td><td class="num">60</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill no">scoring only</span></td></tr><tr><td>threatfox</td><td>abusech</td><td class="num">1,026</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>tor_exits</td><td>tor</td><td class="num">1,334</td><td><span class="pill ok">ok</span></td><td><span class="pill no">no</span></td><td><span class="pill ok">yes</span></td></tr>
+    <th>Status</th><th>Votes</th><th>Republished</th></tr>
+<tr><td>binary_defense</td><td>binary_defense</td><td class="num">3,301</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>blocklist_de</td><td>blocklist_de</td><td class="num">31,487</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>bruteforceblocker</td><td>bruteforceblocker</td><td class="num">545</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>cins_army</td><td>cins</td><td class="num">15,000</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>feodo_tracker<div class="note stale">upstream has not updated recently</div></td><td>abusech</td><td class="num">5</td><td><span class="pill warn">stale</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>greensnow</td><td>greensnow</td><td class="num">3,016</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>ipsum_levels</td><td>META_aggregate</td><td class="num">26,319</td><td><span class="pill ok">ok</span></td><td><span class="pill no">no</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>spamhaus_drop_v4</td><td>spamhaus</td><td class="num">1,687</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>spamhaus_drop_v6</td><td>spamhaus</td><td class="num">91</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>stopforumspam_toxic</td><td>stopforumspam</td><td class="num">60</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill no">scoring only</span></td></tr><tr><td>threatfox</td><td>abusech</td><td class="num">1,048</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>tor_exits</td><td>tor</td><td class="num">1,335</td><td><span class="pill ok">ok</span></td><td><span class="pill no">no</span></td><td><span class="pill ok">yes</span></td></tr>
 </table>
-<p class="note">
-  <strong>Independence matters.</strong> Many public blocklists copy from each other,
-  so counting files as votes manufactures false confidence. Sources that share
-  upstream data share a class, and each class votes at most once.
-  Sources marked <em>scoring only</em> inform confidence but their data is never
-  republished here, because their licences do not permit it.
-</p>
-
-<h2>Safety filters applied this run</h2>
-<table>
-<tr><th>Rule</th><th class="num">Dropped</th><th>Why it exists</th></tr>
-<tr><td>allowlist</td><td class="num">4,126</td>
-    <td>cloud, CDN, crawler and resolver ranges must never be blocked</td></tr>
-<tr><td>CIDR too wide</td><td class="num">8</td>
-    <td>a single over-broad prefix can black-hole an entire ISP</td></tr>
-<tr><td>non-global</td><td class="num">0</td>
-    <td>private and reserved space is never publishable</td></tr>
-<tr><td>licence</td><td class="num">51</td>
-    <td>evidence came only from sources we may not republish</td></tr>
-<tr><td>annotation only</td><td class="num">1,077</td>
-    <td>Tor exits are tagged, never blocked — that is the consumer's choice</td></tr>
-</table>
+<p class="note"><strong>Why "independence class" matters.</strong> Many public
+blocklists copy from each other, so counting files as votes manufactures false
+confidence. Sources that share upstream data share a class, and each class votes
+at most once. Sources marked <em>scoring only</em> help decide what is malicious,
+but their data is never republished here because their licences do not allow it.</p>
 
 <h2>Licensing</h2>
-<p class="note">
-  xfeeds compiles publicly available feeds and is not sold. Sources whose terms
-  forbid redistribution, or attach ShareAlike obligations, are either used for
-  scoring only or excluded outright — Spamhaus attribution travels with the data
-  as its terms require. See
-  <a href="https://github.com/neilweitzel/xfeeds/blob/main/docs/DECISIONS.md">DECISIONS.md</a> for the
-  per-source reasoning.
-</p>
+<p class="note">xfeeds compiles publicly available feeds and is not sold. Feeds
+whose terms forbid redistribution, or attach ShareAlike obligations, are either
+used for scoring only or excluded outright. Spamhaus attribution travels with the
+data as its terms require, and every published file names its contributing
+sources. Full per-source reasoning is in
+<a href="https://github.com/neilweitzel/xfeeds/blob/main/docs/DECISIONS.md">DECISIONS.md</a>.</p>
 
-<p class="note" style="margin-top:36px">
-  Found a false positive? <a href="https://github.com/neilweitzel/xfeeds/issues">Open an issue</a> — those are
-  triaged first. To see why any address is listed, run
-  <code>xfeeds explain &lt;ip&gt;</code>.
-</p>
+<h2>False positives</h2>
+<p class="note">No block list is perfect. If an address here is legitimate,
+<a href="https://github.com/neilweitzel/xfeeds/issues">open an issue</a> — those are triaged ahead of
+everything else, and confirmed mistakes are added to a permanent allowlist so
+they cannot come back.</p>
+
+<p class="note" style="margin-top:34px;border-top:1px solid var(--line);padding-top:18px">
+Provided as-is with no warranty. Test against your own traffic before blocking in
+production.</p>
+
 </div>
-</body>
-</html>
+<script>var PROJECT="https://github.com/neilweitzel/xfeeds";
+// Tabbed setup guides.
+document.querySelectorAll('.tab').forEach(function(t){
+  t.addEventListener('click', function(){
+    document.querySelectorAll('.tab').forEach(function(x){x.setAttribute('aria-selected','false')});
+    document.querySelectorAll('.tabpanel').forEach(function(x){x.hidden=true});
+    t.setAttribute('aria-selected','true');
+    document.getElementById(t.dataset.panel).hidden=false;
+  });
+});
+
+// Copy buttons on every code block.
+document.querySelectorAll('pre').forEach(function(pre){
+  var b=document.createElement('button');
+  b.className='copy'; b.textContent='copy';
+  b.addEventListener('click', function(){
+    navigator.clipboard.writeText(pre.querySelector('code').innerText);
+    b.textContent='copied'; setTimeout(function(){b.textContent='copy'},1400);
+  });
+  pre.appendChild(b);
+});
+
+// IP lookup. Loads a compact index once, on first use, so the page stays fast.
+var IDX=null, LOADING=false;
+function ipToInt(s){
+  var p=s.split('.'); if(p.length!==4) return null;
+  var n=0;
+  for(var i=0;i<4;i++){
+    var o=Number(p[i]);
+    if(!Number.isInteger(o)||o<0||o>255||p[i]==='') return null;
+    n=n*256+o;
+  }
+  return n;
+}
+function render(html){document.getElementById('res').innerHTML=html;}
+function esc(s){return String(s).replace(/[&<>]/g,function(c){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c];});}
+
+function lookup(){
+  var q=document.getElementById('ip').value.trim();
+  if(!q){render('');return;}
+  var n=ipToInt(q);
+  if(n===null){
+    render('<div class="verdict"><div class="vt">Not a valid IPv4 address</div>'+
+      '<div class="note">Enter something like 45.33.32.156.</div></div>');
+    return;
+  }
+  if(!IDX){
+    if(LOADING) return;
+    LOADING=true;
+    render('<div class="verdict"><div class="vt">Loading index…</div></div>');
+    fetch('lookup.json').then(function(r){return r.json();}).then(function(d){
+      IDX=d; LOADING=false; lookup();
+    }).catch(function(){
+      LOADING=false;
+      render('<div class="verdict"><div class="vt">Could not load the index</div>'+
+        '<div class="note">Try <code>curl -s '+
+        'https://neilweitzel.github.io/xfeeds/high-confidence.txt | grep '+esc(q)+
+        '</code></div></div>');
+    });
+    return;
+  }
+  var hit=null;
+  for(var i=0;i<IDX.r.length;i++){
+    var e=IDX.r[i];
+    if(n>=e[0] && n<=e[1]){hit=e;break;}
+  }
+  if(!hit){
+    render('<div class="verdict miss"><div class="vt">'+esc(q)+
+      ' is not in the feed</div><div class="note">It was either never reported, '+
+      'reported by only one independent source (so it was withheld), or removed '+
+      'by a safety filter such as the allowlist.</div></div>');
+    return;
+  }
+  var band=hit[3], cls=hit[4], score=hit[2], label=hit[5], srcs=hit[6];
+  var css = band==='high' ? 'hit-high' : 'hit-med';
+  var head = band==='high'
+    ? esc(q)+' is listed — high confidence'
+    : esc(q)+' is listed — medium confidence';
+  // Be precise about WHY it qualified. "1 independent source" next to
+  // "corroborated" reads like a contradiction; promotion is a different route.
+  var advice;
+  if(band==='high' && cls===1){
+    advice='Safe to block. Reported by a high-precision source — a Spamhaus DROP '+
+      'hijacked netblock or an active abuse.ch command-and-control server. Those '+
+      'do not need a second opinion.';
+  } else if(band==='high'){
+    advice='Safe to block. Corroborated by '+cls+' independent sources.';
+  } else {
+    advice='Reported by '+cls+' independent source'+(cls===1?'':'s')+'. Consider '+
+      'challenging or rate-limiting rather than blocking outright.';
+  }
+  render('<div class="verdict '+css+'"><div class="vt">'+head+'</div>'+
+    '<div class="note">'+advice+'</div>'+
+    '<dl class="kv">'+
+    '<dt>Matched entry</dt><dd><code>'+esc(label)+'</code></dd>'+
+    '<dt>Score</dt><dd>'+score+' / 100</dd>'+
+    '<dt>Independent sources</dt><dd>'+cls+(cls===1?' (promoted)':'')+'</dd>'+
+    '<dt>Reported by</dt><dd>'+esc(srcs)+'</dd>'+
+    '</dl>'+
+    '<div class="note" style="margin-top:11px">Think this is wrong? '+
+    '<a href="'+PROJECT+'/issues/new?title=False+positive:+'+encodeURIComponent(q)+
+    '">Report it as a false positive</a> — those are triaged first.</div></div>');
+}
+document.getElementById('go').addEventListener('click',lookup);
+document.getElementById('ip').addEventListener('keydown',function(e){
+  if(e.key==='Enter') lookup();
+});
+</script>
+</body></html>
