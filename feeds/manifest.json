@@ -10,39 +10,57 @@
     "stopforumspam"
   ],
   "corroboration_histogram": {
-    "1": 1779,
-    "2": 1839,
-    "3": 104,
+    "1": 2269,
+    "2": 1838,
+    "3": 105,
     "4": 12
   },
   "counts": {
-    "high": 1896,
-    "medium": 1838,
-    "promoted": 1780,
-    "published": 3734,
-    "withheld": 50170
+    "high": 2389,
+    "medium": 1835,
+    "promoted": 2273,
+    "published": 4224,
+    "withheld": 50330
   },
   "deltas": {
-    "added": 2,
+    "added": 492,
     "added_examples": [
-      "139.28.219.70",
-      "84.240.4.242"
+      "1.92.135.168",
+      "102.165.46.31",
+      "102.220.160.58",
+      "103.140.154.7",
+      "103.146.231.107",
+      "103.158.191.249",
+      "103.213.248.61",
+      "103.214.146.46",
+      "103.249.116.184",
+      "103.27.78.14",
+      "103.67.163.6",
+      "103.83.86.143",
+      "103.83.86.215",
+      "104.164.46.182",
+      "104.238.57.23",
+      "104.239.66.130",
+      "104.239.66.207",
+      "104.239.66.245",
+      "104.239.66.95",
+      "104.243.248.63"
     ],
     "removed": 2,
     "removed_examples": [
-      "103.251.59.98",
-      "121.148.71.200"
+      "103.66.198.234",
+      "152.52.198.42"
     ]
   },
   "filters": {
-    "allowlisted": 4113,
+    "allowlisted": 4126,
     "examples": {
       "allowlisted": [
         "172.70.206.0/23",
         "172.70.214.0/23",
-        "104.154.147.43",
-        "104.155.154.215",
-        "104.155.70.187"
+        "35.209.195.28",
+        "34.92.128.98",
+        "34.11.43.142"
       ],
       "not_redistributable": [
         "103.81.182.0/24",
@@ -71,7 +89,7 @@
     "tag_only": 1077,
     "too_wide": 8
   },
-  "generated_at": "2026-08-12T19:29:39.061897+00:00",
+  "generated_at": "2026-08-12T19:34:35.281845+00:00",
   "project": "https://github.com/neilweitzel/xfeeds",
   "sources": {
     "binary_defense": {
@@ -89,7 +107,7 @@
       "weight": 0.6
     },
     "blocklist_de": {
-      "cached": false,
+      "cached": true,
       "error": null,
       "independence_class": "blocklist_de",
       "last_modified": "2026-08-12T19:24:02+00:00",
@@ -106,7 +124,7 @@
       "cached": false,
       "error": null,
       "independence_class": "bruteforceblocker",
-      "last_modified": "2026-08-12T19:28:53+00:00",
+      "last_modified": "2026-08-12T19:33:55+00:00",
       "license": null,
       "license_risk": null,
       "license_url": null,
@@ -148,11 +166,11 @@
       "cached": false,
       "error": null,
       "independence_class": "greensnow",
-      "last_modified": "2026-08-12T19:29:42+00:00",
+      "last_modified": "2026-08-12T19:34:38+00:00",
       "license": null,
       "license_risk": null,
       "license_url": "https://blocklist.greensnow.co/",
-      "records": 3027,
+      "records": 3028,
       "redistributable": true,
       "status": "ok",
       "votes": true,
@@ -212,6 +230,19 @@
       "status": "ok",
       "votes": true,
       "weight": 0.5
+    },
+    "threatfox": {
+      "cached": false,
+      "error": null,
+      "independence_class": "abusech",
+      "license": null,
+      "license_risk": null,
+      "license_url": null,
+      "records": 1026,
+      "redistributable": true,
+      "status": "ok",
+      "votes": true,
+      "weight": 1.0
     },
     "tor_exits": {
       "cached": false,
