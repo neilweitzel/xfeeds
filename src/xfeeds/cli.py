@@ -1,22 +1,40 @@
 from collections import defaultdict
 from pathlib import Path
+from typing import Annotated
 
 import typer
+import yaml
 from pydantic import ValidationError
 
 from xfeeds.config import get_active_voting_classes, load_registry
+from xfeeds.log import configure_logging
 from xfeeds.models import SourceConfig
 
-app = typer.Typer(help="xfeeds: A self-updating, open threat intelligence feed.", no_args_is_help=True)
+app = typer.Typer(
+    help="xfeeds: A self-updating, open threat intelligence feed.", no_args_is_help=True
+)
+
+
+@app.callback()
+def callback() -> None:
+    pass
 
 
 @app.command()
 def validate(
-    config_file: Path = typer.Option(
-        Path("sources.yaml"), "--config", "-c", help="Path to sources.yaml"
-    ),
+    config_file: Annotated[
+        Path | None,
+        typer.Option(
+            "--config",
+            "-c",
+            help="Path to sources.yaml",
+        ),
+    ] = None,
 ) -> None:
     """Load and validate the sources configuration."""
+    if config_file is None:
+        config_file = Path(__file__).resolve().parents[2] / "sources.yaml"
+    configure_logging()
     try:
         registry = load_registry(config_file)
     except FileNotFoundError:
@@ -26,7 +44,7 @@ def validate(
         typer.secho("Validation Error in sources.yaml:", fg=typer.colors.RED)
         print(e)
         raise typer.Exit(code=1)
-    except Exception as e:
+    except (yaml.YAMLError, OSError) as e:
         typer.secho(f"Error loading configuration: {e}", fg=typer.colors.RED)
         raise typer.Exit(code=1)
 
@@ -59,7 +77,3 @@ def validate(
 
 if __name__ == "__main__":
     app()
-@app.command()
-def run() -> None:
-    """Dummy command to make typer create a subcommand group."""
-    pass
