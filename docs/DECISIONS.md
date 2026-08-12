@@ -281,6 +281,53 @@ Two related robustness fixes came out of enabling this:
   deliberately do **not** get this fallback: silently serving stale threat data
   is exactly what the staleness warning exists to catch.
 
+## Source expansion review, 2026-08-12 (ADR-033)
+
+Probed a further 20 candidate feeds looking for additional independent classes.
+**None were added.** Recording why, so the same ground is not re-covered:
+
+| Candidate | Volume | Verdict |
+|---|---|---|
+| `borestad/blocklist-abuseipdb` | 112,780 | **Rejected on principle.** A third-party republication of AbuseIPDB data. AbuseIPDB's terms restrict redistributing their blacklist; consuming someone else's copy would launder a restriction we have already chosen to respect. Volume is not a reason to do that. |
+| Ultimate.Hosts.Blacklist | 148,838 | Mega-aggregate of dozens of lists including several we already ingest. Would be a `META_aggregate`, not a new class — exactly the double-counting ADR-011 exists to prevent. |
+| C2IntelFeeds | 243 | GitHub reports `NOASSERTION` — no explicit licence grant. Good data, no permission to republish. |
+| montysecurity/C2-Tracker | — | No licence file. |
+| dataplane.org | — | Redistribution expressly prohibited (ADR-030). |
+| Turris Sentinel | ~9,700 | CC BY-NC-SA 4.0 (ADR-030). |
+| ELLIO community | — | Now requires authentication; the open CDN endpoint is retired. |
+| botvrij.eu | 4 | Too small to matter. |
+| blocklist.de strongips | 346 | Same operator as `blocklist_de` — shares its class, adds nothing. |
+| Project Honeypot, interserver, CleanTalk, 3CORESec, TweetFeed, CyberCure, James Brine | — | Dead endpoints, HTML-only, or no parseable IP list. |
+
+The conclusion is uncomfortable but real: **the set of IP feeds that are both
+independent and freely redistributable is small, and xfeeds already has most of
+it.** Growth comes from three directions, none of which is "add more public lists":
+
+1. Keyed free sources with usable terms — ThreatFox (done), AbuseIPDB (pending).
+2. Original telemetry — the Phase 3 honeypot would be a class nobody else has.
+3. Better use of what we have — enrichment, ASN clustering, confidence tuning.
+
+Padding the list with aggregates would inflate the headline count while making the
+independence model *less* accurate. That trade is not worth making.
+
+## Dashboard rebuilt around the reader (ADR-034)
+
+The first dashboard reported on the project. The rewrite serves the person who
+needs to block bad IPs and has no threat intelligence platform to do it with:
+
+- **In-page IP lookup.** Paste an address, get a verdict, the score, how many
+  independent sources reported it, and a pre-filled false-positive link. Backed by
+  a compact `lookup.json` of integer ranges (~300 KB, ~3,600 entries) fetched only
+  on first use, so a CIDR match works the same as a single address. Runs entirely
+  client-side — no query leaves the browser, which matters because the addresses
+  people check are often their own.
+- **Copy-paste setup for real platforms** — iptables/ipset, nftables,
+  pfSense/OPNsense, MikroTik, Cloudflare, MISP/OpenCTI — in tabs, with a cron line
+  for staying current. This is the difference between a dataset and a tool for the
+  stated audience.
+- Copy buttons on every command, per-source failure reasons surfaced inline, and
+  entry counts against every download so the tiers are self-explanatory.
+
 ## Open items
 
 - [ ] Confirm AbuseIPDB redistribution terms in writing; flip `redistribute` if permitted.
