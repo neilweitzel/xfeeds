@@ -19,14 +19,22 @@ concurrency:
   group: update-feeds
   cancel-in-progress: true
 
+# Pages permissions are needed because this workflow deploys the site itself.
+# A push made with GITHUB_TOKEN does NOT trigger other workflows - GitHub blocks
+# that to prevent recursion - so relying on pages.yml to fire on our own commit
+# would leave the published dashboard permanently stale.
 permissions:
   contents: write
   issues: write
+  pages: write
+  id-token: write
 
 jobs:
   refresh:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    outputs:
+      changed: ${{ steps.commit.outputs.changed }}
     steps:
       - uses: actions/checkout@v7
 
@@ -62,6 +70,7 @@ jobs:
           echo "exit_code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
 
       - name: Commit refreshed feeds
+        id: commit
         if: steps.refresh.outputs.exit_code == '0'
         run: |
           git config user.name  "github-actions[bot]"
@@ -69,8 +78,10 @@ jobs:
           git add feeds/
           if git diff --cached --quiet; then
             echo "No change in feeds; nothing to commit."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
+          echo "changed=true" >> "$GITHUB_OUTPUT"
           ADDED=$(grep -oP '\+\K[0-9]+(?= / -)' run.log | head -1 || echo 0)
           REMOVED=$(grep -oP '/ -\K[0-9]+' run.log | head -1 || echo 0)
           git commit -m "chore(feeds): refresh $(date -u +%Y-%m-%dT%H:%MZ) (+${ADDED}/-${REMOVED})"
@@ -126,3 +137,29 @@ jobs:
               });
             }
             core.setFailed(`xfeeds run exited ${code}`);
+
+  # Deploy from inside this workflow rather than depending on pages.yml, which a
+  # GITHUB_TOKEN push cannot trigger.
+  deploy-pages:
+    needs: refresh
+    if: needs.refresh.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main   # pick up the commit the refresh job just pushed
+
+      - name: Prepare site
+        run: |
+          mkdir -p _site
+          cp -r feeds/* _site/
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4
