@@ -37,6 +37,7 @@ VALID_PARSERS = {
     "spamhaus_asn_json",
     "spamhaus_json",
     "threatfox_api",
+    "turris_greylist",
 }
 
 
@@ -153,6 +154,14 @@ class IndicatorRecord(BaseModel):
     last_seen: datetime
     categories: list[str]
     tags: list[str] = Field(default_factory=list)
+    carried: bool = False
+    """Synthesised from prior state because this source missed the current run.
+
+    A carried observation votes at a decayed weight so that a transient upstream
+    outage degrades confidence smoothly instead of dropping a whole independence
+    class. It deliberately cannot promote: promotion asserts "safe to block on
+    this source's word alone", which requires the source to be saying it now.
+    """
 
 
 class ScoredIndicator(BaseModel):
@@ -170,6 +179,15 @@ class ScoredIndicator(BaseModel):
     last_seen: datetime
     promoted_by: str | None = None
     """Set when a high-precision source bypassed the corroboration threshold."""
+    restricted_corroboration: int = 0
+    """Count of independence classes that corroborated under a licence forbidding
+    redistribution.
+
+    Their names are deliberately omitted. Publishing "turris" against an address
+    would disclose that the address is on the Turris greylist, which is the thing
+    their licence does not let us republish. The count conveys the strength of the
+    corroboration without republishing their membership.
+    """
 
     def sort_key(self) -> tuple[int, int, int]:
         """Integer sort key.

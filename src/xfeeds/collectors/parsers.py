@@ -1,3 +1,5 @@
+import csv
+import io
 import ipaddress
 import json
 from collections.abc import Iterator
@@ -372,6 +374,64 @@ def threatfox_api(
 
 
 # Register implemented parsers using their function names to avoid duplicating the list
+def turris_greylist(
+    content: bytes, config: SourceConfig, fetch_time: datetime
+) -> Iterator[IndicatorRecord]:
+    """Parse the Turris Sentinel greylist CSV (``Address,Tags``).
+
+    The tag column names the protocol the sensor network saw being abused, which
+    maps onto our category vocabulary and so onto severity. Tag values are
+    sometimes quoted and multi-valued.
+
+    Note that this source is consumed under CC BY-NC-SA and is configured with
+    ``redistribute: false``; the scorer keeps its name out of published output.
+    """
+    tag_categories = {
+        "telnet": "brute-force",
+        "ssh": "ssh-attack",
+        "http": "web-attack",
+        "https": "web-attack",
+        "ftp": "brute-force",
+        "smtp": "spam-source",
+        "haas": "ssh-attack",
+        "portscan": "scanning",
+    }
+    malformed_count = 0
+    non_global_count = 0
+
+    reader = csv.reader(io.StringIO(content.decode("utf-8", errors="replace")))
+    for row in reader:
+        if not row:
+            continue
+        address = row[0].strip()
+        if not address or address.startswith("#") or address == "Address":
+            continue
+        try:
+            ip_or_cidr = ipaddress.ip_address(address)
+        except ValueError:
+            malformed_count += 1
+            continue
+        if not _is_global(ip_or_cidr):
+            non_global_count += 1
+            continue
+
+        raw_tags = row[1] if len(row) > 1 else ""
+        seen = [t.strip().strip('"').lower() for t in raw_tags.replace("\n", ",").split(",")]
+        categories = sorted({tag_categories[t] for t in seen if t in tag_categories})
+
+        yield IndicatorRecord(
+            ip_or_cidr=ip_or_cidr,
+            source=config.name,
+            independence_class=config.independence_class,
+            first_seen=fetch_time,
+            last_seen=fetch_time,
+            categories=categories or list(config.categories),
+            tags=sorted({f"turris-{t}" for t in seen if t}),
+        )
+
+    _log_skips(config.name, malformed_count, non_global_count)
+
+
 _IMPLEMENTED = [
     threatfox_api,
     plain_text,
@@ -382,6 +442,7 @@ _IMPLEMENTED = [
     dshield,
     bruteforceblocker,
     ipsum_levels,
+    turris_greylist,
 ]
 
 PARSERS = {}

@@ -160,9 +160,14 @@ sources:
     require_user_agent: true
     license: "Free for non-commercial use per Artillery/Banlist terms"
     license_risk: medium
+    redistribute: false
     notes: >
       3,300 IPs. Returns 301 to an HTML page without a browser-like User-Agent -
       the collector MUST send the configured UA and MUST reject text/html responses.
+      NOT redistributed. The terms are non-commercial, and we cannot impose that on
+      downstream consumers of a public feed - the same reasoning already applied to
+      stopforumspam_toxic. Corrected in ADR-036 after review found the two sources
+      carried materially similar terms but opposite redistribute flags.
 
   - name: bruteforceblocker
     url: https://danger.rulez.sk/projects/bruteforceblocker/blist.php
@@ -281,21 +286,28 @@ sources:
 
   - name: turris_greylist
     url: https://view.sentinel.turris.cz/greylist-data/greylist-latest.csv
-    parser: plain_text
+    parser: turris_greylist
     independence_class: turris
-    weight: 0.0
-    vote: false
-    redistribute: false
-    enabled: false
+    weight: 0.7
+    categories: [brute-force, scanning]
+    ttl_days: 7
     license: "CC BY-NC-SA 4.0"
     license_url: https://view.sentinel.turris.cz/greylist-data/LICENSE.txt
     license_risk: high
+    attribution_required: true
+    redistribute: false
     notes: >
-      DISABLED on licensing grounds. ~9,700 IPs from the Turris router sensor
-      network - genuinely independent and technically attractive - but licensed
-      CC BY-NC-SA 4.0. ShareAlike would attach viral terms to any output derived
-      from it, so it is excluded entirely rather than merely un-redistributed.
-      (parser is a placeholder; the source is never fetched)
+      ~9,700 addresses from the CZ.NIC Turris router sensor network. A genuinely
+      different vantage point from the server-side honeypots that dominate the rest
+      of the set: measured overlap with our published feed is only 7.7%, and it
+      corroborates 477 of 1,837 medium-confidence records.
+      Was disabled outright on licensing grounds (ADR-030). Re-enabled as a
+      SCORING-ONLY source in ADR-035 once the vote/redistribute split was shown to
+      contain the risk: CC BY-NC-SA ShareAlike attaches on *Sharing* adapted
+      material, and we never share any of it. Three containments apply - the rows
+      are never emitted, the source name is withheld from published records so the
+      feed cannot disclose greylist membership, and a restricted class may only
+      upgrade medium to high, never admit a record on its own.
 
   - name: dataplane_sshpwauth
     url: https://dataplane.org/sshpwauth.txt

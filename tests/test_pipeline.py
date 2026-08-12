@@ -26,7 +26,7 @@ from xfeeds.models import (
     SourceConfig,
 )
 from xfeeds.score import recency_factor, score_indicators
-from xfeeds.state import StateEntry, merge_with_state
+from xfeeds.state import StateEntry, carried_observations, merge_with_state
 
 NOW = datetime(2026, 8, 12, tzinfo=UTC)
 
@@ -375,3 +375,193 @@ def test_threat_feeds_never_silently_fall_back_to_stale_data() -> None:
     assert cfg.allow_stale_fallback is False
     result = _failure_or_stale(cfg, b"1.2.3.4", {"last_fetch_time": 0}, "HTTP 500", 500)
     assert result.success is False
+
+
+# --------------------------------------------------------------------------
+# Restricted (non-redistributable) corroboration: ADR-035
+# --------------------------------------------------------------------------
+
+
+def _restricted_source(name: str, cls: str, weight: float, redistribute: bool) -> SourceConfig:
+    return SourceConfig(
+        name=name,
+        url="https://example.invalid/x",
+        parser="plain_text",
+        independence_class=cls,
+        weight=weight,
+        ttl_days=10,
+        redistribute=redistribute,
+    )
+
+
+def _registry_with_restricted() -> Registry:
+    """Two redistributable classes plus one we may consume but not republish."""
+    return Registry(
+        version=1,
+        defaults=DefaultsConfig(),
+        sources=[
+            _restricted_source("open_a", "a", 0.8, True),
+            _restricted_source("open_b", "b", 0.8, True),
+            _restricted_source("open_c", "c", 0.8, True),
+            _restricted_source("restricted", "restricted", 0.7, False),
+        ],
+        allowlist_sources=[],
+    )
+
+
+def _obs(source: str, cls: str, when: datetime, ip: str = "203.0.113.7") -> IndicatorRecord:
+    return IndicatorRecord(
+        ip_or_cidr=ipaddress.ip_address(ip),
+        source=source,
+        independence_class=cls,
+        first_seen=when,
+        last_seen=when,
+        categories=["scanning"],
+    )
+
+
+def test_restricted_source_cannot_admit_a_withheld_record() -> None:
+    """One open class plus one restricted class must stay withheld.
+
+    This is the load-bearing licensing guarantee. If a restricted vote could lift a
+    record into the feed, our decision to publish would have been caused by a list
+    we are not allowed to republish.
+    """
+    now = datetime(2026, 8, 12, tzinfo=UTC)
+    registry = _registry_with_restricted()
+    scored = score_indicators(
+        [_obs("open_a", "a", now), _obs("restricted", "restricted", now)], registry, now
+    )
+    assert len(scored) == 1
+    assert scored[0].band is Band.WITHHELD
+
+
+def test_restricted_source_can_upgrade_medium_to_high() -> None:
+    """Two open classes plus a restricted one reaches the safe-to-block tier."""
+    now = datetime(2026, 8, 12, tzinfo=UTC)
+    registry = _registry_with_restricted()
+    without = score_indicators([_obs("open_a", "a", now), _obs("open_b", "b", now)], registry, now)
+    assert without[0].band is Band.MEDIUM
+
+    with_restricted = score_indicators(
+        [
+            _obs("open_a", "a", now),
+            _obs("open_b", "b", now),
+            _obs("restricted", "restricted", now),
+        ],
+        registry,
+        now,
+    )
+    assert with_restricted[0].band is Band.HIGH
+
+
+def test_restricted_source_name_is_never_published() -> None:
+    """The feed must not disclose membership of a list we cannot republish."""
+    now = datetime(2026, 8, 12, tzinfo=UTC)
+    registry = _registry_with_restricted()
+    scored = score_indicators(
+        [
+            _obs("open_a", "a", now),
+            _obs("open_b", "b", now),
+            _obs("restricted", "restricted", now),
+        ],
+        registry,
+        now,
+    )
+    record = scored[0]
+    assert "restricted" not in record.sources
+    assert "restricted" not in record.independence_classes
+    assert record.restricted_corroboration == 1
+
+
+# --------------------------------------------------------------------------
+# Carrying a vote through a source outage: ADR-037
+# --------------------------------------------------------------------------
+
+
+def test_carried_vote_decays_but_holds_the_band() -> None:
+    """A source that misses a run keeps voting at a reduced weight."""
+    now = datetime(2026, 8, 12, tzinfo=UTC)
+    registry = _registry_with_restricted()
+    fresh = [_obs("open_a", "a", now), _obs("open_b", "b", now)]
+
+    three_days_ago = now - timedelta(days=3)
+    carried = _obs("open_c", "c", three_days_ago)
+    carried.carried = True
+
+    both = score_indicators([*fresh, carried], registry, now)
+    assert both[0].band is Band.HIGH, "three classes, one of them carried"
+
+    only_fresh = score_indicators(fresh, registry, now)
+    assert only_fresh[0].band is Band.MEDIUM
+    assert both[0].score > only_fresh[0].score
+
+    current = _obs("open_c", "c", now)
+    fully_current = score_indicators([*fresh, current], registry, now)
+    assert fully_current[0].score > both[0].score, "a carried vote must be worth less"
+
+
+def test_carried_observation_cannot_promote() -> None:
+    """Promotion asserts a source vouches for an address now, not two weeks ago."""
+    now = datetime(2026, 8, 12, tzinfo=UTC)
+    registry = Registry(
+        version=1,
+        defaults=DefaultsConfig(),
+        sources=[
+            SourceConfig(
+                name="spamhaus_drop_v4",
+                url="https://example.invalid/x",
+                parser="plain_text",
+                independence_class="spamhaus",
+                weight=1.0,
+                ttl_days=30,
+            )
+        ],
+        allowlist_sources=[],
+    )
+    current = _obs("spamhaus_drop_v4", "spamhaus", now)
+    assert score_indicators([current], registry, now)[0].band is Band.HIGH
+
+    stale = _obs("spamhaus_drop_v4", "spamhaus", now - timedelta(days=5))
+    stale.carried = True
+    result = score_indicators([stale], registry, now)[0]
+    assert result.promoted_by is None
+    assert result.band is Band.WITHHELD
+
+
+def test_carried_observations_never_resurrect_a_dead_indicator() -> None:
+    """No source reporting an address this run means nothing is carried for it."""
+    now = datetime(2026, 8, 12, tzinfo=UTC)
+    registry = _registry_with_restricted()
+    previous = {
+        "203.0.113.7": StateEntry(
+            first_seen=now - timedelta(days=20),
+            last_seen=now - timedelta(days=2),
+            band=Band.MEDIUM,
+            class_count=2,
+            sightings={"open_a": now - timedelta(days=2), "open_b": now - timedelta(days=2)},
+        )
+    }
+    assert carried_observations([], previous, registry, now) == []
+
+    still_reported = [_obs("open_a", "a", now)]
+    carried = carried_observations(still_reported, previous, registry, now)
+    assert [c.source for c in carried] == ["open_b"], "only the absent source is carried"
+    assert all(c.carried for c in carried)
+
+
+def test_carried_votes_expire_at_the_source_ttl() -> None:
+    """Beyond ttl_days a sighting stops counting entirely."""
+    now = datetime(2026, 8, 12, tzinfo=UTC)
+    registry = _registry_with_restricted()  # ttl_days=10 throughout
+    previous = {
+        "203.0.113.7": StateEntry(
+            first_seen=now - timedelta(days=60),
+            last_seen=now - timedelta(days=40),
+            band=Band.MEDIUM,
+            class_count=2,
+            sightings={"open_b": now - timedelta(days=40)},
+        )
+    }
+    carried = carried_observations([_obs("open_a", "a", now)], previous, registry, now)
+    assert carried == [], "a 40-day-old sighting is past a 10-day TTL"

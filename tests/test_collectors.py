@@ -389,3 +389,35 @@ def test_every_registered_parser_is_declared_in_valid_parsers() -> None:
     from xfeeds.models import VALID_PARSERS
 
     assert set(PARSERS) <= VALID_PARSERS
+
+
+def test_turris_greylist_parses_tags_and_skips_header() -> None:
+    """The Tags column drives category, and so severity."""
+    from xfeeds.collectors.parsers import turris_greylist
+
+    content = (
+        b"# For the terms of use see https://view.sentinel.turris.cz/greylist-data/LICENSE.txt\r\n"
+        b"Address,Tags\r\n"
+        b"45.66.230.9,telnet\r\n"
+        b'45.66.230.10,"http,smtp"\r\n'
+        b"10.0.0.1,telnet\r\n"
+        b"not-an-ip,telnet\r\n"
+    )
+    config = SourceConfig(
+        name="turris_greylist",
+        url="https://example.invalid/greylist.csv",
+        parser="turris_greylist",
+        independence_class="turris",
+        weight=0.7,
+        categories=["brute-force"],
+        redistribute=False,
+    )
+    now = datetime(2026, 8, 12, tzinfo=UTC)
+    records = list(turris_greylist(content, config, now))
+
+    # The header, the private address and the malformed row are all dropped.
+    assert [str(r.ip_or_cidr) for r in records] == ["45.66.230.9", "45.66.230.10"]
+    assert records[0].categories == ["brute-force"]
+    assert records[1].categories == ["spam-source", "web-attack"]
+    assert records[0].tags == ["turris-telnet"]
+    assert all(not r.carried for r in records)

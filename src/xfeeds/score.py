@@ -19,7 +19,14 @@ from datetime import datetime
 
 import structlog
 
-from xfeeds.models import Band, IndicatorRecord, IPOrNet, Registry, ScoredIndicator
+from xfeeds.models import (
+    Band,
+    IndicatorRecord,
+    IPOrNet,
+    Registry,
+    ScoredIndicator,
+    SourceConfig,
+)
 
 logger = structlog.get_logger(__name__)
 
@@ -27,7 +34,10 @@ HIGH_CONFIDENCE_CLASSES = 3
 """Distinct independence classes required for the safe-to-block tier."""
 
 MEDIUM_CONFIDENCE_CLASSES = 2
-"""Distinct classes required to publish at all."""
+"""Distinct classes required to publish at all.
+
+Counted over *redistributable* classes only. See ``_band`` for why.
+"""
 
 HIGH_SCORE_FLOOR = 90.0
 """Score a promoted record receives, and the cap applied to tagged records."""
@@ -68,11 +78,46 @@ def recency_factor(last_seen: datetime, now: datetime, ttl_days: int) -> float:
 
     Floored rather than zeroed because an address seen three weeks ago is still
     evidence, just weaker. Aging out entirely is handled by state.py.
+
+    This only does useful work on carried observations. Everything collected in
+    the current run has ``last_seen == now`` and so scores at 1.0.
     """
     if ttl_days <= 0:
         return 1.0
     age_days = max(0.0, (now - last_seen).total_seconds() / 86400.0)
     return max(0.2, 1.0 - (age_days / ttl_days))
+
+
+def _band(open_classes: int, restricted_classes: int) -> Band:
+    """Assign a band, letting restricted sources upgrade but never admit.
+
+    ``open_classes`` counts classes we are licensed to republish; the rest are
+    sources such as the Turris greylist (CC BY-NC-SA) that we may consume but not
+    redistribute.
+
+    A restricted class can raise medium to high. It can never turn a lone sighting
+    into a published record. That asymmetry is the whole point: if one restricted
+    vote could lift a record from withheld to medium, then our decision to publish
+    that address would have been *caused* by a list we are not allowed to
+    republish, and the published feed would leak its membership one address at a
+    time. Restricting them to upgrades keeps the question they answer to "how
+    confident are we?" rather than "is this address on the list?".
+
+    Cheap in practice as well as principled: measured against the live feed, 477
+    of 1,837 medium records would be corroborated by Turris, and those are exactly
+    the medium-to-high upgrades this permits.
+    """
+    if open_classes >= HIGH_CONFIDENCE_CLASSES:
+        return Band.HIGH
+    if open_classes >= MEDIUM_CONFIDENCE_CLASSES:
+        total = open_classes + restricted_classes
+        return Band.HIGH if total >= HIGH_CONFIDENCE_CLASSES else Band.MEDIUM
+    return Band.WITHHELD
+
+
+def _redistributable(source: str, by_source: dict[str, "SourceConfig"]) -> bool:
+    config = by_source.get(source)
+    return bool(config and config.redistribute)
 
 
 def score_indicators(
@@ -92,11 +137,18 @@ def score_indicators(
         # Best contribution per class - NOT the sum. This single line is what
         # makes corroboration meaningful; see the module docstring.
         best_per_class: dict[str, float] = {}
+        open_classes: set[str] = set()
+        restricted_classes: set[str] = set()
         categories: set[str] = set()
         tags: set[str] = set()
         sources: set[str] = set()
-        first_seen = min(o.first_seen for o in observations)
-        last_seen = max(o.last_seen for o in observations)
+        # Dates are taken from redistributable observations where we have any, so
+        # that a published record's timeline does not disclose when a restricted
+        # source saw the address. Falls back to all observations for withheld
+        # records, which are never emitted but do drive state accounting.
+        datable = [o for o in observations if _redistributable(o.source, by_source)] or observations
+        first_seen = min(o.first_seen for o in datable)
+        last_seen = max(o.last_seen for o in datable)
         ipsum_level = 0
         promoted_by: str | None = None
 
@@ -104,9 +156,12 @@ def score_indicators(
             config = by_source.get(observation.source)
             if config is None:  # pragma: no cover - defensive
                 continue
-            sources.add(observation.source)
-            categories.update(observation.categories)
-            tags.update(observation.tags)
+            # Names of sources we may not republish are withheld from the output;
+            # see ScoredIndicator.restricted_corroboration.
+            if config.redistribute:
+                sources.add(observation.source)
+                categories.update(observation.categories)
+                tags.update(observation.tags)
 
             for tag in observation.tags:
                 if tag.startswith("ipsum-level-"):
@@ -124,6 +179,10 @@ def score_indicators(
             )
             class_name = config.independence_class
             best_per_class[class_name] = max(best_per_class.get(class_name, 0.0), contribution)
+            if config.redistribute:
+                open_classes.add(class_name)
+            else:
+                restricted_classes.add(class_name)
 
             # Precision-based promotions. Justified by the source's own accuracy
             # rather than by agreement: Spamhaus DROP lists hijacked netblocks,
@@ -134,9 +193,17 @@ def score_indicators(
             # business, so it votes normally but must not reach the
             # safe-to-block tier on abuse.ch's word alone - it needs
             # corroboration like anything else.
+            # A carried observation cannot promote. Promotion is an assertion that
+            # this source's word alone is enough, which requires it to be saying so
+            # in the current run rather than up to 30 days ago.
             is_compromised = "compromised-host" in observation.tags
-            promotes = observation.source in {"spamhaus_drop_v4", "spamhaus_drop_v6"} or (
-                config.independence_class == "abusech" and not is_compromised
+            promotes = (
+                not observation.carried
+                and config.redistribute
+                and (
+                    observation.source in {"spamhaus_drop_v4", "spamhaus_drop_v6"}
+                    or (config.independence_class == "abusech" and not is_compromised)
+                )
             )
             if promotes:
                 promoted_by = observation.source
@@ -148,17 +215,15 @@ def score_indicators(
         # Saturating transform: no single class can approach the high band alone,
         # because exp(-w) for any w <= 1.0 leaves score well below 90.
         score = 100.0 * (1.0 - math.exp(-raw))
-        class_count = len(best_per_class)
 
+        # Restricted classes are excluded from the count that admits a record and
+        # may only upgrade one that already qualifies.
+        restricted_only = restricted_classes - open_classes
         if promoted_by:
             score = max(score, HIGH_SCORE_FLOOR)
             band = Band.HIGH
-        elif class_count >= HIGH_CONFIDENCE_CLASSES:
-            band = Band.HIGH
-        elif class_count >= MEDIUM_CONFIDENCE_CLASSES:
-            band = Band.MEDIUM
         else:
-            band = Band.WITHHELD
+            band = _band(len(open_classes), len(restricted_only))
 
         # Tor exits are capped below the high band no matter how many classes saw
         # them. Exit nodes carry other people's traffic, so an attack from one is
@@ -172,8 +237,9 @@ def score_indicators(
                 ip_or_cidr=indicator,
                 score=round(score, 2),
                 band=band,
-                independence_classes=sorted(best_per_class),
+                independence_classes=sorted(open_classes),
                 sources=sorted(sources),
+                restricted_corroboration=len(restricted_only),
                 categories=sorted(categories),
                 tags=sorted(tags),
                 first_seen=first_seen,
