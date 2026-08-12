@@ -1,0 +1,115 @@
+{
+  "recorded_at": "2026-08-12T00:18:12.197370+00:00",
+  "note": "Trimmed real responses recorded for offline unit tests. Comment/header lines preserved verbatim so parsers are tested against real header formats. Do not use for volume assertions.",
+  "files": {
+    "spamhaus_drop_v4.json": {
+      "url": "https://www.spamhaus.org/drop/drop_v4.json",
+      "original_lines": 1688,
+      "fixture_lines": 41
+    },
+    "spamhaus_drop_v6.json": {
+      "url": "https://www.spamhaus.org/drop/drop_v6.json",
+      "original_lines": 92,
+      "fixture_lines": 21
+    },
+    "spamhaus_asndrop.json": {
+      "url": "https://www.spamhaus.org/drop/asndrop.json",
+      "original_lines": 426,
+      "fixture_lines": 21
+    },
+    "spamhaus_drop.txt": {
+      "url": "https://www.spamhaus.org/drop/drop.txt",
+      "original_lines": 1692,
+      "fixture_lines": 35
+    },
+    "feodo_ipblocklist.txt": {
+      "url": "https://feodotracker.abuse.ch/downloads/ipblocklist.txt",
+      "original_lines": 15,
+      "fixture_lines": 14
+    },
+    "sslbl_ipblacklist.txt": {
+      "url": "https://sslbl.abuse.ch/blacklist/sslipblacklist.txt",
+      "original_lines": 12,
+      "fixture_lines": 12
+    },
+    "blocklist_de_all.txt": {
+      "url": "https://lists.blocklist.de/lists/all.txt",
+      "original_lines": 29021,
+      "fixture_lines": 201
+    },
+    "cins_ci-badguys.txt": {
+      "url": "https://cinsscore.com/list/ci-badguys.txt",
+      "original_lines": 15000,
+      "fixture_lines": 201
+    },
+    "greensnow.txt": {
+      "url": "https://blocklist.greensnow.co/greensnow.txt",
+      "original_lines": 3589,
+      "fixture_lines": 101
+    },
+    "binarydefense_banlist.txt": {
+      "url": "https://www.binarydefense.com/banlist.txt",
+      "original_lines": 3314,
+      "fixture_lines": 73
+    },
+    "bruteforceblocker.txt": {
+      "url": "https://danger.rulez.sk/projects/bruteforceblocker/blist.php",
+      "original_lines": 554,
+      "fixture_lines": 65
+    },
+    "ipsum_level3.txt": {
+      "url": "https://raw.githubusercontent.com/stamparm/ipsum/master/levels/3.txt",
+      "original_lines": 17078,
+      "fixture_lines": 101
+    },
+    "ipsum_level5.txt": {
+      "url": "https://raw.githubusercontent.com/stamparm/ipsum/master/levels/5.txt",
+      "original_lines": 2092,
+      "fixture_lines": 61
+    },
+    "tor_exits.txt": {
+      "url": "https://check.torproject.org/torbulkexitlist",
+      "original_lines": 1367,
+      "fixture_lines": 81
+    },
+    "firehol_level1.netset": {
+      "url": "https://iplists.firehol.org/files/firehol_level1.netset",
+      "original_lines": 4638,
+      "fixture_lines": 94
+    },
+    "dshield_block.txt": {
+      "url": "https://feeds.dshield.org/block.txt",
+      "original_lines": 48,
+      "fixture_lines": 48
+    },
+    "et_compromised.txt": {
+      "url": "https://rules.emergingthreats.net/blockrules/compromised-ips.txt",
+      "original_lines": 539,
+      "fixture_lines": 61
+    },
+    "allow_cloudflare.json": {
+      "url": "https://api.cloudflare.com/client/v4/ips",
+      "original_lines": 0,
+      "fixture_lines": 0
+    },
+    "allow_google_cloud.json": {
+      "url": "https://www.gstatic.com/ipranges/goog.json",
+      "original_lines": 233,
+      "fixture_lines": 233
+    },
+    "allow_googlebot.json": {
+      "url": "https://developers.google.com/static/search/apis/ipranges/googlebot.json",
+      "original_lines": 949,
+      "fixture_lines": 949
+    },
+    "allow_bingbot.json": {
+      "url": "https://www.bing.com/toolbox/bingbot.json",
+      "original_lines": 88,
+      "fixture_lines": 88
+    },
+    "allow_github_meta.json": {
+      "url": "https://api.github.com/meta",
+      "note": "trimmed to hooks/web/api/git/actions"
+    }
+  }
+}
