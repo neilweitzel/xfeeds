@@ -19,12 +19,13 @@ def test_load_real_sources_yaml() -> None:
     # Verify no API keys are present (enabled should be False for abuseipdb/threatfox)
     abuseipdb = next((s for s in registry.sources if s.name == "abuseipdb_blacklist"), None)
     threatfox = next((s for s in registry.sources if s.name == "threatfox"), None)
+    assert threatfox is not None
 
     assert abuseipdb is not None, "abuseipdb_blacklist source missing from sources.yaml"
     assert abuseipdb.enabled is False
 
     assert threatfox is not None, "threatfox source missing from sources.yaml"
-    assert threatfox.enabled is False
+    assert threatfox.enabled is True
 
 
 def test_duplicate_source_name() -> None:

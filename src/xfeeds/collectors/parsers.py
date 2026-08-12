@@ -1,7 +1,7 @@
 import ipaddress
 import json
 from collections.abc import Iterator
-from datetime import datetime
+from datetime import UTC, datetime
 
 import structlog
 
@@ -291,9 +291,91 @@ def ipsum_levels(
         yield record
 
 
+def threatfox_api(
+    content: bytes, config: SourceConfig, fetch_time: datetime
+) -> Iterator[IndicatorRecord]:
+    """Parse the ThreatFox get_iocs JSON response.
+
+    ThreatFox reports IOCs as "ip:port" with real first_seen/last_seen dates, so
+    we use its dates rather than the fetch time - an address it last saw six days
+    ago should decay accordingly.
+
+    The ``is_compromised`` flag matters for safety. A compromised host is a
+    legitimate server somebody hacked and is now using as command-and-control.
+    Blocking it may block a real business, so those are tagged and deliberately
+    excluded from the abuse.ch precision promotion in score.py: they still count
+    as a normal vote, but they cannot reach the safe-to-block tier alone.
+    """
+    try:
+        payload = json.loads(content.decode("utf-8", "replace"))
+    except json.JSONDecodeError as e:
+        logger.warning("threatfox_bad_json", source=config.name, error=str(e))
+        return
+
+    if payload.get("query_status") != "ok":
+        logger.warning("threatfox_query_failed", status=payload.get("query_status"))
+        return
+
+    data = payload.get("data")
+    if not isinstance(data, list):
+        return
+
+    malformed = 0
+    non_global = 0
+    for entry in data:
+        if entry.get("ioc_type") != "ip:port":
+            continue
+        raw = str(entry.get("ioc", ""))
+        host = raw.rsplit(":", 1)[0].strip("[]")  # strip the port, handle IPv6 brackets
+        try:
+            ip_obj: IPOrNet = ipaddress.ip_address(host)
+        except ValueError:
+            malformed += 1
+            continue
+        if not _is_global(ip_obj):
+            non_global += 1
+            continue
+
+        tags: list[str] = []
+        if str(entry.get("is_compromised", "")).lower() in {"1", "true"}:
+            tags.append("compromised-host")
+        malware = entry.get("malware_printable")
+        if malware:
+            tags.append(f"malware:{malware}")
+
+        threat = str(entry.get("threat_type", ""))
+        categories = ["botnet-c2"] if threat == "botnet_cc" else ["malware-infrastructure"]
+
+        def _when(value: object, fallback: datetime) -> datetime:
+            if not value:
+                return fallback
+            try:
+                parsed = datetime.fromisoformat(str(value))
+            except ValueError:
+                return fallback
+            return parsed if parsed.tzinfo else parsed.replace(tzinfo=UTC)
+
+        first = _when(entry.get("first_seen"), fetch_time)
+        last = _when(entry.get("last_seen"), first)
+
+        yield IndicatorRecord(
+            ip_or_cidr=ip_obj,
+            source=config.name,
+            independence_class=config.independence_class,
+            first_seen=min(first, last),
+            last_seen=max(first, last),
+            categories=categories,
+            tags=tags,
+        )
+
+    _log_skips(config.name, malformed, non_global)
+
+
 # Register implemented parsers using their function names to avoid duplicating the list
 _IMPLEMENTED = [
+    threatfox_api,
     plain_text,
+    threatfox_api,
     netset,
     spamhaus_json,
     spamhaus_asn_json,

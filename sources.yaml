@@ -100,11 +100,13 @@ sources:
     auth: header
     auth_header: Auth-Key
     auth_secret: THREATFOX_AUTH_KEY
+    params:
+      query: get_iocs
+      days: 7          # 7 is the maximum the API accepts
     independence_class: abusech
     weight: 1.0
     categories: [botnet-c2, malware-infrastructure]
     ttl_days: 7
-    enabled: false   # flip on once THREATFOX_AUTH_KEY is in repo secrets
     notes: >
       abuse.ch made authentication mandatory on 2025-06-30 across its APIs.
       Static /downloads/ paths still answer unauthenticated but that is not
