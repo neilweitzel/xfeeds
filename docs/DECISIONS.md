@@ -248,6 +248,39 @@ problem, and 93% of the raw input does not meet the bar.
 Corroboration distribution among published records: 1 class 1,779 (all
 promoted), 2 classes 1,857, 3 classes 119, 4 classes 8.
 
+## ThreatFox enabled (ADR-032)
+
+The abuse.ch Auth-Key is configured, activating ThreatFox as a live source and
+bringing the `abusech` class back to life — Feodo Tracker has thinned to 5
+entries and its header is frozen 42 days back, so the class was effectively
+dormant.
+
+Effect on the published feed: high confidence **1,907 → 2,389**, from 1,026
+ThreatFox records covering 664 unique addresses over a 7-day window (the maximum
+the API accepts).
+
+**Compromised hosts do not get the precision promotion.** ThreatFox flags
+`is_compromised` on roughly a third of its IP IOCs. Those are legitimate servers
+somebody hacked and is now using for command-and-control — a victim, not
+purpose-built attacker infrastructure. Blocking one can take out a real business
+that is itself under attack. They vote normally, but unlike other abuse.ch
+records they cannot reach the safe-to-block tier unaided; they need corroboration
+like any ordinary source. Tagged `compromised-host` in the output so consumers
+can see which is which.
+
+Two related robustness fixes came out of enabling this:
+
+- **A missing API key now reports `skipped`, not `failed`.** Keyed sources are
+  expected to be unconfigured on a fresh clone, and treating that as a broken
+  upstream made the dashboard misreport health.
+- **Allowlist sources fall back to their last cached copy on a transient
+  failure.** A live run aborted because `api.github.com` returned a 403. The
+  hard-fail was correct in principle — never publish from a partial allowlist —
+  but an out-of-date list of GitHub ranges still protects those ranges, whereas
+  aborting every run over a transient 403 is the worse outcome. Threat feeds
+  deliberately do **not** get this fallback: silently serving stale threat data
+  is exactly what the staleness warning exists to catch.
+
 ## Open items
 
 - [ ] Confirm AbuseIPDB redistribution terms in writing; flip `redistribute` if permitted.

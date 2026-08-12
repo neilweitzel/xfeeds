@@ -153,11 +153,17 @@ def build_allowlist(
                 independence_class="allowlist",
                 weight=0.0,
                 vote=False,
+                # A stale allowlist still protects the ranges it lists. Failing
+                # the whole run because one provider returned a transient 403 is
+                # the worse outcome, so fall back to the last good copy.
+                allow_stale_fallback=True,
             )
             result = fetch_source(probe, defaults)
             if not result.success:
                 failures.append(f"{source.name}: {result.error}")
                 continue
+            if result.stale_fallback:
+                logger.warning("allowlist_source_stale", source=source.name, error=result.error)
             try:
                 found = _networks_from_json(json.loads(result.content), source.parser)
             except json.JSONDecodeError as e:

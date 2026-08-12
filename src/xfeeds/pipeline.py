@@ -57,9 +57,12 @@ class RunReport:
     def summary(self) -> str:
         """Human-readable summary for logs and PR bodies."""
         ok = sum(1 for s in self.source_status.values() if s["status"] == "ok")
+        skipped = sum(1 for s in self.source_status.values() if s["status"] == "skipped")
+        configured = len(self.source_status) - skipped
         lines = [
             f"xfeeds run {self.generated_at.isoformat()}",
-            f"  sources:   {ok}/{len(self.source_status)} ok",
+            f"  sources:   {ok}/{configured} ok"
+            + (f" ({skipped} skipped, no API key)" if skipped else ""),
             (
                 f"  published: {self.counts.get('published', 0)}"
                 f" (high {self.counts.get('high', 0)}, medium {self.counts.get('medium', 0)})"
@@ -119,10 +122,15 @@ def collect_all(
             result = fetch_source(probe, registry.defaults)
 
             if not result.success:
-                entry["status"] = "failed"
-                entry["error"] = result.error
-                warnings.append(f"{source.name}: {result.error}")
-                logger.warning("source_failed", source=source.name, error=result.error)
+                if result.skipped_no_credential:
+                    entry["status"] = "skipped"
+                    entry["error"] = result.error
+                    logger.info("source_skipped_no_key", source=source.name)
+                else:
+                    entry["status"] = "failed"
+                    entry["error"] = result.error
+                    warnings.append(f"{source.name}: {result.error}")
+                    logger.warning("source_failed", source=source.name, error=result.error)
                 continue
 
             entry["cached"] = result.cached

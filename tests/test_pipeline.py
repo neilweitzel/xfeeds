@@ -313,3 +313,65 @@ def test_history_is_capped_so_it_cannot_grow_forever(tmp_path: Path) -> None:
         history = append_history(path, manifest, limit=5)
     assert len(history) == 5
     assert json.loads(path.read_text())[-1]["published"] == 11
+
+
+def test_compromised_host_is_not_promoted_by_abusech_alone() -> None:
+    """A hacked legitimate server needs corroboration before we block it.
+
+    ThreatFox flags these with is_compromised. They are victims hosting C2, not
+    purpose-built attacker infrastructure, so blocking one can take out a real
+    business. It still votes; it just cannot reach high confidence unaided.
+    """
+    reg = registry_of(src("threatfox", "abusech", weight=1.0))
+    clean = score_indicators([obs("threatfox", "abusech", categories=["botnet-c2"])], reg, NOW)[0]
+    assert clean.band is Band.HIGH
+    assert clean.promoted_by == "threatfox"
+
+    compromised = score_indicators(
+        [obs("threatfox", "abusech", categories=["botnet-c2"], tags=["compromised-host"])],
+        reg,
+        NOW,
+    )[0]
+    assert compromised.band is not Band.HIGH
+    assert compromised.promoted_by is None
+
+
+def test_allowlist_falls_back_to_cache_when_a_provider_fails() -> None:
+    """A transient provider outage must not abort the run if we have a cached copy.
+
+    An out-of-date list of Cloudflare ranges still protects those ranges.
+    Aborting every run because one provider returned a 403 is the worse outcome.
+    """
+    from xfeeds.collectors.base import _failure_or_stale
+    from xfeeds.models import SourceConfig
+
+    cfg = SourceConfig(
+        name="al",
+        url="https://example.com",
+        parser="plain_text",
+        independence_class="allowlist",
+        weight=0.0,
+        vote=False,
+        allow_stale_fallback=True,
+    )
+    result = _failure_or_stale(cfg, b"1.2.3.0/24", {"last_fetch_time": 0}, "HTTP 403", 403)
+    assert result.success is True
+    assert result.stale_fallback is True
+    assert result.content == b"1.2.3.0/24"
+
+
+def test_threat_feeds_never_silently_fall_back_to_stale_data() -> None:
+    """Only the allowlist opts in. A stale threat feed must surface as a failure."""
+    from xfeeds.collectors.base import _failure_or_stale
+    from xfeeds.models import SourceConfig
+
+    cfg = SourceConfig(
+        name="feed",
+        url="https://example.com",
+        parser="plain_text",
+        independence_class="alpha",
+        weight=0.8,
+    )
+    assert cfg.allow_stale_fallback is False
+    result = _failure_or_stale(cfg, b"1.2.3.4", {"last_fetch_time": 0}, "HTTP 500", 500)
+    assert result.success is False

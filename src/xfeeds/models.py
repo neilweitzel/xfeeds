@@ -69,6 +69,12 @@ class SourceConfig(BaseModel):
     levels: list[int] | None = None
     tag_only: bool = False
     require_user_agent: bool = False
+    allow_stale_fallback: bool = False
+    """Use the last cached copy if a fetch fails.
+
+    Only appropriate for allowlist sources, where an out-of-date list is safer
+    than no list. Threat feeds must never do this silently.
+    """
 
     def resolved_auth_secret(self) -> str | None:
         """Return this source's API key from the environment, or None if unset.

@@ -45,6 +45,14 @@ class CollectorResult:
     success: bool
     content: bytes = b""
     error: str | None = None
+    skipped_no_credential: bool = False
+    stale_fallback: bool = False
+    """True when a fetch failed and the last cached copy was used instead."""
+    """True when the source needs an API key that is not configured.
+
+    Distinct from a failure: this is the expected state for keyed sources on a
+    fresh clone, and must not be reported as a broken upstream.
+    """
     cached: bool = False
     """True when content came from the local cache rather than a fresh download."""
     status_code: int | None = None
@@ -157,7 +165,11 @@ def fetch_source(config: SourceConfig, defaults: DefaultsConfig) -> CollectorRes
         if secret is None:
             return CollectorResult(
                 success=False,
-                error=f"auth secret {config.auth_secret} is not set in the environment",
+                skipped_no_credential=True,
+                error=(
+                    f"{config.auth_secret} is not set - source skipped. "
+                    "This is expected until the key is configured."
+                ),
             )
         headers[config.auth_header] = secret
 
@@ -171,7 +183,12 @@ def fetch_source(config: SourceConfig, defaults: DefaultsConfig) -> CollectorRes
         reraise=True,
     )
     def _do_fetch(client: httpx.Client) -> httpx.Response:
-        response = client.request(method, config.url, headers=headers, params=config.params)
+        # POST sources send their parameters as a JSON body; GET sources use the
+        # query string.
+        if method == "POST":
+            response = client.request(method, config.url, headers=headers, json=config.params)
+        else:
+            response = client.request(method, config.url, headers=headers, params=config.params)
         if response.status_code != 304:  # 304 is a valid answer, not an error
             response.raise_for_status()
         return response
@@ -225,12 +242,45 @@ def fetch_source(config: SourceConfig, defaults: DefaultsConfig) -> CollectorRes
             )
 
     except httpx.HTTPStatusError as e:
-        return CollectorResult(
-            success=False,
-            error=f"HTTP {e.response.status_code}",
-            status_code=e.response.status_code,
+        return _failure_or_stale(
+            config, cached_body, meta, f"HTTP {e.response.status_code}", e.response.status_code
         )
     except httpx.RequestError as e:
-        return CollectorResult(success=False, error=f"request error: {e}")
+        return _failure_or_stale(config, cached_body, meta, f"request error: {e}", None)
     except Exception as e:  # noqa: BLE001 - collectors must never raise
-        return CollectorResult(success=False, error=f"unexpected error: {e}")
+        return _failure_or_stale(config, cached_body, meta, f"unexpected error: {e}", None)
+
+
+def _failure_or_stale(
+    config: SourceConfig,
+    cached_body: bytes | None,
+    meta: dict[str, Any],
+    error: str,
+    status_code: int | None,
+) -> CollectorResult:
+    """Fall back to the last good copy when an upstream fails transiently.
+
+    Only sources that opt in via ``allow_stale_fallback`` get this. It is correct
+    for the allowlist - a slightly old list of Cloudflare ranges still protects
+    those ranges, whereas failing the run entirely because GitHub returned a
+    transient 403 is a worse outcome. It is NOT correct for threat feeds, where
+    serving stale data silently is exactly what the staleness warning exists to
+    catch.
+    """
+    if config.allow_stale_fallback and cached_body is not None:
+        age_hours = (time.time() - float(meta.get("last_fetch_time", 0))) / 3600
+        logger.warning(
+            "source_failed_using_cached_copy",
+            source=config.name,
+            error=error,
+            cached_age_hours=round(age_hours, 1),
+        )
+        return CollectorResult(
+            success=True,
+            content=cached_body,
+            cached=True,
+            stale_fallback=True,
+            status_code=status_code,
+            error=error,
+        )
+    return CollectorResult(success=False, error=error, status_code=status_code)

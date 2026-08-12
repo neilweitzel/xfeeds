@@ -129,9 +129,14 @@ def score_indicators(
             # rather than by agreement: Spamhaus DROP lists hijacked netblocks,
             # and an active abuse.ch C2 listing is a live command-and-control
             # server. Neither needs a second opinion.
-            promotes = (
-                observation.source in {"spamhaus_drop_v4", "spamhaus_drop_v6"}
-                or config.independence_class == "abusech"
+            # A ThreatFox "compromised" host is a legitimate server somebody
+            # hacked and is now using as C2. Blocking it may block a real
+            # business, so it votes normally but must not reach the
+            # safe-to-block tier on abuse.ch's word alone - it needs
+            # corroboration like anything else.
+            is_compromised = "compromised-host" in observation.tags
+            promotes = observation.source in {"spamhaus_drop_v4", "spamhaus_drop_v6"} or (
+                config.independence_class == "abusech" and not is_compromised
             )
             if promotes:
                 promoted_by = observation.source
