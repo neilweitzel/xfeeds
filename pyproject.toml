@@ -1,0 +1,38 @@
+[project]
+name = "xfeeds"
+version = "0.1.0"
+description = "A self-updating, open threat intelligence feed."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "httpx>=0.28.1",
+    "pydantic>=2.0.0",
+    "pyyaml>=6.0.2",
+    "structlog>=24.4.0",
+    "tenacity>=9.0.0",
+    "typer>=0.15.1",
+]
+
+[project.scripts]
+xfeeds = "xfeeds.cli:app"
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.mypy]
+strict = true
+python_version = "3.11"
+
+[dependency-groups]
+dev = [
+    "mypy>=1.14.1",
+    "pytest>=8.3.4",
+    "pytest-httpx>=0.35.0",
+    "ruff>=0.9.3",
+    "types-pyyaml>=6.0.12.20260724",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
