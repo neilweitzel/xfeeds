@@ -1,6 +1,6 @@
 {
   "count": 5613,
-  "generated_at": "2026-08-13T02:48:22.817316+00:00",
+  "generated_at": "2026-08-13T02:51:00.262376+00:00",
   "indicators": [
     {
       "band": "high",
@@ -285,7 +285,7 @@
       ]
     },
     {
-      "band": "high",
+      "band": "medium",
       "categories": [
         "aggregate",
         "brute-force",
@@ -301,8 +301,8 @@
       "ip_or_cidr": "2.55.74.30",
       "last_seen": "2026-08-13T00:00:00Z",
       "promoted_by": null,
-      "restricted_corroboration": 1,
-      "score": 78.99,
+      "restricted_corroboration": 0,
+      "score": 68.02,
       "sources": [
         "blocklist_de",
         "ipsum_levels",
@@ -5272,34 +5272,6 @@
         "turris-http",
         "turris-smtp",
         "turris-telnet"
-      ]
-    },
-    {
-      "band": "medium",
-      "categories": [
-        "aggregate",
-        "brute-force",
-        "scanning",
-        "web-attack"
-      ],
-      "first_seen": "2026-08-12T00:00:00Z",
-      "independence_classes": [
-        "blocklist_de",
-        "cins"
-      ],
-      "ip_or_cidr": "18.206.38.153",
-      "last_seen": "2026-08-13T00:00:00Z",
-      "promoted_by": null,
-      "restricted_corroboration": 0,
-      "score": 69.88,
-      "sources": [
-        "blocklist_de",
-        "cins_army",
-        "ipsum_levels"
-      ],
-      "tags": [
-        "ipsum-level-3",
-        "ipsum-level-4"
       ]
     },
     {
@@ -14513,6 +14485,36 @@
         "ipsum-level-4",
         "ipsum-level-5",
         "turris-ftp",
+        "turris-http",
+        "turris-telnet"
+      ]
+    },
+    {
+      "band": "medium",
+      "categories": [
+        "aggregate",
+        "brute-force",
+        "scanning",
+        "web-attack"
+      ],
+      "first_seen": "2026-08-12T00:00:00Z",
+      "independence_classes": [
+        "blocklist_de",
+        "turris"
+      ],
+      "ip_or_cidr": "45.79.115.134",
+      "last_seen": "2026-08-13T00:00:00Z",
+      "promoted_by": null,
+      "restricted_corroboration": 0,
+      "score": 69.88,
+      "sources": [
+        "blocklist_de",
+        "ipsum_levels",
+        "turris_greylist"
+      ],
+      "tags": [
+        "ipsum-level-3",
+        "ipsum-level-4",
         "turris-http",
         "turris-telnet"
       ]
@@ -26124,7 +26126,7 @@
       ]
     },
     {
-      "band": "high",
+      "band": "medium",
       "categories": [
         "aggregate",
         "brute-force",
@@ -26133,7 +26135,6 @@
       ],
       "first_seen": "2026-08-12T00:00:00Z",
       "independence_classes": [
-        "blocklist_de",
         "cins",
         "turris"
       ],
@@ -26141,9 +26142,8 @@
       "last_seen": "2026-08-13T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 0,
-      "score": 85.19,
+      "score": 71.92,
       "sources": [
-        "blocklist_de",
         "cins_army",
         "ipsum_levels",
         "turris_greylist"
@@ -125461,7 +125461,6 @@
       "first_seen": "2026-08-12T00:00:00Z",
       "independence_classes": [
         "binary_defense",
-        "blocklist_de",
         "cins",
         "turris"
       ],
@@ -125469,10 +125468,9 @@
       "last_seen": "2026-08-13T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 0,
-      "score": 91.87,
+      "score": 84.59,
       "sources": [
         "binary_defense",
-        "blocklist_de",
         "cins_army",
         "ipsum_levels",
         "turris_greylist"

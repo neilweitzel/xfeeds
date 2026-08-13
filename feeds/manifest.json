@@ -13,25 +13,28 @@
   ],
   "corroboration_histogram": {
     "1": 1780,
-    "2": 2498,
-    "3": 136,
+    "2": 2497,
+    "3": 135,
     "4": 12
   },
   "counts": {
-    "high": 2707,
-    "medium": 1719,
+    "high": 2706,
+    "medium": 1718,
     "promoted": 1780,
-    "published": 4426,
-    "withheld": 47511
+    "published": 4424,
+    "withheld": 47515
   },
   "deltas": {
     "added": 0,
     "added_examples": [],
-    "removed": 0,
-    "removed_examples": []
+    "removed": 2,
+    "removed_examples": [
+      "18.206.38.153",
+      "52.91.204.84"
+    ]
   },
   "filters": {
-    "allowlisted": 4490,
+    "allowlisted": 4488,
     "examples": {
       "allowlisted": [
         "172.70.206.0/23",
@@ -67,7 +70,7 @@
     "tag_only": 1094,
     "too_wide": 8
   },
-  "generated_at": "2026-08-13T02:48:22.817316+00:00",
+  "generated_at": "2026-08-13T02:51:00.262376+00:00",
   "project": "https://github.com/neilweitzel/xfeeds",
   "sources": {
     "binary_defense": {
@@ -85,14 +88,14 @@
       "weight": 0.6
     },
     "blocklist_de": {
-      "cached": true,
+      "cached": false,
       "error": null,
       "independence_class": "blocklist_de",
-      "last_modified": "2026-08-13T02:36:02+00:00",
+      "last_modified": "2026-08-13T02:42:02+00:00",
       "license": "Free, non-commercial reporting service",
       "license_risk": null,
       "license_url": "https://blocklist.de/",
-      "records": 31495,
+      "records": 31494,
       "redistributable": true,
       "status": "ok",
       "votes": true,
@@ -102,7 +105,7 @@
       "cached": false,
       "error": null,
       "independence_class": "bruteforceblocker",
-      "last_modified": "2026-08-13T02:45:29+00:00",
+      "last_modified": "2026-08-13T02:50:30+00:00",
       "license": "No licence stated. Published for public use by the bruteforceblocker project; we asked for an explicit statement (ADR-043)",
       "license_risk": null,
       "license_url": "http://danger.rulez.sk/index.php/bruteforceblocker/",
@@ -144,7 +147,7 @@
       "cached": false,
       "error": null,
       "independence_class": "greensnow",
-      "last_modified": "2026-08-13T02:48:27+00:00",
+      "last_modified": "2026-08-13T02:51:04+00:00",
       "license": "All rights reserved; reproduction or republication strictly prohibited",
       "license_risk": "high",
       "license_url": "https://greensnow.co/",
@@ -171,7 +174,7 @@
       "cached": false,
       "error": null,
       "independence_class": "ipthreat",
-      "last_modified": "2026-08-13T02:48:29+00:00",
+      "last_modified": "2026-08-13T02:51:07+00:00",
       "license": "Creative Commons attribution; derived data under the same CC licence; commercial use expressly permitted",
       "license_risk": "low",
       "license_url": "https://ipthreat.net/license",
@@ -210,7 +213,7 @@
       "weight": 1.0
     },
     "stopforumspam_toxic": {
-      "cached": false,
+      "cached": true,
       "error": null,
       "independence_class": "stopforumspam",
       "last_modified": "2026-08-13T01:53:11+00:00",
