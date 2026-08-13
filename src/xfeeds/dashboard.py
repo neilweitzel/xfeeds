@@ -115,12 +115,28 @@ margin-bottom:10px;font-weight:600;font-size:14px}
 .k-high{background:#3fb950}
 .k-med{background:#d29922}
 .note.warn{color:#d29922}
+@media (max-width:640px){
+/* SVG text scales with the viewBox, so on a phone the axis labels render at about
+   four pixels whatever size they are set to. Hide them and let the HTML hint line
+   above the chart carry the range, where it is real text at a real size. */
+.spectrum text.ax,.spectrum text.rsvl{display:none}
+.axhint{flex-direction:column;gap:1px;margin-bottom:8px}
+.axhint .axarrow{font-size:12px}
+}
 .spectrum .rsv{fill:#ffffff07;stroke:var(--line);stroke-width:1;stroke-dasharray:3 3}
 .spectrum text.rsvl{fill:var(--muted);font-size:10px;text-anchor:middle;opacity:.75}
 .tl .yax{stroke:var(--line);stroke-width:1;stroke-dasharray:2 3}
 .tl text.ylab{fill:var(--muted);font-size:10px}
 .tscroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
 .tscroll table{min-width:520px}
+.axhint{display:flex;justify-content:space-between;align-items:baseline;
+font-size:11px;color:var(--muted);margin:-4px 0 6px;letter-spacing:.02em}
+.axhint .axarrow{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--text);
+opacity:.75}
+.spectrum text.ax{fill:var(--muted);font-size:11px;text-anchor:middle;
+font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.spectrum text.ax.end{fill:var(--text);opacity:.85}
+.spectrum .axline{stroke:var(--line);stroke-width:1}
 """
 
 SCRIPT = """
@@ -443,9 +459,25 @@ def _spectrum_svg(spectrum: dict[str, Any]) -> str:
             f'height="{h:.2f}"><title>{i * 256 // len(counts)}.0.0.0/8 area: '
             f"{count:,} observations</title></rect>"
         )
+    # Bare octet numbers along the bottom did not read as addresses - "128" looks
+    # like an arbitrary tick. Dotted quads say what the axis is without a caption,
+    # and the two ends are labelled explicitly with the real first and last address
+    # in the space.
+    tick_octets = (32, 64, 96, 128, 160, 192, 224)
     ticks = "".join(
-        f'<text x="{(octet / 256) * width:.1f}" y="{height + 15:.0f}" class="ax">{octet}</text>'
-        for octet in (0, 32, 64, 96, 128, 160, 192, 224, 255)
+        f'<text x="{(octet / 256) * width:.1f}" y="{height + 16:.0f}" '
+        f'class="ax{" minor" if octet % 64 else ""}">{octet}.0.0.0</text>'
+        for octet in tick_octets
+    )
+    # End caps sit inside the plot edges and are anchored so they cannot clip.
+    ends = (
+        f'<text x="0" y="{height + 16:.0f}" class="ax end" text-anchor="start">0.0.0.0</text>'
+        f'<text x="{width:.0f}" y="{height + 16:.0f}" class="ax end" '
+        'text-anchor="end">255.255.255.255</text>'
+    )
+    axis_line = (
+        f'<line x1="0" y1="{height + 1:.0f}" x2="{width:.0f}" '
+        f'y2="{height + 1:.0f}" class="axline"/>'
     )
     # 224.0.0.0/4 is multicast and 240.0.0.0/4 is reserved, so the right-hand end is
     # legitimately empty. Shade it, or an empty tail reads as a broken chart.
@@ -462,16 +494,22 @@ def _spectrum_svg(spectrum: dict[str, Any]) -> str:
 <div class="chart">
 <div class="chead"><span>Where in the IPv4 space we see activity</span>
 <span class="note">{occupied} of {total} slices touched</span></div>
-<svg viewBox="0 0 {width:.0f} {height + 22:.0f}" class="spectrum" role="img"
-     aria-label="Observations across the IPv4 address space, log scaled">
+<div class="axhint"><span>horizontal axis: every IPv4 address, in order</span>
+<span class="axarrow">0.0.0.0 &rarr; 255.255.255.255</span></div>
+<svg viewBox="-58 0 {width + 116:.0f} {height + 26:.0f}" class="spectrum" role="img"
+     aria-label="Observations across the IPv4 address space from 0.0.0.0 to
+255.255.255.255, log scaled">
 {reserved}
 <g class="bars">{"".join(bars)}</g>
+{axis_line}
 {ticks}
+{ends}
 </svg>
-<p class="note">First octet along the bottom, log-scaled height. Each slice spans
-{int(spectrum.get("addresses_per_bucket", 0)):,} addresses, so no bar can point at an
-address. The gaps are as informative as the spikes: reserved ranges, and large
-allocations nobody has reported to us.</p>
+<p class="note">The horizontal axis is the address space itself, low to high, cut
+into {total} equal slices of {int(spectrum.get("addresses_per_bucket", 0)):,} addresses
+&mdash; so no bar can point at an individual address. Height is log-scaled. The gaps
+are as informative as the spikes: reserved ranges, and large allocations nobody has
+reported to us.</p>
 </div>
 """
 
