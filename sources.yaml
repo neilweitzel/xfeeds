@@ -65,6 +65,7 @@ sources:
 
   # ------------------------------------------------------- botnet C2 (precise)
   - name: feodo_tracker
+    credit: "Feodo Tracker - abuse.ch (CC0)"
     url: https://feodotracker.abuse.ch/downloads/ipblocklist.txt
     parser: plain_text
     independence_class: abusech
@@ -94,6 +95,7 @@ sources:
       not merely quiet. The abusech class is carried by feodo_tracker and threatfox.
 
   - name: threatfox
+    credit: "ThreatFox - abuse.ch / Spamhaus - used for scoring only, not republished"
     noncommercial_compatible: false
     license_risk: high
     license_url: https://abuse.ch/terms-of-use/
@@ -130,6 +132,8 @@ sources:
       treated Feodo and ThreatFox as one licence; corrected in ADR-040.
 
   - name: blocklist_de
+    credit: "Blocklist.de - fail2ban reporting community, blocklist.de"
+    attribution_required: true
     url: https://lists.blocklist.de/lists/all.txt
     parser: plain_text
     independence_class: blocklist_de
@@ -141,6 +145,8 @@ sources:
     notes: "28,605 IPs. Largest genuinely independent sensor network (fail2ban reporters). Refreshes ~30m."
 
   - name: cins_army
+    credit: "CINS Army List - Collective Intelligence Network Security, cinsscore.com"
+    attribution_required: true
     url: https://cinsscore.com/list/ci-badguys.txt
     parser: plain_text
     independence_class: cins
@@ -156,6 +162,7 @@ sources:
       be prepared to drop on request. Tracked in docs/DECISIONS.md ADR-012.
 
   - name: greensnow
+    credit: "GreenSnow.co - used for scoring only, not republished"
     noncommercial_compatible: false
     license_risk: high
     license: "All rights reserved; reproduction or republication strictly prohibited"
@@ -177,6 +184,8 @@ sources:
       on republication of any kind, not on commercial use.
 
   - name: binary_defense
+    credit: "Artillery Threat Intelligence Feed - Binary Defense Systems, binarydefense.com"
+    attribution_required: true
     license_url: https://www.binarydefense.com/banlist.txt
     url: https://www.binarydefense.com/banlist.txt
     parser: plain_text
@@ -205,6 +214,10 @@ sources:
       corrected in ADR-039 after reading the actual header text.
 
   - name: bruteforceblocker
+    credit: "bruteforceblocker - Daniel Gerzo, danger.rulez.sk"
+    attribution_required: true
+    license_url: http://danger.rulez.sk/index.php/bruteforceblocker/
+    license: "No licence stated. Published for public use by the bruteforceblocker project; we asked for an explicit statement (ADR-043)"
     url: https://danger.rulez.sk/projects/bruteforceblocker/blist.php
     parser: bruteforceblocker
     independence_class: bruteforceblocker
@@ -239,6 +252,7 @@ sources:
       terms are confirmed in writing. See docs/DECISIONS.md ADR-012.
 
   - name: stopforumspam_toxic
+    credit: "StopForumSpam toxic CIDR list - stopforumspam.com"
     redistribute_noncommercial: true
     url: https://www.stopforumspam.com/downloads/toxic_ip_cidr.txt
     parser: plain_text
@@ -257,6 +271,7 @@ sources:
       of a public feed. Used as a scoring signal only.
 
   - name: ipthreat_30d
+    credit: "Data sourced from IPThreat located at https://ipthreat.net"
     url: https://lists.ipthreat.net/file/ipthreat-lists/threat/threat-30.txt
     parser: plain_text
     independence_class: ipthreat
@@ -291,6 +306,10 @@ sources:
       self-describes as a draft. Republished in the non-commercial tier only.
 
   - name: ipsum_levels
+    credit: "IPsum - Miroslav Stampar (stamparm), github.com/stamparm/ipsum"
+    attribution_required: true
+    license_url: https://raw.githubusercontent.com/stamparm/ipsum/master/LICENSE
+    license: "The Unlicense (public domain dedication)"
     url: https://raw.githubusercontent.com/stamparm/ipsum/master/levels/{level}.txt
     parser: ipsum_levels
     levels: [3, 4, 5, 6, 7, 8]
@@ -354,6 +373,7 @@ sources:
       See docs/DECISIONS.md ADR-012.
 
   - name: turris_greylist
+    credit: "Turris Sentinel greylist - CZ.NIC, view.sentinel.turris.cz (CC BY-NC-SA 4.0)"
     redistribute_noncommercial: true
     url: https://view.sentinel.turris.cz/greylist-data/greylist-latest.csv
     parser: turris_greylist
@@ -406,6 +426,10 @@ sources:
 
   # ---------------------------------------------------- annotation, not blocks
   - name: tor_exits
+    credit: "Tor exit relay list - The Tor Project, torproject.org"
+    attribution_required: true
+    license_url: https://check.torproject.org/torbulkexitlist
+    license: "No licence stated on the endpoint. Published by the Tor Project as a public service"
     url: https://check.torproject.org/torbulkexitlist
     parser: plain_text
     independence_class: tor

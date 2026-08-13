@@ -10,13 +10,16 @@ real firewalls, and gives them a lookup box to check a specific address, rather
 than leading with statistics about itself.
 """
 
+import html
 import ipaddress
 import json
+import math
 from pathlib import Path
 from typing import Any
 
 import structlog
 
+from xfeeds.centroids import CENTROIDS
 from xfeeds.models import Band, ScoredIndicator
 
 logger = structlog.get_logger(__name__)
@@ -94,6 +97,13 @@ color:var(--muted);border-radius:6px;padding:3px 9px;font-size:11.5px;cursor:poi
 .copy:hover{color:var(--text);border-color:var(--accent)}
 .stale{color:var(--med)}
 @media(max-width:760px){.grid2{grid-template-columns:1fr}.kv{grid-template-columns:1fr}}
+
+.mapwrap{border:1px solid var(--line);border-radius:10px;padding:10px;margin:18px 0 4px;
+background:#0b1017}
+.map{width:100%;height:auto;display:block}
+.map .grat line{stroke:var(--line);stroke-width:1}
+.map .dot{fill:#f0883e;fill-opacity:.40;stroke:#f0883e;stroke-opacity:.85;stroke-width:1}
+.map .dot:hover{fill-opacity:.78}
 """
 
 SCRIPT = """
@@ -378,11 +388,132 @@ def build_lookup_index(records: list[ScoredIndicator]) -> dict[str, Any]:
     return {"v": 1, "r": rows}
 
 
+def esc_html(value: str) -> str:
+    """Escape text destined for the page. Source names come from config, but ASN
+    descriptions come from a third-party table and are not ours to trust."""
+    return html.escape(value, quote=True)
+
+
+def _insights_section(insights: dict[str, Any]) -> str:
+    """Aggregate view over every source, including those we may not republish.
+
+    This is the only place a restricted source appears by name against a number.
+    Counts are derived facts, not an extract, and no address appears here - see
+    insights.py for why that line matters and how it is enforced.
+    """
+    if not insights:
+        return ""
+    corpus = insights.get("corpus", {})
+    networks = insights.get("networks", {})
+    if not networks.get("available"):
+        return ""
+
+    top_asns = networks.get("top_asns", [])[:12]
+    countries = networks.get("top_countries", [])
+    suppressed = networks.get("suppressed", {})
+
+    # --- map: equirectangular, one circle per country, area proportional to count
+    plotted = [(c["country"], int(c["addresses"])) for c in countries if c["country"] in CENTROIDS]
+    biggest = max((n for _, n in plotted), default=1)
+    width, height = 1000.0, 460.0
+    circles = []
+    for code, count in sorted(plotted, key=lambda kv: kv[1], reverse=True):
+        lat, lon, name = CENTROIDS[code]
+        x = (lon + 180.0) / 360.0 * width
+        y = (90.0 - lat) / 180.0 * height
+        # sqrt keeps circle AREA proportional to the count, so a country with ten
+        # times the addresses does not look a hundred times worse.
+        r = 4.0 + 30.0 * math.sqrt(count / biggest)
+        circles.append(
+            f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{r:.1f}" class="dot">'
+            f"<title>{esc_html(name)} ({esc_html(code)}): {count:,} addresses</title></circle>"
+        )
+    graticule = "".join(
+        f'<line x1="0" y1="{height * f:.0f}" x2="{width:.0f}" y2="{height * f:.0f}"/>'
+        for f in (0.25, 0.5, 0.75)
+    ) + "".join(
+        f'<line x1="{width * f:.0f}" y1="0" x2="{width * f:.0f}" y2="{height:.0f}"/>'
+        for f in (0.25, 0.5, 0.75)
+    )
+
+    asn_rows = "".join(
+        "<tr>"
+        f'<td><a href="https://bgp.tools/as/{r["asn"]}">AS{r["asn"]}</a></td>'
+        f"<td>{esc_html(str(r['name'])[:44])}</td>"
+        f'<td class="num">{esc_html(str(r["country"]))}</td>'
+        f'<td class="num">{int(r["addresses"]):,}</td>'
+        f'<td class="num">{int(r["sources_reporting"])}</td>'
+        "</tr>"
+        for r in top_asns
+    )
+
+    contributors = insights.get("sources", [])
+    scoring_only = [s for s in contributors if not s.get("republished_noncommercial_tier")]
+    scoring_rows = "".join(
+        "<tr>"
+        f"<td>{esc_html(str(s['source']))}</td>"
+        f"<td>{esc_html(str(s.get('credit') or ''))[:70]}</td>"
+        f'<td class="num">{int(s["addresses_reported"]):,}</td>'
+        f'<td class="num">{int(s["reported_only_by_this_source"]):,}</td>'
+        "</tr>"
+        for s in sorted(scoring_only, key=lambda s: -int(s["addresses_reported"]))
+    )
+
+    return f"""
+<h2>What the whole corpus looks like</h2>
+<p class="note">The feeds above contain only what we are licensed to republish.
+These figures cover <strong>everything we look at</strong> —
+{int(corpus.get("addresses_observed", 0)):,} addresses from
+{int(corpus.get("sources_contributing", 0))} sources across
+{int(networks.get("distinct_asns_seen", 0)):,} networks — including sources whose licences
+forbid us republishing their addresses. A count is a derived fact, not an extract,
+so those sources can finally show their work here.</p>
+<p class="note"><strong>No individual address appears in this section</strong>, and
+named ASNs or countries with fewer than {int(suppressed.get("threshold", 5))} addresses are
+folded into an unnamed bucket ({int(suppressed.get("asns_below_threshold", 0)):,} networks) so
+no cell can identify a single address. That is a deliberate limit, not an
+oversight: a &ldquo;top offending addresses&rdquo; list would be the data itself
+wearing a hat.</p>
+
+<div class="mapwrap">
+<svg viewBox="0 0 {width:.0f} {height:.0f}" class="map" role="img"
+     aria-label="World map with circles sized by number of listed addresses per country">
+<g class="grat">{graticule}</g>
+{"".join(circles)}
+</svg>
+</div>
+<p class="note" style="text-align:center">Circle area is proportional to listed
+addresses. Hover for the count.</p>
+
+<h3>Networks carrying the most listed addresses</h3>
+<table>
+<tr><th>ASN</th><th>Network</th><th class="num">Country</th>
+    <th class="num">Addresses</th><th class="num">Sources</th></tr>
+{asn_rows}
+</table>
+<p class="note">The <em>Sources</em> column is the interesting one. A network
+reported by nine or ten independent sources is not having a bad week — that is a
+sustained pattern, and worth a look at the whole network rather than one address.</p>
+
+<h3>Sources credited here that appear in no feed file</h3>
+<table>
+<tr><th>Source</th><th>Credit</th><th class="num">Addresses seen</th>
+    <th class="num">Only source</th></tr>
+{scoring_rows}
+</table>
+<p class="note">Their licences do not let us republish their addresses, so none of
+their data is in any download. They still shape every confidence score, and the
+numbers above are the work they contributed. The <em>Only source</em> column counts
+addresses nobody else reported — evidence we would simply not have without them.</p>
+"""
+
+
 def render(
     manifest: dict[str, Any],
     history: list[dict[str, Any]],
     base_url: str = BASE_URL,
     nc_counts: dict[str, int] | None = None,
+    insights: dict[str, Any] | None = None,
 ) -> str:
     counts = manifest.get("counts", {})
     nc = nc_counts or {}
@@ -414,7 +545,9 @@ independent sources.">
 firewall. Compiled from public threat intelligence, rebuilt every 6 hours, and
 filtered so only addresses that <strong>independent sources agree on</strong> get
 published.</p>
-<p class="sub" style="margin-top:8px">Updated {manifest.get("generated_at", "")[:16].replace("T", " ")} UTC
+<p class="sub" style="margin-top:8px">Updated {
+        manifest.get("generated_at", "")[:16].replace("T", " ")
+    } UTC
 · <a href="{PROJECT_URL}">source and docs</a></p>
 </header>
 
@@ -586,6 +719,8 @@ confidence. Sources that share upstream data share a class, and each class votes
 at most once. Sources marked <em>scoring only</em> help decide what is malicious,
 but their data is never republished here because their licences do not allow it.</p>
 
+{_insights_section(insights or {})}
+
 <h2>Two tiers, and which one you want</h2>
 <p class="note">Everything above is the <strong>primary feed</strong>. Use it for
 anything, including commercial work. No source in it restricts commercial use.</p>
@@ -668,6 +803,13 @@ def write_dashboard(feeds_dir: Path = Path("feeds")) -> Path:
         nc_counts = {k: int(v) for k, v in nc_manifest.get("counts", {}).items()}
 
     out = feeds_dir / "index.html"
-    out.write_text(render(manifest, history, nc_counts=nc_counts), encoding="utf-8")
+    insights_path = feeds_dir / "insights.json"
+    insights: dict[str, Any] = {}
+    if insights_path.exists():
+        insights = json.loads(insights_path.read_text(encoding="utf-8"))
+
+    out.write_text(
+        render(manifest, history, nc_counts=nc_counts, insights=insights), encoding="utf-8"
+    )
     logger.info("dashboard_written", path=str(out), runs_charted=len(history))
     return out

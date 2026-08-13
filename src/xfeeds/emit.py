@@ -40,14 +40,19 @@ def _attribution_lines(registry: Registry, contributing: set[str]) -> list[str]:
         if config is None:
             continue
         upstream = upstream_attribution(name)
+        # Prefer a curated human credit, then whatever the payload declared, then
+        # the licence summary. A source that states no licence still gets named.
+        credit = config.credit or upstream.get("copyright") or config.license
         parts = [f"#   {name}"]
-        credit = upstream.get("copyright") or config.license
         if credit:
             parts.append(f"- {credit}")
         terms = upstream.get("terms") or config.license_url
         if terms:
             parts.append(f"({terms})")
         lines.append(" ".join(parts))
+        if config.credit and (config.license or upstream.get("copyright")):
+            detail = upstream.get("copyright") or config.license
+            lines.append(f"#     terms: {detail}")
     return lines
 
 

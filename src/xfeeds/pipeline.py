@@ -9,6 +9,7 @@ still corroborate an indicator without its rows ever being published. Filtering
 happens last so nothing downstream can reintroduce an allowlisted address.
 """
 
+import json
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -26,7 +27,9 @@ from xfeeds.emit import (
     build_manifest,
     emit_all,
 )
+from xfeeds.enrich import load_asn_index
 from xfeeds.filters import apply_filters
+from xfeeds.insights import build_insights
 from xfeeds.models import Band, IndicatorRecord, Registry, ScoredIndicator
 from xfeeds.score import noncommercial_sources, open_sources, score_indicators
 from xfeeds.state import carried_observations, load_state, merge_with_state, save_state
@@ -322,6 +325,23 @@ def run(
     save_state(kept, observations)
     append_history(feeds_dir / "history.json", manifest)
     (feeds_dir / "run-report.txt").write_text(report.summary() + "\n", encoding="utf-8")
+
+    # Aggregate statistics over EVERY source, including the ones we may not
+    # republish. Counts are derived facts rather than an extract, so this is the one
+    # place a restricted source's work becomes visible. See insights.py and ADR-044.
+    try:
+        asn_index = load_asn_index()
+        insights = build_insights(observations, scored, registry, now, asn_index)
+        (feeds_dir / "insights.json").write_text(
+            json.dumps(insights, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
+        report.counts["asns_reported"] = int(
+            insights.get("networks", {}).get("distinct_asns_seen", 0)
+        )
+    except (OSError, ValueError, TypeError, KeyError) as exc:
+        # Insights are a reporting nicety. A statistics failure must never stop the
+        # feed itself from publishing.
+        logger.warning("insights_failed", error=str(exc))
 
     from xfeeds.dashboard import write_dashboard
 
