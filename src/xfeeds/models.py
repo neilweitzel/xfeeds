@@ -32,6 +32,7 @@ VALID_PARSERS = {
     "github_meta",
     "google_json",
     "ipsum_levels",
+    "ipthreat",
     "netset",
     "plain_text",
     "spamhaus_asn_json",
@@ -175,6 +176,16 @@ class IndicatorRecord(BaseModel):
     last_seen: datetime
     categories: list[str]
     tags: list[str] = Field(default_factory=list)
+    source_last_reported: datetime | None = None
+    """When the upstream feed says it last saw this address, if it says.
+
+    Deliberately NOT ``last_seen``. Feeding a 31-day-old upstream date into
+    ``last_seen`` would put it straight through ``recency_factor`` and silently
+    restate every score, so this is carried alongside and consumed only by the
+    history and insights layers. bruteforceblocker publishes about a month of dated
+    history and ipthreat about ten days, which is what makes real 30- and 60-day
+    windows possible before this project has been running that long.
+    """
     carried: bool = False
     """Synthesised from prior state because this source missed the current run.
 

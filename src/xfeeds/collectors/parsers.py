@@ -2,6 +2,7 @@ import csv
 import io
 import ipaddress
 import json
+import re
 from collections.abc import Iterator
 from datetime import UTC, datetime
 
@@ -34,6 +35,25 @@ def record_upstream_attribution(
 def upstream_attribution(source_name: str) -> dict[str, str]:
     """Return attribution recorded for a source, if any."""
     return dict(_UPSTREAM_ATTRIBUTION.get(source_name, {}))
+
+
+_DATE_RE = re.compile(r"(\d{4}-\d{2}-\d{2})")
+
+
+def _parse_reported_date(text: str) -> datetime | None:
+    """Pull a YYYY-MM-DD out of an upstream comment field, truncated to the day.
+
+    Truncated deliberately: these fields are used for daily history buckets, and
+    keeping sub-day precision would make every run produce a different value for
+    the same fact.
+    """
+    match = _DATE_RE.search(text)
+    if not match:
+        return None
+    try:
+        return datetime.strptime(match.group(1), "%Y-%m-%d").replace(tzinfo=UTC)
+    except ValueError:
+        return None
 
 
 def _log_skips(source: str, malformed: int, non_global: int) -> None:
@@ -257,6 +277,12 @@ def bruteforceblocker(
 
         ip_str = parts[0].strip()
 
+        # Column 2 is "# YYYY-MM-DD HH:MM:SS" - roughly a month of real history,
+        # which the ASN windows use even though scoring does not.
+        reported = None
+        if len(parts) > 1:
+            reported = _parse_reported_date(parts[1])
+
         try:
             ip_obj = ipaddress.ip_address(ip_str)
             if not _is_global(ip_obj):
@@ -270,6 +296,7 @@ def bruteforceblocker(
                 first_seen=fetch_time,
                 last_seen=fetch_time,
                 categories=config.categories,
+                source_last_reported=reported,
             )
         except ValueError:
             malformed_count += 1
@@ -432,6 +459,57 @@ def turris_greylist(
     _log_skips(config.name, malformed_count, non_global_count)
 
 
+def ipthreat(
+    content: bytes, config: SourceConfig, fetch_time: datetime
+) -> Iterator[IndicatorRecord]:
+    """Parse ipthreat.net lists: ``IP # ThreatLevel ISO8601Timestamp CountryCode``.
+
+    plain_text can read the addresses out of this file, but it throws away the
+    per-row timestamp. That timestamp is the point: it gives roughly ten days of
+    real dated history on the first run, which the ASN windows use.
+    """
+    malformed_count = 0
+    non_global_count = 0
+
+    for raw in content.decode("utf-8", errors="replace").splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+
+        address, _, remainder = line.partition("#")
+        try:
+            ip_obj = ipaddress.ip_address(address.strip())
+        except ValueError:
+            malformed_count += 1
+            continue
+        if not _is_global(ip_obj):
+            non_global_count += 1
+            continue
+
+        fields = remainder.split()
+        reported = _parse_reported_date(fields[1]) if len(fields) > 1 else None
+        tags = []
+        if fields and fields[0].isdigit():
+            # Coarse bucket only. The exact level is upstream's scale, not ours, and
+            # publishing it verbatim per address would imply we can compare it to
+            # our own score.
+            level = int(fields[0])
+            tags.append(f"ipthreat-level-{min(100, max(0, level // 25 * 25))}")
+
+        yield IndicatorRecord(
+            ip_or_cidr=ip_obj,
+            source=config.name,
+            independence_class=config.independence_class,
+            first_seen=fetch_time,
+            last_seen=fetch_time,
+            categories=list(config.categories),
+            tags=tags,
+            source_last_reported=reported,
+        )
+
+    _log_skips(config.name, malformed_count, non_global_count)
+
+
 _IMPLEMENTED = [
     threatfox_api,
     plain_text,
@@ -443,6 +521,7 @@ _IMPLEMENTED = [
     bruteforceblocker,
     ipsum_levels,
     turris_greylist,
+    ipthreat,
 ]
 
 PARSERS = {}

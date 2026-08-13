@@ -676,13 +676,91 @@ finding that argues for a conversation about the network rather than a whack-a-m
 against addresses.
 
 
+## Address space instead of geography; persistence instead of volume (ADR-045)
+
+**Status:** accepted (2026-08-13). Supersedes the map added in ADR-044.
+
+The map was removed. Two reasons, and the second is the real one.
+
+It looked wrong: centroid dots on an unlabelled equirectangular projection, with a
+legitimately empty right-hand side that read as a rendering bug. That was fixable.
+
+**What was not fixable is that the underlying number was misleading.** The country
+in an IP-to-ASN table is where the AS *number is registered*. For a hosting company
+that describes where its paperwork lives, not where any traffic came from. M247 is
+registered in Romania and operates worldwide; a chart headed "listed addresses by
+country" would have put 19,000 addresses on Romania and been the most confidently
+wrong thing on the page. Country has been dropped from `insights.json` entirely
+rather than kept with a caveat, because a caveat under a coloured map does not
+survive a screenshot.
+
+**What replaced it.** Address space is the coordinate system this data actually
+has, so the hero visual is the whole IPv4 range as one strip, 512 slices of
+8.4 million addresses each, log-scaled. It answers a question the feed files cannot:
+how much of the internet do we see activity in at all. The answer today is 402 of
+512 slices, which is a more interesting claim than any country ranking. Log rather
+than linear because a handful of dense slices would otherwise flatten everything
+else to nothing, and the breadth is the point. Multicast and reserved space
+(224.0.0.0/4 and up) is shaded and labelled, since an empty tail otherwise reads as
+a broken chart.
+
+Beneath it, published counts across every recorded run.
+
+**The ASN table was rebuilt around persistence rather than volume.** Ranked by
+`days_active` first, because ADR-038 established that individual addresses churn out
+inside about a week: a large one-day number is an incident, and a network present on
+nine separate days is a standing pattern. Volume alone was also actively misleading
+— the first version's top rows were Google Cloud, Microsoft, Alibaba and
+DigitalOcean, which is a ranking of who is biggest, not who is worst.
+
+So every row now carries `per_million_announced`: address-days divided by the
+address space the ASN actually announces, computed from the iptoasn ranges. That is
+the column that separates signal from size. On the first run it moved DigitalOcean
+(716/M over 3.1M announced) and Tencent (641/M over 2.1M) above ChinaNet
+(18/M over 99M) — ChinaNet is simply enormous, while the other two are
+disproportionately hostile for their size. The cut-off for computing a rate is 256
+addresses, a /24: an earlier 1024 excluded every /24, which is exactly where a
+small, almost entirely hostile network appears.
+
+**Real 30- and 60-day windows on day two.** The project has 13 runs over 17 hours,
+so windows over its own history would have been three identical columns pretending
+to be three measurements. Two sources publish dated history of their own —
+bruteforceblocker about a month, ipthreat about ten days — and both were being
+thrown away: `bruteforceblocker` parsed the address and discarded the "Last
+Reported" column, and ipthreat was read by the generic `plain_text` parser which
+never saw its per-row timestamp. Both now preserve it, giving 11 days of genuine
+dated history immediately.
+
+Crucially that date is carried in a **new field**, `source_last_reported`, and not
+in `last_seen`. Putting a 31-day-old upstream date into `last_seen` would feed it
+straight through `recency_factor` (ADR-037) and silently restate every score in the
+feed. History and insights consume the new field; scoring does not see it. Whether
+scoring *should* is a genuine question, but it is a scoring change and belongs in
+its own decision with its own churn measurement.
+
+`feeds/asn-history.json` accumulates distinct addresses per ASN per day, retained 90
+days, merged with `max` rather than summed — the same dated list is re-read every six
+hours, and addition would inflate one fact four times a day. Windows shorter than the
+available history are labelled as incomplete on the page rather than quietly implying
+depth that is not there.
+
+**Deviation from the sketch.** The sketch had 30/60/all-time as three side-by-side
+columns. Each row carries five numbers that only mean anything together, and three
+of those tables abreast would have had to drop the normalised column — the one that
+stops this being a list of large hosting providers. Tabs instead, reusing the
+existing pattern, which also required scoping the tab script to its group since the
+page now has two independent sets.
+
+
 ## Open items
 
 - [ ] Confirm AbuseIPDB redistribution terms in writing; flip `redistribute` if permitted.
 - [x] Decide whether a separately-licensed NC-SA feed variant is worth shipping — done, shipped (ADR-041). DShield remains unattractive on volume, not licence: `block.txt` is only the top 20 /24 subnets.
 - [ ] Free-tier GreyNoise API keys require a business email address; a personal-domain account may be limited to unauthenticated lookups (~10/day). Confirm what tier is actually obtainable before wiring GreyNoise enrichment in Phase 2b.
 - [ ] Blocklist.de, bruteforceblocker and the Tor exit list state **no licence at all**. We publish them, and now credit them properly (ADR-043), but a credit is not a grant. Still need an explicit statement from each maintainer; this remains the weakest position in the set.
-- [ ] Google Cloud (AS396982) appears in the top networks with 6,865 addresses. Expected for a large cloud, but worth checking that the allowlist covers Google's published service ranges rather than only the ones we happened to add.
+- [ ] Google Cloud appears prominently in raw volume but drops sharply once normalised by announced size (ADR-045), which is the expected shape for a hyperscaler. Still worth confirming the allowlist covers Google's published service ranges rather than only the ones we happened to add.
+- [ ] Consider whether `source_last_reported` should feed `last_seen` and therefore scoring. It would make recency decay real for the two sources that publish dates, but it restates every score and needs a churn measurement first (ADR-045).
+- [ ] Only two sources publish dated history, so days before this project started running are covered by those two alone. Worth checking whether Blocklist.de or CINS expose a dated variant.
 - [ ] ipthreat.net's licence contradicts itself, naming "creative-commons by attribution" while saying "the creative commons by sa license can be used as a guide" and requiring derived data under the same licence. We read it conservatively as ShareAlike. Worth asking them to clarify, since a plain CC BY reading would let it into the non-commercial tier too.
 - [ ] ELLIO community feed now 404s and dataplane.org still prohibits redistribution; neither is actionable.
 - [ ] Feodo Tracker has been stale for 43 days and its IP blocklist is nearly empty. It is our only CC0 promoting source now that ThreatFox cannot promote. If it stays dead, the abuse.ch promotion path is effectively gone and should be removed rather than left looking active.

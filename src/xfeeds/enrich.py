@@ -54,6 +54,8 @@ class AsnIndex:
         self._starts = starts
         self._ends = ends
         self._infos = infos
+        self._by_asn: dict[int, AsnInfo] | None = None
+        self._sizes: dict[int, int] | None = None
 
     def __len__(self) -> int:
         return len(self._starts)
@@ -66,6 +68,30 @@ class AsnIndex:
         if i < 0 or value > self._ends[i]:
             return UNKNOWN
         return self._infos[i]
+
+    def announced_size(self, asn: int) -> int:
+        """Total addresses this ASN announces, across all of its ranges.
+
+        Needed to tell a large network with proportional noise apart from a small
+        one that is almost entirely hostile. Without it a ranking of raw counts just
+        rediscovers which providers are biggest, which nobody needed a threat feed
+        to learn.
+        """
+        if self._sizes is None:
+            sizes: dict[int, int] = {}
+            for start, end, info in zip(self._starts, self._ends, self._infos, strict=True):
+                sizes[info.asn] = sizes.get(info.asn, 0) + (end - start + 1)
+            self._sizes = sizes
+        return self._sizes.get(asn, 0)
+
+    def by_asn(self, asn: int) -> AsnInfo | None:
+        """Reverse lookup for reporting, so history rows can be labelled."""
+        if self._by_asn is None:
+            table: dict[int, AsnInfo] = {}
+            for info in self._infos:
+                table.setdefault(info.asn, info)
+            self._by_asn = table
+        return self._by_asn.get(asn)
 
     def summarise(self, item: object) -> AsnInfo:
         """Enrich a single address or the first address of a network.
