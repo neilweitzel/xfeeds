@@ -1,13 +1,13 @@
 {
   "agreement": {
     "by_independent_class_count": {
-      "0": 2612,
-      "1": 56704,
-      "2": 5011,
-      "3": 920,
-      "4": 179,
-      "5": 21,
-      "6": 2
+      "0": 3878,
+      "1": 53388,
+      "2": 4660,
+      "3": 837,
+      "4": 148,
+      "5": 23,
+      "6": 1
     }
   },
   "attribution": {
@@ -15,70 +15,64 @@
   },
   "class_overlap": [
     {
-      "a": "cins",
-      "b": "turris",
-      "jaccard": 0.0634,
-      "shared_addresses": 1507
-    },
-    {
       "a": "binary_defense",
       "b": "turris",
       "jaccard": 0.0618,
       "shared_addresses": 761
     },
     {
+      "a": "cins",
+      "b": "turris",
+      "jaccard": 0.0516,
+      "shared_addresses": 1222
+    },
+    {
       "a": "binary_defense",
       "b": "cins",
-      "jaccard": 0.0609,
-      "shared_addresses": 1109
+      "jaccard": 0.0489,
+      "shared_addresses": 883
     },
     {
       "a": "blocklist_de",
       "b": "turris",
-      "jaccard": 0.0355,
-      "shared_addresses": 1409
+      "jaccard": 0.0388,
+      "shared_addresses": 1387
     },
     {
       "a": "blocklist_de",
       "b": "ipthreat",
-      "jaccard": 0.0327,
-      "shared_addresses": 1102
-    },
-    {
-      "a": "greensnow",
-      "b": "turris",
-      "jaccard": 0.0307,
-      "shared_addresses": 392
+      "jaccard": 0.0349,
+      "shared_addresses": 1036
     },
     {
       "a": "blocklist_de",
       "b": "greensnow",
-      "jaccard": 0.0297,
-      "shared_addresses": 1016
+      "jaccard": 0.0332,
+      "shared_addresses": 1004
+    },
+    {
+      "a": "greensnow",
+      "b": "turris",
+      "jaccard": 0.031,
+      "shared_addresses": 396
     },
     {
       "a": "greensnow",
       "b": "ipthreat",
-      "jaccard": 0.0229,
-      "shared_addresses": 153
+      "jaccard": 0.0212,
+      "shared_addresses": 141
     },
     {
       "a": "ipthreat",
       "b": "turris",
-      "jaccard": 0.0206,
-      "shared_addresses": 257
+      "jaccard": 0.02,
+      "shared_addresses": 249
     },
     {
       "a": "binary_defense",
       "b": "greensnow",
-      "jaccard": 0.0171,
-      "shared_addresses": 120
-    },
-    {
-      "a": "binary_defense",
-      "b": "ipthreat",
-      "jaccard": 0.0115,
-      "shared_addresses": 77
+      "jaccard": 0.0154,
+      "shared_addresses": 109
     },
     {
       "a": "binary_defense",
@@ -88,32 +82,38 @@
     },
     {
       "a": "binary_defense",
+      "b": "ipthreat",
+      "jaccard": 0.0106,
+      "shared_addresses": 70
+    },
+    {
+      "a": "binary_defense",
       "b": "blocklist_de",
-      "jaccard": 0.0098,
-      "shared_addresses": 341
+      "jaccard": 0.0105,
+      "shared_addresses": 323
     },
     {
       "a": "blocklist_de",
       "b": "cins",
-      "jaccard": 0.0083,
-      "shared_addresses": 392
-    },
-    {
-      "a": "blocklist_de",
-      "b": "bruteforceblocker",
-      "jaccard": 0.0058,
-      "shared_addresses": 186
+      "jaccard": 0.0073,
+      "shared_addresses": 310
     },
     {
       "a": "cins",
       "b": "greensnow",
-      "jaccard": 0.0056,
-      "shared_addresses": 107
+      "jaccard": 0.0061,
+      "shared_addresses": 116
+    },
+    {
+      "a": "blocklist_de",
+      "b": "bruteforceblocker",
+      "jaccard": 0.0054,
+      "shared_addresses": 152
     },
     {
       "a": "bruteforceblocker",
       "b": "ipthreat",
-      "jaccard": 0.004,
+      "jaccard": 0.0041,
       "shared_addresses": 15
     },
     {
@@ -125,44 +125,44 @@
     {
       "a": "bruteforceblocker",
       "b": "greensnow",
-      "jaccard": 0.0017,
-      "shared_addresses": 7
+      "jaccard": 0.0024,
+      "shared_addresses": 10
     },
     {
       "a": "cins",
       "b": "ipthreat",
-      "jaccard": 0.0017,
-      "shared_addresses": 32
+      "jaccard": 0.0011,
+      "shared_addresses": 20
     }
   ],
   "corpus": {
-    "addresses_observed": 65449,
-    "addresses_published_primary": 4749,
+    "addresses_observed": 62935,
+    "addresses_published_primary": 4369,
     "independence_classes": 10,
     "sources_contributing": 14
   },
   "disclosure_control": "Named ASNs and countries with fewer than 5 addresses are folded into an 'other' bucket so that no named cell can identify a single address.",
-  "generated_at": "2026-08-13T02:51:00.262376+00:00",
+  "generated_at": "2026-08-13T07:54:17.987397+00:00",
   "networks": {
     "attribution": {
       "ip_to_asn": "IP to ASN mapping by IPtoASN (Frank Denis), https://iptoasn.com/",
       "licence": "Public Domain (PDDL v1.0)"
     },
     "available": true,
-    "distinct_asns_seen": 5452,
+    "distinct_asns_seen": 5331,
     "suppressed": {
-      "addresses_in_suppressed_asns": 6495,
-      "asns_below_threshold": 3939,
-      "countries_below_threshold": 39,
+      "addresses_in_suppressed_asns": 6404,
+      "asns_below_threshold": 3857,
+      "countries_below_threshold": 40,
       "threshold": 5
     },
     "top_asns": [
       {
-        "addresses": 31794,
+        "addresses": 31786,
         "asn": 55933,
         "country": "HK",
         "name": "CLOUDIE-AS-AP Cloudie Limited",
-        "sources_reporting": 7
+        "sources_reporting": 8
       },
       {
         "addresses": 27648,
@@ -172,21 +172,21 @@
         "sources_reporting": 1
       },
       {
-        "addresses": 20778,
+        "addresses": 20780,
         "asn": 152194,
         "country": "HK",
         "name": "CTGSERVERLIMITED-AS-AP CTG Server Limited",
         "sources_reporting": 7
       },
       {
-        "addresses": 19808,
+        "addresses": 19798,
         "asn": 7018,
         "country": "US",
         "name": "ATT-INTERNET4",
         "sources_reporting": 8
       },
       {
-        "addresses": 18950,
+        "addresses": 18948,
         "asn": 9009,
         "country": "RO",
         "name": "M247",
@@ -200,14 +200,14 @@
         "sources_reporting": 1
       },
       {
-        "addresses": 7239,
+        "addresses": 7237,
         "asn": 701,
         "country": "US",
         "name": "UUNET",
         "sources_reporting": 8
       },
       {
-        "addresses": 6900,
+        "addresses": 6943,
         "asn": 396982,
         "country": "US",
         "name": "GOOGLE-CLOUD-PLATFORM",
@@ -221,7 +221,7 @@
         "sources_reporting": 1
       },
       {
-        "addresses": 6157,
+        "addresses": 6155,
         "asn": 2516,
         "country": "JP",
         "name": "KDDI KDDI CORPORATION",
@@ -235,46 +235,46 @@
         "sources_reporting": 1
       },
       {
-        "addresses": 6143,
+        "addresses": 6144,
         "asn": 396190,
         "country": "US",
         "name": "LEASEWEB-USA-SEA",
         "sources_reporting": 2
       },
       {
-        "addresses": 6063,
-        "asn": 137409,
-        "country": "AU",
-        "name": "GSLNETWORKS-AS-AP GSL Networks Pty LTD",
-        "sources_reporting": 7
-      },
-      {
-        "addresses": 6054,
+        "addresses": 6056,
         "asn": 202412,
         "country": "SC",
         "name": "OMEGATECH-AS",
         "sources_reporting": 7
       },
       {
-        "addresses": 5674,
+        "addresses": 6039,
+        "asn": 137409,
+        "country": "AU",
+        "name": "GSLNETWORKS-AS-AP GSL Networks Pty LTD",
+        "sources_reporting": 6
+      },
+      {
+        "addresses": 5737,
+        "asn": 4837,
+        "country": "CN",
+        "name": "CHINA169-BACKBONE CHINA UNICOM China169 Backbone",
+        "sources_reporting": 10
+      },
+      {
+        "addresses": 5675,
         "asn": 210558,
         "country": "DE",
         "name": "SERVICES-1337-GMBH 1337-SERVICES-GMBH-NETWORK",
         "sources_reporting": 8
       },
       {
-        "addresses": 5660,
-        "asn": 8075,
-        "country": "US",
-        "name": "MICROSOFT-CORP-MSN-AS-BLOCK",
-        "sources_reporting": 10
-      },
-      {
-        "addresses": 5415,
-        "asn": 4837,
+        "addresses": 5572,
+        "asn": 4134,
         "country": "CN",
-        "name": "CHINA169-BACKBONE CHINA UNICOM China169 Backbone",
-        "sources_reporting": 10
+        "name": "CHINANET-BACKBONE No.31,Jin-rong Street",
+        "sources_reporting": 9
       },
       {
         "addresses": 5376,
@@ -282,13 +282,6 @@
         "country": "JP",
         "name": "GATEWAY-AS-AP GATEWAY INC",
         "sources_reporting": 1
-      },
-      {
-        "addresses": 5161,
-        "asn": 4134,
-        "country": "CN",
-        "name": "CHINANET-BACKBONE No.31,Jin-rong Street",
-        "sources_reporting": 9
       },
       {
         "addresses": 5121,
@@ -319,6 +312,13 @@
         "sources_reporting": 1
       },
       {
+        "addresses": 4884,
+        "asn": 8075,
+        "country": "US",
+        "name": "MICROSOFT-CORP-MSN-AS-BLOCK",
+        "sources_reporting": 10
+      },
+      {
         "addresses": 4879,
         "asn": 20860,
         "country": "GB",
@@ -326,7 +326,7 @@
         "sources_reporting": 6
       },
       {
-        "addresses": 4690,
+        "addresses": 4688,
         "asn": 174,
         "country": "US",
         "name": "COGENT-174",
@@ -335,91 +335,91 @@
     ],
     "top_countries": [
       {
-        "addresses": 141170,
+        "addresses": 139457,
         "country": "US"
       },
       {
-        "addresses": 84033,
+        "addresses": 83662,
         "country": "HK"
       },
       {
-        "addresses": 81259,
+        "addresses": 80971,
         "country": "GB"
       },
       {
-        "addresses": 39864,
+        "addresses": 39848,
         "country": "JP"
       },
       {
-        "addresses": 29548,
+        "addresses": 29082,
         "country": "CN"
       },
       {
-        "addresses": 24067,
+        "addresses": 24068,
         "country": "HN"
       },
       {
-        "addresses": 23254,
+        "addresses": 23247,
         "country": "RO"
       },
       {
-        "addresses": 17211,
+        "addresses": 17131,
         "country": "RU"
       },
       {
-        "addresses": 15939,
+        "addresses": 15682,
         "country": "DE"
       },
       {
-        "addresses": 13451,
+        "addresses": 13347,
         "country": "IN"
       },
       {
-        "addresses": 12434,
+        "addresses": 12396,
         "country": "SC"
       },
       {
-        "addresses": 10761,
+        "addresses": 10746,
         "country": "UA"
       },
       {
-        "addresses": 7565,
+        "addresses": 7530,
         "country": "AU"
       },
       {
-        "addresses": 7252,
+        "addresses": 7177,
         "country": "NL"
       },
       {
-        "addresses": 7088,
+        "addresses": 7086,
         "country": "IL"
       },
       {
-        "addresses": 5088,
+        "addresses": 5057,
         "country": "TW"
       },
       {
-        "addresses": 4911,
-        "country": "BD"
-      },
-      {
-        "addresses": 4731,
+        "addresses": 4920,
         "country": "FR"
       },
       {
-        "addresses": 4364,
+        "addresses": 4905,
+        "country": "BD"
+      },
+      {
+        "addresses": 4251,
         "country": "ID"
       },
       {
-        "addresses": 4157,
+        "addresses": 4129,
+        "country": "BR"
+      },
+      {
+        "addresses": 4122,
         "country": "CA"
       },
       {
-        "addresses": 4120,
-        "country": "MY"
-      },
-      {
-        "addresses": 4105,
+        "addresses": 4104,
         "country": "Unknown"
       },
       {
@@ -427,69 +427,69 @@
         "country": "BZ"
       },
       {
-        "addresses": 4086,
+        "addresses": 4091,
+        "country": "MY"
+      },
+      {
+        "addresses": 3987,
         "country": "SG"
       },
       {
-        "addresses": 4040,
-        "country": "BR"
-      },
-      {
-        "addresses": 3721,
+        "addresses": 3720,
         "country": "LT"
       },
       {
-        "addresses": 3661,
+        "addresses": 3645,
         "country": "ZA"
       },
       {
-        "addresses": 3477,
+        "addresses": 3374,
         "country": "KR"
       },
       {
-        "addresses": 3155,
+        "addresses": 3145,
         "country": "PK"
       },
       {
-        "addresses": 2614,
+        "addresses": 2594,
         "country": "IR"
       }
     ],
-    "unenriched_observations": 1859
+    "unenriched_observations": 1853
   },
   "sources": [
     {
       "addresses_reported": 3541,
       "credit": "Artillery Threat Intelligence Feed - Binary Defense Systems, binarydefense.com",
       "independence_class": "binary_defense",
-      "reported_only_by_this_source": 1083,
+      "reported_only_by_this_source": 1108,
       "republished": true,
       "republished_noncommercial_tier": true,
       "source": "binary_defense"
     },
     {
-      "addresses_reported": 31578,
+      "addresses_reported": 27611,
       "credit": "Blocklist.de - fail2ban reporting community, blocklist.de",
       "independence_class": "blocklist_de",
-      "reported_only_by_this_source": 24010,
+      "reported_only_by_this_source": 20443,
       "republished": true,
       "republished_noncommercial_tier": true,
       "source": "blocklist_de"
     },
     {
-      "addresses_reported": 552,
+      "addresses_reported": 554,
       "credit": "bruteforceblocker - Daniel Gerzo, danger.rulez.sk",
       "independence_class": "bruteforceblocker",
-      "reported_only_by_this_source": 264,
+      "reported_only_by_this_source": 260,
       "republished": true,
       "republished_noncommercial_tier": true,
       "source": "bruteforceblocker"
     },
     {
-      "addresses_reported": 15765,
+      "addresses_reported": 15389,
       "credit": "CINS Army List - Collective Intelligence Network Security, cinsscore.com",
       "independence_class": "cins",
-      "reported_only_by_this_source": 8957,
+      "reported_only_by_this_source": 9978,
       "republished": true,
       "republished_noncommercial_tier": true,
       "source": "cins_army"
@@ -504,10 +504,10 @@
       "source": "feodo_tracker"
     },
     {
-      "addresses_reported": 3611,
+      "addresses_reported": 3651,
       "credit": "GreenSnow.co - used for scoring only, not republished",
       "independence_class": "greensnow",
-      "reported_only_by_this_source": 2267,
+      "reported_only_by_this_source": 2274,
       "republished": false,
       "republished_noncommercial_tier": false,
       "source": "greensnow"
@@ -516,16 +516,16 @@
       "addresses_reported": 17356,
       "credit": "IPsum - Miroslav Stampar (stamparm), github.com/stamparm/ipsum",
       "independence_class": "META_aggregate",
-      "reported_only_by_this_source": 1429,
+      "reported_only_by_this_source": 2671,
       "republished": true,
       "republished_noncommercial_tier": true,
       "source": "ipsum_levels"
     },
     {
-      "addresses_reported": 3227,
+      "addresses_reported": 3144,
       "credit": "Data sourced from IPThreat located at https://ipthreat.net",
       "independence_class": "ipthreat",
-      "reported_only_by_this_source": 2024,
+      "reported_only_by_this_source": 2001,
       "republished": true,
       "republished_noncommercial_tier": true,
       "source": "ipthreat_30d"
@@ -558,19 +558,19 @@
       "source": "stopforumspam_toxic"
     },
     {
-      "addresses_reported": 674,
+      "addresses_reported": 671,
       "credit": "ThreatFox - abuse.ch / Spamhaus - used for scoring only, not republished",
       "independence_class": "abusech",
-      "reported_only_by_this_source": 668,
+      "reported_only_by_this_source": 665,
       "republished": false,
       "republished_noncommercial_tier": false,
       "source": "threatfox"
     },
     {
-      "addresses_reported": 1335,
+      "addresses_reported": 1333,
       "credit": "Tor exit relay list - The Tor Project, torproject.org",
       "independence_class": "tor",
-      "reported_only_by_this_source": 1085,
+      "reported_only_by_this_source": 1088,
       "republished": true,
       "republished_noncommercial_tier": true,
       "source": "tor_exits"
@@ -579,7 +579,7 @@
       "addresses_reported": 9529,
       "credit": "Turris Sentinel greylist - CZ.NIC, view.sentinel.turris.cz (CC BY-NC-SA 4.0)",
       "independence_class": "turris",
-      "reported_only_by_this_source": 5194,
+      "reported_only_by_this_source": 5177,
       "republished": false,
       "republished_noncommercial_tier": true,
       "source": "turris_greylist"
