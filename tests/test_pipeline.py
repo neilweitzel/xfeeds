@@ -14,7 +14,13 @@ from pathlib import Path
 import pytest
 
 from xfeeds.allowlist import Allowlist, AllowlistError, build_allowlist
-from xfeeds.emit import append_history, build_manifest, emit_all, write_text_feed
+from xfeeds.emit import (
+    append_history,
+    build_manifest,
+    emit_all,
+    write_noncommercial_license,
+    write_text_feed,
+)
 from xfeeds.filters import apply_filters
 from xfeeds.models import (
     AllowlistSourceConfig,
@@ -25,7 +31,12 @@ from xfeeds.models import (
     ScoredIndicator,
     SourceConfig,
 )
-from xfeeds.score import recency_factor, score_indicators
+from xfeeds.score import (
+    noncommercial_sources,
+    open_sources,
+    recency_factor,
+    score_indicators,
+)
 from xfeeds.state import StateEntry, carried_observations, merge_with_state
 
 NOW = datetime(2026, 8, 12, tzinfo=UTC)
@@ -565,3 +576,118 @@ def test_carried_votes_expire_at_the_source_ttl() -> None:
     }
     carried = carried_observations([_obs("open_a", "a", now)], previous, registry, now)
     assert carried == [], "a 40-day-old sighting is past a 10-day TTL"
+
+
+# --------------------------------------------------------------------------
+# Two-tier publication: ADR-041
+# --------------------------------------------------------------------------
+
+
+def _tiered_registry() -> Registry:
+    """One open source, one NC-only source, one ShareAlike source."""
+    return Registry(
+        version=1,
+        defaults=DefaultsConfig(),
+        sources=[
+            _restricted_source("open_a", "a", 0.8, True),
+            _restricted_source("open_b", "b", 0.8, True),
+            SourceConfig(
+                name="nc_only",
+                url="https://example.invalid/x",
+                parser="plain_text",
+                independence_class="nc",
+                weight=0.7,
+                ttl_days=10,
+                redistribute=False,
+                redistribute_noncommercial=True,
+            ),
+            SourceConfig(
+                name="sharealike",
+                url="https://example.invalid/x",
+                parser="plain_text",
+                independence_class="sa",
+                weight=0.8,
+                ttl_days=10,
+                redistribute=True,
+                noncommercial_compatible=False,
+            ),
+        ],
+        allowlist_sources=[],
+    )
+
+
+def test_tier_membership_is_computed_from_licences() -> None:
+    registry = _tiered_registry()
+    assert open_sources(registry) == {"open_a", "open_b", "sharealike"}
+    # nc_only joins; sharealike drops out because CC BY-SA forbids adding the
+    # NonCommercial term to an adaptation.
+    assert noncommercial_sources(registry) == {"open_a", "open_b", "nc_only"}
+
+
+def test_noncommercial_tier_publishes_what_the_primary_feed_cannot() -> None:
+    """One open source plus one NC source: withheld in primary, medium in the NC tier."""
+    now = datetime(2026, 8, 12, tzinfo=UTC)
+    registry = _tiered_registry()
+    observations = [_obs("open_a", "a", now), _obs("nc_only", "nc", now)]
+
+    primary = score_indicators(observations, registry, now, redistributable=open_sources(registry))
+    assert primary[0].band is Band.WITHHELD
+    assert "nc_only" not in primary[0].sources
+
+    nc = score_indicators(
+        observations, registry, now, redistributable=noncommercial_sources(registry)
+    )
+    assert nc[0].band is Band.MEDIUM
+    assert "nc_only" in nc[0].sources, "the NC tier may name and publish it"
+
+
+def test_sharealike_source_is_absent_from_the_noncommercial_tier() -> None:
+    """A CC BY-SA source must not leak into a CC BY-NC-SA output."""
+    now = datetime(2026, 8, 12, tzinfo=UTC)
+    registry = _tiered_registry()
+    observations = [
+        _obs("open_a", "a", now),
+        _obs("sharealike", "sa", now),
+        _obs("nc_only", "nc", now),
+    ]
+    nc = score_indicators(
+        observations, registry, now, redistributable=noncommercial_sources(registry)
+    )
+    assert "sharealike" not in nc[0].sources
+    assert "sa" not in nc[0].independence_classes
+
+
+def test_noncommercial_files_carry_the_licence_banner(tmp_path: Path) -> None:
+    """Nobody reads a licence they are not shown. The banner is in every file."""
+    now = datetime(2026, 8, 12, tzinfo=UTC)
+    registry = _tiered_registry()
+    record = ScoredIndicator(
+        ip_or_cidr=ipaddress.ip_address("45.66.230.9"),
+        score=75.0,
+        band=Band.MEDIUM,
+        independence_classes=["a", "nc"],
+        sources=["open_a", "nc_only"],
+        categories=["scanning"],
+        first_seen=now,
+        last_seen=now,
+    )
+    path = tmp_path / "high-confidence.txt"
+    write_text_feed(
+        path,
+        "high confidence (non-commercial tier)",
+        [record],
+        registry,
+        now,
+        tier="noncommercial",
+        redistributable=noncommercial_sources(registry),
+    )
+    text = path.read_text()
+    assert "NON-COMMERCIAL USE ONLY" in text
+    assert "CC BY-NC-SA 4.0" in text
+    assert "use the primary feed one directory up" in text
+
+    write_noncommercial_license(tmp_path / "LICENSE.txt", registry, {"open_a", "nc_only"})
+    licence = (tmp_path / "LICENSE.txt").read_text()
+    assert "nc_only" in licence
+    assert "may not" in licence.lower()
+    assert "open_a" not in licence, "only restricted sources need calling out here"

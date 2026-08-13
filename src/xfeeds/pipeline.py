@@ -19,10 +19,16 @@ import structlog
 from xfeeds.allowlist import build_allowlist
 from xfeeds.collectors.base import fetch_source
 from xfeeds.collectors.parsers import PARSERS
-from xfeeds.emit import append_history, build_manifest, emit_all
+from xfeeds.emit import (
+    NONCOMMERCIAL_DIR,
+    NONCOMMERCIAL_LICENSE,
+    append_history,
+    build_manifest,
+    emit_all,
+)
 from xfeeds.filters import apply_filters
 from xfeeds.models import Band, IndicatorRecord, Registry, ScoredIndicator
-from xfeeds.score import score_indicators
+from xfeeds.score import noncommercial_sources, open_sources, score_indicators
 from xfeeds.state import carried_observations, load_state, merge_with_state, save_state
 
 logger = structlog.get_logger(__name__)
@@ -206,9 +212,11 @@ def run(
     # vote, at a weight decayed by how long ago it last saw the address. Only
     # addresses something reported in this run are eligible; see
     # carried_observations.
+    open_names = open_sources(registry)
     previous = load_state()
     carried = carried_observations(records, previous, registry, observed_on)
-    scored = score_indicators(records + carried, registry, observed_on)
+    observations = records + carried
+    scored = score_indicators(observations, registry, observed_on)
 
     previous_high = sum(1 for r in previous.values() if r.band is Band.HIGH)
     previously_published = {k for k, v in previous.items() if v.band is not Band.WITHHELD}
@@ -258,9 +266,60 @@ def run(
         withheld=report.counts["withheld"],
     )
     emit_all(publishable, registry, manifest, now, feeds_dir=feeds_dir)
+
+    # Second tier. Sources whose licence permits redistribution but forbids
+    # commercial use cannot go in the primary feed, because we cannot impose that
+    # term on everyone who downloads a public file. They can be republished under
+    # the same licence in a separate, clearly labelled output - which is exactly
+    # what CC BY-NC-SA permits. Built as its own pass because the set of
+    # publishable sources differs, so bands and provenance differ too. See ADR-041.
+    nc_names = noncommercial_sources(registry)
+    if nc_names != open_names:
+        nc_scored = score_indicators(observations, registry, observed_on, redistributable=nc_names)
+        nc_ageing = merge_with_state(nc_scored, previous, registry, observed_on)
+        nc_kept, nc_stats = apply_filters(
+            nc_ageing.records, registry, allowlist, redistributable=nc_names
+        )
+        nc_publishable = [r for r in nc_kept if r.band is not Band.WITHHELD]
+        nc_dir = feeds_dir / NONCOMMERCIAL_DIR
+        nc_manifest = build_manifest(
+            registry,
+            status,
+            nc_publishable,
+            [],
+            [],
+            now,
+            {
+                "non_global": nc_stats.non_global,
+                "too_wide": nc_stats.too_wide,
+                "allowlisted": nc_stats.allowlisted,
+                "not_redistributable": nc_stats.not_redistributable,
+                "tag_only": nc_stats.tag_only,
+                "examples": nc_stats.examples,
+            },
+            withheld=sum(1 for r in nc_kept if r.band is Band.WITHHELD),
+        )
+        nc_manifest["tier"] = "noncommercial"
+        nc_manifest["license"] = NONCOMMERCIAL_LICENSE
+        emit_all(
+            nc_publishable,
+            registry,
+            nc_manifest,
+            now,
+            feeds_dir=nc_dir,
+            tier="noncommercial",
+            redistributable=nc_names,
+        )
+        report.counts["noncommercial_published"] = len(nc_publishable)
+        report.counts["noncommercial_high"] = sum(1 for r in nc_publishable if r.band is Band.HIGH)
+        logger.info(
+            "noncommercial_tier_emitted",
+            published=len(nc_publishable),
+            extra_over_primary=len(nc_publishable) - len(publishable),
+        )
     # Compact state, including withheld sightings so a second independent source
     # can promote them later.
-    save_state(kept, records + carried)
+    save_state(kept, observations)
     append_history(feeds_dir / "history.json", manifest)
     (feeds_dir / "run-report.txt").write_text(report.summary() + "\n", encoding="utf-8")
 

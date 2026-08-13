@@ -19,6 +19,7 @@ import structlog
 
 from xfeeds.allowlist import Allowlist
 from xfeeds.models import IPOrNet, Registry, ScoredIndicator
+from xfeeds.score import open_sources
 
 logger = structlog.get_logger(__name__)
 
@@ -79,9 +80,15 @@ def apply_filters(
     scored: list[ScoredIndicator],
     registry: Registry,
     allowlist: Allowlist,
+    redistributable: set[str] | None = None,
 ) -> tuple[list[ScoredIndicator], FilterStats]:
-    """Return the records that are safe and legal to publish, plus drop stats."""
-    redistributable = {s.name for s in registry.sources if s.redistribute}
+    """Return the records that are safe and legal to publish, plus drop stats.
+
+    ``redistributable`` names the sources publishable in the tier being built.
+    Defaults to the primary feed.
+    """
+    if redistributable is None:
+        redistributable = open_sources(registry)
     tag_only_sources = {s.name for s in registry.sources if s.tag_only}
     stats = FilterStats()
     kept: list[ScoredIndicator] = []

@@ -110,7 +110,7 @@ score = 100 × (1 − exp(−raw))
 
 One vote per class, and exponential saturation, so no single source can alone reach the top band. Spamhaus DROP membership and active abuse.ch C2 listings promote directly — justified by precision rather than agreement.
 
-Only classes we are licensed to republish count toward the threshold that admits a record. Sources under a non-redistributable licence (currently AbuseIPDB, Binary Defense, StopForumSpam and the Turris Sentinel greylist) can raise a record from medium to high, but can never bring one into the feed on their own, and their names are withheld from published records so the feed cannot disclose their membership. See ADR-035.
+Only classes we are licensed to republish count toward the threshold that admits a record. Sources we may consume but not republish (AbuseIPDB, GreenSnow, ThreatFox) can raise a record from medium to high, but can never bring one into the feed on their own, and their names are withheld from published records so the feed cannot disclose their membership. See ADR-035.
 
 Measured against live data on 2026-08-11, of 54,241 unique candidate IPs:
 
@@ -182,6 +182,29 @@ tool for triaging a false-positive report.
 - **Redistribution flags enforced in code.** Sources marked `redistribute: false` inform scoring and never reach an emitter.
 - **Provenance always.** No IP ships without a named source in `all.json`.
 - **Staleness detection.** A source whose last-updated header exceeds 30 days raises a warning, so a dead upstream is never mistaken for a quiet internet.
+
+## Two tiers
+
+Most public IP feeds that forbid something forbid *commercial use*, not redistribution. Those are two different restrictions, and treating them the same was costing real coverage.
+
+| | Primary — `feeds/` | Non-commercial — `feeds/noncommercial/` |
+|---|---|---|
+| Licence | Source terms only; no commercial restriction | CC BY-NC-SA 4.0 |
+| Use at work, or in a paid product | Yes | **No** |
+| Published addresses (last run) | 4,204 | **5,281** |
+| Extra sources published in full | — | Turris Sentinel, StopForumSpam |
+
+If you are running a home lab, a personal server, a school or a charity, take the non-commercial tier: it sees about a quarter more. If you are at a company or building anything anyone pays for, take the primary feed. The distinction is real, not a formality — `feeds/noncommercial/LICENSE.txt` states it plainly and every file in that directory leads with a banner.
+
+The tier is built by a second scoring pass rather than by filtering the first, because which sources are publishable changes what counts as corroboration, which changes the confidence bands.
+
+One rule in that second pass is not obvious: **CC BY-SA and CC BY-NC-SA cannot be combined in one file.** ShareAlike forbids applying additional terms to an adaptation, and NonCommercial is an additional term. So ipthreat.net data, which carries ShareAlike but not NonCommercial, is excluded from the non-commercial tier by `noncommercial_sources()`, with a test that asserts it never leaks in. See ADR-041.
+
+## Where the data comes from
+
+Every published file names its contributing sources and carries their terms in the header. Licence conclusions in `sources.yaml` quote the upstream text verbatim rather than paraphrasing it — a paraphrase is how we came to spend a week not republishing a feed that was always fine to republish, and to keep republishing two that were not (ADR-039, ADR-040).
+
+Threat data provided by [IPThreat at https://ipthreat.net](https://ipthreat.net). Spamhaus DROP data is © The Spamhaus Project SLU and its attribution travels with the data as their terms require. The [Turris Sentinel](https://view.sentinel.turris.cz/) greylist is CC BY-NC-SA 4.0 and appears only in the non-commercial tier.
 
 ### How long an address stays listed
 

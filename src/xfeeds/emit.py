@@ -51,8 +51,31 @@ def _attribution_lines(registry: Registry, contributing: set[str]) -> list[str]:
     return lines
 
 
+NONCOMMERCIAL_DIR = "noncommercial"
+"""Subdirectory for the CC BY-NC-SA tier. Separate directory, separate LICENSE."""
+
+NONCOMMERCIAL_LICENSE = "CC BY-NC-SA 4.0"
+
+NONCOMMERCIAL_BANNER = [
+    "# " + "!" * 74,
+    "# NON-COMMERCIAL USE ONLY. This file is NOT the same as the primary feed.",
+    "#",
+    "# It includes data from sources licensed CC BY-NC-SA, so this file is licensed",
+    f"# {NONCOMMERCIAL_LICENSE} and may NOT be used commercially - that includes using it",
+    "# inside a paid product or a service anyone pays for. If you are a company or",
+    "# your use is commercial in any way, use the primary feed one directory up",
+    "# instead. Attribution is required; see LICENSE.txt in this directory.",
+    "# " + "!" * 74,
+]
+
+
 def _header(
-    title: str, records: list[ScoredIndicator], registry: Registry, generated_at: datetime
+    title: str,
+    records: list[ScoredIndicator],
+    registry: Registry,
+    generated_at: datetime,
+    tier: str = "primary",
+    redistributable: set[str] | None = None,
 ) -> str:
     """Comment header for a plain-text feed.
 
@@ -61,7 +84,8 @@ def _header(
     never implies that non-redistributable data is present in the file.
     """
     all_contributing = {s for r in records for s in r.sources}
-    redistributable = {s.name for s in registry.sources if s.redistribute}
+    if redistributable is None:
+        redistributable = {s.name for s in registry.sources if s.redistribute}
     contributing = all_contributing & redistributable
     scoring_only = sorted(all_contributing - redistributable)
     lines = [
@@ -71,7 +95,12 @@ def _header(
         "#",
         f"# Generated: {generated_at.isoformat()}",
         f"# Entries:   {len(records)}",
+        f"# Licence:   {NONCOMMERCIAL_LICENSE if tier == 'noncommercial' else 'see individual source terms below'}",
         "#",
+    ]
+    if tier == "noncommercial":
+        lines += [*NONCOMMERCIAL_BANNER, "#"]
+    lines += [
         "# This list is compiled from public threat intelligence feeds. Each entry is",
         "# corroborated by multiple INDEPENDENT sources, or comes from a source whose",
         "# precision justifies it alone. Provided as-is with no warranty.",
@@ -104,10 +133,78 @@ def write_text_feed(
     records: list[ScoredIndicator],
     registry: Registry,
     generated_at: datetime,
+    tier: str = "primary",
+    redistributable: set[str] | None = None,
 ) -> None:
     """One indicator per line with a commented header - the universal format."""
     body = "\n".join(str(r.ip_or_cidr) for r in _sorted(records))
-    path.write_text(_header(title, records, registry, generated_at) + body + "\n", encoding="utf-8")
+    header = _header(title, records, registry, generated_at, tier, redistributable)
+    path.write_text(header + body + "\n", encoding="utf-8")
+
+
+def write_noncommercial_license(path: Path, registry: Registry, contributing: set[str]) -> None:
+    """Write the LICENSE.txt that governs the non-commercial tier.
+
+    A licence file beside the data is the minimum for a tier whose whole premise is
+    that the terms differ. The audience for this project is explicitly people
+    without a threat intelligence platform, so it says plainly what they may and may
+    not do rather than only linking to the deed.
+    """
+    by_name = {s.name: s for s in registry.sources}
+    nc_sources = sorted(
+        name
+        for name in contributing
+        if (config := by_name.get(name)) is not None and not config.redistribute
+    )
+    lines = [
+        "xfeeds - non-commercial tier",
+        "=" * 60,
+        "",
+        f"These files are licensed {NONCOMMERCIAL_LICENSE}",
+        "(Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International)",
+        "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+        "",
+        "WHY THIS TIER EXISTS",
+        "",
+        "Some good public threat feeds permit redistribution but forbid commercial",
+        "use. We cannot put that data in the primary feed, because we cannot impose",
+        "a non-commercial term on everybody who downloads a public file. We can",
+        "republish it under the same licence in a clearly marked separate tier,",
+        "which is what this is.",
+        "",
+        "WHAT YOU MAY DO",
+        "",
+        "  - Use these lists to protect your own networks and systems.",
+        "  - Share them, provided you keep this licence and credit the sources.",
+        "",
+        "WHAT YOU MAY NOT DO",
+        "",
+        "  - Use them commercially. That includes inside a paid product, or any",
+        "    service that somebody pays for.",
+        "  - Redistribute them under more permissive terms than these.",
+        "",
+        "If your use is commercial, use the primary feed one directory up. It",
+        "carries no non-commercial restriction.",
+        "",
+        "SOURCES REQUIRING ATTRIBUTION IN THIS TIER",
+        "",
+    ]
+    for name in nc_sources:
+        config = by_name[name]
+        lines.append(f"  {name}")
+        if config.license:
+            lines.append(f"    licence: {config.license}")
+        if config.license_url:
+            lines.append(f"    terms:   {config.license_url}")
+        lines.append("")
+    lines += [
+        "The primary feed's own source attributions also apply; see the header of",
+        "any file in this directory.",
+        "",
+        f"Project: {PROJECT_URL}",
+        "",
+    ]
+    path.write_text("\n".join(lines), encoding="utf-8")
 
 
 def write_csv(path: Path, records: list[ScoredIndicator]) -> None:
@@ -392,18 +489,37 @@ def emit_all(
     manifest: dict[str, Any],
     generated_at: datetime,
     feeds_dir: Path = FEEDS_DIR,
+    tier: str = "primary",
+    redistributable: set[str] | None = None,
 ) -> None:
     """Write every published artifact."""
     feeds_dir.mkdir(parents=True, exist_ok=True)
     high = [r for r in records if r.band is Band.HIGH]
     medium = [r for r in records if r.band is Band.MEDIUM]
 
+    title_suffix = " (non-commercial tier)" if tier == "noncommercial" else ""
     write_text_feed(
-        feeds_dir / "high-confidence.txt", "high confidence", high, registry, generated_at
+        feeds_dir / "high-confidence.txt",
+        "high confidence" + title_suffix,
+        high,
+        registry,
+        generated_at,
+        tier,
+        redistributable,
     )
     write_text_feed(
-        feeds_dir / "medium-confidence.txt", "medium confidence", medium, registry, generated_at
+        feeds_dir / "medium-confidence.txt",
+        "medium confidence" + title_suffix,
+        medium,
+        registry,
+        generated_at,
+        tier,
+        redistributable,
     )
+    if tier == "noncommercial":
+        write_noncommercial_license(
+            feeds_dir / "LICENSE.txt", registry, {s for r in records for s in r.sources}
+        )
     published = high + medium
     write_csv(feeds_dir / "all.csv", published)
     write_json(feeds_dir / "all.json", published, generated_at)
