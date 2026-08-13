@@ -75,6 +75,13 @@ color:var(--muted);border-radius:6px;padding:3px 9px;font-size:11.5px;cursor:poi
 .copy:hover{color:var(--text);border-color:var(--accent)}
 .stale{color:var(--med)}
 @media(max-width:760px){.grid2{grid-template-columns:1fr}.kv{grid-template-columns:1fr}}
+
+.mapwrap{border:1px solid var(--line);border-radius:10px;padding:10px;margin:18px 0 4px;
+background:#0b1017}
+.map{width:100%;height:auto;display:block}
+.map .grat line{stroke:var(--line);stroke-width:1}
+.map .dot{fill:#f0883e;fill-opacity:.40;stroke:#f0883e;stroke-opacity:.85;stroke-width:1}
+.map .dot:hover{fill-opacity:.78}
 </style></head><body><div class="wrap">
 
 <header>
@@ -83,21 +90,21 @@ color:var(--muted);border-radius:6px;padding:3px 9px;font-size:11.5px;cursor:poi
 firewall. Compiled from public threat intelligence, rebuilt every 6 hours, and
 filtered so only addresses that <strong>independent sources agree on</strong> get
 published.</p>
-<p class="sub" style="margin-top:8px">Updated 2026-08-13 01:44 UTC
+<p class="sub" style="margin-top:8px">Updated 2026-08-13 02:43 UTC
 · <a href="https://github.com/neilweitzel/xfeeds">source and docs</a></p>
 </header>
 
 <div class="cards">
-<div class="card"><div class="n high">2,729</div>
+<div class="card"><div class="n high">2,707</div>
   <div class="l">safe to block</div></div>
-<div class="card"><div class="n med">1,751</div>
+<div class="card"><div class="n med">1,719</div>
   <div class="l">worth challenging</div></div>
 <div class="card"><div class="n">91%</div>
   <div class="l">rejected as uncorroborated</div></div>
 <div class="card"><div class="n ok">13/14</div>
   <div class="l">sources healthy</div></div>
-<div class="card"><div class="n">+2,142 /
-  &minus;1,187</div>
+<div class="card"><div class="n">+63 /
+  &minus;117</div>
   <div class="l">changed this run</div></div>
 </div>
 
@@ -189,56 +196,56 @@ custom lists, so the high-confidence tier is the right one to use.</p>
 <tr><th>File</th><th>What it is</th><th class="num">Entries</th></tr>
 <tr><td><a href="high-confidence.txt">high-confidence.txt</a></td>
     <td>Safe to block. Corroborated across independent sources.</td>
-    <td class="num">2,729</td></tr>
+    <td class="num">2,707</td></tr>
 <tr><td><a href="medium-confidence.txt">medium-confidence.txt</a></td>
     <td>Two independent sources. Challenge or rate-limit rather than drop.</td>
-    <td class="num">1,751</td></tr>
+    <td class="num">1,719</td></tr>
 <tr><td><a href="all.csv">all.csv</a></td>
     <td>Both tiers with scores, sources and dates.</td>
-    <td class="num">4,480</td></tr>
+    <td class="num">4,426</td></tr>
 <tr><td><a href="all.json">all.json</a></td><td>Full provenance per address.</td>
-    <td class="num">4,480</td></tr>
+    <td class="num">4,426</td></tr>
 <tr><td><a href="stix-bundle.json">stix-bundle.json</a></td><td>STIX 2.1 bundle.</td>
-    <td class="num">2,729</td></tr>
+    <td class="num">2,707</td></tr>
 <tr><td><a href="misp-manifest.json">misp-manifest.json</a></td><td>MISP feed.</td>
-    <td class="num">2,729</td></tr>
+    <td class="num">2,707</td></tr>
 <tr><td><a href="nftables.conf">nftables.conf</a></td><td>nftables sets.</td>
-    <td class="num">2,729</td></tr>
+    <td class="num">2,707</td></tr>
 <tr><td><a href="iptables.ipset">iptables.ipset</a></td><td>ipset restore format.</td>
-    <td class="num">2,729</td></tr>
+    <td class="num">2,707</td></tr>
 <tr><td><a href="manifest.json">manifest.json</a></td>
     <td>Run metadata, per-source status and licences.</td><td class="num">—</td></tr>
 <tr><td><a href="history.json">history.json</a></td><td>Per-run history.</td>
-    <td class="num">9</td></tr>
+    <td class="num">10</td></tr>
 </table>
 
 <h2>Safe-to-block list over time</h2>
-<svg viewBox="0 0 1020 92" width="100%" height="92" role="img" aria-label="feed size over time"><polygon points="24,68 24.0,67.4 145.5,67.4 267.0,67.4 388.5,68.0 510.0,68.0 631.5,42.0 753.0,41.2 874.5,27.8 996.0,24.0 996.0,68" fill="#f85149" opacity="0.13"/><polyline points="24.0,67.4 145.5,67.4 267.0,67.4 388.5,68.0 510.0,68.0 631.5,42.0 753.0,41.2 874.5,27.8 996.0,24.0" fill="none" stroke="#f85149" stroke-width="2"/><text x="24" y="12">2026-08-12</text><text x="996" y="12" text-anchor="end">2026-08-13</text><text x="24" y="87">low 1,896</text><text x="996" y="87" text-anchor="end">high 2,729</text></svg>
+<svg viewBox="0 0 1020 92" width="100%" height="92" role="img" aria-label="feed size over time"><polygon points="24,68 24.0,67.4 132.0,67.4 240.0,67.4 348.0,68.0 456.0,68.0 564.0,42.0 672.0,41.2 780.0,27.8 888.0,24.0 996.0,25.2 996.0,68" fill="#f85149" opacity="0.13"/><polyline points="24.0,67.4 132.0,67.4 240.0,67.4 348.0,68.0 456.0,68.0 564.0,42.0 672.0,41.2 780.0,27.8 888.0,24.0 996.0,25.2" fill="none" stroke="#f85149" stroke-width="2"/><text x="24" y="12">2026-08-12</text><text x="996" y="12" text-anchor="end">2026-08-13</text><text x="24" y="87">low 1,896</text><text x="996" y="87" text-anchor="end">high 2,729</text></svg>
 
 <h2>Added and removed each run</h2>
-<svg viewBox="0 0 1020 108" width="100%" height="108" role="img" aria-label="additions and removals per run"><rect x="20.0" y="20.0" width="67.5" height="34.0" fill="#3fb950" opacity="0.85"/><rect x="128.9" y="54.0" width="67.5" height="0.0" fill="#3fb950" opacity="0.85"/><rect x="128.9" y="54.0" width="67.5" height="0.0" fill="#f85149" opacity="0.85"/><rect x="237.8" y="53.9" width="67.5" height="0.1" fill="#3fb950" opacity="0.85"/><rect x="237.8" y="54.0" width="67.5" height="0.0" fill="#f85149" opacity="0.85"/><rect x="346.7" y="50.9" width="67.5" height="3.1" fill="#3fb950" opacity="0.85"/><rect x="346.7" y="54.0" width="67.5" height="3.3" fill="#f85149" opacity="0.85"/><rect x="455.6" y="54.0" width="67.5" height="0.0" fill="#3fb950" opacity="0.85"/><rect x="455.6" y="54.0" width="67.5" height="0.0" fill="#f85149" opacity="0.85"/><rect x="564.4" y="49.6" width="67.5" height="4.4" fill="#3fb950" opacity="0.85"/><rect x="564.4" y="54.0" width="67.5" height="0.0" fill="#f85149" opacity="0.85"/><rect x="673.3" y="53.7" width="67.5" height="0.3" fill="#3fb950" opacity="0.85"/><rect x="673.3" y="54.0" width="67.5" height="0.2" fill="#f85149" opacity="0.85"/><rect x="782.2" y="52.8" width="67.5" height="1.2" fill="#3fb950" opacity="0.85"/><rect x="782.2" y="54.0" width="67.5" height="7.6" fill="#f85149" opacity="0.85"/><rect x="891.1" y="34.6" width="67.5" height="19.4" fill="#3fb950" opacity="0.85"/><rect x="891.1" y="54.0" width="67.5" height="10.7" fill="#f85149" opacity="0.85"/><line x1="20" y1="54.0" x2="1000" y2="54.0" stroke="#30363d"/><text x="20" y="12">added</text><text x="20" y="104">removed</text></svg>
+<svg viewBox="0 0 1020 108" width="100%" height="108" role="img" aria-label="additions and removals per run"><rect x="20.0" y="20.0" width="60.8" height="34.0" fill="#3fb950" opacity="0.85"/><rect x="118.0" y="54.0" width="60.8" height="0.0" fill="#3fb950" opacity="0.85"/><rect x="118.0" y="54.0" width="60.8" height="0.0" fill="#f85149" opacity="0.85"/><rect x="216.0" y="53.9" width="60.8" height="0.1" fill="#3fb950" opacity="0.85"/><rect x="216.0" y="54.0" width="60.8" height="0.0" fill="#f85149" opacity="0.85"/><rect x="314.0" y="50.9" width="60.8" height="3.1" fill="#3fb950" opacity="0.85"/><rect x="314.0" y="54.0" width="60.8" height="3.3" fill="#f85149" opacity="0.85"/><rect x="412.0" y="54.0" width="60.8" height="0.0" fill="#3fb950" opacity="0.85"/><rect x="412.0" y="54.0" width="60.8" height="0.0" fill="#f85149" opacity="0.85"/><rect x="510.0" y="49.6" width="60.8" height="4.4" fill="#3fb950" opacity="0.85"/><rect x="510.0" y="54.0" width="60.8" height="0.0" fill="#f85149" opacity="0.85"/><rect x="608.0" y="53.7" width="60.8" height="0.3" fill="#3fb950" opacity="0.85"/><rect x="608.0" y="54.0" width="60.8" height="0.2" fill="#f85149" opacity="0.85"/><rect x="706.0" y="52.8" width="60.8" height="1.2" fill="#3fb950" opacity="0.85"/><rect x="706.0" y="54.0" width="60.8" height="7.6" fill="#f85149" opacity="0.85"/><rect x="804.0" y="34.6" width="60.8" height="19.4" fill="#3fb950" opacity="0.85"/><rect x="804.0" y="54.0" width="60.8" height="10.7" fill="#f85149" opacity="0.85"/><rect x="902.0" y="53.4" width="60.8" height="0.6" fill="#3fb950" opacity="0.85"/><rect x="902.0" y="54.0" width="60.8" height="1.1" fill="#f85149" opacity="0.85"/><line x1="20" y1="54.0" x2="1000" y2="54.0" stroke="#30363d"/><text x="20" y="12">added</text><text x="20" y="104">removed</text></svg>
 
 <div class="grid2">
 <div>
 <h2>How much agreement</h2>
 <p class="note">How many <em>independent</em> source families reported each
 published address.</p>
-<table><tr><th>Independent sources</th><th class="num">Addresses</th><th></th></tr><tr><td>1 source <span class="note">— promoted, high precision</span></td><td class="num">1,780</td><td style="width:42%"><div class="bar"><span style="width:39.7%;background:#d29922"></span></div></td></tr><tr><td>2 sources</td><td class="num">2,552</td><td style="width:42%"><div class="bar"><span style="width:57.0%;background:#d29922"></span></div></td></tr><tr><td>3 sources</td><td class="num">134</td><td style="width:42%"><div class="bar"><span style="width:3.0%;background:#3fb950"></span></div></td></tr><tr><td>4 sources</td><td class="num">14</td><td style="width:42%"><div class="bar"><span style="width:0.3%;background:#3fb950"></span></div></td></tr></table><p class="note">1,780 were promoted by a single high-precision source — Spamhaus DROP hijacked netblocks and active abuse.ch command-and-control servers do not need a second opinion. Everything else required agreement across independent sources.</p>
+<table><tr><th>Independent sources</th><th class="num">Addresses</th><th></th></tr><tr><td>1 source <span class="note">— promoted, high precision</span></td><td class="num">1,780</td><td style="width:42%"><div class="bar"><span style="width:40.2%;background:#d29922"></span></div></td></tr><tr><td>2 sources</td><td class="num">2,498</td><td style="width:42%"><div class="bar"><span style="width:56.4%;background:#d29922"></span></div></td></tr><tr><td>3 sources</td><td class="num">136</td><td style="width:42%"><div class="bar"><span style="width:3.1%;background:#3fb950"></span></div></td></tr><tr><td>4 sources</td><td class="num">12</td><td style="width:42%"><div class="bar"><span style="width:0.3%;background:#3fb950"></span></div></td></tr></table><p class="note">1,780 were promoted by a single high-precision source — Spamhaus DROP hijacked netblocks and active abuse.ch command-and-control servers do not need a second opinion. Everything else required agreement across independent sources.</p>
 </div>
 <div>
 <h2>What got filtered out</h2>
 <table>
 <tr><th>Rule</th><th class="num">Dropped</th></tr>
 <tr><td>On the allowlist<div class="note">cloud, CDN, crawlers, public
-    resolvers</div></td><td class="num">4,501</td></tr>
+    resolvers</div></td><td class="num">4,490</td></tr>
 <tr><td>Prefix too wide<div class="note">one bad /8 can black-hole an
     ISP</div></td><td class="num">8</td></tr>
 <tr><td>Private or reserved</td>
     <td class="num">0</td></tr>
 <tr><td>Licence<div class="note">evidence came only from sources we may not
-    republish</div></td><td class="num">7,895</td></tr>
+    republish</div></td><td class="num">7,919</td></tr>
 <tr><td>Tor exits<div class="note">tagged, never blocked — that is your
-    call</div></td><td class="num">1,096</td></tr>
+    call</div></td><td class="num">1,094</td></tr>
 </table>
 </div>
 </div>
@@ -247,13 +254,61 @@ published address.</p>
 <table>
 <tr><th>Source</th><th>Independence class</th><th class="num">Records</th>
     <th>Status</th><th>Votes</th><th>Republished</th></tr>
-<tr><td>binary_defense</td><td>binary_defense</td><td class="num">3,542</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>blocklist_de</td><td>blocklist_de</td><td class="num">31,473</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>bruteforceblocker</td><td>bruteforceblocker</td><td class="num">553</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>cins_army</td><td>cins</td><td class="num">15,000</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>feodo_tracker<div class="note stale">upstream has not updated recently</div></td><td>abusech</td><td class="num">5</td><td><span class="pill warn">stale</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>greensnow</td><td>greensnow</td><td class="num">3,587</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill no">scoring only</span></td></tr><tr><td>ipsum_levels</td><td>META_aggregate</td><td class="num">26,849</td><td><span class="pill ok">ok</span></td><td><span class="pill no">no</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>ipthreat_30d</td><td>ipthreat</td><td class="num">3,266</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>spamhaus_drop_v4</td><td>spamhaus</td><td class="num">1,687</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>spamhaus_drop_v6</td><td>spamhaus</td><td class="num">91</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>stopforumspam_toxic</td><td>stopforumspam</td><td class="num">60</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill no">scoring only</span></td></tr><tr><td>threatfox</td><td>abusech</td><td class="num">1,052</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill no">scoring only</span></td></tr><tr><td>tor_exits</td><td>tor</td><td class="num">1,337</td><td><span class="pill ok">ok</span></td><td><span class="pill no">no</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>turris_greylist</td><td>turris</td><td class="num">9,529</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill no">scoring only</span></td></tr>
+<tr><td>binary_defense</td><td>binary_defense</td><td class="num">3,542</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>blocklist_de</td><td>blocklist_de</td><td class="num">31,495</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>bruteforceblocker</td><td>bruteforceblocker</td><td class="num">552</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>cins_army</td><td>cins</td><td class="num">15,000</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>feodo_tracker<div class="note stale">upstream has not updated recently</div></td><td>abusech</td><td class="num">5</td><td><span class="pill warn">stale</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>greensnow</td><td>greensnow</td><td class="num">3,613</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill no">scoring only</span></td></tr><tr><td>ipsum_levels</td><td>META_aggregate</td><td class="num">26,849</td><td><span class="pill ok">ok</span></td><td><span class="pill no">no</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>ipthreat_30d</td><td>ipthreat</td><td class="num">3,227</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>spamhaus_drop_v4</td><td>spamhaus</td><td class="num">1,687</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>spamhaus_drop_v6</td><td>spamhaus</td><td class="num">91</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>stopforumspam_toxic</td><td>stopforumspam</td><td class="num">60</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill no">scoring only</span></td></tr><tr><td>threatfox</td><td>abusech</td><td class="num">1,051</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill no">scoring only</span></td></tr><tr><td>tor_exits</td><td>tor</td><td class="num">1,335</td><td><span class="pill ok">ok</span></td><td><span class="pill no">no</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>turris_greylist</td><td>turris</td><td class="num">9,529</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill no">scoring only</span></td></tr>
 </table>
 <p class="note"><strong>Why "independence class" matters.</strong> Many public
 blocklists copy from each other, so counting files as votes manufactures false
 confidence. Sources that share upstream data share a class, and each class votes
 at most once. Sources marked <em>scoring only</em> help decide what is malicious,
 but their data is never republished here because their licences do not allow it.</p>
+
+
+<h2>What the whole corpus looks like</h2>
+<p class="note">The feeds above contain only what we are licensed to republish.
+These figures cover <strong>everything we look at</strong> —
+65,448 addresses from
+14 sources across
+5,451 networks — including sources whose licences
+forbid us republishing their addresses. A count is a derived fact, not an extract,
+so those sources can finally show their work here.</p>
+<p class="note"><strong>No individual address appears in this section</strong>, and
+named ASNs or countries with fewer than 5 addresses are
+folded into an unnamed bucket (3,938 networks) so
+no cell can identify a single address. That is a deliberate limit, not an
+oversight: a &ldquo;top offending addresses&rdquo; list would be the data itself
+wearing a hat.</p>
+
+<div class="mapwrap">
+<svg viewBox="0 0 1000 460" class="map" role="img"
+     aria-label="World map with circles sized by number of listed addresses per country">
+<g class="grat"><line x1="0" y1="115" x2="1000" y2="115"/><line x1="0" y1="230" x2="1000" y2="230"/><line x1="0" y1="345" x2="1000" y2="345"/><line x1="250" y1="0" x2="250" y2="460"/><line x1="500" y1="0" x2="500" y2="460"/><line x1="750" y1="0" x2="750" y2="460"/></g>
+<circle cx="232.4" cy="130.8" r="34.0" class="dot"><title>United States (US): 141,173 addresses</title></circle><circle cx="817.0" cy="172.9" r="27.1" class="dot"><title>Hong Kong (HK): 84,033 addresses</title></circle><circle cx="492.1" cy="92.1" r="26.8" class="dot"><title>United Kingdom (GB): 81,260 addresses</title></circle><circle cx="881.9" cy="136.0" r="19.9" class="dot"><title>Japan (JP): 39,863 addresses</title></circle><circle cx="790.8" cy="132.7" r="17.7" class="dot"><title>China (CN): 29,548 addresses</title></circle><circle cx="259.8" cy="192.3" r="16.4" class="dot"><title>Honduras (HN): 24,067 addresses</title></circle><circle cx="569.7" cy="112.9" r="16.2" class="dot"><title>Romania (RO): 23,254 addresses</title></circle><circle cx="774.1" cy="79.1" r="14.5" class="dot"><title>Russian Federation (RU): 17,211 addresses</title></circle><circle cx="529.0" cy="99.5" r="14.1" class="dot"><title>Germany (DE): 15,940 addresses</title></circle><circle cx="725.5" cy="169.7" r="13.3" class="dot"><title>India (IN): 13,450 addresses</title></circle><circle cx="654.1" cy="241.9" r="12.9" class="dot"><title>Seychelles (SC): 12,435 addresses</title></circle><circle cx="586.9" cy="105.6" r="12.3" class="dot"><title>Ukraine (UA): 10,760 addresses</title></circle><circle cx="872.3" cy="295.7" r="10.9" class="dot"><title>Australia (AU): 7,565 addresses</title></circle><circle cx="515.4" cy="96.8" r="10.8" class="dot"><title>Netherlands (NL): 7,253 addresses</title></circle><circle cx="597.3" cy="149.5" r="10.7" class="dot"><title>Israel (IL): 7,089 addresses</title></circle><circle cx="836.0" cy="169.3" r="9.7" class="dot"><title>Taiwan (TW): 5,088 addresses</title></circle><circle cx="751.2" cy="169.5" r="9.6" class="dot"><title>Bangladesh (BD): 4,910 addresses</title></circle><circle cx="506.1" cy="110.8" r="9.5" class="dot"><title>France (FR): 4,731 addresses</title></circle><circle cx="816.6" cy="229.6" r="9.3" class="dot"><title>Indonesia (ID): 4,364 addresses</title></circle><circle cx="226.6" cy="82.9" r="9.1" class="dot"><title>Canada (CA): 4,157 addresses</title></circle><circle cx="818.4" cy="220.6" r="9.1" class="dot"><title>Malaysia (MY): 4,120 addresses</title></circle><circle cx="253.7" cy="185.9" r="9.1" class="dot"><title>Belize (BZ): 4,102 addresses</title></circle><circle cx="788.4" cy="226.6" r="9.1" class="dot"><title>Singapore (SG): 4,085 addresses</title></circle><circle cx="349.0" cy="259.4" r="9.1" class="dot"><title>Brazil (BR): 4,040 addresses</title></circle><circle cx="566.5" cy="88.7" r="8.9" class="dot"><title>Lithuania (LT): 3,720 addresses</title></circle><circle cx="568.8" cy="303.0" r="8.8" class="dot"><title>South Africa (ZA): 3,661 addresses</title></circle><circle cx="854.9" cy="137.0" r="8.7" class="dot"><title>South Korea (KR): 3,477 addresses</title></circle><circle cx="691.9" cy="153.0" r="8.5" class="dot"><title>Pakistan (PK): 3,153 addresses</title></circle><circle cx="650.7" cy="145.9" r="8.1" class="dot"><title>Iran (IR): 2,614 addresses</title></circle>
+</svg>
+</div>
+<p class="note" style="text-align:center">Circle area is proportional to listed
+addresses. Hover for the count.</p>
+
+<h3>Networks carrying the most listed addresses</h3>
+<table>
+<tr><th>ASN</th><th>Network</th><th class="num">Country</th>
+    <th class="num">Addresses</th><th class="num">Sources</th></tr>
+<tr><td><a href="https://bgp.tools/as/55933">AS55933</a></td><td>CLOUDIE-AS-AP Cloudie Limited</td><td class="num">HK</td><td class="num">31,794</td><td class="num">7</td></tr><tr><td><a href="https://bgp.tools/as/203346">AS203346</a></td><td>AS-232WEB</td><td class="num">GB</td><td class="num">27,648</td><td class="num">1</td></tr><tr><td><a href="https://bgp.tools/as/152194">AS152194</a></td><td>CTGSERVERLIMITED-AS-AP CTG Server Limited</td><td class="num">HK</td><td class="num">20,778</td><td class="num">7</td></tr><tr><td><a href="https://bgp.tools/as/7018">AS7018</a></td><td>ATT-INTERNET4</td><td class="num">US</td><td class="num">19,808</td><td class="num">8</td></tr><tr><td><a href="https://bgp.tools/as/9009">AS9009</a></td><td>M247</td><td class="num">RO</td><td class="num">18,950</td><td class="num">11</td></tr><tr><td><a href="https://bgp.tools/as/4686">AS4686</a></td><td>BEKKOAME BEKKOAME INTERNET INC.</td><td class="num">JP</td><td class="num">17,408</td><td class="num">1</td></tr><tr><td><a href="https://bgp.tools/as/701">AS701</a></td><td>UUNET</td><td class="num">US</td><td class="num">7,239</td><td class="num">8</td></tr><tr><td><a href="https://bgp.tools/as/396982">AS396982</a></td><td>GOOGLE-CLOUD-PLATFORM</td><td class="num">US</td><td class="num">6,902</td><td class="num">9</td></tr><tr><td><a href="https://bgp.tools/as/263821">AS263821</a></td><td>Soluciones Favorables</td><td class="num">HN</td><td class="num">6,656</td><td class="num">1</td></tr><tr><td><a href="https://bgp.tools/as/2516">AS2516</a></td><td>KDDI KDDI CORPORATION</td><td class="num">JP</td><td class="num">6,157</td><td class="num">5</td></tr><tr><td><a href="https://bgp.tools/as/208525">AS208525</a></td><td>AIRULIMITED</td><td class="num">HK</td><td class="num">6,144</td><td class="num">1</td></tr><tr><td><a href="https://bgp.tools/as/396190">AS396190</a></td><td>LEASEWEB-USA-SEA</td><td class="num">US</td><td class="num">6,143</td><td class="num">2</td></tr>
+</table>
+<p class="note">The <em>Sources</em> column is the interesting one. A network
+reported by nine or ten independent sources is not having a bad week — that is a
+sustained pattern, and worth a look at the whole network rather than one address.</p>
+
+<h3>Sources credited here that appear in no feed file</h3>
+<table>
+<tr><th>Source</th><th>Credit</th><th class="num">Addresses seen</th>
+    <th class="num">Only source</th></tr>
+<tr><td>greensnow</td><td>GreenSnow.co - used for scoring only, not republished</td><td class="num">3,613</td><td class="num">2,266</td></tr><tr><td>threatfox</td><td>ThreatFox - abuse.ch / Spamhaus - used for scoring only, not republish</td><td class="num">674</td><td class="num">668</td></tr>
+</table>
+<p class="note">Their licences do not let us republish their addresses, so none of
+their data is in any download. They still shape every confidence score, and the
+numbers above are the work they contributed. The <em>Only source</em> column counts
+addresses nobody else reported — evidence we would simply not have without them.</p>
+
 
 <h2>Two tiers, and which one you want</h2>
 <p class="note">Everything above is the <strong>primary feed</strong>. Use it for
@@ -262,7 +317,7 @@ anything, including commercial work. No source in it restricts commercial use.</
 use. We cannot put those in a file that anyone might use at work, so they are
 republished separately in
 <a href="noncommercial/">the non-commercial tier</a> under CC BY-NC-SA 4.0. It is
-larger — <strong>5,651</strong> addresses versus 4,480 — because it can
+larger — <strong>5,613</strong> addresses versus 4,426 — because it can
 include the Turris Sentinel router-sensor data and StopForumSpam's toxic ranges in
 full rather than just counting them as corroboration.</p>
 <p class="note"><strong>Home lab, personal server, school, charity, or research?</strong>
@@ -275,13 +330,13 @@ out.</p>
 <tr><th>File</th><th>What it is</th><th class="num">Entries</th></tr>
 <tr><td><a href="noncommercial/high-confidence.txt">noncommercial/high-confidence.txt</a></td>
     <td>Safe to block. Non-commercial use only.</td>
-    <td class="num">2,811</td></tr>
+    <td class="num">2,788</td></tr>
 <tr><td><a href="noncommercial/medium-confidence.txt">noncommercial/medium-confidence.txt</a></td>
     <td>Two independent sources. Non-commercial use only.</td>
-    <td class="num">2,840</td></tr>
+    <td class="num">2,825</td></tr>
 <tr><td><a href="noncommercial/all.json">noncommercial/all.json</a></td>
     <td>Full provenance. Non-commercial use only.</td>
-    <td class="num">5,651</td></tr>
+    <td class="num">5,613</td></tr>
 </table>
 
 <h2>Licensing and credit</h2>
