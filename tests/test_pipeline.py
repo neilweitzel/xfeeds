@@ -942,3 +942,18 @@ def test_bruteforceblocker_parser_keeps_the_reported_date() -> None:
     assert len(records) == 1
     assert records[0].source_last_reported == datetime(2026, 7, 19, tzinfo=UTC)
     assert records[0].last_seen == datetime(2026, 8, 12, tzinfo=UTC)
+
+
+def test_insights_do_not_publish_a_registration_country() -> None:
+    """ADR-045 removed geography because the country field is where the AS number is
+    registered, not where traffic came from. Asserted so it cannot creep back in as a
+    table column after being removed as a map."""
+    now = datetime(2026, 8, 12, tzinfo=UTC)
+    registry = _tiered_registry()
+    observations = [_obs("open_a", "a", now, ip=f"45.66.0.{i}") for i in range(1, 7)]
+    scored = score_indicators(observations, registry, now)
+    insights = build_insights(observations, scored, registry, now, _fake_asn_index())
+
+    assert "top_countries" not in insights["networks"]
+    for row in insights["networks"]["top_asns"]:
+        assert "country" not in row

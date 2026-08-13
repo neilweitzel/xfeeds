@@ -635,7 +635,6 @@ def _insights_section(insights: dict[str, Any]) -> str:
         "<tr>"
         f'<td><a href="https://bgp.tools/as/{r["asn"]}">AS{r["asn"]}</a></td>'
         f"<td>{esc_html(str(r['name'])[:44])}</td>"
-        f'<td class="num">{esc_html(str(r["country"]))}</td>'
         f'<td class="num">{int(r["addresses"]):,}</td>'
         f'<td class="num">{int(r["sources_reporting"])}</td>'
         "</tr>"
@@ -670,10 +669,10 @@ no cell can identify a single address. That is a deliberate limit, not an
 oversight: a &ldquo;top offending addresses&rdquo; list would be the data itself
 wearing a hat.</p>
 
-<h3>Networks carrying the most listed addresses</h3>
+<h3>Networks with the most listed addresses in this run</h3>
 <div class="tscroll">
 <table>
-<tr><th>ASN</th><th>Network</th><th class="num">Country</th>
+<tr><th>ASN</th><th>Network</th>
     <th class="num">Addresses</th><th class="num">Sources</th></tr>
 {asn_rows}
 </table>
@@ -694,12 +693,10 @@ sustained pattern, and worth a look at the whole network rather than one address
 their data is in any download. They still shape every confidence score, and the
 numbers above are the work they contributed. The <em>Only source</em> column counts
 addresses nobody else reported — evidence we would simply not have without them.</p>
-<p class="note">Network and country attribution in this section uses
+<p class="note">Network attribution in this section uses
 <a href="https://iptoasn.com/">IPtoASN</a> by Frank Denis (Public Domain, PDDL v1.0).
-Map positions use
-<a href="https://github.com/gavinr/world-countries-centroids">world-countries-centroids</a>
-by Gavin Rehkemper (MIT). Neither contributes threat data; they only turn counts
-into a network name and a point on a map.</p>
+It contributes no threat data; it only turns an address into an AS number and a
+network name.</p>
 """
 
 

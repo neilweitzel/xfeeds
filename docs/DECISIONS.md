@@ -752,6 +752,33 @@ existing pattern, which also required scoping the tab script to its group since 
 page now has two independent sets.
 
 
+## Map remnants removed (ADR-046)
+
+**Status:** accepted (2026-08-13)
+
+ADR-045 removed the map. It did not remove everything that existed to serve it,
+which was reported as "there are still mentions of the Map on the application".
+
+Two leftovers, and the second matters more than the first:
+
+- The credit paragraph still thanked world-countries-centroids for "map positions",
+  crediting a dataset whose module had been deleted in the same change. Corrected to
+  credit only IPtoASN, which is still used.
+- **The top-ASN table still had a Country column**, and `insights.json` still carried
+  `country` on every row. That is the registration country - the precise number
+  ADR-045 removed the map *for*. Deleting the map while keeping the same figure in a
+  table would have kept the wrong claim on the page in smaller type. Both removed,
+  with a test asserting it cannot reappear.
+
+The lesson repeats one from ADR-039: a change is not finished when the offending
+thing stops rendering. The supporting data, credits and columns are part of it, and a
+grep for the feature name is a cheap last step that would have caught both of these.
+
+Also renamed that table to "Networks with the most listed addresses in this run", so
+it is clearly a current-run view rather than competing with the historical windows at
+the top of the page.
+
+
 ## Open items
 
 - [ ] Confirm AbuseIPDB redistribution terms in writing; flip `redistribute` if permitted.

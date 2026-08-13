@@ -204,12 +204,16 @@ def build_insights(
                 suppressed_count += 1
                 suppressed_addresses += count
                 continue
-            country, name = asn_meta.get(asn, ("??", "unknown"))
+            # Country is deliberately absent. The field in an IP-to-ASN table is
+            # where the AS number is registered, which for a hosting company says
+            # where its paperwork lives and nothing about where traffic came from.
+            # ADR-045 removed the map for that reason; leaving the column in a table
+            # would have kept the same wrong number on the page in smaller type.
+            _, name = asn_meta.get(asn, ("??", "unknown"))
             rows.append(
                 {
                     "asn": asn,
                     "name": name,
-                    "country": country,
                     "addresses": count,
                     "sources_reporting": len(asn_sources[asn]),
                 }
