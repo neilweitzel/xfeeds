@@ -1,6 +1,6 @@
 {
-  "count": 5132,
-  "generated_at": "2026-08-13T14:31:34.074667+00:00",
+  "count": 5131,
+  "generated_at": "2026-08-13T14:55:46.136523+00:00",
   "indicators": [
     {
       "band": "high",
@@ -2062,7 +2062,7 @@
       "tags": []
     },
     {
-      "band": "high",
+      "band": "medium",
       "categories": [
         "brute-force",
         "malware-infrastructure",
@@ -2076,8 +2076,8 @@
       "ip_or_cidr": "5.238.111.68",
       "last_seen": "2026-08-13T00:00:00Z",
       "promoted_by": null,
-      "restricted_corroboration": 1,
-      "score": 82.09,
+      "restricted_corroboration": 0,
+      "score": 68.65,
       "sources": [
         "binary_defense",
         "cins_army"
@@ -8529,8 +8529,8 @@
       "ip_or_cidr": "36.135.103.30",
       "last_seen": "2026-08-13T00:00:00Z",
       "promoted_by": null,
-      "restricted_corroboration": 2,
-      "score": 88.0,
+      "restricted_corroboration": 1,
+      "score": 78.99,
       "sources": [
         "blocklist_de",
         "ipsum_levels",
@@ -9273,7 +9273,7 @@
       "tags": []
     },
     {
-      "band": "high",
+      "band": "medium",
       "categories": [
         "aggregate",
         "brute-force",
@@ -9289,8 +9289,8 @@
       "ip_or_cidr": "37.204.22.234",
       "last_seen": "2026-08-13T00:00:00Z",
       "promoted_by": null,
-      "restricted_corroboration": 1,
-      "score": 78.78,
+      "restricted_corroboration": 0,
+      "score": 62.84,
       "sources": [
         "blocklist_de",
         "ipsum_levels",
@@ -21156,38 +21156,6 @@
         "aggregate",
         "brute-force",
         "scanning",
-        "web-attack"
-      ],
-      "first_seen": "2026-08-12T00:00:00Z",
-      "independence_classes": [
-        "blocklist_de",
-        "turris"
-      ],
-      "ip_or_cidr": "47.254.243.215",
-      "last_seen": "2026-08-13T00:00:00Z",
-      "promoted_by": null,
-      "restricted_corroboration": 0,
-      "score": 74.08,
-      "sources": [
-        "blocklist_de",
-        "ipsum_levels",
-        "turris_greylist"
-      ],
-      "tags": [
-        "ipsum-level-3",
-        "ipsum-level-4",
-        "ipsum-level-5",
-        "turris-ftp",
-        "turris-http",
-        "turris-telnet"
-      ]
-    },
-    {
-      "band": "medium",
-      "categories": [
-        "aggregate",
-        "brute-force",
-        "scanning",
         "spam-source",
         "web-attack"
       ],
@@ -21320,7 +21288,7 @@
       "tags": []
     },
     {
-      "band": "high",
+      "band": "medium",
       "categories": [
         "aggregate",
         "brute-force",
@@ -21336,8 +21304,8 @@
       "ip_or_cidr": "49.115.219.90",
       "last_seen": "2026-08-13T00:00:00Z",
       "promoted_by": null,
-      "restricted_corroboration": 1,
-      "score": 78.78,
+      "restricted_corroboration": 0,
+      "score": 62.84,
       "sources": [
         "blocklist_de",
         "ipsum_levels",
@@ -23518,7 +23486,7 @@
       ]
     },
     {
-      "band": "high",
+      "band": "medium",
       "categories": [
         "aggregate",
         "brute-force",
@@ -23535,8 +23503,8 @@
       "ip_or_cidr": "59.145.170.227",
       "last_seen": "2026-08-13T00:00:00Z",
       "promoted_by": null,
-      "restricted_corroboration": 1,
-      "score": 81.55,
+      "restricted_corroboration": 0,
+      "score": 67.7,
       "sources": [
         "blocklist_de",
         "ipsum_levels",
@@ -25166,6 +25134,37 @@
       "tags": [
         "ipsum-level-3",
         "ipsum-level-4",
+        "turris-smtp"
+      ]
+    },
+    {
+      "band": "medium",
+      "categories": [
+        "aggregate",
+        "brute-force",
+        "scanning",
+        "spam-source",
+        "ssh-attack",
+        "web-attack"
+      ],
+      "first_seen": "2026-08-12T00:00:00Z",
+      "independence_classes": [
+        "blocklist_de",
+        "turris"
+      ],
+      "ip_or_cidr": "64.53.7.231",
+      "last_seen": "2026-08-13T00:00:00Z",
+      "promoted_by": null,
+      "restricted_corroboration": 0,
+      "score": 67.7,
+      "sources": [
+        "blocklist_de",
+        "ipsum_levels",
+        "turris_greylist"
+      ],
+      "tags": [
+        "ipsum-level-3",
+        "turris-haas",
         "turris-smtp"
       ]
     },
@@ -27209,6 +27208,35 @@
       ],
       "tags": [
         "ipsum-level-3"
+      ]
+    },
+    {
+      "band": "medium",
+      "categories": [
+        "brute-force",
+        "scanning",
+        "spam-source",
+        "web-attack"
+      ],
+      "first_seen": "2026-08-13T00:00:00Z",
+      "independence_classes": [
+        "blocklist_de",
+        "turris"
+      ],
+      "ip_or_cidr": "64.225.100.131",
+      "last_seen": "2026-08-13T00:00:00Z",
+      "promoted_by": null,
+      "restricted_corroboration": 0,
+      "score": 69.88,
+      "sources": [
+        "blocklist_de",
+        "turris_greylist"
+      ],
+      "tags": [
+        "turris-ftp",
+        "turris-http",
+        "turris-smtp",
+        "turris-telnet"
       ]
     },
     {
@@ -33380,7 +33408,7 @@
       ]
     },
     {
-      "band": "high",
+      "band": "medium",
       "categories": [
         "aggregate",
         "brute-force",
@@ -33390,7 +33418,6 @@
       ],
       "first_seen": "2026-08-12T00:00:00Z",
       "independence_classes": [
-        "blocklist_de",
         "cins",
         "turris"
       ],
@@ -33398,9 +33425,8 @@
       "last_seen": "2026-08-13T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 0,
-      "score": 85.19,
+      "score": 71.92,
       "sources": [
-        "blocklist_de",
         "cins_army",
         "ipsum_levels",
         "turris_greylist"
@@ -41660,26 +41686,6 @@
       "independence_classes": [
         "spamhaus"
       ],
-      "ip_or_cidr": "77.91.65.0/24",
-      "last_seen": "2026-08-13T00:00:00Z",
-      "promoted_by": "spamhaus_drop_v4",
-      "restricted_corroboration": 0,
-      "score": 90.0,
-      "sources": [
-        "spamhaus_drop_v4"
-      ],
-      "tags": []
-    },
-    {
-      "band": "high",
-      "categories": [
-        "criminal-hosting",
-        "hijacked-netblock"
-      ],
-      "first_seen": "2026-08-12T00:00:00Z",
-      "independence_classes": [
-        "spamhaus"
-      ],
       "ip_or_cidr": "77.91.119.0/24",
       "last_seen": "2026-08-13T00:00:00Z",
       "promoted_by": "spamhaus_drop_v4",
@@ -44292,8 +44298,8 @@
       "ip_or_cidr": "83.239.84.130",
       "last_seen": "2026-08-13T00:00:00Z",
       "promoted_by": null,
-      "restricted_corroboration": 2,
-      "score": 89.56,
+      "restricted_corroboration": 1,
+      "score": 81.73,
       "sources": [
         "blocklist_de",
         "ipsum_levels",
@@ -55134,36 +55140,6 @@
         "aggregate",
         "brute-force",
         "malware-infrastructure",
-        "scanning",
-        "web-attack"
-      ],
-      "first_seen": "2026-08-12T00:00:00Z",
-      "independence_classes": [
-        "binary_defense",
-        "blocklist_de"
-      ],
-      "ip_or_cidr": "95.181.232.51",
-      "last_seen": "2026-08-13T00:00:00Z",
-      "promoted_by": null,
-      "restricted_corroboration": 0,
-      "score": 75.09,
-      "sources": [
-        "binary_defense",
-        "blocklist_de",
-        "ipsum_levels"
-      ],
-      "tags": [
-        "ipsum-level-3",
-        "ipsum-level-4",
-        "ipsum-level-5"
-      ]
-    },
-    {
-      "band": "medium",
-      "categories": [
-        "aggregate",
-        "brute-force",
-        "malware-infrastructure",
         "scanning"
       ],
       "first_seen": "2026-08-12T00:00:00Z",
@@ -64398,8 +64374,8 @@
       "ip_or_cidr": "111.61.97.5",
       "last_seen": "2026-08-13T00:00:00Z",
       "promoted_by": null,
-      "restricted_corroboration": 1,
-      "score": 75.59,
+      "restricted_corroboration": 2,
+      "score": 86.05,
       "sources": [
         "blocklist_de",
         "ipsum_levels",
@@ -64752,6 +64728,37 @@
       "tags": [
         "ipsum-level-3",
         "ipsum-level-4",
+        "turris-smtp"
+      ]
+    },
+    {
+      "band": "medium",
+      "categories": [
+        "aggregate",
+        "brute-force",
+        "scanning",
+        "spam-source",
+        "ssh-attack",
+        "web-attack"
+      ],
+      "first_seen": "2026-08-12T00:00:00Z",
+      "independence_classes": [
+        "blocklist_de",
+        "turris"
+      ],
+      "ip_or_cidr": "111.70.11.38",
+      "last_seen": "2026-08-13T00:00:00Z",
+      "promoted_by": null,
+      "restricted_corroboration": 0,
+      "score": 67.7,
+      "sources": [
+        "blocklist_de",
+        "ipsum_levels",
+        "turris_greylist"
+      ],
+      "tags": [
+        "ipsum-level-3",
+        "turris-haas",
         "turris-smtp"
       ]
     },
@@ -65538,7 +65545,7 @@
       ]
     },
     {
-      "band": "high",
+      "band": "medium",
       "categories": [
         "aggregate",
         "brute-force",
@@ -65554,8 +65561,8 @@
       "ip_or_cidr": "112.30.127.9",
       "last_seen": "2026-08-13T00:00:00Z",
       "promoted_by": null,
-      "restricted_corroboration": 1,
-      "score": 78.78,
+      "restricted_corroboration": 0,
+      "score": 62.84,
       "sources": [
         "blocklist_de",
         "ipsum_levels",
@@ -65790,7 +65797,7 @@
       ]
     },
     {
-      "band": "high",
+      "band": "medium",
       "categories": [
         "aggregate",
         "brute-force",
@@ -65807,8 +65814,8 @@
       "ip_or_cidr": "112.194.142.167",
       "last_seen": "2026-08-13T00:00:00Z",
       "promoted_by": null,
-      "restricted_corroboration": 1,
-      "score": 81.55,
+      "restricted_corroboration": 0,
+      "score": 67.7,
       "sources": [
         "blocklist_de",
         "ipsum_levels",
@@ -67778,8 +67785,8 @@
       "ip_or_cidr": "118.45.101.159",
       "last_seen": "2026-08-13T00:00:00Z",
       "promoted_by": null,
-      "restricted_corroboration": 2,
-      "score": 88.0,
+      "restricted_corroboration": 1,
+      "score": 78.99,
       "sources": [
         "blocklist_de",
         "ipsum_levels",
@@ -68843,7 +68850,7 @@
       ]
     },
     {
-      "band": "high",
+      "band": "medium",
       "categories": [
         "aggregate",
         "brute-force",
@@ -68859,8 +68866,8 @@
       "ip_or_cidr": "118.220.149.121",
       "last_seen": "2026-08-13T00:00:00Z",
       "promoted_by": null,
-      "restricted_corroboration": 1,
-      "score": 78.78,
+      "restricted_corroboration": 0,
+      "score": 62.84,
       "sources": [
         "blocklist_de",
         "ipsum_levels",
@@ -80783,7 +80790,7 @@
       ]
     },
     {
-      "band": "high",
+      "band": "medium",
       "categories": [
         "aggregate",
         "brute-force",
@@ -80793,7 +80800,6 @@
       ],
       "first_seen": "2026-08-12T00:00:00Z",
       "independence_classes": [
-        "blocklist_de",
         "cins",
         "turris"
       ],
@@ -80801,9 +80807,8 @@
       "last_seen": "2026-08-13T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 0,
-      "score": 85.19,
+      "score": 71.92,
       "sources": [
-        "blocklist_de",
         "cins_army",
         "ipsum_levels",
         "turris_greylist"
@@ -85510,37 +85515,6 @@
       ],
       "tags": [
         "ipsum-level-3",
-        "turris-smtp"
-      ]
-    },
-    {
-      "band": "medium",
-      "categories": [
-        "aggregate",
-        "brute-force",
-        "scanning",
-        "spam-source",
-        "web-attack"
-      ],
-      "first_seen": "2026-08-12T00:00:00Z",
-      "independence_classes": [
-        "blocklist_de",
-        "turris"
-      ],
-      "ip_or_cidr": "158.94.211.213",
-      "last_seen": "2026-08-13T00:00:00Z",
-      "promoted_by": null,
-      "restricted_corroboration": 0,
-      "score": 68.02,
-      "sources": [
-        "blocklist_de",
-        "ipsum_levels",
-        "turris_greylist"
-      ],
-      "tags": [
-        "ipsum-level-3",
-        "ipsum-level-4",
-        "ipsum-level-5",
         "turris-smtp"
       ]
     },
@@ -90379,6 +90353,7 @@
       "first_seen": "2026-08-12T00:00:00Z",
       "independence_classes": [
         "binary_defense",
+        "blocklist_de",
         "cins",
         "turris"
       ],
@@ -90386,9 +90361,10 @@
       "last_seen": "2026-08-13T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 1,
-      "score": 89.87,
+      "score": 94.66,
       "sources": [
         "binary_defense",
+        "blocklist_de",
         "cins_army",
         "ipsum_levels",
         "turris_greylist"
@@ -97177,7 +97153,7 @@
       ]
     },
     {
-      "band": "medium",
+      "band": "high",
       "categories": [
         "aggregate",
         "brute-force",
@@ -97194,8 +97170,8 @@
       "ip_or_cidr": "179.185.227.77",
       "last_seen": "2026-08-13T00:00:00Z",
       "promoted_by": null,
-      "restricted_corroboration": 0,
-      "score": 67.7,
+      "restricted_corroboration": 1,
+      "score": 78.78,
       "sources": [
         "blocklist_de",
         "ipsum_levels",
@@ -104435,7 +104411,7 @@
       ]
     },
     {
-      "band": "high",
+      "band": "medium",
       "categories": [
         "aggregate",
         "brute-force",
@@ -104451,8 +104427,8 @@
       "ip_or_cidr": "189.108.215.39",
       "last_seen": "2026-08-13T00:00:00Z",
       "promoted_by": null,
-      "restricted_corroboration": 1,
-      "score": 81.73,
+      "restricted_corroboration": 0,
+      "score": 68.02,
       "sources": [
         "blocklist_de",
         "ipsum_levels",
@@ -111431,7 +111407,7 @@
       ]
     },
     {
-      "band": "medium",
+      "band": "high",
       "categories": [
         "aggregate",
         "brute-force",
@@ -111447,8 +111423,8 @@
       "ip_or_cidr": "195.178.110.217",
       "last_seen": "2026-08-13T00:00:00Z",
       "promoted_by": null,
-      "restricted_corroboration": 0,
-      "score": 75.09,
+      "restricted_corroboration": 1,
+      "score": 83.63,
       "sources": [
         "binary_defense",
         "blocklist_de",
@@ -113226,8 +113202,8 @@
       "ip_or_cidr": "196.216.81.126",
       "last_seen": "2026-08-13T00:00:00Z",
       "promoted_by": null,
-      "restricted_corroboration": 2,
-      "score": 88.0,
+      "restricted_corroboration": 1,
+      "score": 78.99,
       "sources": [
         "blocklist_de",
         "ipsum_levels",
@@ -121361,7 +121337,7 @@
       "tags": []
     },
     {
-      "band": "medium",
+      "band": "high",
       "categories": [
         "aggregate",
         "brute-force",
@@ -121378,8 +121354,8 @@
       "ip_or_cidr": "200.232.114.71",
       "last_seen": "2026-08-13T00:00:00Z",
       "promoted_by": null,
-      "restricted_corroboration": 0,
-      "score": 72.2,
+      "restricted_corroboration": 1,
+      "score": 84.12,
       "sources": [
         "blocklist_de",
         "ipsum_levels",
@@ -122588,7 +122564,7 @@
       "tags": []
     },
     {
-      "band": "medium",
+      "band": "high",
       "categories": [
         "aggregate",
         "brute-force",
@@ -122605,8 +122581,8 @@
       "ip_or_cidr": "203.192.247.84",
       "last_seen": "2026-08-13T00:00:00Z",
       "promoted_by": null,
-      "restricted_corroboration": 0,
-      "score": 67.7,
+      "restricted_corroboration": 1,
+      "score": 81.55,
       "sources": [
         "blocklist_de",
         "ipsum_levels",
@@ -123263,8 +123239,8 @@
       "ip_or_cidr": "204.76.203.7",
       "last_seen": "2026-08-13T00:00:00Z",
       "promoted_by": null,
-      "restricted_corroboration": 1,
-      "score": 91.87,
+      "restricted_corroboration": 0,
+      "score": 85.77,
       "sources": [
         "binary_defense",
         "blocklist_de",
@@ -129358,7 +129334,7 @@
       "tags": []
     },
     {
-      "band": "high",
+      "band": "medium",
       "categories": [
         "aggregate",
         "brute-force",
@@ -129374,8 +129350,8 @@
       "ip_or_cidr": "207.219.222.29",
       "last_seen": "2026-08-13T00:00:00Z",
       "promoted_by": null,
-      "restricted_corroboration": 1,
-      "score": 81.73,
+      "restricted_corroboration": 0,
+      "score": 68.02,
       "sources": [
         "blocklist_de",
         "ipsum_levels",
