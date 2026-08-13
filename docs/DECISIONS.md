@@ -779,6 +779,35 @@ it is clearly a current-run view rather than competing with the historical windo
 the top of the page.
 
 
+## The spectrum axis says what it is (ADR-047)
+
+**Status:** accepted (2026-08-13)
+
+Feedback on the spectrum chart: the visual works, but the axis did not read as an
+address range. That was fair. The ticks were bare octet numbers - `0`, `32`, `64` -
+which look like an arbitrary scale. Nothing on the chart said "these are IP
+addresses" except a caption below it, which is the wrong place to explain an axis.
+
+Three changes, no new data:
+
+- **Ticks are dotted quads.** `32.0.0.0`, `64.0.0.0`, and so on, in a monospace face
+  so they read as addresses rather than decimals.
+- **Both ends are labelled with the real bounds**, `0.0.0.0` and
+  `255.255.255.255`, at slightly higher contrast than the intermediate ticks. The
+  viewBox was widened by 58 units either side to make room; insetting the plot
+  instead would have misaligned the bars from the axis describing them.
+- **A hint line above the chart** states "horizontal axis: every IPv4 address, in
+  order" beside the range.
+
+**The mobile case needed a different answer.** SVG text scales with the viewBox, so
+at 390px the axis labels render around four pixels regardless of the font size set on
+them - an earlier attempt to bump them to 15 units achieved nothing. Below 640px the
+in-SVG labels are hidden entirely and the HTML hint line carries the range, where it
+is real text at a real size. Losing the intermediate ticks on a phone costs little;
+the claim that matters there is "this is the whole address space", not which /8 a
+particular spike sits in.
+
+
 ## Open items
 
 - [ ] Confirm AbuseIPDB redistribution terms in writing; flip `redistribute` if permitted.
