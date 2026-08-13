@@ -195,7 +195,7 @@ tool for triaging a false-positive report.
 
 Statistics are computed over **every** source, including those whose licences forbid republishing their addresses — a count is a derived fact, not an extract, so this is where GreenSnow and ThreatFox appear by name against a number. Two rules keep it that way, both enforced by tests: no individual address is ever emitted, and cells below 5 addresses fold into an unnamed bucket.
 
-ASN data from [iptoasn.com](https://iptoasn.com/) (Public Domain, PDDL v1.0).
+ASN data from [iptoasn.com](https://iptoasn.com/) (Public Domain, PDDL v1.0). No geography is published anywhere, including as a table column: the country in an IP-to-ASN table is a registration detail, not a location.
 
 ## Two tiers
 
