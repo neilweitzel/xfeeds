@@ -23,7 +23,14 @@ from xfeeds.emit import (
 )
 from xfeeds.enrich import AsnIndex, AsnInfo
 from xfeeds.filters import apply_filters
-from xfeeds.insights import MIN_CELL, build_insights
+from xfeeds.insights import (
+    MIN_CELL,
+    SPECTRUM_BUCKETS,
+    asn_windows,
+    build_insights,
+    build_spectrum,
+    update_asn_history,
+)
 from xfeeds.models import (
     AllowlistSourceConfig,
     Band,
@@ -789,3 +796,149 @@ def test_asn_index_lookup_and_cidr_summary() -> None:
     assert index.lookup(ipaddress.IPv4Address("45.66.7.7")).asn == 64500
     assert index.lookup(ipaddress.IPv4Address("8.8.8.8")).asn == 0
     assert index.summarise(ipaddress.ip_network("203.0.113.0/28")).name == "TINY-NET"
+
+
+# --------------------------------------------------------------------------
+# Spectrum and ASN windows: ADR-045
+# --------------------------------------------------------------------------
+
+
+def test_spectrum_buckets_the_whole_v4_space_without_naming_addresses() -> None:
+    now = datetime(2026, 8, 12, tzinfo=UTC)
+    observations = [
+        _obs("open_a", "a", now, ip="1.2.3.4"),
+        _obs("open_a", "a", now, ip="200.1.2.3"),
+    ]
+    spectrum = build_spectrum(observations)
+    assert spectrum["buckets"] == SPECTRUM_BUCKETS
+    assert spectrum["addresses_per_bucket"] * SPECTRUM_BUCKETS == 2**32
+    assert spectrum["observations_placed"] == 2
+    assert spectrum["occupied_buckets"] == 2
+    # The low address lands left of the high one.
+    filled = [i for i, c in enumerate(spectrum["counts"]) if c]
+    assert filled[0] < filled[1]
+    assert "1.2.3.4" not in json.dumps(spectrum)
+
+
+def test_spectrum_spreads_a_network_across_the_slices_it_covers() -> None:
+    now = datetime(2026, 8, 12, tzinfo=UTC)
+    record = IndicatorRecord(
+        ip_or_cidr=ipaddress.ip_network("8.0.0.0/8"),
+        source="open_a",
+        independence_class="a",
+        first_seen=now,
+        last_seen=now,
+        categories=["scanning"],
+    )
+    spectrum = build_spectrum([record])
+    assert spectrum["occupied_buckets"] >= 2, "a /8 is wider than one slice"
+
+
+def test_asn_history_uses_upstream_dates_and_merges_with_max() -> None:
+    """Re-reading the same dated list must not inflate it.
+
+    The pipeline re-reads every dated feed every six hours. If days accumulated by
+    addition, one address reported on the 4th would read as four by the end of the
+    day.
+    """
+    now = datetime(2026, 8, 12, tzinfo=UTC)
+    index = _fake_asn_index()
+    old = datetime(2026, 8, 4, tzinfo=UTC)
+    observations = [
+        _obs("open_a", "a", now, ip="45.66.0.1"),
+        _obs("open_a", "a", now, ip="45.66.0.2"),
+    ]
+    for record in observations:
+        record.source_last_reported = old
+
+    first = update_asn_history(observations, index, now, None)
+    assert list(first["days"]) == ["2026-08-04"], "dated against the upstream date"
+    assert first["days"]["2026-08-04"]["64500"] == 2
+
+    again = update_asn_history(observations, index, now, first)
+    assert again["days"]["2026-08-04"]["64500"] == 2, "max-merged, not summed"
+
+
+def test_asn_history_falls_back_to_the_run_date_and_expires_old_days() -> None:
+    now = datetime(2026, 8, 12, tzinfo=UTC)
+    index = _fake_asn_index()
+    observations = [_obs("open_a", "a", now, ip="45.66.0.1")]
+    previous = {"days": {"2020-01-01": {"64500": 9}}}
+    result = update_asn_history(observations, index, now, previous)
+    assert "2026-08-12" in result["days"], "undated observations use the run date"
+    assert "2020-01-01" not in result["days"], "beyond retention"
+
+
+def test_asn_windows_rank_persistence_and_normalise_by_network_size() -> None:
+    """A network seen on many days outranks a one-day spike, and size is divided out."""
+    now = datetime(2026, 8, 12, tzinfo=UTC)
+    index = _fake_asn_index()
+    days = {}
+    # 64500 (BIG-NET, /16) appears on four days with modest counts.
+    for day in range(4):
+        date = (now - timedelta(days=day)).date().isoformat()
+        days[date] = {"64500": 10}
+    # 64501 (TINY-NET, /24) appears once, with a bigger number.
+    days[(now - timedelta(days=1)).date().isoformat()]["64501"] = 90
+
+    windows = asn_windows({"days": days}, index, now)
+    assert windows["available"] is True
+    rows = windows["last_30_days"]
+    assert rows[0]["asn"] == 64500, "four days beats one"
+    assert rows[0]["days_active"] == 4
+    assert rows[0]["address_days"] == 40
+
+    tiny = next(r for r in rows if r["asn"] == 64501)
+    # /24 is 256 addresses, so 90 address-days is an enormous rate; /16 is 65,536.
+    assert tiny["per_million_announced"] > rows[0]["per_million_announced"]
+    assert windows["last_30_days_complete"] is False
+
+
+def test_asn_windows_report_no_history_gracefully() -> None:
+    now = datetime(2026, 8, 12, tzinfo=UTC)
+    assert asn_windows({}, None, now)["available"] is False
+
+
+def test_ipthreat_parser_keeps_the_upstream_timestamp() -> None:
+    from xfeeds.collectors.parsers import ipthreat
+
+    content = (
+        b"# Format: IP # ThreatLevel ThreatLevelTimestamp CountryCode\n"
+        b"45.66.230.9 # 100 2026-08-04T23:50:27Z NG\n"
+        b"10.0.0.1 # 100 2026-08-04T23:50:27Z US\n"
+        b"garbage # 30 2026-08-04T23:50:27Z US\n"
+    )
+    config = SourceConfig(
+        name="ipthreat_30d",
+        url="https://example.invalid/t.txt",
+        parser="ipthreat",
+        independence_class="ipthreat",
+        weight=0.8,
+        categories=["reported-abuse"],
+    )
+    records = list(ipthreat(content, config, datetime(2026, 8, 12, tzinfo=UTC)))
+    assert [str(r.ip_or_cidr) for r in records] == ["45.66.230.9"]
+    assert records[0].source_last_reported == datetime(2026, 8, 4, tzinfo=UTC)
+    # last_seen must stay at fetch time so scoring is untouched by upstream dates.
+    assert records[0].last_seen == datetime(2026, 8, 12, tzinfo=UTC)
+    assert records[0].tags == ["ipthreat-level-100"]
+
+
+def test_bruteforceblocker_parser_keeps_the_reported_date() -> None:
+    from xfeeds.collectors.parsers import bruteforceblocker
+
+    content = (
+        b"# IP\t# Last Reported\tCount\tID\n92.118.39.78\t# 2026-07-19 20:29:31\t25\t2839674\n"
+    )
+    config = SourceConfig(
+        name="bruteforceblocker",
+        url="https://example.invalid/blist",
+        parser="bruteforceblocker",
+        independence_class="bruteforceblocker",
+        weight=0.6,
+        categories=["brute-force"],
+    )
+    records = list(bruteforceblocker(content, config, datetime(2026, 8, 12, tzinfo=UTC)))
+    assert len(records) == 1
+    assert records[0].source_last_reported == datetime(2026, 7, 19, tzinfo=UTC)
+    assert records[0].last_seen == datetime(2026, 8, 12, tzinfo=UTC)

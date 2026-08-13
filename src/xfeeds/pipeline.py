@@ -29,7 +29,13 @@ from xfeeds.emit import (
 )
 from xfeeds.enrich import load_asn_index
 from xfeeds.filters import apply_filters
-from xfeeds.insights import build_insights
+from xfeeds.insights import (
+    ASN_HISTORY_PATH,
+    asn_windows,
+    build_insights,
+    build_spectrum,
+    update_asn_history,
+)
 from xfeeds.models import Band, IndicatorRecord, Registry, ScoredIndicator
 from xfeeds.score import noncommercial_sources, open_sources, score_indicators
 from xfeeds.state import carried_observations, load_state, merge_with_state, save_state
@@ -331,7 +337,19 @@ def run(
     # place a restricted source's work becomes visible. See insights.py and ADR-044.
     try:
         asn_index = load_asn_index()
+
+        history_path = feeds_dir / ASN_HISTORY_PATH
+        previous_history = (
+            json.loads(history_path.read_text(encoding="utf-8")) if history_path.exists() else None
+        )
+        asn_history = update_asn_history(observations, asn_index, now, previous_history)
+        history_path.write_text(
+            json.dumps(asn_history, indent=0, sort_keys=True) + "\n", encoding="utf-8"
+        )
+
         insights = build_insights(observations, scored, registry, now, asn_index)
+        insights["spectrum"] = build_spectrum(observations)
+        insights["asn_windows"] = asn_windows(asn_history, asn_index, now)
         (feeds_dir / "insights.json").write_text(
             json.dumps(insights, indent=2, sort_keys=True) + "\n", encoding="utf-8"
         )

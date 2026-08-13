@@ -19,7 +19,6 @@ from typing import Any
 
 import structlog
 
-from xfeeds.centroids import CENTROIDS
 from xfeeds.models import Band, ScoredIndicator
 
 logger = structlog.get_logger(__name__)
@@ -98,20 +97,40 @@ color:var(--muted);border-radius:6px;padding:3px 9px;font-size:11.5px;cursor:poi
 .stale{color:var(--med)}
 @media(max-width:760px){.grid2{grid-template-columns:1fr}.kv{grid-template-columns:1fr}}
 
-.mapwrap{border:1px solid var(--line);border-radius:10px;padding:10px;margin:18px 0 4px;
-background:#0b1017}
-.map{width:100%;height:auto;display:block}
-.map .grat line{stroke:var(--line);stroke-width:1}
-.map .dot{fill:#f0883e;fill-opacity:.40;stroke:#f0883e;stroke-opacity:.85;stroke-width:1}
-.map .dot:hover{fill-opacity:.78}
+
+.chart{border:1px solid var(--line);border-radius:10px;padding:14px 15px 10px;margin:20px 0;
+background:var(--panel)}
+.chead{display:flex;justify-content:space-between;align-items:baseline;gap:12px;
+margin-bottom:10px;font-weight:600;font-size:14px}
+.chead .note{font-weight:400}
+.spectrum,.tl{width:100%;height:auto;display:block;overflow:visible}
+.spectrum .bars rect{fill:#58a6ff}
+.spectrum .bars rect:hover{fill:#79c0ff}
+.spectrum text.ax{fill:var(--muted);font-size:11px;text-anchor:middle}
+.tl .a-high{fill:#3fb95055;stroke:#3fb950;stroke-width:1.5}
+.tl .a-med{fill:#d2992233;stroke:#d29922;stroke-width:1.2}
+.tl .hit{fill:transparent}
+.tl .hit:hover{fill:#ffffff18}
+.k{display:inline-block;width:9px;height:9px;border-radius:2px;margin:0 4px 0 9px}
+.k-high{background:#3fb950}
+.k-med{background:#d29922}
+.note.warn{color:#d29922}
+.spectrum .rsv{fill:#ffffff07;stroke:var(--line);stroke-width:1;stroke-dasharray:3 3}
+.spectrum text.rsvl{fill:var(--muted);font-size:10px;text-anchor:middle;opacity:.75}
+.tl .yax{stroke:var(--line);stroke-width:1;stroke-dasharray:2 3}
+.tl text.ylab{fill:var(--muted);font-size:10px}
+.tscroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tscroll table{min-width:520px}
 """
 
 SCRIPT = """
 // Tabbed setup guides.
+// Tabs are scoped to their own group; the page has more than one set.
 document.querySelectorAll('.tab').forEach(function(t){
   t.addEventListener('click', function(){
-    document.querySelectorAll('.tab').forEach(function(x){x.setAttribute('aria-selected','false')});
-    document.querySelectorAll('.tabpanel').forEach(function(x){x.hidden=true});
+    var group = t.closest('.tabgroup') || document;
+    group.querySelectorAll('.tab').forEach(function(x){x.setAttribute('aria-selected','false')});
+    group.querySelectorAll('.tabpanel').forEach(function(x){x.hidden=true});
     t.setAttribute('aria-selected','true');
     document.getElementById(t.dataset.panel).hidden=false;
   });
@@ -394,6 +413,207 @@ def esc_html(value: str) -> str:
     return html.escape(value, quote=True)
 
 
+def _spectrum_svg(spectrum: dict[str, Any]) -> str:
+    """The whole IPv4 space as one strip, lowest address on the left.
+
+    Address space is the coordinate system this data actually has. Geography was a
+    guess wearing a fact's clothes: the country attached to an ASN is where the
+    number is registered, which for a hosting company describes its paperwork and
+    not its traffic.
+
+    Counts are log-scaled. Linear scaling makes a handful of dense /9s tower over
+    everything and the rest of the internet read as empty, which is the opposite of
+    the point - the interesting claim here is how much of the space is touched at
+    all.
+    """
+    counts: list[int] = [int(c) for c in spectrum.get("counts", [])]
+    if not counts:
+        return ""
+    width, height = 1000.0, 150.0
+    peak = max(counts) or 1
+    step = width / len(counts)
+    scale = math.log1p(peak)
+    bars = []
+    for i, count in enumerate(counts):
+        if not count:
+            continue
+        h = (math.log1p(count) / scale) * height
+        bars.append(
+            f'<rect x="{i * step:.2f}" y="{height - h:.2f}" width="{max(step - 0.35, 0.5):.2f}" '
+            f'height="{h:.2f}"><title>{i * 256 // len(counts)}.0.0.0/8 area: '
+            f"{count:,} observations</title></rect>"
+        )
+    ticks = "".join(
+        f'<text x="{(octet / 256) * width:.1f}" y="{height + 15:.0f}" class="ax">{octet}</text>'
+        for octet in (0, 32, 64, 96, 128, 160, 192, 224, 255)
+    )
+    # 224.0.0.0/4 is multicast and 240.0.0.0/4 is reserved, so the right-hand end is
+    # legitimately empty. Shade it, or an empty tail reads as a broken chart.
+    reserved_x = (224 / 256) * width
+    reserved = (
+        f'<rect x="{reserved_x:.1f}" y="0" width="{width - reserved_x:.1f}" '
+        f'height="{height:.1f}" class="rsv"/>'
+        f'<text x="{reserved_x + (width - reserved_x) / 2:.0f}" y="{height / 2:.0f}" '
+        'class="rsvl">multicast / reserved</text>'
+    )
+    occupied = int(spectrum.get("occupied_buckets", 0))
+    total = int(spectrum.get("buckets", len(counts)))
+    return f"""
+<div class="chart">
+<div class="chead"><span>Where in the IPv4 space we see activity</span>
+<span class="note">{occupied} of {total} slices touched</span></div>
+<svg viewBox="0 0 {width:.0f} {height + 22:.0f}" class="spectrum" role="img"
+     aria-label="Observations across the IPv4 address space, log scaled">
+{reserved}
+<g class="bars">{"".join(bars)}</g>
+{ticks}
+</svg>
+<p class="note">First octet along the bottom, log-scaled height. Each slice spans
+{int(spectrum.get("addresses_per_bucket", 0)):,} addresses, so no bar can point at an
+address. The gaps are as informative as the spikes: reserved ranges, and large
+allocations nobody has reported to us.</p>
+</div>
+"""
+
+
+def _timeline_svg(history: list[dict[str, Any]]) -> str:
+    """Published high and medium counts across every run we have recorded."""
+    # History rows carry high/medium at the top level, not under "counts".
+    points = [
+        (
+            int(h.get("high", 0)),
+            int(h.get("medium", 0)),
+            str(h.get("generated_at", ""))[:16].replace("T", " "),
+        )
+        for h in history
+    ]
+    points = [p for p in points if p[0] or p[1]]
+    if len(points) < 2:
+        return ""
+    width, height = 1000.0, 130.0
+    peak = max(h + m for h, m, _ in points) or 1
+    step = width / max(len(points) - 1, 1)
+
+    def path(values: list[int], stacked: list[int] | None = None) -> str:
+        top = []
+        for i, v in enumerate(values):
+            base = stacked[i] if stacked else 0
+            y = height - ((v + base) / peak) * height
+            top.append(f"{i * step:.2f},{y:.2f}")
+        bottom = []
+        for i in range(len(values) - 1, -1, -1):
+            base = stacked[i] if stacked else 0
+            y = height - (base / peak) * height
+            bottom.append(f"{i * step:.2f},{y:.2f}")
+        return "M" + " L".join(top + bottom) + " Z"
+
+    highs = [h for h, _, _ in points]
+    mediums = [m for _, m, _ in points]
+    dots = "".join(
+        f'<circle cx="{i * step:.2f}" cy="{height - ((h + m) / peak) * height:.2f}" r="9" '
+        f'class="hit"><title>{label}: {h:,} high, {m:,} medium</title></circle>'
+        for i, (h, m, label) in enumerate(points)
+    )
+    return f"""
+<div class="chart">
+<div class="chead"><span>Published addresses over time</span>
+<span class="note">{len(points)} runs &middot; {points[0][2]} to {points[-1][2]}</span></div>
+<svg viewBox="0 0 {width:.0f} {height:.0f}" class="tl" role="img"
+     aria-label="Published high and medium confidence counts over time">
+<path d="{path(mediums, highs)}" class="a-med"/>
+<path d="{path(highs)}" class="a-high"/>
+<line x1="0" y1="1" x2="{width:.0f}" y2="1" class="yax"/>
+<text x="4" y="12" class="ylab">{peak:,} published</text>
+{dots}
+</svg>
+<p class="note"><span class="k k-high"></span>high confidence
+<span class="k k-med"></span>medium. Hover any point for the run. Steps rather than
+a smooth curve are expected: this refreshes every six hours, and a source dropping
+out or returning moves the whole line.</p>
+</div>
+"""
+
+
+def _per_million(row: dict[str, Any]) -> str:
+    value = row.get("per_million_announced")
+    if value is None:
+        return "&mdash;"
+    return f"{float(value):,.1f}"
+
+
+def _asn_windows(windows: dict[str, Any]) -> str:
+    """Top networks over three windows, with the caveats attached rather than filed.
+
+    Tabs instead of the three side-by-side columns in the sketch: each row carries
+    five numbers that only mean something together, and three of those tables abreast
+    would have to drop the normalised column - which is the one that stops this being
+    a list of the largest hosting providers.
+    """
+    if not windows.get("available"):
+        return ""
+    span = int(windows.get("history_span_days", 0))
+    tabs = [
+        ("last_30_days", "30 days", 30),
+        ("last_60_days", "60 days", 60),
+        ("all_time", "All time", 0),
+    ]
+
+    buttons = []
+    panels = []
+    for index, (key, label, size) in enumerate(tabs):
+        rows = windows.get(key) or []
+        selected = "true" if index == 0 else "false"
+        buttons.append(
+            f'<button class="tab" role="tab" aria-selected="{selected}" '
+            f'data-panel="w-{key}">{label}</button>'
+        )
+        partial = ""
+        if size and span < size:
+            partial = (
+                f'<p class="note warn">Only {span} days of history so far, so this is '
+                f"the same as all-time. It will diverge once there is more than {size} "
+                "days of record.</p>"
+            )
+        body = "".join(
+            "<tr>"
+            f'<td><a href="https://bgp.tools/as/{r["asn"]}">AS{r["asn"]}</a></td>'
+            f"<td>{esc_html(str(r['name'])[:38])}</td>"
+            f'<td class="num">{int(r["days_active"])}</td>'
+            f'<td class="num">{int(r["address_days"]):,}</td>'
+            f'<td class="num">{_per_million(r)}</td>'
+            f'<td class="num">{int(r["announced_addresses"]):,}</td>'
+            "</tr>"
+            for r in rows
+        )
+        panels.append(
+            f'<div class="tabpanel" id="w-{key}"{"" if index == 0 else " hidden"}>{partial}'
+            '<div class="tscroll">'
+            '<table><tr><th>ASN</th><th>Network</th><th class="num">Days seen</th>'
+            '<th class="num">Address-days</th><th class="num">Per million</th>'
+            '<th class="num">Announced</th></tr>'
+            f"{body}</table></div></div>"
+        )
+
+    return f"""
+<h2>Networks that keep coming back</h2>
+<p class="note">Sorted by <strong>days seen</strong>, not by volume. Individual
+addresses churn out within about a week, so a big one-day number is an incident and
+a network present on eight separate days is a standing pattern. <strong>Per
+million</strong> divides by the size of the network: without it a ranking like this
+just rediscovers which hosting providers are biggest, which needs no threat feed to
+work out.</p>
+<div class="tabgroup">
+<div class="tabs" role="tablist">{"".join(buttons)}</div>
+<div class="panel">{"".join(panels)}</div>
+</div>
+<p class="note">Dates come from the upstream feed where it publishes them &mdash;
+bruteforceblocker carries about a month and ipthreat about ten days, which is why
+these windows have depth the project itself does not yet have. Days before we
+started running are covered by those two feeds alone and are thinner than recent
+days.</p>
+"""
+
+
 def _insights_section(insights: dict[str, Any]) -> str:
     """Aggregate view over every source, including those we may not republish.
 
@@ -409,32 +629,7 @@ def _insights_section(insights: dict[str, Any]) -> str:
         return ""
 
     top_asns = networks.get("top_asns", [])[:12]
-    countries = networks.get("top_countries", [])
     suppressed = networks.get("suppressed", {})
-
-    # --- map: equirectangular, one circle per country, area proportional to count
-    plotted = [(c["country"], int(c["addresses"])) for c in countries if c["country"] in CENTROIDS]
-    biggest = max((n for _, n in plotted), default=1)
-    width, height = 1000.0, 460.0
-    circles = []
-    for code, count in sorted(plotted, key=lambda kv: kv[1], reverse=True):
-        lat, lon, name = CENTROIDS[code]
-        x = (lon + 180.0) / 360.0 * width
-        y = (90.0 - lat) / 180.0 * height
-        # sqrt keeps circle AREA proportional to the count, so a country with ten
-        # times the addresses does not look a hundred times worse.
-        r = 4.0 + 30.0 * math.sqrt(count / biggest)
-        circles.append(
-            f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{r:.1f}" class="dot">'
-            f"<title>{esc_html(name)} ({esc_html(code)}): {count:,} addresses</title></circle>"
-        )
-    graticule = "".join(
-        f'<line x1="0" y1="{height * f:.0f}" x2="{width:.0f}" y2="{height * f:.0f}"/>'
-        for f in (0.25, 0.5, 0.75)
-    ) + "".join(
-        f'<line x1="{width * f:.0f}" y1="0" x2="{width * f:.0f}" y2="{height:.0f}"/>'
-        for f in (0.25, 0.5, 0.75)
-    )
 
     asn_rows = "".join(
         "<tr>"
@@ -475,32 +670,26 @@ no cell can identify a single address. That is a deliberate limit, not an
 oversight: a &ldquo;top offending addresses&rdquo; list would be the data itself
 wearing a hat.</p>
 
-<div class="mapwrap">
-<svg viewBox="0 0 {width:.0f} {height:.0f}" class="map" role="img"
-     aria-label="World map with circles sized by number of listed addresses per country">
-<g class="grat">{graticule}</g>
-{"".join(circles)}
-</svg>
-</div>
-<p class="note" style="text-align:center">Circle area is proportional to listed
-addresses. Hover for the count.</p>
-
 <h3>Networks carrying the most listed addresses</h3>
+<div class="tscroll">
 <table>
 <tr><th>ASN</th><th>Network</th><th class="num">Country</th>
     <th class="num">Addresses</th><th class="num">Sources</th></tr>
 {asn_rows}
 </table>
+</div>
 <p class="note">The <em>Sources</em> column is the interesting one. A network
 reported by nine or ten independent sources is not having a bad week — that is a
 sustained pattern, and worth a look at the whole network rather than one address.</p>
 
 <h3>Sources credited here that appear in no feed file</h3>
+<div class="tscroll">
 <table>
 <tr><th>Source</th><th>Credit</th><th class="num">Addresses seen</th>
     <th class="num">Only source</th></tr>
 {scoring_rows}
 </table>
+</div>
 <p class="note">Their licences do not let us republish their addresses, so none of
 their data is in any download. They still shape every confidence score, and the
 numbers above are the work they contributed. The <em>Only source</em> column counts
@@ -521,6 +710,8 @@ def render(
     nc_counts: dict[str, int] | None = None,
     insights: dict[str, Any] | None = None,
 ) -> str:
+    spectrum = (insights or {}).get("spectrum", {})
+    asn_win = (insights or {}).get("asn_windows", {})
     counts = manifest.get("counts", {})
     nc = nc_counts or {}
     nc_published = nc.get("published", 0)
@@ -557,6 +748,10 @@ published.</p>
 · <a href="{PROJECT_URL}">source and docs</a></p>
 </header>
 
+{_spectrum_svg(spectrum)}
+{_timeline_svg(history)}
+{_asn_windows(asn_win)}
+
 <div class="cards">
 <div class="card"><div class="n high">{counts.get("high", 0):,}</div>
   <div class="l">safe to block</div></div>
@@ -582,6 +777,7 @@ published.</p>
 sent anywhere, and no query is logged.</p>
 
 <h2>Set it up</h2>
+<div class="tabgroup">
 <div class="tabs" role="tablist">
   <button class="tab" role="tab" aria-selected="true" data-panel="p-lin">Linux</button>
   <button class="tab" role="tab" aria-selected="false" data-panel="p-nft">nftables</button>
@@ -653,6 +849,7 @@ custom lists, so the high-confidence tier is the right one to use.</p>
 <pre><code>{base_url}/all.csv</code></pre>
 </div>
 </div>
+</div>
 
 <h2>All downloads</h2>
 <table>
@@ -714,11 +911,13 @@ published address.</p>
 </div>
 
 <h2>Where the data comes from</h2>
+<div class="tscroll">
 <table>
 <tr><th>Source</th><th>Independence class</th><th class="num">Records</th>
     <th>Status</th><th>Votes</th><th>Republished</th></tr>
 {_sources(manifest)}
 </table>
+</div>
 <p class="note"><strong>Why "independence class" matters.</strong> Many public
 blocklists copy from each other, so counting files as votes manufactures false
 confidence. Sources that share upstream data share a class, and each class votes

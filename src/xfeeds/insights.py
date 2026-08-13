@@ -32,7 +32,7 @@ feed files describe only the redistributable part.
 
 import ipaddress
 from collections import Counter, defaultdict
-from datetime import datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import structlog
@@ -218,11 +218,10 @@ def build_insights(
 
     top_asns, suppressed_asns, suppressed_asn_addresses = _rollup_asns()
 
-    countries = [
-        {"country": cc, "addresses": count}
-        for cc, count in country_addresses.most_common()
-        if count >= MIN_CELL
-    ][:TOP_COUNTRY_LIMIT]
+    # Country was dropped from the output entirely. The field in an IP-to-ASN table
+    # is where the AS number is *registered*; for a hosting company that describes
+    # where its paperwork lives, not where the traffic came from. Publishing it as
+    # "attacks by country" would be the most confidently wrong thing on the page.
     suppressed_countries = sum(1 for c in country_addresses.values() if c < MIN_CELL)
 
     insights["networks"] = {
@@ -231,7 +230,6 @@ def build_insights(
         "distinct_asns_seen": len(asn_addresses),
         "unenriched_observations": unenriched,
         "top_asns": top_asns,
-        "top_countries": countries,
         "suppressed": {
             "asns_below_threshold": suppressed_asns,
             "addresses_in_suppressed_asns": suppressed_asn_addresses,
@@ -252,3 +250,220 @@ ATTRIBUTION_NOTE = {
     "ip_to_asn": "IP to ASN mapping by IPtoASN (Frank Denis), https://iptoasn.com/",
     "licence": "Public Domain (PDDL v1.0)",
 }
+
+
+ASN_HISTORY_PATH = "asn-history.json"
+HISTORY_RETENTION_DAYS = 90
+WINDOWS = (30, 60)
+
+SPECTRUM_BUCKETS = 512
+"""Buckets across the whole IPv4 space.
+
+512 gives roughly a /9 per bucket - fine enough to show that listed space is
+clumpy rather than uniform, coarse enough that a bucket count can never point at
+an address. Each bucket spans 8.4 million addresses.
+"""
+
+
+def _day(value: datetime) -> str:
+    return value.date().isoformat()
+
+
+def build_spectrum(observations: list[IndicatorRecord]) -> dict[str, Any]:
+    """Density of observed addresses across the entire IPv4 space.
+
+    This is the honest version of the map that was here before. Geography was a
+    guess dressed as a fact: the country in an ASN table is where the number is
+    *registered*, which for a hosting company tells you where its paperwork lives
+    and nothing about where the traffic came from. Address space is the coordinate
+    system this data actually has.
+    """
+    counts = [0] * SPECTRUM_BUCKETS
+    span = 2**32 // SPECTRUM_BUCKETS
+    total = 0
+    for observation in observations:
+        item = observation.ip_or_cidr
+        if isinstance(item, ipaddress.IPv4Address):
+            start = end = int(item)
+        elif isinstance(item, ipaddress.IPv4Network):
+            start, end = int(item.network_address), int(item.broadcast_address)
+        else:
+            continue
+        total += 1
+        first, last = start // span, end // span
+        for index in range(first, min(last, SPECTRUM_BUCKETS - 1) + 1):
+            counts[index] += 1
+
+    occupied = sum(1 for c in counts if c)
+    return {
+        "buckets": SPECTRUM_BUCKETS,
+        "addresses_per_bucket": span,
+        "counts": counts,
+        "observations_placed": total,
+        "occupied_buckets": occupied,
+        "empty_buckets": SPECTRUM_BUCKETS - occupied,
+        "peak": max(counts) if counts else 0,
+        "note": (
+            "Observations per equal slice of the IPv4 address space, lowest address "
+            "on the left. Each bucket spans "
+            f"{span:,} addresses, so no bucket can identify an individual address."
+        ),
+    }
+
+
+def update_asn_history(
+    observations: list[IndicatorRecord],
+    asn_index: AsnIndex | None,
+    now: datetime,
+    previous: dict[str, Any] | None,
+) -> dict[str, Any]:
+    """Fold today's evidence into a rolling per-day, per-ASN record.
+
+    Two sources publish dated history of their own - bruteforceblocker about a
+    month, ipthreat about ten days - so an address they report as last seen on the
+    4th is counted against the 4th rather than against today. That is what lets a
+    30-day window mean something before this project has been running for 30 days.
+    Everything else is counted against the run date.
+
+    Days are merged with ``max`` rather than added. A source's dated list is a
+    snapshot of recent activity that we re-read every six hours; adding would
+    inflate the same fact four times a day.
+    """
+    history: dict[str, dict[str, int]] = {}
+    if previous:
+        for date, entry in (previous.get("days") or {}).items():
+            history[date] = {str(k): int(v) for k, v in entry.items()}
+
+    if asn_index is not None:
+        seen: dict[tuple[str, int], set[str]] = defaultdict(set)
+        for observation in observations:
+            item = observation.ip_or_cidr
+            if isinstance(item, ipaddress.IPv6Address | ipaddress.IPv6Network):
+                continue
+            info = asn_index.summarise(item)
+            if info.asn == 0:
+                continue
+            date = _day(observation.source_last_reported or now)
+            seen[(date, info.asn)].add(str(item))
+
+        for (date, asn), addresses in seen.items():
+            bucket = history.setdefault(date, {})
+            bucket[str(asn)] = max(bucket.get(str(asn), 0), len(addresses))
+
+    cutoff = _day(now - timedelta(days=HISTORY_RETENTION_DAYS))
+    history = {d: v for d, v in history.items() if d >= cutoff}
+
+    return {
+        "updated_at": now.isoformat(),
+        "retention_days": HISTORY_RETENTION_DAYS,
+        "note": (
+            "Distinct addresses observed per ASN per day. Dates come from the "
+            "upstream feed where it publishes them, otherwise from the run date. "
+            "Days are merged with max, never summed, because the same dated list is "
+            "re-read every six hours."
+        ),
+        "days": dict(sorted(history.items())),
+    }
+
+
+def asn_windows(
+    history: dict[str, Any],
+    asn_index: AsnIndex | None,
+    now: datetime,
+    limit: int = 10,
+) -> dict[str, Any]:
+    """Rank ASNs over 30 days, 60 days, and everything retained.
+
+    Three numbers per row, because any one of them alone misleads:
+
+    * ``days_active`` - how many distinct days the network appeared at all. This is
+      the persistence signal, and it is the primary sort. Individual addresses churn
+      out inside a week; a network that keeps coming back does not.
+    * ``address_days`` - distinct addresses per day, summed. Separates one bad
+      afternoon from a sustained pattern.
+    * ``per_million_announced`` - address-days per million addresses the ASN
+      announces. Ranking on raw counts alone just rediscovers which providers are
+      largest, which is not a finding. This column is where a small, almost entirely
+      hostile network overtakes a hyperscaler.
+
+    A caveat that belongs in the output rather than in a footnote: only
+    bruteforceblocker and ipthreat publish dated history, so days before this
+    project started running are covered by those two feeds alone and are thinner
+    than recent days. Coverage evens out as our own run history accumulates.
+    """
+    days: dict[str, dict[str, int]] = history.get("days") or {}
+    if not days:
+        return {"available": False, "reason": "no history yet"}
+
+    dates = sorted(days)
+    available_days = len(dates)
+    span_days = 0
+    if dates:
+        first = datetime.fromisoformat(dates[0]).replace(tzinfo=UTC)
+        span_days = (now - first).days + 1
+
+    def window(size: int | None) -> list[dict[str, Any]]:
+        cutoff = _day(now - timedelta(days=size - 1)) if size else ""
+        totals: Counter[str] = Counter()
+        active: Counter[str] = Counter()
+        peak: dict[str, int] = {}
+        for date in dates:
+            if size and date < cutoff:
+                continue
+            for asn, count in days[date].items():
+                totals[asn] += count
+                active[asn] += 1
+                peak[asn] = max(peak.get(asn, 0), count)
+        rows: list[dict[str, Any]] = []
+        for asn, address_days in totals.items():
+            if address_days < MIN_CELL:
+                continue
+            number = int(asn)
+            info = asn_index.by_asn(number) if asn_index is not None else None
+            announced = asn_index.announced_size(number) if asn_index is not None else 0
+            # 256 is a /24, the smallest globally routable prefix. An earlier cut-off
+            # of 1024 silently excluded every /24, which is precisely where a small,
+            # almost entirely hostile network shows up. The rate is extrapolated for
+            # such networks by definition; that is what "per million announced" means.
+            per_million = (
+                round(address_days / (announced / 1_000_000), 1) if announced >= 256 else None
+            )
+            rows.append(
+                {
+                    "asn": number,
+                    "name": info.name if info else "unknown",
+                    "address_days": address_days,
+                    "days_active": active[asn],
+                    "peak_day": peak[asn],
+                    "announced_addresses": announced,
+                    "per_million_announced": per_million,
+                }
+            )
+        # Persistence first, volume second. A network seen on eight separate days is
+        # a standing problem; one seen once with a big number is an incident.
+        rows.sort(key=lambda r: (int(r["days_active"]), int(r["address_days"])), reverse=True)
+        return rows[:limit]
+
+    windows: dict[str, Any] = {
+        "available": True,
+        "history_days_recorded": available_days,
+        "history_span_days": span_days,
+        "oldest_date": dates[0],
+        "newest_date": dates[-1],
+        "metric": (
+            "Sorted by days_active (persistence), then address_days (volume). "
+            "per_million_announced normalises by the size of the network so a ranking "
+            "is not simply a list of the largest providers."
+        ),
+        "dated_history_sources": ["bruteforceblocker", "ipthreat_30d"],
+        "caveat": (
+            "Only the sources above publish dated history, so days before this project "
+            "began running are covered by those feeds alone and are thinner than recent "
+            "days. Coverage evens out as our own run history accumulates."
+        ),
+        "all_time": window(None),
+    }
+    for size in WINDOWS:
+        windows[f"last_{size}_days"] = window(size)
+        windows[f"last_{size}_days_complete"] = span_days >= size
+    return windows

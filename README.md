@@ -183,16 +183,19 @@ tool for triaging a false-positive report.
 - **Provenance always.** No IP ships without a named source in `all.json`.
 - **Staleness detection.** A source whose last-updated header exceeds 30 days raises a warning, so a dead upstream is never mistaken for a quiet internet.
 
-## Statistics over everything, including what we cannot republish
+## What the dashboard shows
 
-`feeds/insights.json` and the dashboard carry aggregate figures computed over **every** source, including the ones whose licences forbid republishing their addresses. A count is a derived fact rather than an extract, so this is the one place GreenSnow, ThreatFox and AbuseIPDB appear by name against a number — with a column showing how many addresses only they reported.
+**The IPv4 space as one strip.** 512 slices of 8.4 million addresses, log-scaled, lowest address on the left. It answers something the feed files cannot: how much of the internet we see activity in at all. Currently 402 of 512 slices. Multicast and reserved space is shaded so an empty tail is not mistaken for a broken chart.
 
-Top ASNs, a country map, and pairwise overlap between independence classes. Two rules keep it a statistic rather than a redistribution, both enforced by tests:
+**There is no map, deliberately.** The country in an IP-to-ASN table is where the AS *number is registered* — for a hosting company that is where its paperwork lives, not where traffic came from. A chart headed "listed addresses by country" would put 19,000 addresses on Romania because M247 is registered there, and be the most confidently wrong thing on the page. Address space is the coordinate system this data actually has.
 
-- **No individual address is ever emitted.** That is why there is no "worst offenders" table, tempting as it is. At that point the statistic is just the data wearing a hat.
-- **Cells below 5 addresses are suppressed** into an unnamed bucket, since a named ASN holding one listed address is very nearly that address.
+**Networks ranked by persistence, not volume.** Sorted by how many distinct days a network appeared, because individual addresses churn out within about a week: a big one-day number is an incident, a network seen on nine separate days is a pattern. Every row divides by the address space the ASN announces, which is what separates a disproportionately hostile small network from a merely enormous one — DigitalOcean at 716 address-days per million announced against ChinaNet at 18.
 
-ASN and country data from [iptoasn.com](https://iptoasn.com/) (Public Domain, PDDL v1.0). Map centroids from [world-countries-centroids](https://github.com/gavinr/world-countries-centroids) by Gavin Rehkemper (MIT).
+**30- and 60-day windows are real, not padded.** bruteforceblocker publishes about a month of dated history and ipthreat about ten days; both are preserved in `source_last_reported` and drive `feeds/asn-history.json`. Those dates deliberately do **not** touch `last_seen`, so upstream history cannot silently restate confidence scores. Windows shorter than the history available say so on the page.
+
+Statistics are computed over **every** source, including those whose licences forbid republishing their addresses — a count is a derived fact, not an extract, so this is where GreenSnow and ThreatFox appear by name against a number. Two rules keep it that way, both enforced by tests: no individual address is ever emitted, and cells below 5 addresses fold into an unnamed bucket.
+
+ASN data from [iptoasn.com](https://iptoasn.com/) (Public Domain, PDDL v1.0).
 
 ## Two tiers
 
