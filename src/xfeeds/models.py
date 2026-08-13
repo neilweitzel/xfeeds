@@ -58,6 +58,20 @@ class SourceConfig(BaseModel):
     enabled: bool = True
     vote: bool = True
     redistribute: bool = True
+    """May be republished in the primary feed."""
+    redistribute_noncommercial: bool = False
+    """May be republished in the non-commercial tier only.
+
+    For sources whose licence permits redistribution but forbids commercial use -
+    currently CC BY-NC-SA material. Ignored unless ``redistribute`` is false.
+    """
+    noncommercial_compatible: bool = True
+    """May appear in the non-commercial tier at all.
+
+    False for sources under a plain ShareAlike licence. CC BY-SA forbids adding
+    further restrictions to an adaptation, so ShareAlike-only data cannot legally
+    be combined into a NonCommercial output. See ADR-041.
+    """
     notes: str | None = None
 
     # Optional fields from sources.yaml

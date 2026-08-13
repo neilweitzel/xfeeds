@@ -19,14 +19,7 @@ from datetime import datetime
 
 import structlog
 
-from xfeeds.models import (
-    Band,
-    IndicatorRecord,
-    IPOrNet,
-    Registry,
-    ScoredIndicator,
-    SourceConfig,
-)
+from xfeeds.models import Band, IndicatorRecord, IPOrNet, Registry, ScoredIndicator
 
 logger = structlog.get_logger(__name__)
 
@@ -115,17 +108,39 @@ def _band(open_classes: int, restricted_classes: int) -> Band:
     return Band.WITHHELD
 
 
-def _redistributable(source: str, by_source: dict[str, "SourceConfig"]) -> bool:
-    config = by_source.get(source)
-    return bool(config and config.redistribute)
+def open_sources(registry: Registry) -> set[str]:
+    """Sources publishable in the primary feed."""
+    return {s.name for s in registry.sources if s.redistribute}
+
+
+def noncommercial_sources(registry: Registry) -> set[str]:
+    """Sources publishable in the non-commercial tier.
+
+    Everything in the primary feed, plus sources whose licence permits
+    redistribution but forbids commercial use, minus anything under a plain
+    ShareAlike licence that cannot legally accept the extra NonCommercial term.
+    """
+    return {
+        s.name
+        for s in registry.sources
+        if (s.redistribute or s.redistribute_noncommercial) and s.noncommercial_compatible
+    }
 
 
 def score_indicators(
     records: list[IndicatorRecord],
     registry: Registry,
     now: datetime,
+    redistributable: set[str] | None = None,
 ) -> list[ScoredIndicator]:
-    """Collapse per-source observations into one scored record per indicator."""
+    """Collapse per-source observations into one scored record per indicator.
+
+    ``redistributable`` names the sources publishable in the tier being built; it
+    decides which classes count toward the publication threshold and which are
+    merely corroboration. Defaults to the primary feed.
+    """
+    if redistributable is None:
+        redistributable = open_sources(registry)
     by_source = {s.name: s for s in registry.sources}
 
     grouped: dict[IPOrNet, list[IndicatorRecord]] = defaultdict(list)
@@ -146,7 +161,7 @@ def score_indicators(
         # that a published record's timeline does not disclose when a restricted
         # source saw the address. Falls back to all observations for withheld
         # records, which are never emitted but do drive state accounting.
-        datable = [o for o in observations if _redistributable(o.source, by_source)] or observations
+        datable = [o for o in observations if o.source in redistributable] or observations
         first_seen = min(o.first_seen for o in datable)
         last_seen = max(o.last_seen for o in datable)
         ipsum_level = 0
@@ -158,7 +173,8 @@ def score_indicators(
                 continue
             # Names of sources we may not republish are withheld from the output;
             # see ScoredIndicator.restricted_corroboration.
-            if config.redistribute:
+            publishable_source = observation.source in redistributable
+            if publishable_source:
                 sources.add(observation.source)
                 categories.update(observation.categories)
                 tags.update(observation.tags)
@@ -179,7 +195,7 @@ def score_indicators(
             )
             class_name = config.independence_class
             best_per_class[class_name] = max(best_per_class.get(class_name, 0.0), contribution)
-            if config.redistribute:
+            if publishable_source:
                 open_classes.add(class_name)
             else:
                 restricted_classes.add(class_name)

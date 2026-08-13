@@ -94,6 +94,11 @@ sources:
       not merely quiet. The abusech class is carried by feodo_tracker and threatfox.
 
   - name: threatfox
+    noncommercial_compatible: false
+    license_risk: high
+    license_url: https://abuse.ch/terms-of-use/
+    license: "abuse.ch/Spamhaus platform terms; no redistribution grant (NOT CC0, unlike Feodo Tracker)"
+    redistribute: false
     url: https://threatfox-api.abuse.ch/api/v1/
     parser: threatfox_api
     method: POST
@@ -114,6 +119,16 @@ sources:
       https://auth.abuse.ch/ . abuse.ch is now operated under Spamhaus.
 
   # ------------------------------------------------- primary attacker sensors
+    notes: >
+      Botnet C2 IOCs via API, requires THREATFOX_AUTH_KEY. Votes and corroborates but
+      is NO LONGER REPUBLISHED, and can no longer promote on its own.
+      Feodo Tracker is explicitly CC0; ThreatFox is NOT. The abuse.ch platform terms
+      grant no redistribution right and state "You may not: copy, adapt, alter,
+      translate, modify or make derivative works based on the Platforms ... without
+      the express consent of abuse.ch and/or Spamhaus", with commercial use routed to
+      a paid Spamhaus subscription. The export page carries no CC0 notice. ADR-030
+      treated Feodo and ThreatFox as one licence; corrected in ADR-040.
+
   - name: blocklist_de
     url: https://lists.blocklist.de/lists/all.txt
     parser: plain_text
@@ -141,16 +156,28 @@ sources:
       be prepared to drop on request. Tracked in docs/DECISIONS.md ADR-012.
 
   - name: greensnow
+    noncommercial_compatible: false
+    license_risk: high
+    license: "All rights reserved; reproduction or republication strictly prohibited"
+    redistribute: false
     url: https://blocklist.greensnow.co/greensnow.txt
     parser: plain_text
     independence_class: greensnow
     weight: 0.6
     categories: [brute-force, scanning]
     ttl_days: 10
-    license_url: https://blocklist.greensnow.co/
+    license_url: https://greensnow.co/
     notes: "3,595 IPs."
+    notes: >
+      3,587 IPs from SSH/FTP/web brute-force sensors. Still votes and can upgrade a
+      band, but is NO LONGER REPUBLISHED. The site footer states verbatim:
+      "Copyright (c) 2013-2026 GreenSnow.co. All rights reserved. Reproduction or
+      republication strictly prohibited." We were republishing it. Corrected in
+      ADR-040. Not eligible for the non-commercial tier either - the prohibition is
+      on republication of any kind, not on commercial use.
 
   - name: binary_defense
+    license_url: https://www.binarydefense.com/banlist.txt
     url: https://www.binarydefense.com/banlist.txt
     parser: plain_text
     independence_class: binary_defense
@@ -158,9 +185,9 @@ sources:
     categories: [scanning, malware-infrastructure]
     ttl_days: 10
     require_user_agent: true
-    license: "Free for non-commercial use per Artillery/Banlist terms"
+    license: "Public use permitted; commercial resale and fee-charging products prohibited"
     license_risk: medium
-    redistribute: false
+    redistribute: true
     notes: >
       3,300 IPs. Returns 301 to an HTML page without a browser-like User-Agent -
       the collector MUST send the configured UA and MUST reject text/html responses.
@@ -168,6 +195,14 @@ sources:
       downstream consumers of a public feed - the same reasoning already applied to
       stopforumspam_toxic. Corrected in ADR-036 after review found the two sources
       carried materially similar terms but opposite redistribute flags.
+    notes: >
+      3,544 IPs. Returns 301 to an HTML page without a browser-like User-Agent -
+      the collector MUST send the configured UA and MUST reject text/html responses.
+      REDISTRIBUTED. The feed header reads "Note that this is for public use only"
+      and prohibits only "commercial resale or ... products that are charging fees",
+      glossed as "(having others pay for a service)". There is no redistribution
+      restriction. ADR-036 wrongly inferred one from the word "non-commercial";
+      corrected in ADR-039 after reading the actual header text.
 
   - name: bruteforceblocker
     url: https://danger.rulez.sk/projects/bruteforceblocker/blist.php
@@ -204,6 +239,7 @@ sources:
       terms are confirmed in writing. See docs/DECISIONS.md ADR-012.
 
   - name: stopforumspam_toxic
+    redistribute_noncommercial: true
     url: https://www.stopforumspam.com/downloads/toxic_ip_cidr.txt
     parser: plain_text
     independence_class: stopforumspam
@@ -220,7 +256,40 @@ sources:
       require non-commercial use, which we cannot impose on downstream consumers
       of a public feed. Used as a scoring signal only.
 
+  - name: ipthreat_30d
+    url: https://lists.ipthreat.net/file/ipthreat-lists/threat/threat-30.txt
+    parser: plain_text
+    independence_class: ipthreat
+    weight: 0.8
+    categories: [reported-abuse, scanning]
+    ttl_days: 10
+    license: "Creative Commons attribution; derived data under the same CC licence; commercial use expressly permitted"
+    license_url: https://ipthreat.net/license
+    license_risk: low
+    attribution_required: true
+    noncommercial_compatible: false
+    notes: >
+      3,266 addresses at threat level 30 or above, from ipthreat.net's own community
+      and honeypot reporting. Genuinely independent: 5.4% overlap with our published
+      feed. Updated hourly despite the site describing monthly dumps, and each row
+      carries its own threat level and timestamp.
+      Licence expressly permits commercial reuse, which is rare in this space, and
+      requires attribution: "Data sourced from IPThreat located at
+      https://ipthreat.net". It also requires derived data under the same CC licence,
+      i.e. ShareAlike. That is why noncommercial_compatible is false - CC BY-SA
+      forbids adding restrictions to an adaptation, so this data may not be mixed
+      into the CC BY-NC-SA tier. Use the threat-30 list rather than threat-14: the
+      number is a minimum threat level, not a day count. See ADR-042.
+
   # ------------------------------------------ corroboration only (never votes)
+    notes: >
+      Toxic CIDR ranges - whole networks the operator considers irredeemable.
+      Independent of the attack-sensor feeds. Not in the primary feed: the terms read
+      "Your use of this data and supporting software is non-commercial" and "You will
+      not charge money for any software that utilizes the data", with everything else
+      "covered under a Creative Commons License" - no version named, and the page
+      self-describes as a draft. Republished in the non-commercial tier only.
+
   - name: ipsum_levels
     url: https://raw.githubusercontent.com/stamparm/ipsum/master/levels/{level}.txt
     parser: ipsum_levels
@@ -285,6 +354,7 @@ sources:
       See docs/DECISIONS.md ADR-012.
 
   - name: turris_greylist
+    redistribute_noncommercial: true
     url: https://view.sentinel.turris.cz/greylist-data/greylist-latest.csv
     parser: turris_greylist
     independence_class: turris
@@ -293,7 +363,7 @@ sources:
     ttl_days: 7
     license: "CC BY-NC-SA 4.0"
     license_url: https://view.sentinel.turris.cz/greylist-data/LICENSE.txt
-    license_risk: high
+    license_risk: medium
     attribution_required: true
     redistribute: false
     notes: >
@@ -308,6 +378,14 @@ sources:
       are never emitted, the source name is withheld from published records so the
       feed cannot disclose greylist membership, and a restricted class may only
       upgrade medium to high, never admit a record on its own.
+    notes: >
+      ~9,530 addresses from the CZ.NIC Turris consumer-router sensor network. A
+      different vantage point from the server-side honeypots that dominate the rest
+      of the set: 7.7% overlap with our published feed.
+      NOT in the primary feed - CC BY-NC-SA cannot be imposed on consumers of a
+      public feed. It corroborates there under ADR-035 (upgrade only, name withheld),
+      and is republished in FULL in the non-commercial tier, which is itself licensed
+      CC BY-NC-SA 4.0 with attribution. See ADR-041.
 
   - name: dataplane_sshpwauth
     url: https://dataplane.org/sshpwauth.txt

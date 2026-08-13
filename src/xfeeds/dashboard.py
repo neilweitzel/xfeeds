@@ -379,9 +379,16 @@ def build_lookup_index(records: list[ScoredIndicator]) -> dict[str, Any]:
 
 
 def render(
-    manifest: dict[str, Any], history: list[dict[str, Any]], base_url: str = BASE_URL
+    manifest: dict[str, Any],
+    history: list[dict[str, Any]],
+    base_url: str = BASE_URL,
+    nc_counts: dict[str, int] | None = None,
 ) -> str:
     counts = manifest.get("counts", {})
+    nc = nc_counts or {}
+    nc_published = nc.get("published", 0)
+    nc_high = nc.get("high", 0)
+    nc_medium = nc.get("medium", 0)
     published = counts.get("published", 0)
     withheld = counts.get("withheld", 0)
     seen = published + withheld
@@ -579,13 +586,48 @@ confidence. Sources that share upstream data share a class, and each class votes
 at most once. Sources marked <em>scoring only</em> help decide what is malicious,
 but their data is never republished here because their licences do not allow it.</p>
 
-<h2>Licensing</h2>
-<p class="note">xfeeds compiles publicly available feeds and is not sold. Feeds
-whose terms forbid redistribution, or attach ShareAlike obligations, are either
-used for scoring only or excluded outright. Spamhaus attribution travels with the
-data as its terms require, and every published file names its contributing
-sources. Full per-source reasoning is in
+<h2>Two tiers, and which one you want</h2>
+<p class="note">Everything above is the <strong>primary feed</strong>. Use it for
+anything, including commercial work. No source in it restricts commercial use.</p>
+<p class="note">Some good public feeds allow redistribution but forbid commercial
+use. We cannot put those in a file that anyone might use at work, so they are
+republished separately in
+<a href="noncommercial/">the non-commercial tier</a> under CC BY-NC-SA 4.0. It is
+larger — <strong>{nc_published:,}</strong> addresses versus {published:,} — because it can
+include the Turris Sentinel router-sensor data and StopForumSpam's toxic ranges in
+full rather than just counting them as corroboration.</p>
+<p class="note"><strong>Home lab, personal server, school, charity, or research?</strong>
+Take the non-commercial tier — it sees more. <strong>At a company, or building
+anything anyone pays for?</strong> Take the primary feed. That is not a nag; the
+licences genuinely differ, and
+<a href="noncommercial/LICENSE.txt">LICENSE.txt</a> in that directory spells it
+out.</p>
+<table>
+<tr><th>File</th><th>What it is</th><th class="num">Entries</th></tr>
+<tr><td><a href="noncommercial/high-confidence.txt">noncommercial/high-confidence.txt</a></td>
+    <td>Safe to block. Non-commercial use only.</td>
+    <td class="num">{nc_high:,}</td></tr>
+<tr><td><a href="noncommercial/medium-confidence.txt">noncommercial/medium-confidence.txt</a></td>
+    <td>Two independent sources. Non-commercial use only.</td>
+    <td class="num">{nc_medium:,}</td></tr>
+<tr><td><a href="noncommercial/all.json">noncommercial/all.json</a></td>
+    <td>Full provenance. Non-commercial use only.</td>
+    <td class="num">{nc_published:,}</td></tr>
+</table>
+
+<h2>Licensing and credit</h2>
+<p class="note">xfeeds compiles publicly available feeds and is not sold. Where a
+source forbids redistribution outright it is used for scoring only, or excluded.
+Where it permits redistribution but forbids commercial use, it goes in the
+non-commercial tier. Every published file names its contributing sources and
+carries their terms. Full per-source reasoning, including the sources we rejected
+and why, is in
 <a href="{PROJECT_URL}/blob/main/docs/DECISIONS.md">DECISIONS.md</a>.</p>
+<p class="note">Spamhaus attribution travels with the data as their terms require.
+Threat data also provided by
+<a href="https://ipthreat.net">IPThreat at https://ipthreat.net</a>, and by the
+<a href="https://view.sentinel.turris.cz/">Turris Sentinel</a> project at CZ.NIC
+(CC BY-NC-SA 4.0, non-commercial tier only).</p>
 
 <h2>False positives</h2>
 <p class="note">No block list is perfect. If an address here is legitimate,
@@ -617,7 +659,15 @@ def write_dashboard(feeds_dir: Path = Path("feeds")) -> Path:
         encoding="utf-8",
     )
 
+    # The non-commercial tier has its own manifest. Read it so the page can state
+    # honestly how much more that tier sees, rather than describing it vaguely.
+    nc_manifest_path = feeds_dir / "noncommercial" / "manifest.json"
+    nc_counts: dict[str, int] = {}
+    if nc_manifest_path.exists():
+        nc_manifest = json.loads(nc_manifest_path.read_text(encoding="utf-8"))
+        nc_counts = {k: int(v) for k, v in nc_manifest.get("counts", {}).items()}
+
     out = feeds_dir / "index.html"
-    out.write_text(render(manifest, history), encoding="utf-8")
+    out.write_text(render(manifest, history, nc_counts=nc_counts), encoding="utf-8")
     logger.info("dashboard_written", path=str(out), runs_charted=len(history))
     return out

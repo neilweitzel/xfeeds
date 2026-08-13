@@ -464,11 +464,146 @@ brute-force sensors, 30d Spamhaus DROP (hijacked netblocks are a slow structural
 signal), 2d Tor.
 
 
+## Binary Defense: we were wrong, and it is redistributable (ADR-039)
+
+**Status:** accepted (2026-08-13). Supersedes ADR-036.
+
+ADR-036 set `binary_defense` to `redistribute: false` on the basis of a
+`license` field reading "Free for non-commercial use per Artillery/Banlist terms".
+Nobody had read the actual feed. The header says:
+
+> Note that this is for public use only.
+> The ATIF feed may not be used for commercial resale or in products that are
+> charging fees for such services.
+> Use of these feeds for commerical (having others pay for a service) use is
+> strictly prohibited.
+
+That prohibits **resale**, not redistribution, and explicitly frames the feed as
+being *for public use*. The [Artillery repository](https://github.com/BinaryDefense/artillery)
+carries no LICENSE file that says otherwise. A free public republication is the
+paradigm case of public use.
+
+Restored to `redistribute: true`, recovering the 702 records ADR-036 cost, and
+`license` now quotes the terms instead of paraphrasing them.
+
+**The lesson is the reusable part.** ADR-036 reasoned from a summary field that a
+previous change had written, not from the source. Licence conclusions must quote
+the upstream text verbatim, and `sources.yaml` now does for every restricted
+source.
+
+## Two sources we should not have been republishing (ADR-040)
+
+**Status:** accepted (2026-08-13)
+
+The same verbatim-quote review that cleared Binary Defense found two live problems
+in the other direction.
+
+**GreenSnow.** The site footer states, verbatim:
+
+> Copyright © 2013-2026 GreenSnow.co. All rights reserved. Reproduction or
+> republication strictly prohibited.
+
+We were republishing it in every feed file. It is now `redistribute: false` and
+also `noncommercial_compatible: false` — the prohibition is on republication of
+any kind, so no tier can carry it. It still votes and can upgrade a band under
+ADR-035.
+
+**ThreatFox.** ADR-030 recorded "abuse.ch Feodo/ThreatFox" as one licence. They
+are not. Feodo Tracker's blocklist page says its datasets "can be used for both,
+commercial and non-commercial purpose without any limitations (CC0)". ThreatFox
+carries no such grant; it falls under the
+[abuse.ch platform terms](https://abuse.ch/terms-of-use/), which state:
+
+> You may not: copy, adapt, alter, translate, modify or make derivative works
+> based on the Platforms and/or any other of our or Spamhaus' intellectual
+> property, without the express consent of abuse.ch and/or Spamhaus
+
+and route commercial use to a paid Spamhaus subscription. The
+[export page](https://threatfox.abuse.ch/export/) carries no CC0 notice. Now
+`redistribute: false`, which also means it can no longer promote a record on its
+own, since ADR-035 made promotion conditional on being publishable.
+
+Between them these cost more than Binary Defense returned. That is the correct
+trade: the alternative was continuing to republish data against an explicit
+prohibition, which is exactly the outcome this project was told to avoid.
+
+## A second, non-commercial tier (ADR-041)
+
+**Status:** accepted (2026-08-13)
+
+The brief asked for as much public data as possible. The blocker had been treated
+as binary: either a source can go in the feed or it can only vote. There is a
+third option we had not taken.
+
+CC BY-NC-SA permits redistribution. What it forbids is commercial use. We cannot
+put that data in the primary feed because a public file is downloaded by companies
+too, and we cannot bind them. But we *can* republish it under the same licence in
+a separate, clearly marked tier — which is precisely what the licence is for.
+
+`feeds/noncommercial/` is built by a second scoring pass in which
+`redistribute_noncommercial` sources count as fully publishable. It is licensed
+CC BY-NC-SA 4.0, carries its own `LICENSE.txt`, and every file leads with a banner
+naming the restriction and pointing commercial users back to the primary feed.
+
+Measured on a live run: **5,281 published versus 4,204** in the primary feed, a
+gain of 1,077 addresses, because Turris Sentinel and StopForumSpam can be
+published in full instead of only counted as corroboration.
+
+**One constraint is not obvious and is enforced in code.** `noncommercial_compatible`
+exists because CC BY-SA and CC BY-NC-SA are mutually incompatible in one file. A
+ShareAlike licence forbids applying "additional or different terms" to an
+adaptation, and NonCommercial is an additional term. So ipthreat.net data, which
+carries a ShareAlike obligation without a NonCommercial one, **may not be mixed
+into the non-commercial tier** — and is excluded from it by
+`noncommercial_sources()`, with a test asserting it never appears there.
+
+Rejected: a third tier to carry ShareAlike-plus-NonCommercial separately. The
+audience is people without a threat intelligence platform; two clearly explained
+tiers is already at the limit of what a public feed should ask of a reader.
+
+## ipthreat.net added: a rare commercially-reusable feed (ADR-042)
+
+**Status:** accepted (2026-08-13)
+
+3,266 addresses at threat level 30 or above, from ipthreat.net's own community and
+honeypot reporting.
+
+- **Independent.** 5.4% overlap with our published feed — a genuinely new class,
+  not a reshuffle.
+- **Fresh.** The site describes monthly dumps, but
+  `lists.ipthreat.net/file/ipthreat-lists/threat/threat-30.txt` reported a
+  `last-modified` within the hour, and every row carries its own threat level and
+  timestamp.
+- **Commercially reusable**, which is rare here. The
+  [licence](https://ipthreat.net/license) says: "You are free to re-use, re-mix
+  the data from this website, even commercially".
+
+Two implementation notes worth recording:
+
+- **The number is a threat level, not a day count.** `threat-14.txt` has *more*
+  entries (6,092) than `threat-30.txt` (3,266) because it includes everything
+  scoring 14 or above. We take the level-30 list.
+- **Use the `.txt`, not the `.gz`.** The gzipped variant is served as
+  `content-type: application/gzip` rather than as a content-encoding, so httpx
+  does not transparently decompress it and the parser silently produced zero
+  records. The first measurement run showed ipthreat adding exactly nothing, which
+  is what caught it.
+
+Effect: published 3,114 → **4,204**, high confidence 2,321 → **2,642**.
+
+Attribution is required and specific — "Data sourced from IPThreat located at
+https://ipthreat.net", with a plain, non-nofollow link where the data appears on a
+website. Both the feed headers and the dashboard now carry it.
+
+
 ## Open items
 
 - [ ] Confirm AbuseIPDB redistribution terms in writing; flip `redistribute` if permitted.
-- [ ] Decide whether a separately-licensed NC-SA feed variant is worth shipping to reclaim DShield.
+- [x] Decide whether a separately-licensed NC-SA feed variant is worth shipping — done, shipped (ADR-041). DShield remains unattractive on volume, not licence: `block.txt` is only the top 20 /24 subnets.
 - [ ] Free-tier GreyNoise API keys require a business email address; a personal-domain account may be limited to unauthenticated lookups (~10/day). Confirm what tier is actually obtainable before wiring GreyNoise enrichment in Phase 2b.
-- [ ] Evaluate ELLIO community feed and dataplane.org as additional independent classes.
-- [ ] Confirm whether Binary Defense's terms permit redistribution; ADR-036 is reversible in one line if so.
+- [ ] Blocklist.de, bruteforceblocker and the Tor exit list state **no licence at all**. We publish them. That is the weakest remaining position in the set - not a prohibition, but no grant either. Ask each maintainer for an explicit statement.
+- [ ] ipthreat.net's licence contradicts itself, naming "creative-commons by attribution" while saying "the creative commons by sa license can be used as a guide" and requiring derived data under the same licence. We read it conservatively as ShareAlike. Worth asking them to clarify, since a plain CC BY reading would let it into the non-commercial tier too.
+- [ ] ELLIO community feed now 404s and dataplane.org still prohibits redistribution; neither is actionable.
+- [ ] Feodo Tracker has been stale for 43 days and its IP blocklist is nearly empty. It is our only CC0 promoting source now that ThreatFox cannot promote. If it stays dead, the abuse.ch promotion path is effectively gone and should be removed rather than left looking active.
+- [x] Confirm whether Binary Defense's terms permit redistribution — done, they do (ADR-039).
 - [ ] Re-check DShield: independent and PGP-signed, but `block.txt` is only the top 20 /24 subnets, so it is not worth a collector at that volume.
