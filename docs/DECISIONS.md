@@ -596,12 +596,93 @@ https://ipthreat.net", with a plain, non-nofollow link where the data appears on
 website. Both the feed headers and the dashboard now carry it.
 
 
+## Credit the sources that grant us nothing (ADR-043)
+
+**Status:** accepted (2026-08-13)
+
+Three sources we republish state no licence at all: Blocklist.de, bruteforceblocker
+and the Tor exit list. In the published headers they appeared as a bare name with
+no credit line, because the header fell back to the `license` field and they had
+nothing to put there.
+
+That is backwards. A source that has granted us nothing in writing is the one that
+most deserves a visible, correct credit — it is the only thing we are actually
+giving back, and it costs nothing.
+
+Added a `credit` field, set for every source we republish, rendered ahead of the
+licence summary. Headers now name the project and the people behind it:
+bruteforceblocker credits Daniel Gerzo at danger.rulez.sk, IPsum credits Miroslav
+Štampar, the Tor exit list credits the Tor Project. The licence text still appears
+beneath, including the plain admission "No licence stated" where that is the truth.
+
+## Aggregate statistics as a first-class artifact (ADR-044)
+
+**Status:** accepted (2026-08-13)
+
+The question raised was whether the project could pivot to publishing only
+roll-up analytics — top ASNs, maps, counts — on the theory that a statistic is a
+new work rather than a redistribution.
+
+**The legal half of that is right.** "AS9009 has 18,942 listed addresses" is a
+derived fact. It is not an extract of anybody's list, and nobody can block anything
+with it. Publishing aggregates computed over sources we may not republish is
+sound, and it is what commercial threat reports have always done.
+
+**The product half is wrong, so this is an addition and not a pivot.** The stated
+goal is to help people who need to block bad addresses and lack the tooling. A map
+blocks nothing. Removing the lists to keep the charts would abandon the only part
+that has utility, in exchange for a licensing benefit we can get without giving
+anything up.
+
+Two arguments were explicitly not relied on:
+
+- *"Someone could dig through the files but that is not the main intent."* Intent
+  does not cure distribution. If restricted data is in a published file we are
+  redistributing it, whatever the intent; and if it is not in a file, the intent
+  argument is unnecessary.
+- *"Anyone could abuse any software."* True and irrelevant. Third-party misuse of
+  what we publish is their problem. What *we* distribute is ours.
+
+**What was built.** `feeds/insights.json` and a dashboard section computed over
+**every** observation from **every** source, restricted ones included. It is the
+one place GreenSnow, ThreatFox and AbuseIPDB appear by name against a number, with
+a column counting addresses only they reported — evidence we would not otherwise
+have. Alongside: top ASNs with a count of how many independent sources reported
+each, a country map, and pairwise overlap between independence classes.
+
+Two rules make the distinction defensible rather than convenient, and both are
+enforced in code with tests rather than left to discipline:
+
+1. **No address is ever emitted.** Not as a top-offenders list, not as an example.
+   `test_insights_never_emit_an_address` asserts it. This is why there is no "worst
+   IPs" table despite it being the obvious thing to build: at that point the
+   statistic is the data wearing a hat.
+2. **Cells below 5 addresses are suppressed** into an unnamed bucket. A named ASN
+   holding one listed address is very nearly that address. Standard statistical
+   disclosure control, and it costs nothing at the granularity anyone reads —
+   3,920 tiny networks fold away and the top of the table is unchanged.
+
+ASN and country mapping comes from [iptoasn.com](https://iptoasn.com/), Public
+Domain under PDDL v1.0, rebuilt hourly. The licence was a selection criterion: an
+enrichment dataset with redistribution conditions would attach its own obligations
+to every statistic we publish. Country centroids for the map come from
+world-countries-centroids by Gavin Rehkemper under MIT, with the notice retained in
+`centroids.py`.
+
+The first run immediately produced something the feeds alone did not show: M247
+(AS9009) carries 18,942 listed addresses and is reported by **10 of 10** independent
+classes. That is not a bad week, it is a standing pattern, and it is the sort of
+finding that argues for a conversation about the network rather than a whack-a-mole
+against addresses.
+
+
 ## Open items
 
 - [ ] Confirm AbuseIPDB redistribution terms in writing; flip `redistribute` if permitted.
 - [x] Decide whether a separately-licensed NC-SA feed variant is worth shipping — done, shipped (ADR-041). DShield remains unattractive on volume, not licence: `block.txt` is only the top 20 /24 subnets.
 - [ ] Free-tier GreyNoise API keys require a business email address; a personal-domain account may be limited to unauthenticated lookups (~10/day). Confirm what tier is actually obtainable before wiring GreyNoise enrichment in Phase 2b.
-- [ ] Blocklist.de, bruteforceblocker and the Tor exit list state **no licence at all**. We publish them. That is the weakest remaining position in the set - not a prohibition, but no grant either. Ask each maintainer for an explicit statement.
+- [ ] Blocklist.de, bruteforceblocker and the Tor exit list state **no licence at all**. We publish them, and now credit them properly (ADR-043), but a credit is not a grant. Still need an explicit statement from each maintainer; this remains the weakest position in the set.
+- [ ] Google Cloud (AS396982) appears in the top networks with 6,865 addresses. Expected for a large cloud, but worth checking that the allowlist covers Google's published service ranges rather than only the ones we happened to add.
 - [ ] ipthreat.net's licence contradicts itself, naming "creative-commons by attribution" while saying "the creative commons by sa license can be used as a guide" and requiring derived data under the same licence. We read it conservatively as ShareAlike. Worth asking them to clarify, since a plain CC BY reading would let it into the non-commercial tier too.
 - [ ] ELLIO community feed now 404s and dataplane.org still prohibits redistribution; neither is actionable.
 - [ ] Feodo Tracker has been stale for 43 days and its IP blocklist is nearly empty. It is our only CC0 promoting source now that ThreatFox cannot promote. If it stays dead, the abuse.ch promotion path is effectively gone and should be removed rather than left looking active.

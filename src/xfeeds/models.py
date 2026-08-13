@@ -55,6 +55,13 @@ class SourceConfig(BaseModel):
     license_url: str | None = None
     license_risk: str | None = None
     attribution_required: bool | None = None
+    credit: str | None = None
+    """Human-readable credit line for published headers.
+
+    Set for every source we republish, including the several that state no licence
+    at all. Those grant us nothing in writing, which is a reason to name them
+    clearly rather than an excuse not to.
+    """
     enabled: bool = True
     vote: bool = True
     redistribute: bool = True

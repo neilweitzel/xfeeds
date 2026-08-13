@@ -183,6 +183,17 @@ tool for triaging a false-positive report.
 - **Provenance always.** No IP ships without a named source in `all.json`.
 - **Staleness detection.** A source whose last-updated header exceeds 30 days raises a warning, so a dead upstream is never mistaken for a quiet internet.
 
+## Statistics over everything, including what we cannot republish
+
+`feeds/insights.json` and the dashboard carry aggregate figures computed over **every** source, including the ones whose licences forbid republishing their addresses. A count is a derived fact rather than an extract, so this is the one place GreenSnow, ThreatFox and AbuseIPDB appear by name against a number — with a column showing how many addresses only they reported.
+
+Top ASNs, a country map, and pairwise overlap between independence classes. Two rules keep it a statistic rather than a redistribution, both enforced by tests:
+
+- **No individual address is ever emitted.** That is why there is no "worst offenders" table, tempting as it is. At that point the statistic is just the data wearing a hat.
+- **Cells below 5 addresses are suppressed** into an unnamed bucket, since a named ASN holding one listed address is very nearly that address.
+
+ASN and country data from [iptoasn.com](https://iptoasn.com/) (Public Domain, PDDL v1.0). Map centroids from [world-countries-centroids](https://github.com/gavinr/world-countries-centroids) by Gavin Rehkemper (MIT).
+
 ## Two tiers
 
 Most public IP feeds that forbid something forbid *commercial use*, not redistribution. Those are two different restrictions, and treating them the same was costing real coverage.

@@ -21,7 +21,9 @@ from xfeeds.emit import (
     write_noncommercial_license,
     write_text_feed,
 )
+from xfeeds.enrich import AsnIndex, AsnInfo
 from xfeeds.filters import apply_filters
+from xfeeds.insights import MIN_CELL, build_insights
 from xfeeds.models import (
     AllowlistSourceConfig,
     Band,
@@ -691,3 +693,99 @@ def test_noncommercial_files_carry_the_licence_banner(tmp_path: Path) -> None:
     assert "nc_only" in licence
     assert "may not" in licence.lower()
     assert "open_a" not in licence, "only restricted sources need calling out here"
+
+
+# --------------------------------------------------------------------------
+# Aggregate insights: ADR-044
+# --------------------------------------------------------------------------
+
+
+def _fake_asn_index() -> AsnIndex:
+    """Two announcements, so cell-suppression can be exercised deterministically."""
+    big = ipaddress.ip_network("45.66.0.0/16")
+    small = ipaddress.ip_network("203.0.113.0/24")
+    return AsnIndex(
+        starts=[int(big.network_address), int(small.network_address)],
+        ends=[int(big.broadcast_address), int(small.broadcast_address)],
+        infos=[
+            AsnInfo(asn=64500, country="NL", name="BIG-NET"),
+            AsnInfo(asn=64501, country="FR", name="TINY-NET"),
+        ],
+    )
+
+
+def test_insights_never_emit_an_address() -> None:
+    """The load-bearing guarantee. A count is a fact; an address is the data.
+
+    If this fails, the aggregate layer has quietly become redistribution by
+    instalment for every source whose licence forbids exactly that.
+    """
+    now = datetime(2026, 8, 12, tzinfo=UTC)
+    registry = _tiered_registry()
+    addresses = [f"45.66.{i}.{j}" for i in range(2) for j in range(1, 6)]
+    observations = [
+        _obs(source, cls, now, ip=ip)
+        for ip in addresses
+        for source, cls in (("open_a", "a"), ("nc_only", "nc"))
+    ]
+    scored = score_indicators(observations, registry, now)
+
+    insights = build_insights(observations, scored, registry, now, _fake_asn_index())
+    blob = json.dumps(insights)
+    for ip in addresses:
+        assert ip not in blob, f"{ip} leaked into the aggregate output"
+    assert "45.66." not in blob
+
+
+def test_insights_suppress_small_cells() -> None:
+    """A named ASN holding one address is very nearly that address."""
+    now = datetime(2026, 8, 12, tzinfo=UTC)
+    registry = _tiered_registry()
+    # Six addresses in BIG-NET, one in TINY-NET.
+    observations = [_obs("open_a", "a", now, ip=f"45.66.0.{i}") for i in range(1, 7)]
+    observations.append(_obs("open_a", "a", now, ip="203.0.113.9"))
+    scored = score_indicators(observations, registry, now)
+
+    insights = build_insights(observations, scored, registry, now, _fake_asn_index())
+    networks = insights["networks"]
+    named = {row["asn"] for row in networks["top_asns"]}
+    assert 64500 in named, "six addresses is above the threshold"
+    assert 64501 not in named, "one address must not be reported against a named ASN"
+    assert networks["suppressed"]["asns_below_threshold"] >= 1
+    assert networks["suppressed"]["threshold"] == MIN_CELL
+
+
+def test_insights_credit_sources_that_appear_in_no_feed() -> None:
+    """The whole point: a source we cannot republish still gets named and counted."""
+    now = datetime(2026, 8, 12, tzinfo=UTC)
+    registry = _tiered_registry()
+    observations = [
+        _obs("open_a", "a", now, ip="45.66.0.1"),
+        _obs("nc_only", "nc", now, ip="45.66.0.1"),
+        _obs("nc_only", "nc", now, ip="45.66.0.2"),
+    ]
+    scored = score_indicators(observations, registry, now)
+    insights = build_insights(observations, scored, registry, now, None)
+
+    rows = {row["source"]: row for row in insights["sources"]}
+    assert rows["nc_only"]["addresses_reported"] == 2
+    assert rows["nc_only"]["republished"] is False
+    assert rows["nc_only"]["reported_only_by_this_source"] == 1
+    assert insights["corpus"]["addresses_observed"] == 2
+
+
+def test_insights_degrade_without_an_asn_table() -> None:
+    """A statistics failure must never take the feed down with it."""
+    now = datetime(2026, 8, 12, tzinfo=UTC)
+    registry = _tiered_registry()
+    observations = [_obs("open_a", "a", now, ip="45.66.0.1")]
+    insights = build_insights(observations, [], registry, now, None)
+    assert insights["networks"]["available"] is False
+    assert insights["corpus"]["addresses_observed"] == 1
+
+
+def test_asn_index_lookup_and_cidr_summary() -> None:
+    index = _fake_asn_index()
+    assert index.lookup(ipaddress.IPv4Address("45.66.7.7")).asn == 64500
+    assert index.lookup(ipaddress.IPv4Address("8.8.8.8")).asn == 0
+    assert index.summarise(ipaddress.ip_network("203.0.113.0/28")).name == "TINY-NET"
