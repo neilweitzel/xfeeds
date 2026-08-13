@@ -505,6 +505,12 @@ sustained pattern, and worth a look at the whole network rather than one address
 their data is in any download. They still shape every confidence score, and the
 numbers above are the work they contributed. The <em>Only source</em> column counts
 addresses nobody else reported — evidence we would simply not have without them.</p>
+<p class="note">Network and country attribution in this section uses
+<a href="https://iptoasn.com/">IPtoASN</a> by Frank Denis (Public Domain, PDDL v1.0).
+Map positions use
+<a href="https://github.com/gavinr/world-countries-centroids">world-countries-centroids</a>
+by Gavin Rehkemper (MIT). Neither contributes threat data; they only turn counts
+into a network name and a point on a map.</p>
 """
 
 
