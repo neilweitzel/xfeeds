@@ -1,0 +1,86 @@
+# Dataplane.org - for operators, by operators
+# sshpwauth
+# 2026-08-07 16:00 - 2026-08-14 16:00
+#
+# The sshpwauth report is free for non-commercial use ONLY.  If you wish
+# to discuss commercial use of this service, please contact us at
+# info@dataplane.org.  Redistribution of the sshpwauth report in whole or
+# in part without the express permission of Dataplane.org is expressly
+# prohibited.
+#
+# This report is made possible through the generous support of people
+# like you.  Sensor, processing, and distribution systems require
+# non-free resources to setup and maintain.  We are always looking for
+# financial contributions to help pay the bills and hosting to increase
+# visibility.  If you find what we do useful, please consider supporting
+# us.
+#
+# This report is informational.  This is not a block list.  Deriving
+# malicious or benign intent for an individual entry in the face of
+# NATs, address spoofing, and certain types of Internet activity
+# (e.g., surveying research) can be difficult.  The report is provided
+# on an as-is basis with no expressed warranty or guarantee of accuracy.
+# Use of this data is at your own risk.  If you have questions about
+# this report do not hesitate to contact us.
+#
+# Entries below are records of source IP addresses that have been
+# identified as attempting login via SSH password authentication.
+# To read more about SSH password authentication issues see:
+#
+#   <http://dataplane.org/sshpwauth-tac.html>
+#
+# Each entry is sorted according to a route originating ASN.  An entry
+# for the IP address is listed only once even if there are multiple
+# origin AS (MOAS) announcements for the covering prefix.  We use the
+# PyASN IP address to ASN mapping service to construct an origin AS
+# number and name.  For details about PyASN, see:
+#
+#   <https://pypi.org/project/pyasn/>.
+#
+# The report format is as follows:
+#
+# ASN  |  ASname  |  ipaddr  |  lastseen  |  category
+#
+# Each field is described below.  Please note any special formatting
+# rules to aid in processing this file with automated tools and scripts.
+# Blank lines may be present to improve the visual display of this file.
+# Lines beginning with a hash ('#') character are comment lines.  All
+# other lines are report entries.  Each field is separated by a pipe
+# symbol ('|') and at least two whitespace characters on either side.
+#
+#   ASN        Autonomous system number originating a route for the
+#              entry IP address. Note, 4-byte ASNs are supported and
+#              will be displayed as a 32-bit integer.  NA is shown if
+#              an origin ASN cannot be found.
+#
+#   ASname     A descriptive network name for the associated ASN.  The
+#              name is truncated to 30 characters.  NA is shown if an
+#              AS name cannot be found.
+#
+#   ipaddr     The IPv4 address that is being reported.
+#
+#   lastseen   A last seen timestamp formatted as YYYY-mm-dd HH:MM:SS
+#              in UTC time.
+#
+#   category   Descriptive tag name for this entry.  For this report,
+#              the text sshpwauth will appear.
+#
+# A commented footer section shows an aggregate count of ASNs and
+# addresses seen in the current report.
+#
+#
+# Statistics
+#        ASNs: 1614
+#   Addresses: 9771
+174          |  COGENT-174 - Cogent Communicat  |  149.13.96.133    |  2026-08-14 15:59:46  |  sshpwauth
+174          |  COGENT-174 - Cogent Communicat  |  38.140.236.92    |  2026-08-11 16:00:05  |  sshpwauth
+209          |  CENTURYLINK-US-LEGACY-QWEST -   |  65.129.122.146   |  2026-08-13 06:47:56  |  sshpwauth
+577          |  BACOM - Bell Canada             |  174.94.236.211   |  2026-08-14 07:06:17  |  sshpwauth
+577          |  BACOM - Bell Canada             |  70.54.68.107     |  2026-08-12 22:20:05  |  sshpwauth
+577          |  BACOM - Bell Canada             |  76.69.7.6        |  2026-08-11 09:46:51  |  sshpwauth
+701          |  UUNET - Verizon Business        |  108.28.86.172    |  2026-08-12 19:25:19  |  sshpwauth
+701          |  UUNET - Verizon Business        |  108.46.229.102   |  2026-08-12 22:19:54  |  sshpwauth
+701          |  UUNET - Verizon Business        |  173.69.137.172   |  2026-08-13 11:46:52  |  sshpwauth
+701          |  UUNET - Verizon Business        |  71.104.45.42     |  2026-08-09 08:16:41  |  sshpwauth
+701          |  UUNET - Verizon Business        |  71.127.50.244    |  2026-08-11 08:26:49  |  sshpwauth
+701          |  UUNET - Verizon Business        |  71.178.188.190   |  2026-08-14 14:08:31  |  sshpwauth

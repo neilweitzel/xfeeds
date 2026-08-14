@@ -13,12 +13,13 @@ def test_load_real_sources_yaml() -> None:
 
     active_classes = get_active_voting_classes(registry)
 
-    # Voting classes active on a fresh clone. turris votes but is redistribute:false,
-    # so it can upgrade a band and never admit a record - see test_pipeline.
-    # abuseipdb joined the voting classes when its key landed; it is also
-    # redistribute:false, so the same "votes, never admits" rule applies.
-    assert len(active_classes) == 11
-    assert "abuseipdb" in active_classes
+    # Voting classes active on a fresh clone. Several vote while being
+    # redistribute:false, so they can upgrade a band and never admit a record -
+    # see test_pipeline. abuseipdb joined when its key landed; dshield and
+    # dataplane joined in ADR-048 after the licence re-read.
+    assert len(active_classes) == 13
+    for expected in ("abuseipdb", "dshield", "dataplane"):
+        assert expected in active_classes
 
     abuseipdb = next((s for s in registry.sources if s.name == "abuseipdb_blacklist"), None)
     threatfox = next((s for s in registry.sources if s.name == "threatfox"), None)
@@ -74,6 +75,49 @@ def test_abuseipdb_is_rate_limited_and_cached() -> None:
     assert source.redistribute is False
     assert source.params is not None
     assert source.params.get("confidenceMinimum") == 100
+
+
+def test_dshield_is_noncommercial_tier_only() -> None:
+    """CC BY-NC-SA permits redistribution but forbids commercial use.
+
+    So DShield may be republished in the non-commercial tier and must never reach
+    the primary feed, which commercial consumers download. ADR-048.
+    """
+    registry = load_registry(Path("sources.yaml"))
+    source = next(s for s in registry.sources if s.name == "dshield_block")
+
+    assert source.enabled is True
+    assert source.redistribute is False, "the primary feed is consumed commercially"
+    assert source.redistribute_noncommercial is True
+    assert source.noncommercial_compatible is True
+    assert source.attribution_required is True
+    assert source.credit is not None and "DShield" in source.credit
+    # It publishes /24 blocks, so one vote covers 256 hosts. Keep the weight low.
+    assert source.weight <= 0.5
+
+
+def test_no_source_is_flagged_for_a_tier_its_licence_forbids() -> None:
+    """Guard the two flag combinations that would be a licensing violation.
+
+    Both are easy to introduce by copying an adjacent YAML block, and neither is
+    caught by any other test: a source cannot be simultaneously restricted from
+    the primary feed for a NonCommercial reason and marked compatible with a tier
+    it is not allowed in, and redistribute_noncommercial is meaningless - and
+    dangerously misleading - when redistribute is already true.
+    """
+    registry = load_registry(Path("sources.yaml"))
+
+    for source in registry.sources:
+        if source.redistribute:
+            assert not source.redistribute_noncommercial, (
+                f"{source.name}: redistribute_noncommercial is ignored when "
+                "redistribute is true; drop it rather than implying a restriction"
+            )
+        if source.redistribute_noncommercial:
+            assert source.noncommercial_compatible, (
+                f"{source.name}: flagged for the non-commercial tier while also "
+                "marked incompatible with it"
+            )
 
 
 def test_duplicate_source_name() -> None:
@@ -183,4 +227,4 @@ def test_xfeeds_validate_from_other_dir(tmp_path: Path, monkeypatch: pytest.Monk
     result = runner.invoke(app, ["validate"])
     assert result.exit_code == 0
     assert "Successfully loaded" in result.stdout
-    assert "Active voting classes: 11" in result.stdout
+    assert "Active voting classes: 13" in result.stdout

@@ -71,7 +71,7 @@ Deliberately **not** used: `netaddr` (stdlib `ipaddress` suffices), `orjson`/`pa
 
 Configured entirely in [`sources.yaml`](sources.yaml). Adding a source means adding a YAML entry and, if the format is new, a parser — never a pipeline change.
 
-**Nine independent voting classes**, each a distinct sensor network, reporter community, or research team. AbuseIPDB and ThreatFox are keyed sources: both are enabled in `sources.yaml`, and both skip cleanly when their key is absent from the environment, so a fresh clone with no secrets still produces a correct feed and simply gains accuracy once the keys are set. `ABUSEIPDB_API_KEY` was added to repo secrets on 2026-08-14; AbuseIPDB remains `redistribute: false` per ADR-012, so it raises confidence without contributing rows to any published file.
+**Eleven independent voting classes**, each a distinct sensor network, reporter community, or research team. AbuseIPDB and ThreatFox are keyed sources: both are enabled in `sources.yaml`, and both skip cleanly when their key is absent from the environment, so a fresh clone with no secrets still produces a correct feed and simply gains accuracy once the keys are set. `ABUSEIPDB_API_KEY` was added to repo secrets on 2026-08-14; AbuseIPDB remains `redistribute: false` per ADR-012, so it raises confidence without contributing rows to any published file.
 
 | Source | Class | Weight | Volume | Notes |
 |---|---|---|---|---|
@@ -85,6 +85,8 @@ Configured entirely in [`sources.yaml`](sources.yaml). Adding a source means add
 | GreenSnow | `greensnow` | 0.6 | 3,595 | |
 | Binary Defense | `binary_defense` | 0.6 | 3,300 | Requires browser-like UA |
 | bruteforceblocker | `bruteforceblocker` | 0.6 | 549 | Upstream of ET compromised-ips |
+| [DataPlane.org](https://dataplane.org/sshpwauth.txt) | `dataplane` | 0.7 | 9,771 | Own SSH sensors, 7-day window. Scoring only in **both** tiers |
+| [DShield](https://isc.sans.edu/api/) | `dshield` | 0.5 | 20 × /24 | CC BY-NC-SA — non-commercial tier only |
 
 **Not voting, and why** — the important half of the design:
 
@@ -93,7 +95,10 @@ Configured entirely in [`sources.yaml`](sources.yaml). Adding a source means add
 | IPsum L3–L8 | Prior only, weight 0 | Aggregates 30+ lists including most of ours. 35% of Blocklist.de and 64% of Binary Defense reappear inside it. |
 | FireHOL level1 | Disabled | Its header declares it composed of sources we already ingest — and it spans 611M addresses including `224.0.0.0/3`. |
 | ET compromised-ips | Disabled | Jaccard **0.953** against bruteforceblocker. A mirror, not a second opinion. |
-| DShield | Disabled | **CC BY-NC-SA 2.5** — NonCommercial and ShareAlike are incompatible with freely redistributable output. |
+| ET compromised-ips | Disabled | Also 96% contained in the duggytuxy list, and class-pinned to bruteforceblocker, so it cannot add a vote. |
+| SSLBL (IP list) | Disabled | Not empty — **retired**. The file says "deprecated on 2025-01-03". |
+| [sefinek](https://github.com/sefinek/Malicious-IP-Addresses) | Disabled | MIT and the most independent list we have measured, but "entries ... are generally not removed", so nothing ever expires. See ADR-048. |
+| [duggytuxy Data-Shield](https://github.com/duggytuxy/Data-Shield_IPv4_Blocklist) | Disabled | Claims own probes; contains **90.7% of everything we publish**. A re-aggregator by measurement. |
 | Tor exits | Tag only | Blocking Tor is the consumer's policy choice, not a threat assertion. |
 
 ---
@@ -110,7 +115,9 @@ score = 100 × (1 − exp(−raw))
 
 One vote per class, and exponential saturation, so no single source can alone reach the top band. Spamhaus DROP membership and active abuse.ch C2 listings promote directly — justified by precision rather than agreement.
 
-Only classes we are licensed to republish count toward the threshold that admits a record. Sources we may consume but not republish (AbuseIPDB, GreenSnow, ThreatFox) can raise a record from medium to high, but can never bring one into the feed on their own, and their names are withheld from published records so the feed cannot disclose their membership. See ADR-035.
+Only classes we are licensed to republish count toward the threshold that admits a record. Sources we may consume but not republish (AbuseIPDB, GreenSnow, ThreatFox, DataPlane) can raise a record from medium to high, but can never bring one into the feed on their own, and their names are withheld from published records so the feed cannot disclose their membership. See ADR-035.
+
+That split is what makes a restricted source safe to use, and ADR-048 measured the payoff: adding DataPlane and DShield left the published count **unchanged at 3,518** while upgrading 375 records from medium to high. Pure corroboration, zero new exposure.
 
 Measured against live data on 2026-08-11, of 54,241 unique candidate IPs:
 

@@ -601,6 +601,65 @@ def abuseipdb(
     _log_skips(config.name, malformed_count, non_global_count)
 
 
+def dataplane(
+    content: bytes, config: SourceConfig, fetch_time: datetime
+) -> Iterator[IndicatorRecord]:
+    """Parse a Dataplane.org report: ``ASN | ASname | ipaddr | lastseen | category``.
+
+    Five pipe-delimited columns, padded with spaces, behind about 70 lines of
+    ``#`` header. ``plain_text`` cannot read this - it sees the ASN in column one
+    and finds no bare address - and a source that silently yields zero records is
+    worse than one that fails, so the shape is validated per row here.
+
+    The per-row ``lastseen`` timestamp is the reason this parser exists rather than
+    reusing a generic splitter. It gives seven days of real dated history on the
+    first run, which the ASN windows need, and it goes into
+    ``source_last_reported`` rather than ``last_seen`` for the reason documented on
+    that field.
+    """
+    malformed_count = 0
+    non_global_count = 0
+
+    for raw in content.decode("utf-8", errors="replace").splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+
+        fields = [f.strip() for f in line.split("|")]
+        if len(fields) < 3:
+            malformed_count += 1
+            continue
+
+        try:
+            ip_obj: IPOrNet = ipaddress.ip_address(fields[2])
+        except ValueError:
+            malformed_count += 1
+            continue
+        if not _is_global(ip_obj):
+            non_global_count += 1
+            continue
+
+        tags: list[str] = []
+        asn = fields[0]
+        if asn.isdigit():
+            tags.append(f"asn:{asn}")
+
+        reported = _parse_reported_date(fields[3]) if len(fields) > 3 else None
+
+        yield IndicatorRecord(
+            ip_or_cidr=ip_obj,
+            source=config.name,
+            independence_class=config.independence_class,
+            first_seen=fetch_time,
+            last_seen=fetch_time,
+            categories=list(config.categories),
+            tags=tags,
+            source_last_reported=reported,
+        )
+
+    _log_skips(config.name, malformed_count, non_global_count)
+
+
 _IMPLEMENTED = [
     threatfox_api,
     plain_text,
@@ -614,6 +673,7 @@ _IMPLEMENTED = [
     turris_greylist,
     ipthreat,
     abuseipdb,
+    dataplane,
 ]
 
 PARSERS = {}

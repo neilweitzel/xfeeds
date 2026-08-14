@@ -357,22 +357,37 @@ sources:
       Class-pinned to bruteforceblocker so it can never double-vote if re-enabled.
 
   - name: dshield_block
+    credit: "DShield.org Recommended Block List - SANS Internet Storm Center (CC BY-NC-SA)"
     url: https://feeds.dshield.org/block.txt
     parser: dshield
     independence_class: dshield
-    weight: 0.0
-    vote: false
+    weight: 0.5
+    vote: true
+    categories: [scanning, reported-abuse]
+    ttl_days: 3
     redistribute: false
-    enabled: false
-    license: "CC BY-NC-SA 2.5"
-    license_url: http://creativecommons.org/licenses/by-nc-sa/2.5/
-    license_risk: high
+    redistribute_noncommercial: true
+    attribution_required: true
+    enabled: true
+    license: "CC BY-NC-SA (2.5 in the file header, 4.0 on the ISC API page)"
+    license_url: https://isc.sans.edu/api/
+    license_risk: medium
+    min_interval_seconds: 3600
     notes: >
-      DISABLED on licensing grounds. The feed header declares CC BY-NC-SA 2.5.
-      NonCommercial conflicts with unrestricted downstream use and ShareAlike
-      would attach viral terms to any output containing it. Only 20 /24 blocks
-      anyway. Excluded until relicensed or a separate NC-SA feed is justified.
-      See docs/DECISIONS.md ADR-012.
+      The top 20 /24 subnets by report volume across the SANS Internet Storm Center
+      firewall-log collection - a large, genuinely independent reporter network.
+      Re-admitted in ADR-048 after the 2026-08-14 licence re-read. The ISC API page
+      says plainly "It is ok to use this data for commercial purposes, for example to
+      protect your own company's network. But again: do not resell", under CC BY-NC-SA
+      4.0. That is redistributable in the non-commercial tier, exactly as Turris is,
+      so redistribute:false + redistribute_noncommercial:true is the most permissive
+      setting the licence actually allows.
+      WEIGHT IS DELIBERATELY LOW AND TTL SHORT. This feed publishes /24 blocks, not
+      addresses, so one vote here covers 256 hosts. It must never be the reason a /24
+      is published: it needs a second class, and the CIDR width cap and allowlist both
+      still apply after it.
+      Do NOT use isc.sans.edu/api/threatlist/dshield?json - it returned an empty
+      array on 2026-08-14. feeds.dshield.org/block.txt is the live path.
 
   - name: turris_greylist
     credit: "Turris Sentinel greylist - CZ.NIC, view.sentinel.turris.cz (CC BY-NC-SA 4.0)"
@@ -389,21 +404,9 @@ sources:
     attribution_required: true
     redistribute: false
     notes: >
-      ~9,700 addresses from the CZ.NIC Turris router sensor network. A genuinely
-      different vantage point from the server-side honeypots that dominate the rest
-      of the set: measured overlap with our published feed is only 7.7%, and it
-      corroborates 477 of 1,837 medium-confidence records.
-      Was disabled outright on licensing grounds (ADR-030). Re-enabled as a
-      SCORING-ONLY source in ADR-035 once the vote/redistribute split was shown to
-      contain the risk: CC BY-NC-SA ShareAlike attaches on *Sharing* adapted
-      material, and we never share any of it. Three containments apply - the rows
-      are never emitted, the source name is withheld from published records so the
-      feed cannot disclose greylist membership, and a restricted class may only
-      upgrade medium to high, never admit a record on its own.
-    notes: >
-      ~9,530 addresses from the CZ.NIC Turris consumer-router sensor network. A
-      different vantage point from the server-side honeypots that dominate the rest
-      of the set: 7.7% overlap with our published feed.
+      ~9,500 addresses from the CZ.NIC Turris consumer-router sensor network. A
+      genuinely different vantage point from the server-side honeypots that dominate
+      the rest of the set: 7.7% overlap with our published feed.
       NOT in the primary feed - CC BY-NC-SA cannot be imposed on consumers of a
       public feed. It corroborates there under ADR-035 (upgrade only, name withheld),
       and is republished in FULL in the non-commercial tier, which is itself licensed
@@ -411,20 +414,101 @@ sources:
 
   - name: dataplane_sshpwauth
     url: https://dataplane.org/sshpwauth.txt
-    parser: plain_text
+    parser: dataplane
     independence_class: dataplane
+    weight: 0.7
+    vote: true
+    categories: [ssh-attack, brute-force]
+    ttl_days: 7
+    redistribute: false
+    redistribute_noncommercial: false
+    noncommercial_compatible: false
+    enabled: true
+    license: "Non-commercial use only; redistribution expressly prohibited"
+    license_url: https://dataplane.org/sshpwauth.txt
+    license_risk: medium
+    min_interval_seconds: 3600
+    notes: >
+      ~9,800 addresses seen attempting SSH password authentication against the
+      Dataplane.org sensor network, on a rolling 7-day window, refreshed hourly.
+      Original sensor telemetry from a 501(c)(3) - one of the few remaining feeds
+      that is not downstream of anything else in this set.
+      SCORING ONLY, IN BOTH TIERS. The payload states "Redistribution of the
+      sshpwauth report in whole or in part without the express permission of
+      Dataplane.org is expressly prohibited", so no row from it is emitted anywhere:
+      redistribute:false AND noncommercial_compatible:false. What the header DOES
+      permit is use - "free for non-commercial use ONLY" - and this project is free
+      and sells nothing, so consuming it to corroborate other sources is inside the
+      terms. Same posture as greensnow and abuseipdb. Enabled in ADR-048, reversing
+      the blanket exclusion; the earlier note conflated "may not republish" with
+      "may not read".
+      Also note their own caveat: "This report is informational. This is not a block
+      list." Hence a vote, not a promotion.
+
+  # ------------------------------------------------------- added in ADR-048
+  - name: sefinek_malicious_ip
+    credit: "Malicious IP Addresses - Sefinek, github.com/sefinek/Malicious-IP-Addresses (MIT)"
+    url: https://raw.githubusercontent.com/sefinek/Malicious-IP-Addresses/main/lists/main.txt
+    parser: plain_text
+    independence_class: sefinek
+    weight: 0.5
+    vote: true
+    categories: [web-attack, scanning, reported-abuse]
+    ttl_days: 3
+    license: "MIT"
+    license_url: https://raw.githubusercontent.com/sefinek/Malicious-IP-Addresses/main/LICENSE
+    license_risk: low
+    attribution_required: true
+    redistribute: true
+    enabled: false   # licence is clean; the no-expiry problem below is the blocker
+    notes: >
+      ~217,000 addresses collected from the maintainer's own web properties via
+      CrowdSec/UFW telemetry. MIT licensed - one of only two cleanly redistributable
+      feeds found in the 2026-08-14 sweep, and the most independent list measured:
+      only 2.7% of our published feed appears in it, 2.2% overlap with duggytuxy,
+      1.4% against Blocklist.de and 0.0% against ET compromised-ips.
+      DISABLED ANYWAY, on measured behaviour rather than licence. Its README states
+      "Entries are added continuously and are generally not removed", so it never
+      expires anything: it re-asserts all ~217k addresses on every run and our TTL can
+      never age one out. Measured on a controlled A/B run on 2026-08-14, enabling it
+      alone moved published 3,518 -> 4,318, but the gain was mostly NEW medium-band
+      records (+596 medium against only +204 high) and it added 208,577 rows to the
+      withheld pool. Admitting 596 records on the word of a list that never retracts
+      is the false-positive vector this project exists to avoid.
+      Contrast dataplane+dshield in the same experiment: published unchanged at 3,518
+      with 375 records upgraded medium -> high. That is what a good corroborating
+      source looks like.
+      To enable: measure churn across several runs first, and consider capping its
+      contribution to upgrade-only (vote true, cannot admit) the way ADR-035 handles
+      restricted classes.
+
+  - name: duggytuxy_data_shield
+    url: https://raw.githubusercontent.com/duggytuxy/Data-Shield_IPv4_Blocklist/main/prod_critical_data-shield_ipv4_blocklist.txt
+    parser: plain_text
+    independence_class: META_aggregate
     weight: 0.0
     vote: false
     redistribute: false
     enabled: false
-    license: "Non-commercial only; redistribution expressly prohibited"
-    license_url: https://dataplane.org/
-    license_risk: high
+    license: "GNU GPLv3"
+    license_url: https://raw.githubusercontent.com/duggytuxy/Data-Shield_IPv4_Blocklist/main/LICENSE
+    license_risk: medium
     notes: >
-      DISABLED. The payload states "Redistribution of the sshpwauth report in
-      whole or in part without the express permission of Dataplane.org is
-      expressly prohibited." Not ingested at all - a compiled feed is arguably
-      redistribution "in part", and this project will not test that argument.
+      DISABLED, and recorded here so the decision is not re-litigated. 91,714
+      addresses, GPLv3, refreshed 6-hourly. Its README claims original telemetry
+      "fed by global probes", but measurement on 2026-08-14 contradicts that claim:
+      it contains 90.7% of everything we currently publish, 96% of ET
+      compromised-ips, and 95% of it sits inside ThreatHive, which is a confirmed
+      re-aggregator. A source that already contains nine tenths of our corroborated
+      output is not an independent vote - it is our own feed echoed back, which is
+      precisely the failure mode independence classes exist to prevent. Filed under
+      META_aggregate for that reason.
+      Secondary problem even if it were independent: GPLv3 on a data set is a copyleft
+      trap. Publishing it would argue our combined output is a GPLv3 derivative, which
+      collides with ipthreat's ShareAlike requirement to relicense derived data under
+      the same CC licence.
+      Also carries 1.2.3.4, which is a documentation address, so its input hygiene is
+      not perfect either.
 
   # ---------------------------------------------------- annotation, not blocks
   - name: tor_exits

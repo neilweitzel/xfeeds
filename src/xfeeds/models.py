@@ -28,6 +28,7 @@ VALID_PARSERS = {
     "abuseipdb",
     "bruteforceblocker",
     "cloudflare_json",
+    "dataplane",
     "dshield",
     "github_meta",
     "google_json",

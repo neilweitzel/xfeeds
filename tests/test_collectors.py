@@ -572,3 +572,91 @@ def test_abuseipdb_skips_cleanly_when_the_key_is_absent(
     assert result.success is False
     assert result.skipped_no_credential is True
     assert result.error is not None and "ABUSEIPDB_API_KEY" in result.error
+
+
+# --------------------------------------------------------------------------
+# Dataplane.org
+# --------------------------------------------------------------------------
+
+DATAPLANE_FIXTURE = Path("tests/fixtures/sources/dataplane_sshpwauth.txt")
+
+
+def dataplane_config() -> SourceConfig:
+    """Mirror the real sources.yaml entry: scoring only in BOTH tiers."""
+    return SourceConfig(
+        name="dataplane_sshpwauth",
+        url="https://dataplane.org/sshpwauth.txt",
+        parser="dataplane",
+        independence_class="dataplane",
+        weight=0.7,
+        categories=["ssh-attack", "brute-force"],
+        redistribute=False,
+        redistribute_noncommercial=False,
+        noncommercial_compatible=False,
+    )
+
+
+def test_dataplane_parses_the_recorded_report() -> None:
+    """Read the pipe-delimited columns and skip the 74-line licence header."""
+    from xfeeds.collectors.parsers import dataplane
+
+    config = dataplane_config()
+    now = datetime(2026, 8, 14, 17, tzinfo=UTC)
+    records = list(dataplane(DATAPLANE_FIXTURE.read_bytes(), config, now))
+
+    assert records, "the recorded fixture must yield records"
+    assert str(records[0].ip_or_cidr) == "149.13.96.133"
+    assert records[0].independence_class == "dataplane"
+    assert records[0].categories == ["ssh-attack", "brute-force"]
+
+    # Column 1 is the ASN, not an address - the whole reason plain_text fails here.
+    assert "asn:174" in records[0].tags
+    assert all(not str(r.ip_or_cidr).isdigit() for r in records)
+
+    # The per-row lastseen is real dated history, truncated to the day.
+    assert records[0].source_last_reported == datetime(2026, 8, 14, tzinfo=UTC)
+    assert records[0].first_seen == now
+
+
+def test_dataplane_rejects_rows_that_are_not_the_expected_shape() -> None:
+    """A layout change must drop rows, never invent an address from column one."""
+    from xfeeds.collectors.parsers import dataplane
+
+    content = (
+        b"# Dataplane.org - for operators, by operators\n"
+        b"# The sshpwauth report is free for non-commercial use ONLY.\n"
+        b"174          |  COGENT-174  |  45.33.32.5      |  2026-08-14 15:59:46  |  sshpwauth\n"
+        b"174          |  COGENT-174  |  10.0.0.1        |  2026-08-14 15:59:46  |  sshpwauth\n"
+        b"174          |  COGENT-174  |  not-an-ip       |  2026-08-14 15:59:46  |  sshpwauth\n"
+        b"65535\n"
+        b"174 | COGENT-174\n"
+        b"\n"
+        b"AS174        |  COGENT-174  |  45.33.32.6      |  2026-08-14 15:59:46  |  sshpwauth\n"
+    )
+    records = list(dataplane(content, dataplane_config(), datetime(2026, 8, 14, tzinfo=UTC)))
+
+    # The private address, the malformed address and the two short rows all go.
+    assert [str(r.ip_or_cidr) for r in records] == ["45.33.32.5", "45.33.32.6"]
+    # A non-numeric ASN column is tolerated but not tagged as one.
+    assert records[1].tags == []
+
+
+def test_dataplane_never_reaches_either_published_tier() -> None:
+    """Their header forbids redistribution "in whole or in part", so both flags are off.
+
+    This is the licensing obligation for this source, and it differs from every
+    other restricted source here: greensnow and abuseipdb are excluded from the
+    primary feed, but Dataplane is excluded from the non-commercial tier as well.
+    """
+    from pathlib import Path as _Path
+
+    from xfeeds.config import load_registry
+
+    registry = load_registry(_Path("sources.yaml"))
+    source = next(s for s in registry.sources if s.name == "dataplane_sshpwauth")
+
+    assert source.enabled is True
+    assert source.vote is True, "it is enabled to corroborate, so it must vote"
+    assert source.redistribute is False
+    assert source.redistribute_noncommercial is False
+    assert source.noncommercial_compatible is False
