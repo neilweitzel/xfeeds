@@ -1,6 +1,7 @@
 {
   "active_voting_classes": [
     "abusech",
+    "abuseipdb",
     "binary_defense",
     "blocklist_de",
     "bruteforceblocker",
@@ -13,17 +14,17 @@
   ],
   "corroboration_histogram": {
     "1": 1776,
-    "2": 3949,
-    "3": 504,
-    "4": 69,
+    "2": 3871,
+    "3": 519,
+    "4": 66,
     "5": 1
   },
   "counts": {
-    "high": 2881,
-    "medium": 3418,
+    "high": 3889,
+    "medium": 2344,
     "promoted": 1777,
-    "published": 6299,
-    "withheld": 46350
+    "published": 6233,
+    "withheld": 46469
   },
   "deltas": {
     "added": 0,
@@ -32,7 +33,7 @@
     "removed_examples": []
   },
   "filters": {
-    "allowlisted": 3987,
+    "allowlisted": 4167,
     "examples": {
       "allowlisted": [
         "172.70.206.0/23",
@@ -42,11 +43,11 @@
         "34.11.43.142"
       ],
       "not_redistributable": [
-        "166.0.192.57",
-        "118.196.95.249",
-        "172.188.0.134",
-        "188.166.11.109",
-        "104.248.196.119"
+        "111.170.148.132",
+        "68.64.181.23",
+        "176.98.182.218",
+        "91.108.249.56",
+        "89.19.223.68"
       ],
       "tag_only": [
         "80.67.167.81",
@@ -64,14 +65,27 @@
       ]
     },
     "non_global": 0,
-    "not_redistributable": 3859,
-    "tag_only": 1123,
+    "not_redistributable": 6952,
+    "tag_only": 1153,
     "too_wide": 7
   },
-  "generated_at": "2026-08-14T13:44:58.536840+00:00",
+  "generated_at": "2026-08-14T16:10:34.432608+00:00",
   "license": "CC BY-NC-SA 4.0",
   "project": "https://github.com/neilweitzel/xfeeds",
   "sources": {
+    "abuseipdb_blacklist": {
+      "cached": false,
+      "error": null,
+      "independence_class": "abuseipdb",
+      "license": "AbuseIPDB free tier; redistribution of the blacklist is restricted",
+      "license_risk": null,
+      "license_url": "https://www.abuseipdb.com/legal",
+      "records": 10000,
+      "redistributable": false,
+      "status": "ok",
+      "votes": true,
+      "weight": 0.9
+    },
     "binary_defense": {
       "cached": true,
       "error": null,
@@ -90,11 +104,11 @@
       "cached": false,
       "error": null,
       "independence_class": "blocklist_de",
-      "last_modified": "2026-08-14T13:25:02+00:00",
+      "last_modified": "2026-08-14T15:49:02+00:00",
       "license": "Free, non-commercial reporting service",
       "license_risk": null,
       "license_url": "https://blocklist.de/",
-      "records": 26459,
+      "records": 26380,
       "redistributable": true,
       "status": "ok",
       "votes": true,
@@ -104,7 +118,7 @@
       "cached": false,
       "error": null,
       "independence_class": "bruteforceblocker",
-      "last_modified": "2026-08-14T13:42:38+00:00",
+      "last_modified": "2026-08-14T16:08:08+00:00",
       "license": "No licence stated. Published for public use by the bruteforceblocker project; we asked for an explicit statement (ADR-043)",
       "license_risk": null,
       "license_url": "http://danger.rulez.sk/index.php/bruteforceblocker/",
@@ -118,7 +132,7 @@
       "cached": false,
       "error": null,
       "independence_class": "cins",
-      "last_modified": "2026-08-14T13:04:01+00:00",
+      "last_modified": "2026-08-14T16:04:01+00:00",
       "license": "No formal license published; site states the list is shared with the community to 'parse and use in any way you see fit'",
       "license_risk": "medium",
       "license_url": "https://cinsscore.com/#list",
@@ -146,11 +160,11 @@
       "cached": false,
       "error": null,
       "independence_class": "greensnow",
-      "last_modified": "2026-08-14T13:45:03+00:00",
+      "last_modified": "2026-08-14T16:10:38+00:00",
       "license": "All rights reserved; reproduction or republication strictly prohibited",
       "license_risk": "high",
       "license_url": "https://greensnow.co/",
-      "records": 3206,
+      "records": 3195,
       "redistributable": false,
       "status": "ok",
       "votes": true,
@@ -173,18 +187,18 @@
       "cached": false,
       "error": null,
       "independence_class": "ipthreat",
-      "last_modified": "2026-08-14T13:45:06+00:00",
+      "last_modified": "2026-08-14T14:51:35+00:00",
       "license": "Creative Commons attribution; derived data under the same CC licence; commercial use expressly permitted",
       "license_risk": "low",
       "license_url": "https://ipthreat.net/license",
-      "records": 2214,
+      "records": 2287,
       "redistributable": true,
       "status": "ok",
       "votes": true,
       "weight": 0.8
     },
     "spamhaus_drop_v4": {
-      "cached": false,
+      "cached": true,
       "error": null,
       "independence_class": "spamhaus",
       "last_modified": "2026-08-14T10:09:25+00:00",
@@ -215,7 +229,7 @@
       "cached": false,
       "error": null,
       "independence_class": "stopforumspam",
-      "last_modified": "2026-08-14T12:53:09+00:00",
+      "last_modified": "2026-08-14T14:53:09+00:00",
       "license": "Non-commercial use only; Creative Commons for remaining terms",
       "license_risk": "medium",
       "license_url": "https://www.stopforumspam.com/legal",
@@ -232,7 +246,7 @@
       "license": "abuse.ch/Spamhaus platform terms; no redistribution grant (NOT CC0, unlike Feodo Tracker)",
       "license_risk": "high",
       "license_url": "https://abuse.ch/terms-of-use/",
-      "records": 1103,
+      "records": 1106,
       "redistributable": false,
       "status": "ok",
       "votes": true,
@@ -242,11 +256,11 @@
       "cached": false,
       "error": null,
       "independence_class": "tor",
-      "last_modified": "2026-08-14T12:54:28+00:00",
+      "last_modified": "2026-08-14T15:54:46+00:00",
       "license": "No licence stated on the endpoint. Published by the Tor Project as a public service",
       "license_risk": null,
       "license_url": "https://check.torproject.org/torbulkexitlist",
-      "records": 1331,
+      "records": 1361,
       "redistributable": true,
       "status": "ok",
       "votes": false,
