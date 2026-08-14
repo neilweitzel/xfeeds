@@ -71,7 +71,7 @@ Deliberately **not** used: `netaddr` (stdlib `ipaddress` suffices), `orjson`/`pa
 
 Configured entirely in [`sources.yaml`](sources.yaml). Adding a source means adding a YAML entry and, if the format is new, a parser — never a pipeline change.
 
-**Nine independent voting classes**, each a distinct sensor network, reporter community, or research team. Seven are active on a fresh clone — AbuseIPDB and ThreatFox ship disabled until their free API keys are in repo secrets, so the pipeline must be correct without them and simply gain accuracy when they're added.
+**Nine independent voting classes**, each a distinct sensor network, reporter community, or research team. AbuseIPDB and ThreatFox are keyed sources: both are enabled in `sources.yaml`, and both skip cleanly when their key is absent from the environment, so a fresh clone with no secrets still produces a correct feed and simply gains accuracy once the keys are set. `ABUSEIPDB_API_KEY` was added to repo secrets on 2026-08-14; AbuseIPDB remains `redistribute: false` per ADR-012, so it raises confidence without contributing rows to any published file.
 
 | Source | Class | Weight | Volume | Notes |
 |---|---|---|---|---|
@@ -284,7 +284,7 @@ The 6-hour cadence is set by the tightest external constraint: AbuseIPDB allows 
 - [x] 52 tests, no network access in the suite
 
 **Phase 2b — enrichment**
-- [ ] AbuseIPDB and ThreatFox collectors (quota-aware; keys needed)
+- [x] AbuseIPDB and ThreatFox collectors (quota-aware; keys configured)
 - [ ] ASN and country annotation
 - [ ] GreyNoise RIOT suppression on sampled top candidates
 

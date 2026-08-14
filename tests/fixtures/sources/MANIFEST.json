@@ -110,6 +110,12 @@
     "allow_github_meta.json": {
       "url": "https://api.github.com/meta",
       "note": "trimmed to hooks/web/api/git/actions"
+    },
+    "abuseipdb_blacklist.json": {
+      "url": "https://api.abuseipdb.com/api/v2/blacklist?confidenceMinimum=100&limit=50",
+      "original_lines": 1,
+      "fixture_lines": 1,
+      "note": "Single-line JSON. Recorded 2026-08-14 with limit=50 to stay inside the free tier's 5 blacklist calls/day; trimmed to 15 of 50 data entries. Authenticated request - the Key header is not recorded."
     }
   }
 }

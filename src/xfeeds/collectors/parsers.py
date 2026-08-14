@@ -510,6 +510,97 @@ def ipthreat(
     _log_skips(config.name, malformed_count, non_global_count)
 
 
+def abuseipdb(
+    content: bytes, config: SourceConfig, fetch_time: datetime
+) -> Iterator[IndicatorRecord]:
+    """Parse the AbuseIPDB ``/api/v2/blacklist`` JSON response.
+
+    Shape is ``{"meta": {"generatedAt": ...}, "data": [{"ipAddress", "countryCode",
+    "abuseConfidenceScore", "lastReportedAt"}, ...]}``.
+
+    ``lastReportedAt`` is carried in ``source_last_reported`` rather than
+    ``last_seen`` for the reason given on that field: this is a *reported* date
+    from the upstream, and feeding it into ``last_seen`` would put it through
+    ``recency_factor`` and restate the score. The blacklist is regenerated
+    continuously, so every row is a current assertion regardless of when the last
+    individual report landed.
+
+    Confidence is bucketed to the nearest 25 rather than tagged verbatim. On the
+    free tier ``confidenceMinimum`` is locked at 100 so the tag is constant today;
+    bucketing keeps the tag meaningful if a paid tier ever lowers the floor, and
+    avoids implying AbuseIPDB's scale is comparable to ours.
+
+    Note that this source is ``redistribute: false`` (ADR-012), so nothing parsed
+    here reaches ``feeds/`` - it votes in its own independence class and shows up
+    in the aggregate insights only.
+    """
+    try:
+        payload = json.loads(content.decode("utf-8", "replace"))
+    except json.JSONDecodeError as e:
+        # The endpoint also speaks text/plain when asked. Getting non-JSON back
+        # means either the Accept negotiation changed or an error page was served,
+        # and both are source failures rather than something to guess through.
+        logger.warning("abuseipdb_bad_json", source=config.name, error=str(e))
+        return
+
+    if not isinstance(payload, dict):
+        logger.warning("abuseipdb_unexpected_payload", source=config.name)
+        return
+
+    if payload.get("errors"):
+        # AbuseIPDB reports quota exhaustion and a bad key as a 4xx with an
+        # ``errors`` array; base.py turns those into failures, but a cached body
+        # from such a response must not be mistaken for data.
+        logger.warning("abuseipdb_api_error", source=config.name, errors=payload["errors"])
+        return
+
+    data = payload.get("data")
+    if not isinstance(data, list):
+        logger.warning("abuseipdb_no_data_array", source=config.name)
+        return
+
+    malformed_count = 0
+    non_global_count = 0
+
+    for entry in data:
+        if not isinstance(entry, dict):
+            malformed_count += 1
+            continue
+
+        try:
+            ip_obj: IPOrNet = ipaddress.ip_address(str(entry.get("ipAddress", "")).strip())
+        except ValueError:
+            malformed_count += 1
+            continue
+        if not _is_global(ip_obj):
+            non_global_count += 1
+            continue
+
+        tags: list[str] = []
+        score = entry.get("abuseConfidenceScore")
+        if isinstance(score, int | float) and not isinstance(score, bool):
+            bucket = min(100, max(0, int(score) // 25 * 25))
+            tags.append(f"abuseipdb-confidence-{bucket}")
+        country = entry.get("countryCode")
+        if isinstance(country, str) and len(country) == 2 and country.isalpha():
+            tags.append(f"cc:{country.upper()}")
+
+        reported = _parse_reported_date(str(entry.get("lastReportedAt") or ""))
+
+        yield IndicatorRecord(
+            ip_or_cidr=ip_obj,
+            source=config.name,
+            independence_class=config.independence_class,
+            first_seen=fetch_time,
+            last_seen=fetch_time,
+            categories=list(config.categories),
+            tags=tags,
+            source_last_reported=reported,
+        )
+
+    _log_skips(config.name, malformed_count, non_global_count)
+
+
 _IMPLEMENTED = [
     threatfox_api,
     plain_text,
@@ -522,6 +613,7 @@ _IMPLEMENTED = [
     ipsum_levels,
     turris_greylist,
     ipthreat,
+    abuseipdb,
 ]
 
 PARSERS = {}

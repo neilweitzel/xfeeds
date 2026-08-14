@@ -244,12 +244,14 @@ sources:
     license: "AbuseIPDB free tier; redistribution of the blacklist is restricted"
     license_url: https://www.abuseipdb.com/legal
     redistribute: false
-    enabled: false   # flip on once ABUSEIPDB_API_KEY is in repo secrets
+    enabled: true    # key verified 2026-08-14; skips cleanly if ABUSEIPDB_API_KEY is unset
     notes: >
       Free tier: 5 blacklist calls/day, 10,000 IPs, confidenceMinimum locked at 100.
       redistribute:false by default - AbuseIPDB terms restrict republishing their
       blacklist verbatim. Used as a scoring/corroboration signal only until the
       terms are confirmed in writing. See docs/DECISIONS.md ADR-012.
+      Enabled without the key present is safe: the collector reports
+      skipped_no_credential and the run degrades to the other sources.
 
   - name: stopforumspam_toxic
     credit: "StopForumSpam toxic CIDR list - stopforumspam.com"
