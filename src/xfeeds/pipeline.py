@@ -23,6 +23,7 @@ from xfeeds.collectors.parsers import PARSERS
 from xfeeds.emit import (
     NONCOMMERCIAL_DIR,
     NONCOMMERCIAL_LICENSE,
+    PERMISSIVE_DIR,
     append_history,
     build_manifest,
     emit_all,
@@ -38,7 +39,12 @@ from xfeeds.insights import (
     update_asn_history,
 )
 from xfeeds.models import Band, IndicatorRecord, Registry, ScoredIndicator
-from xfeeds.score import noncommercial_sources, open_sources, score_indicators
+from xfeeds.score import (
+    noncommercial_sources,
+    open_sources,
+    permissive_sources,
+    score_indicators,
+)
 from xfeeds.state import carried_observations, load_state, merge_with_state, save_state
 
 logger = structlog.get_logger(__name__)
@@ -241,7 +247,8 @@ def run(
     # scored. It is optional enrichment - no key or a failed call caps nothing and
     # the run continues. See src/xfeeds/greynoise.py for the licensing constraint:
     # this may only remove confidence, never annotate a record.
-    benign_capped = cap_benign_scanners(publishable, benign_addresses(publishable))
+    benign = benign_addresses(publishable)
+    benign_capped = cap_benign_scanners(publishable, benign)
     if benign_capped:
         report.warnings.append(f"{benign_capped} records capped high -> medium as benign scanners")
 
@@ -337,6 +344,63 @@ def run(
         )
         report.counts["noncommercial_published"] = len(nc_publishable)
         report.counts["noncommercial_high"] = sum(1 for r in nc_publishable if r.band is Band.HIGH)
+
+    # Third tier: clean provenance. Same machinery, a stricter membership test.
+    # Every source here has issued a written, named licence affirmatively permitting
+    # redistribution - not merely "publishes it freely and says nothing". That
+    # distinction is invisible to us and decisive for a practitioner who has to name
+    # a licence for every input in front of their own legal review. Much smaller than
+    # the primary feed by design. See ADR-051.
+    permissive_names = permissive_sources(registry)
+    if permissive_names and permissive_names != open_names:
+        pm_scored = score_indicators(
+            observations, registry, observed_on, redistributable=permissive_names
+        )
+        pm_ageing = merge_with_state(pm_scored, previous, registry, observed_on)
+        pm_kept, pm_stats = apply_filters(
+            pm_ageing.records, registry, allowlist, redistributable=permissive_names
+        )
+        pm_publishable = [r for r in pm_kept if r.band is not Band.WITHHELD]
+        # The same GreyNoise result is reused rather than looked up again: it is the
+        # same addresses, and a second bulk call would double the quota spend for an
+        # identical answer.
+        cap_benign_scanners(pm_publishable, benign)
+        pm_dir = feeds_dir / PERMISSIVE_DIR
+        pm_manifest = build_manifest(
+            registry,
+            status,
+            pm_publishable,
+            [],
+            [],
+            now,
+            {
+                "non_global": pm_stats.non_global,
+                "too_wide": pm_stats.too_wide,
+                "allowlisted": pm_stats.allowlisted,
+                "not_redistributable": pm_stats.not_redistributable,
+                "tag_only": pm_stats.tag_only,
+                "examples": pm_stats.examples,
+            },
+            withheld=sum(1 for r in pm_kept if r.band is Band.WITHHELD),
+        )
+        pm_manifest["tier"] = "permissive"
+        pm_manifest["license"] = "per-source, all permissive - see clean/LICENSE.txt"
+        emit_all(
+            pm_publishable,
+            registry,
+            pm_manifest,
+            now,
+            feeds_dir=pm_dir,
+            tier="permissive",
+            redistributable=permissive_names,
+        )
+        report.counts["clean_published"] = len(pm_publishable)
+        report.counts["clean_high"] = sum(1 for r in pm_publishable if r.band is Band.HIGH)
+        logger.info(
+            "clean_tier_emitted",
+            sources=len(permissive_names),
+            published=len(pm_publishable),
+        )
         logger.info(
             "noncommercial_tier_emitted",
             published=len(nc_publishable),

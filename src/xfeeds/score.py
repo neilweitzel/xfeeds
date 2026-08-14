@@ -127,6 +127,21 @@ def noncommercial_sources(registry: Registry) -> set[str]:
     }
 
 
+def permissive_sources(registry: Registry) -> set[str]:
+    """Sources for the clean-provenance tier.
+
+    Requires BOTH that we may redistribute it AND that the publisher issued a
+    written licence affirmatively permitting redistribution. The second condition
+    is what the tier sells: a practitioner can hand the file to their own legal
+    review with a named licence per contributing source, instead of a list of
+    publishers who merely never objected.
+
+    Deliberately much smaller than the primary feed. That is the product, not a
+    defect - see ADR-051.
+    """
+    return {s.name for s in registry.sources if s.redistribute and s.explicit_grant}
+
+
 def score_indicators(
     records: list[IndicatorRecord],
     registry: Registry,

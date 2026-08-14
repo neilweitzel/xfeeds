@@ -1035,11 +1035,208 @@ into `.cache/`, where `fetch_source` serves it exactly as a fresh fetch. Verifie
 seeding ThreatFox reproduced production's 1,112 records precisely.
 
 
+## Using more of each licence, 2026-08-14 (ADR-050)
+
+**Status:** accepted (2026-08-14)
+
+A sweep of every publisher's full file listing, asking not "is this source allowed"
+but "are we reading everything this licence already lets us read". Four publishers
+turned out to be fully consumed already — Spamhaus, CINS, Binary Defense, and SSLBL
+which is dead. Four were not.
+
+### ipthreat: we were misreading the filename and discarding 96% of the feed
+
+`threat-N.txt` is a **minimum score**, not a number of days. Verified: `threat-0`
+has a minimum row score of 0 and `threat-30` a minimum of 30, and the files get
+*smaller* as N rises, which a day-window cannot do. The source was named
+`ipthreat_30d` and documented as a 30-day window. It was really a score≥30 slice
+holding 2,327 of 57,806 rows.
+
+Now fetches `threat-0.txt` and applies the floor through the new `min_score` config,
+so the threshold is a reviewable number instead of a digit buried in a URL.
+
+`min_score` is **15**, and the anchor is this project's own published expectation
+rather than taste. ADR-015 predicted a high-confidence feed of 2,000–4,000 entries:
+
+| min_score | ipthreat rows | published | high |
+|---:|---:|---:|---:|
+| 30 (old effective) | 2,281 | 3,522 | 3,187 |
+| **15 (chosen)** | **4,787** | **4,268** | **3,838** |
+| 5 | 9,329 | 5,258 | 4,605 |
+| 1 | 22,330 | 7,650 | 6,108 |
+
+15 roughly doubles coverage and stays inside the committed range; 5 and 1 leave it,
+and 1 would move the high band by +118%. Scores below 15 are 91% of the corpus and
+are dominated by single low-confidence observations. Band assignment counts
+**classes, not weights**, so a score-1 row admits a record exactly as hard as a
+score-100 one — which is why this is a floor and not a weight adjustment, and why
+lowering it later is a policy change needing its own churn measurement.
+
+### StopForumSpam: a compliance downgrade and a 912× volume increase, together
+
+We were publishing StopForumSpam in the non-commercial tier. Re-reading
+[their licence](https://www.stopforumspam.com/license), that is not defensible. The
+page grants "To Share — to copy, distribute and transmit the work" and then, under
+**No Derivative Works**, says:
+
+> You may not alter, transform, or build upon this work, nor use any manual or
+> automated tools or system to mirror, copy, scan, duplicate, backup, distribute,
+> scrap or spider any of the data on this website
+
+Those clauses contradict each other, and "build upon this work" describes an
+aggregated feed precisely. Under AGENTS.md we bias toward publishing less, so it is
+now **scoring only in both tiers**.
+
+Because nothing is republished, volume became free. We were reading
+`toxic_ip_cidr.txt` — 60 CIDRs. We now read `listed_ip_30_ipv46.gz` — **54,710**
+addresses last seen within 30 days, same site-wide licence, one fetch. Their
+downloads page defines the window as a last-seen recency window, which is the
+semantics we want anyway.
+
+Two operational limits, both real and both encoded: the `listed_*` files are capped
+at **2 downloads per IP per day** (hence `min_interval_seconds: 43200`, so four
+scheduled runs make two real fetches), and the site answers bursts with
+`429 error code: 1015` from Cloudflare, counting `HEAD` requests. Never fan out
+across their files in parallel.
+
+Their NonCommercial clause is also narrower than most — "You may use this work on
+commercial sites however you cannot resell any information gathered from this site"
+— but that does not rescue redistribution, because No Derivative Works is the
+binding clause.
+
+### DataPlane: one report of nineteen
+
+DataPlane publishes 19 signal reports; 17 carry addresses; we read one. Added
+`telnetlogin` (89,312), `proto41` (55,772), `sshclient` (19,446), `smtpgreet`
+(9,508) and `vncrfb` (5,384) alongside `sshpwauth` (9,768).
+
+All are **class-pinned to `dataplane`**, so together they remain exactly one vote.
+They are one sensor network reporting different protocols; treating them as
+independent would manufacture corroboration out of a single operator's telemetry,
+which is the specific failure independence classes exist to prevent. What they buy
+is coverage — far more addresses receive that single vote. There is a test asserting
+the pinning, because a copied YAML block with a fresh class is an easy mistake.
+
+`proto41` has **six columns, not five**: it inserts `firstseen` before `lastseen`.
+The parser now reads the timestamp from the end of the row, which handles both
+layouts.
+
+### Blocklist.de: `strongips` is small and genuinely additive
+
+348 addresses, of which **104 are not in `all.txt`** — and that is structural, not
+fetch skew: both files share a `Last-Modified` minute. `all.txt` is "the last 48
+hours"; `strongips` is "older then 2 month and have more then 5.000 attacks". Aged,
+high-conviction attackers that have gone quiet for two days fall out of one and stay
+in the other. Class-pinned to `blocklist_de`.
+
+The 15 undocumented files under `lists.blocklist.de/lists/` were checked and add
+**zero** addresses beyond `all.txt` — they are port-numbered and daemon-named
+aliases. Do not add them.
+
+### Deliberately not taken
+
+- **Feodo's `ipblocklist_aggressive.txt`** (7,607 vs 5) is nominally 1,521×, but the
+  publisher says "I strongly recommend you to not use the aggressive version... it
+  definitely will cause false positives", it is an all-time list of recycled
+  addresses, and the whole tracker has not updated since 2026-03-04.
+- **Turris archive**, 2,404 daily snapshots back to 2020; a 30-day union measures
+  75,454 unique addresses against 9,488 in one snapshot (8×). Same licence, no new
+  endpoint. Left for a separate change because backfilling history interacts with
+  state and ageing, and deserves its own measurement.
+- **ThreatFox bulk export** still serves without an Auth-Key at the legacy paths,
+  but the docs are now login-gated and the files point at the ThreatFox ToS rather
+  than CC0. Anonymous availability is not a licence.
+- **Emerging Threats' 14,935** is almost entirely re-badged data we already ingest
+  from the original publishers. The only genuinely new ET dataset is
+  `threatview_CS_c2.rules` (752 Cobalt Strike C2), whose third-party provenance
+  inside ET's directory needs its own licence check first.
+
+## A third tier: clean provenance (ADR-051)
+
+**Status:** accepted (2026-08-14)
+
+The primary feed's own header says `Licence: see individual source terms below`.
+That is honest and it is also the problem. A practitioner's blocker is rarely "is
+this allowed" in the abstract — it is being asked by their own legal or procurement
+review to name the licence for every input, and not being able to, because several
+of our publishers distribute freely and openly while never having granted anything.
+**Absence of a prohibition is not a grant.**
+
+`feeds/clean/` contains only sources that pass a stricter test than `redistribute`.
+The new `explicit_grant` flag means: the publisher has issued a **written, named**
+licence affirmatively permitting redistribution, commercial use included. CC0,
+Unlicense, MIT, BSD, CC BY / BY-SA qualify. "Publishes it freely and says nothing"
+does not.
+
+Built by the same mechanism as ADR-041's non-commercial tier — a source-name set
+plus its own scoring, filtering and emit pass — so bands and provenance are computed
+for that membership rather than inherited.
+
+`clean/LICENSE.txt` is the actual deliverable: it enumerates, per contributing
+source, the licence name, the URL of its text, and the required credit line, then
+states the obligations that travel with the data. That file is what goes to a legal
+review.
+
+### Two errors this tier caught in its own first draft
+
+Worth recording, because both looked correct in the config and were only visible in
+the output:
+
+1. **Tor was in it.** `explicit_grant` had been set from the Tor Project's CC0
+   declaration on `metrics.torproject.org`, while the source's own `license` field
+   still read "No licence stated on the endpoint". The bulk exit list is served from
+   `check.torproject.org` with no licence text, and Tor's canonical LICENSE was
+   unreachable on two separate days. Inferring a grant across hosts is exactly the
+   reasoning this tier exists to refuse. Removed; it is tag-only and cast no vote
+   anyway.
+2. **`et_compromised` had no licence fields at all**, so the generated LICENSE.txt
+   rendered `Licence: n.a.` to the reader — in the one file whose entire purpose is
+   naming licences. Now carries the BSD 3-clause name, URL and copyright line.
+
+`test_every_clean_tier_source_can_actually_name_its_licence` now fails the build if
+a granted source has no licence name or URL, or if its licence text contains "no
+licence", "not stated", "unclear", "n.a." or "see terms".
+
+### Emerging Threats re-enabled, for a reason that did not exist before
+
+`et_compromised` was disabled as a duplicate — Jaccard 0.953 against
+bruteforceblocker, a mirror rather than a second opinion. It stays class-pinned, so
+it still adds **no vote to the primary feed**. But bruteforceblocker publishes no
+licence at all while this file is BSD 3-clause, so in the clean tier it becomes the
+sole member of its class and supplies the third citable-licence class the tier needs
+to corroborate anything. Costs nothing, unlocks the tier.
+
+### The tier is small, and that is the finding
+
+Measured on a full local run: **primary 4,270 published / 3,840 high;
+non-commercial 6,036 / 5,312; clean 23 / 23.**
+
+Twenty-three entries. Three voting classes (`ipthreat`, `bruteforceblocker` via ET,
+`abusech` via Feodo), of which Feodo contributes 5 frozen addresses, so in practice
+it is two — and a two-class requirement over two classes admits only their exact
+overlap. This is not a bug in the tier; it is a measurement of the public threat
+intelligence commons, and it agrees with the conclusion already recorded in ADR-033
+that the set of feeds which are both independent and freely redistributable is
+small.
+
+The lever that would change it is **sefinek** (MIT, 217k addresses, the
+least-correlated list we have measured). Enabling it takes the clean tier from 23 to
+223. It stays disabled: it also takes the primary feed from 4,270 to 5,192 published
+and 3,840 to 4,325 high — outside ADR-015's committed range — on a source whose
+README says entries "are generally not removed", so nothing can ever age out. Buying
+a 10× bigger clean tier by degrading the primary feed is the wrong trade. The right
+fix is more permissively-licensed independent sources, and the tier grows
+automatically the moment one is added.
+
+
 ## Open items
 
 - [ ] **Email Spamhaus** for written confirmation that redistributing DROP inside a public aggregate is permitted. Their Terms of Use §3.1 grant no IP licence while the blocklist page invites free use with credit; we currently publish on the second reading. Highest-value open question in this document (ADR-048).
 - [ ] Confirm AbuseIPDB redistribution terms in writing; flip `redistribute` if permitted. Key is now configured and the source is live as a scoring input (ADR-048).
-- [ ] Measure sefinek churn across several runs, then decide between enabling it upgrade-only or leaving it out (ADR-048).
+- [ ] Measure sefinek churn across several runs, then decide between enabling it upgrade-only or leaving it out (ADR-048/ADR-051). It is now the single biggest lever on the clean tier: enabling it takes that tier from 23 to 223 entries, at the cost of pushing the primary feed outside its committed range.
+- [ ] Backfill the Turris archive: 2,404 daily snapshots exist back to 2020, and a 30-day union is 75,454 unique addresses against 9,488 in one snapshot. Same licence, no new endpoint, but it interacts with state and ageing so it needs its own measurement (ADR-050).
+- [ ] Check the provenance of `threatview_CS_c2.rules` (752 Cobalt Strike C2). It is the only genuinely new Emerging Threats dataset, but it is third-party data inside ET's directory and its licence is not the ET BSD grant (ADR-050).
+- [ ] Ask StopForumSpam to resolve the contradiction between their "To Share" grant and their No-Derivative-Works clause. Until then the source is scoring-only (ADR-050).
 - [ ] Ask Dataplane.org whether they would grant redistribution permission for the non-commercial tier; their header requires express permission rather than forbidding it outright (ADR-048).
 - [x] Decide whether a separately-licensed NC-SA feed variant is worth shipping — done, shipped (ADR-041). DShield remains unattractive on volume, not licence: `block.txt` is only the top 20 /24 subnets.
 - [x] GreyNoise wired up (ADR-049). The obtainable free tier is "Business - Free": enterprise scanner intelligence with a 10-day window, but **not** the Business Service (RIOT) add-on, which is paid-tier only. Benign-scanner capping shipped instead, and it addresses 17% of the published feed.
