@@ -288,6 +288,7 @@ def run(
         now,
         report.filters,
         withheld=report.counts["withheld"],
+        benign_scanners_capped=benign_capped,
     )
     emit_all(publishable, registry, manifest, now, feeds_dir=feeds_dir)
 

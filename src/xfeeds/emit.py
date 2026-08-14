@@ -403,6 +403,7 @@ def build_manifest(
     generated_at: datetime,
     filter_stats: dict[str, Any],
     withheld: int = 0,
+    benign_scanners_capped: int = 0,
 ) -> dict[str, Any]:
     """Machine-readable run summary. Drives the dashboard and the health checks."""
     bands = Counter(r.band.value for r in records)
@@ -432,6 +433,11 @@ def build_manifest(
             "medium": bands.get("medium", 0),
             "withheld": withheld,
             "promoted": sum(1 for r in records if r.promoted_by),
+            # How many records GreyNoise held back from the high band. An aggregate
+            # count is the ONLY thing their terms let us publish about their data,
+            # and it is also the health signal for the enrichment: this dropping to
+            # zero while the feed grows means the lookup is failing silently.
+            "benign_scanners_capped": benign_scanners_capped,
         },
         "corroboration_histogram": {str(k): v for k, v in sorted(class_hist.items())},
         "deltas": {
