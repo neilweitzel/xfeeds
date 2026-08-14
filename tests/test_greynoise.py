@@ -201,3 +201,36 @@ def test_empty_benign_set_is_a_no_op() -> None:
     records = [scored("45.33.32.5"), scored("1.2.3.5")]
     assert cap_benign_scanners(records, set()) == 0
     assert all(r.band is Band.HIGH for r in records)
+
+
+def test_manifest_publishes_the_count_and_nothing_else() -> None:
+    """The aggregate count is the only thing their terms let us publish.
+
+    It doubles as the health signal for the enrichment: dropping to zero while the
+    feed grows means the lookup is failing silently.
+    """
+    from datetime import datetime as _dt
+
+    from xfeeds.emit import build_manifest
+    from xfeeds.models import Registry
+
+    registry = Registry.model_validate(
+        {"version": 1, "defaults": {}, "sources": [], "allowlist_sources": []}
+    )
+    manifest = build_manifest(
+        registry,
+        {},
+        [scored("45.33.32.5")],
+        [],
+        [],
+        _dt(2026, 8, 14, tzinfo=UTC),
+        {},
+        withheld=0,
+        benign_scanners_capped=366,
+    )
+
+    assert manifest["counts"]["benign_scanners_capped"] == 366
+    # No provider name, classification or per-address disclosure anywhere in it.
+    blob = repr(manifest).lower()
+    assert "greynoise" not in blob
+    assert "benign_scanners_capped" in blob and "classification" not in blob
