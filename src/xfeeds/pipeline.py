@@ -29,6 +29,7 @@ from xfeeds.emit import (
 )
 from xfeeds.enrich import load_asn_index
 from xfeeds.filters import apply_filters
+from xfeeds.greynoise import benign_addresses, cap_benign_scanners
 from xfeeds.insights import (
     ASN_HISTORY_PATH,
     asn_windows,
@@ -233,6 +234,17 @@ def run(
 
     kept, filter_stats = apply_filters(ageing.records, registry, allowlist)
     publishable = [r for r in kept if r.band is not Band.WITHHELD]
+
+    # GreyNoise benign-scanner suppression runs here: after filtering, so we only
+    # spend quota on addresses that would actually ship, and before the counts are
+    # taken, so the report describes what was published rather than what was
+    # scored. It is optional enrichment - no key or a failed call caps nothing and
+    # the run continues. See src/xfeeds/greynoise.py for the licensing constraint:
+    # this may only remove confidence, never annotate a record.
+    benign_capped = cap_benign_scanners(publishable, benign_addresses(publishable))
+    if benign_capped:
+        report.warnings.append(f"{benign_capped} records capped high -> medium as benign scanners")
+
     high_count = sum(1 for r in publishable if r.band is Band.HIGH)
 
     report.counts = {
@@ -243,6 +255,9 @@ def run(
         "high": high_count,
         "medium": sum(1 for r in publishable if r.band is Band.MEDIUM),
         "withheld": sum(1 for r in kept if r.band is Band.WITHHELD),
+        # Aggregate only. A per-record marker would disclose GreyNoise membership
+        # into a published file, which their terms do not permit.
+        "benign_scanners_capped": benign_capped,
     }
     # Deltas describe the PUBLISHED feed. Counting every observation would report
     # tens of thousands of "additions" that were withheld and never shipped.

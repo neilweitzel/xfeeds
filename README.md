@@ -271,7 +271,7 @@ xfeeds/
 
 - Triggers: `schedule` every 6 hours (offset off the hour) and `workflow_dispatch`.
 - Steps: checkout → `astral-sh/setup-uv` at a pinned version → restore HTTP cache → `xfeeds run` → validate → churn guard → commit `chore(feeds): refresh <ISO8601> (+N/-M)` → push → deploy Pages.
-- Secrets, all optional — absent keys degrade to unauthenticated sources rather than failing: `ABUSEIPDB_API_KEY`, `THREATFOX_AUTH_KEY`, `GREYNOISE_API_KEY`, `OTX_API_KEY`.
+- Secrets, all optional — absent keys degrade to unauthenticated sources rather than failing: `ABUSEIPDB_API_KEY`, `THREATFOX_AUTH_KEY`, `GREYNOISE_API_KEY`. All three are configured; GreyNoise is enrichment only and a failed lookup caps nothing (ADR-049).
 - Concurrency group so overlapping runs cancel.
 - On failure or churn trip: open/update an issue with the run report.
 
@@ -293,7 +293,7 @@ The 6-hour cadence is set by the tightest external constraint: AbuseIPDB allows 
 **Phase 2b — enrichment**
 - [x] AbuseIPDB and ThreatFox collectors (quota-aware; keys configured)
 - [ ] ASN and country annotation
-- [ ] GreyNoise RIOT suppression on sampled top candidates
+- [x] GreyNoise benign-scanner capping over the whole published feed. RIOT itself is a paid add-on and is not obtainable — see ADR-049
 
 **Phase 2c — enforcement integrations**
 - [ ] Reference `fail2ban` action and Cloudflare IP Access Rules sync
