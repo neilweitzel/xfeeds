@@ -141,7 +141,7 @@ Note that Feodo Tracker currently carries **5 IPs** and a last-updated header of
 | ET compromised-ips | `bruteforceblocker` | ❌ disabled | ❌ | — |
 | DShield | `dshield` | ❌ disabled | ❌ licence | — |
 
-**Nine voting classes are defined.** `abuseipdb` and the ThreatFox member of `abusech` are keyed; both are enabled in `sources.yaml` and both skip cleanly when their key is absent, so the pipeline must still be correct on a clone with no secrets and gain accuracy — not change behaviour — when the keys are present. `xfeeds validate` prints the active class count so this is never ambiguous. `ABUSEIPDB_API_KEY` was configured on 2026-08-14.
+**Eleven voting classes are defined.** `abuseipdb` and the ThreatFox member of `abusech` are keyed; both are enabled in `sources.yaml` and both skip cleanly when their key is absent, so the pipeline must still be correct on a clone with no secrets and gain accuracy — not change behaviour — when the keys are present. `xfeeds validate` prints the active class count so this is never ambiguous. `ABUSEIPDB_API_KEY` was configured on 2026-08-14.
 
 Every class is a distinct sensor network, reporter community, or research team.
 
@@ -808,9 +808,152 @@ the claim that matters there is "this is the whole address space", not which /8 
 particular spike sits in.
 
 
+## Licence re-audit, 2026-08-14 (ADR-048)
+
+**Status:** accepted (2026-08-14)
+
+Every source was re-read against its live terms page, and the question asked was
+not "is this allowed" but "are we taking everything this licence actually gives
+us". Three sources were being under-used and two findings are uncomfortable.
+
+### DataPlane.org re-admitted as a scoring source
+
+The old note said redistribution is prohibited "in whole or in part", so the
+source was not ingested at all. That conflated *may not republish* with *may not
+read*. The header ([sshpwauth.txt](https://dataplane.org/sshpwauth.txt)) says both
+things, and only one of them binds us:
+
+> The sshpwauth report is free for non-commercial use ONLY. ... Redistribution of the sshpwauth report in whole or in part without the express permission of Dataplane.org is expressly prohibited.
+
+This project is free and sells nothing, so the use grant applies. Redistribution
+is refused completely — `redistribute: false` **and**
+`noncommercial_compatible: false`, so unlike GreenSnow and AbuseIPDB it is barred
+from the non-commercial tier too. It is the only source with that combination, and
+there is a test asserting it.
+
+It needed a new parser: the report is five pipe-delimited columns behind a 74-line
+header, and `plain_text` read zero records from it while reporting success. The
+per-row `lastseen` column also gives seven days of real dated history, which
+previously only two sources provided.
+
+### DShield re-admitted to the non-commercial tier
+
+ADR-012 excluded DShield because CC BY-NC-SA "breaks the promise that anyone can
+use xfeeds output". That was correct for the primary feed and became wrong the day
+ADR-041 shipped a non-commercial tier. The ISC API page
+([isc.sans.edu/api](https://isc.sans.edu/api/)) is explicit:
+
+> It is ok to use this data for commercial purposes, for example to protect your own company's network. But again: do not resell ... the data is provided using a Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) License.
+
+That is the same posture as Turris, so it gets the same treatment:
+`redistribute: false`, `redistribute_noncommercial: true`. Weight is held at 0.5
+and TTL at 3 days because this feed publishes the top 20 **/24 subnets**, not
+addresses — one vote here covers 256 hosts, and it must never be the reason a /24
+is published.
+
+Note for whoever wires up more DShield data: `isc.sans.edu/api/threatlist/dshield?json`
+returned an empty array on 2026-08-14. `feeds.dshield.org/block.txt` is the live path.
+
+### Measured effect
+
+Controlled A/B on 2026-08-14, same run, same missing API keys on both sides:
+
+| Config | Published | High | Medium |
+|---|---|---|---|
+| Baseline | 3,518 | 2,376 | 1,142 |
+| + DataPlane + DShield | 3,518 | **2,751** | 767 |
+| + sefinek only | 4,318 | 2,580 | 1,738 |
+
+DataPlane and DShield admitted **nothing new** and upgraded 375 records from
+medium to high. That is exactly what an independent corroborating source should
+do, and it is the strongest argument yet for the vote/redistribute split.
+
+### sefinek added to the config but left disabled
+
+[sefinek/Malicious-IP-Addresses](https://github.com/sefinek/Malicious-IP-Addresses)
+is MIT — one of only two cleanly redistributable feeds the 2026-08-14 sweep found —
+and it is the least-correlated list we have measured: 2.7% of our published feed,
+2.2% against duggytuxy, 1.4% against Blocklist.de, 0.0% against ET compromised-ips.
+
+It is disabled anyway, on measured behaviour rather than licence. Its README says
+"Entries are added continuously and are generally not removed", so it never expires
+anything and our TTL can never age one out. In the table above it admitted 800 new
+records, but the gain was mostly new **medium**-band material (+596 medium against
++204 high). Admitting 596 records on the word of a list that never retracts is the
+false-positive vector this project exists to avoid. Revisit with a churn measurement,
+and consider capping it to upgrade-only under ADR-035.
+
+### duggytuxy rejected on measurement, not on its README
+
+[Data-Shield](https://github.com/duggytuxy/Data-Shield_IPv4_Blocklist) claims
+original telemetry "fed by global probes". Measurement disagrees: it contains
+**90.7% of everything we currently publish**, 96% of ET compromised-ips, and 95% of
+it sits inside ThreatHive, which is a confirmed re-aggregator. A source that
+already contains nine tenths of our corroborated output is not an independent
+vote — it is our own feed echoed back. Recorded in `sources.yaml` under
+`META_aggregate` so this is not re-litigated. Its GPLv3 licence would also collide
+with ipthreat's ShareAlike requirement.
+
+### Uncomfortable finding: Spamhaus grants us no licence
+
+This one is unresolved and it matters more than everything above. The friendly
+wording we have relied on is on the blocklist page
+([DROP](https://www.spamhaus.org/blocklists/do-not-route-or-peer/)):
+
+> We do ask, when used in a product, credit must be given to Spamhaus Project, and the date and © text should remain with the file and data.
+
+But the Terms of Use that the data file itself points at
+([Fair Use Policy](https://www.spamhaus.org/blocklists/drop-fair-use-policy/)) say:
+
+> 3.1 The content of the DROP List is protected by copyright and database right. Nothing in these Terms shall be construed as granting an assignment or licence of any intellectual property rights in the DROP Lists.
+
+> 3.3 We reserve the right in our absolute discretion to revoke your right to use the DROP Lists for any reason
+
+There is no prohibition on redistribution anywhere, and Spamhaus plainly intends
+DROP to be spread widely and used freely. But there is no grant either, and they
+assert both copyright and database right. Spamhaus is our largest auto-promoting
+source, so demoting it to scoring-only would gut the high-confidence band — which
+is a reason to get an answer, not a reason to assume one. **Action: email Spamhaus
+for written confirmation.** Nothing changed in this ADR pending that reply.
+
+Also noted: §3.2 bars use of the Spamhaus name in "marketing, promotional or any
+other commercial materials". Our attribution is required by their own page and is
+not marketing, so the credit line stays.
+
+### Smaller corrections from the same pass
+
+- **SSLBL's IP list is not empty, it is retired.** The file says "ATTENTION: This
+  list has been deprecated on 2025-01-03" ([sslipblacklist.txt](https://sslbl.abuse.ch/blacklist/sslipblacklist.txt)).
+  It stays disabled, now for the right reason.
+- **Feodo Tracker is 5 entries and 163 days stale**, and it is our only CC0
+  promoting source. The staleness warning is firing correctly every run. If it is
+  still dead in a month, remove the promotion path rather than leave it looking
+  active.
+- **bruteforceblocker moved**: `blist.txt` now 404s, `blist.php` is live. We were
+  already on `blist.php`.
+- **Spamhaus is deprecating its text feeds** in favour of JSON. We already parse
+  `drop_v4.json`, `drop_v6.json` and `asndrop.json`, so no action — but
+  `asndrop.txt` is already a stub, and the `/blocklists/asn-do-not-route-or-peer/`
+  page now 404s.
+- **ET compromised-ips stays disabled**, now with a measured reason: 96% of it is
+  already inside duggytuxy and it is class-pinned to bruteforceblocker anyway, so
+  it cannot add a vote.
+- **AbuseIPDB compliance verified end to end.** After enabling it, `grep` across
+  every file under `feeds/` returns zero occurrences of any AbuseIPDB-sourced row
+  or the source name. The manifest declares it as a non-redistributable
+  contributor, which is the intended transparency.
+- **`mirai.security.gives` is now a parked gambling site.** No references remain in
+  this repo; do not restore it from an old branch.
+- Fixed a duplicated `notes:` key on `turris_greylist` in `sources.yaml`, where the
+  first block was silently discarded by the YAML parser.
+
+
 ## Open items
 
-- [ ] Confirm AbuseIPDB redistribution terms in writing; flip `redistribute` if permitted.
+- [ ] **Email Spamhaus** for written confirmation that redistributing DROP inside a public aggregate is permitted. Their Terms of Use §3.1 grant no IP licence while the blocklist page invites free use with credit; we currently publish on the second reading. Highest-value open question in this document (ADR-048).
+- [ ] Confirm AbuseIPDB redistribution terms in writing; flip `redistribute` if permitted. Key is now configured and the source is live as a scoring input (ADR-048).
+- [ ] Measure sefinek churn across several runs, then decide between enabling it upgrade-only or leaving it out (ADR-048).
+- [ ] Ask Dataplane.org whether they would grant redistribution permission for the non-commercial tier; their header requires express permission rather than forbidding it outright (ADR-048).
 - [x] Decide whether a separately-licensed NC-SA feed variant is worth shipping — done, shipped (ADR-041). DShield remains unattractive on volume, not licence: `block.txt` is only the top 20 /24 subnets.
 - [ ] Free-tier GreyNoise API keys require a business email address; a personal-domain account may be limited to unauthenticated lookups (~10/day). Confirm what tier is actually obtainable before wiring GreyNoise enrichment in Phase 2b.
 - [ ] Blocklist.de, bruteforceblocker and the Tor exit list state **no licence at all**. We publish them, and now credit them properly (ADR-043), but a credit is not a grant. Still need an explicit statement from each maintainer; this remains the weakest position in the set.
@@ -818,7 +961,7 @@ particular spike sits in.
 - [ ] Consider whether `source_last_reported` should feed `last_seen` and therefore scoring. It would make recency decay real for the two sources that publish dates, but it restates every score and needs a churn measurement first (ADR-045).
 - [ ] Only two sources publish dated history, so days before this project started running are covered by those two alone. Worth checking whether Blocklist.de or CINS expose a dated variant.
 - [ ] ipthreat.net's licence contradicts itself, naming "creative-commons by attribution" while saying "the creative commons by sa license can be used as a guide" and requiring derived data under the same licence. We read it conservatively as ShareAlike. Worth asking them to clarify, since a plain CC BY reading would let it into the non-commercial tier too.
-- [ ] ELLIO community feed now 404s and dataplane.org still prohibits redistribution; neither is actionable.
+- [x] ELLIO community feed now 404s. DataPlane.org was resolved in ADR-048: redistribution is still refused, but its use grant permits ingesting it as a scoring source, which is now done.
 - [ ] Feodo Tracker has been stale for 43 days and its IP blocklist is nearly empty. It is our only CC0 promoting source now that ThreatFox cannot promote. If it stays dead, the abuse.ch promotion path is effectively gone and should be removed rather than left looking active.
 - [x] Confirm whether Binary Defense's terms permit redistribution — done, they do (ADR-039).
 - [ ] Re-check DShield: independent and PGP-signed, but `block.txt` is only the top 20 /24 subnets, so it is not worth a collector at that volume.
