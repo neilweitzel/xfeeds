@@ -17,66 +17,32 @@
   "corroboration_histogram": {
     "1": 1777,
     "2": 1895,
-    "3": 109,
+    "3": 110,
     "4": 10
   },
   "counts": {
-    "high": 2858,
-    "medium": 933,
+    "benign_scanners_capped": 365,
+    "high": 2860,
+    "medium": 932,
     "promoted": 1777,
-    "published": 3791,
-    "withheld": 45213
+    "published": 3792,
+    "withheld": 45214
   },
   "deltas": {
-    "added": 265,
+    "added": 3,
     "added_examples": [
-      "100.59.0.92",
-      "100.59.45.97",
-      "102.53.15.56",
-      "103.140.35.140",
-      "103.159.51.70",
-      "103.16.248.198",
-      "103.192.209.136",
-      "103.245.34.92",
-      "103.73.189.194",
-      "105.159.248.44",
-      "107.170.52.221",
-      "109.224.17.86",
-      "110.42.252.20",
-      "111.161.115.89",
-      "112.26.50.170",
-      "116.232.22.43",
-      "116.90.227.175",
-      "118.145.104.105",
-      "118.163.231.10",
-      "118.193.59.10"
+      "181.47.67.67",
+      "81.237.155.113",
+      "88.215.1.201"
     ],
-    "removed": 269,
+    "removed": 2,
     "removed_examples": [
-      "100.31.87.143",
-      "103.135.134.162",
-      "109.105.210.59",
-      "110.179.80.28",
-      "110.35.80.116",
-      "111.170.171.142",
-      "111.170.174.202",
-      "111.26.62.39",
-      "114.66.37.80",
-      "117.242.191.241",
-      "118.193.47.114",
-      "118.194.228.239",
-      "118.194.236.118",
-      "118.194.251.141",
-      "118.26.111.94",
-      "119.55.228.85",
-      "120.77.224.247",
-      "122.160.3.199",
-      "123.178.210.9",
-      "123.245.85.66"
+      "103.85.85.175",
+      "66.132.195.119"
     ]
   },
   "filters": {
-    "allowlisted": 4250,
+    "allowlisted": 4256,
     "examples": {
       "allowlisted": [
         "172.70.206.0/23",
@@ -108,11 +74,11 @@
       ]
     },
     "non_global": 0,
-    "not_redistributable": 15087,
+    "not_redistributable": 15085,
     "tag_only": 1156,
     "too_wide": 7
   },
-  "generated_at": "2026-08-14T17:20:56.978087+00:00",
+  "generated_at": "2026-08-14T17:26:49.412217+00:00",
   "project": "https://github.com/neilweitzel/xfeeds",
   "sources": {
     "abuseipdb_blacklist": {
@@ -146,11 +112,11 @@
       "cached": false,
       "error": null,
       "independence_class": "blocklist_de",
-      "last_modified": "2026-08-14T17:07:03+00:00",
+      "last_modified": "2026-08-14T17:24:02+00:00",
       "license": "Free, non-commercial reporting service",
       "license_risk": null,
       "license_url": "https://blocklist.de/",
-      "records": 26317,
+      "records": 26316,
       "redistributable": true,
       "status": "ok",
       "votes": true,
@@ -160,7 +126,7 @@
       "cached": false,
       "error": null,
       "independence_class": "bruteforceblocker",
-      "last_modified": "2026-08-14T17:18:24+00:00",
+      "last_modified": "2026-08-14T17:23:25+00:00",
       "license": "No licence stated. Published for public use by the bruteforceblocker project; we asked for an explicit statement (ADR-043)",
       "license_risk": null,
       "license_url": "http://danger.rulez.sk/index.php/bruteforceblocker/",
@@ -171,7 +137,7 @@
       "weight": 0.6
     },
     "cins_army": {
-      "cached": false,
+      "cached": true,
       "error": null,
       "independence_class": "cins",
       "last_modified": "2026-08-14T17:04:01+00:00",
@@ -230,11 +196,11 @@
       "cached": false,
       "error": null,
       "independence_class": "greensnow",
-      "last_modified": "2026-08-14T17:21:00+00:00",
+      "last_modified": "2026-08-14T17:26:53+00:00",
       "license": "All rights reserved; reproduction or republication strictly prohibited",
       "license_risk": "high",
       "license_url": "https://greensnow.co/",
-      "records": 3203,
+      "records": 3208,
       "redistributable": false,
       "status": "ok",
       "votes": true,
@@ -254,10 +220,10 @@
       "weight": 0.0
     },
     "ipthreat_30d": {
-      "cached": true,
+      "cached": false,
       "error": null,
       "independence_class": "ipthreat",
-      "last_modified": "2026-08-14T16:51:36+00:00",
+      "last_modified": "2026-08-14T17:26:56+00:00",
       "license": "Creative Commons attribution; derived data under the same CC licence; commercial use expressly permitted",
       "license_risk": "low",
       "license_url": "https://ipthreat.net/license",

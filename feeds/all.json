@@ -1,6 +1,6 @@
 {
-  "count": 3791,
-  "generated_at": "2026-08-14T17:20:56.978087+00:00",
+  "count": 3792,
+  "generated_at": "2026-08-14T17:26:49.412217+00:00",
   "indicators": [
     {
       "band": "high",
@@ -21580,39 +21580,6 @@
       "first_seen": "2026-08-12T00:00:00Z",
       "independence_classes": [
         "binary_defense",
-        "blocklist_de"
-      ],
-      "ip_or_cidr": "66.132.195.119",
-      "last_seen": "2026-08-14T00:00:00Z",
-      "promoted_by": null,
-      "restricted_corroboration": 2,
-      "score": 90.65,
-      "sources": [
-        "binary_defense",
-        "blocklist_de",
-        "ipsum_levels"
-      ],
-      "tags": [
-        "ipsum-level-3",
-        "ipsum-level-4",
-        "ipsum-level-5",
-        "ipsum-level-6",
-        "ipsum-level-7",
-        "ipsum-level-8"
-      ]
-    },
-    {
-      "band": "medium",
-      "categories": [
-        "aggregate",
-        "brute-force",
-        "malware-infrastructure",
-        "scanning",
-        "web-attack"
-      ],
-      "first_seen": "2026-08-12T00:00:00Z",
-      "independence_classes": [
-        "binary_defense",
         "blocklist_de",
         "cins"
       ],
@@ -26091,6 +26058,35 @@
       ]
     },
     {
+      "band": "high",
+      "categories": [
+        "aggregate",
+        "brute-force",
+        "reported-abuse",
+        "scanning",
+        "web-attack"
+      ],
+      "first_seen": "2026-08-12T00:00:00Z",
+      "independence_classes": [
+        "blocklist_de",
+        "ipthreat"
+      ],
+      "ip_or_cidr": "81.237.155.113",
+      "last_seen": "2026-08-14T00:00:00Z",
+      "promoted_by": null,
+      "restricted_corroboration": 2,
+      "score": 90.17,
+      "sources": [
+        "blocklist_de",
+        "ipsum_levels",
+        "ipthreat_30d"
+      ],
+      "tags": [
+        "ipsum-level-3",
+        "ipthreat-level-50"
+      ]
+    },
+    {
       "band": "medium",
       "categories": [
         "malware-infrastructure",
@@ -28308,6 +28304,35 @@
     {
       "band": "high",
       "categories": [
+        "aggregate",
+        "brute-force",
+        "reported-abuse",
+        "scanning",
+        "web-attack"
+      ],
+      "first_seen": "2026-08-12T00:00:00Z",
+      "independence_classes": [
+        "blocklist_de",
+        "ipthreat"
+      ],
+      "ip_or_cidr": "88.215.1.201",
+      "last_seen": "2026-08-14T00:00:00Z",
+      "promoted_by": null,
+      "restricted_corroboration": 2,
+      "score": 89.46,
+      "sources": [
+        "blocklist_de",
+        "ipsum_levels",
+        "ipthreat_30d"
+      ],
+      "tags": [
+        "ipsum-level-3",
+        "ipthreat-level-50"
+      ]
+    },
+    {
+      "band": "high",
+      "categories": [
         "criminal-hosting",
         "hijacked-netblock"
       ],
@@ -30043,8 +30068,8 @@
       "ip_or_cidr": "91.92.42.168",
       "last_seen": "2026-08-14T00:00:00Z",
       "promoted_by": null,
-      "restricted_corroboration": 2,
-      "score": 91.87,
+      "restricted_corroboration": 3,
+      "score": 94.66,
       "sources": [
         "binary_defense",
         "blocklist_de",
@@ -37044,36 +37069,6 @@
         "spamhaus_drop_v4"
       ],
       "tags": []
-    },
-    {
-      "band": "high",
-      "categories": [
-        "aggregate",
-        "brute-force",
-        "scanning",
-        "ssh-attack",
-        "web-attack"
-      ],
-      "first_seen": "2026-08-12T00:00:00Z",
-      "independence_classes": [
-        "blocklist_de",
-        "bruteforceblocker"
-      ],
-      "ip_or_cidr": "103.85.85.175",
-      "last_seen": "2026-08-14T00:00:00Z",
-      "promoted_by": null,
-      "restricted_corroboration": 1,
-      "score": 81.73,
-      "sources": [
-        "blocklist_de",
-        "bruteforceblocker",
-        "ipsum_levels"
-      ],
-      "tags": [
-        "ipsum-level-3",
-        "ipsum-level-4",
-        "ipsum-level-5"
-      ]
     },
     {
       "band": "high",
@@ -62550,6 +62545,29 @@
         "blocklist_de",
         "cins"
       ],
+      "ip_or_cidr": "181.47.67.67",
+      "last_seen": "2026-08-14T00:00:00Z",
+      "promoted_by": null,
+      "restricted_corroboration": 1,
+      "score": 81.55,
+      "sources": [
+        "blocklist_de",
+        "cins_army"
+      ],
+      "tags": []
+    },
+    {
+      "band": "high",
+      "categories": [
+        "brute-force",
+        "scanning",
+        "web-attack"
+      ],
+      "first_seen": "2026-08-14T00:00:00Z",
+      "independence_classes": [
+        "blocklist_de",
+        "cins"
+      ],
       "ip_or_cidr": "181.52.113.170",
       "last_seen": "2026-08-14T00:00:00Z",
       "promoted_by": null,
@@ -68185,20 +68203,23 @@
         "aggregate",
         "brute-force",
         "malware-infrastructure",
-        "scanning"
+        "scanning",
+        "web-attack"
       ],
       "first_seen": "2026-08-12T00:00:00Z",
       "independence_classes": [
         "binary_defense",
+        "blocklist_de",
         "cins"
       ],
       "ip_or_cidr": "190.167.112.113",
       "last_seen": "2026-08-14T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 1,
-      "score": 82.09,
+      "score": 90.56,
       "sources": [
         "binary_defense",
+        "blocklist_de",
         "cins_army",
         "ipsum_levels"
       ],
