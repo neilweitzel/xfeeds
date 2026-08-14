@@ -15,18 +15,65 @@ def test_load_real_sources_yaml() -> None:
 
     # Voting classes active on a fresh clone. turris votes but is redistribute:false,
     # so it can upgrade a band and never admit a record - see test_pipeline.
-    assert len(active_classes) == 10
+    # abuseipdb joined the voting classes when its key landed; it is also
+    # redistribute:false, so the same "votes, never admits" rule applies.
+    assert len(active_classes) == 11
+    assert "abuseipdb" in active_classes
 
-    # Verify no API keys are present (enabled should be False for abuseipdb/threatfox)
     abuseipdb = next((s for s in registry.sources if s.name == "abuseipdb_blacklist"), None)
     threatfox = next((s for s in registry.sources if s.name == "threatfox"), None)
-    assert threatfox is not None
 
     assert abuseipdb is not None, "abuseipdb_blacklist source missing from sources.yaml"
-    assert abuseipdb.enabled is False
+    assert abuseipdb.enabled is True
 
     assert threatfox is not None, "threatfox source missing from sources.yaml"
     assert threatfox.enabled is True
+
+
+def test_keyed_sources_declare_their_secret_and_never_inline_it() -> None:
+    """Keyed sources must read the key from the environment, per AGENTS.md rule 6.
+
+    Enabling a keyed source is the moment a hard-coded key is most likely to get
+    committed, so this asserts the config still names an env var and that the name
+    does not look like a value.
+    """
+    registry = load_registry(Path("sources.yaml"))
+
+    keyed = [s for s in registry.sources if s.auth == "header"]
+    assert keyed, "expected at least one header-authenticated source"
+
+    for source in keyed:
+        assert source.auth_header, f"{source.name} sets auth: header without auth_header"
+        assert source.auth_secret, f"{source.name} sets auth: header without auth_secret"
+        # Env var names are SHOUT_CASE; an actual key would not be.
+        assert source.auth_secret == source.auth_secret.upper(), (
+            f"{source.name} auth_secret does not look like an env var name"
+        )
+        assert len(source.auth_secret) < 64, (
+            f"{source.name} auth_secret looks like an inlined secret, not a variable name"
+        )
+
+
+def test_abuseipdb_is_rate_limited_and_cached() -> None:
+    """The free tier allows five blacklist calls a day; the config must respect it.
+
+    The 6-hour cron gives four scheduled runs plus room for a manual dispatch, but
+    only because min_interval_seconds and the response cache keep a re-run from
+    spending another call. Both are load-bearing, so both are asserted.
+    """
+    registry = load_registry(Path("sources.yaml"))
+    source = next(s for s in registry.sources if s.name == "abuseipdb_blacklist")
+
+    assert source.min_interval_seconds is not None
+    assert source.min_interval_seconds >= 21600, "6h floor keeps us inside 5 calls/day"
+    assert source.cache_response is True
+    assert source.auth_secret == "ABUSEIPDB_API_KEY"
+    assert source.auth_header == "Key"
+
+    # ADR-012: strong signal, not republishable.
+    assert source.redistribute is False
+    assert source.params is not None
+    assert source.params.get("confidenceMinimum") == 100
 
 
 def test_duplicate_source_name() -> None:
@@ -136,4 +183,4 @@ def test_xfeeds_validate_from_other_dir(tmp_path: Path, monkeypatch: pytest.Monk
     result = runner.invoke(app, ["validate"])
     assert result.exit_code == 0
     assert "Successfully loaded" in result.stdout
-    assert "Active voting classes: 10" in result.stdout
+    assert "Active voting classes: 11" in result.stdout

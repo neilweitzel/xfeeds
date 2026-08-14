@@ -421,3 +421,154 @@ def test_turris_greylist_parses_tags_and_skips_header() -> None:
     assert records[1].categories == ["spam-source", "web-attack"]
     assert records[0].tags == ["turris-telnet"]
     assert all(not r.carried for r in records)
+
+
+# --------------------------------------------------------------------------
+# AbuseIPDB
+#
+# The free tier allows five blacklist calls a day, so nothing here touches the
+# network - the recorded response in tests/fixtures/sources/ is the only copy of
+# a real payload this suite gets.
+# --------------------------------------------------------------------------
+
+ABUSEIPDB_FIXTURE = Path("tests/fixtures/sources/abuseipdb_blacklist.json")
+
+
+def abuseipdb_config() -> SourceConfig:
+    """Mirror the real sources.yaml entry, including redistribute:false."""
+    return SourceConfig(
+        name="abuseipdb_blacklist",
+        url="https://api.abuseipdb.com/api/v2/blacklist",
+        parser="abuseipdb",
+        independence_class="abuseipdb",
+        weight=0.9,
+        categories=["reported-abuse"],
+        auth="header",
+        auth_header="Key",
+        auth_secret="ABUSEIPDB_API_KEY",
+        params={"confidenceMinimum": 100, "limit": 10000},
+        min_interval_seconds=21600,
+        cache_response=True,
+        redistribute=False,
+    )
+
+
+def test_abuseipdb_parses_the_recorded_response() -> None:
+    """Parse the real recorded payload, asserting behaviour rather than volume."""
+    from xfeeds.collectors.parsers import abuseipdb
+
+    content = ABUSEIPDB_FIXTURE.read_bytes()
+    config = abuseipdb_config()
+    now = datetime(2026, 8, 14, 16, tzinfo=UTC)
+    records = list(abuseipdb(content, config, now))
+
+    assert records, "the recorded fixture must yield records"
+    assert str(records[0].ip_or_cidr) == "186.38.26.5"
+    assert records[0].source == "abuseipdb_blacklist"
+    assert records[0].independence_class == "abuseipdb"
+    assert records[0].categories == ["reported-abuse"]
+
+    # first_seen/last_seen come from the fetch, not from the upstream's dates.
+    assert records[0].first_seen == now
+    assert records[0].last_seen == now
+
+    # lastReportedAt lands in source_last_reported, truncated to the day.
+    assert records[0].source_last_reported == datetime(2026, 8, 14, tzinfo=UTC)
+
+    # Confidence is bucketed, not restated verbatim; country travels as a tag.
+    assert "abuseipdb-confidence-100" in records[0].tags
+    assert "cc:AR" in records[0].tags
+
+
+def test_abuseipdb_skips_malformed_and_non_global_entries() -> None:
+    """Reserved space must never reach the scorer, and junk must not raise."""
+    from xfeeds.collectors.parsers import abuseipdb
+
+    content = json.dumps(
+        {
+            "meta": {"generatedAt": "2026-08-14T15:44:34+00:00"},
+            "data": [
+                {"ipAddress": "45.33.32.5", "countryCode": "US", "abuseConfidenceScore": 100},
+                {"ipAddress": "10.0.0.1", "countryCode": "US", "abuseConfidenceScore": 100},
+                {"ipAddress": "127.0.0.1", "abuseConfidenceScore": 100},
+                {"ipAddress": "not-an-ip", "abuseConfidenceScore": 100},
+                {"ipAddress": "45.33.32.0/24", "abuseConfidenceScore": 100},
+                {"countryCode": "US"},
+                "not-an-object",
+                {"ipAddress": "2001:4860:4860::8888", "abuseConfidenceScore": 75},
+            ],
+        }
+    ).encode()
+
+    records = list(abuseipdb(content, abuseipdb_config(), datetime(2026, 8, 14, tzinfo=UTC)))
+
+    # The CIDR is rejected too: this endpoint returns single addresses, so a
+    # network here means the payload shape changed and should not be guessed at.
+    assert [str(r.ip_or_cidr) for r in records] == ["45.33.32.5", "2001:4860:4860::8888"]
+    assert "abuseipdb-confidence-75" in records[1].tags
+    assert records[1].source_last_reported is None
+
+
+@pytest.mark.parametrize(
+    "content",
+    [
+        b"",
+        b"<html>rate limited</html>",
+        b"45.33.32.5\n45.33.32.6\n",  # the text/plain variant of this endpoint
+        b'{"data": {"ipAddress": "45.33.32.5"}}',  # data present but not a list
+        b'[{"ipAddress": "45.33.32.5"}]',  # top level is not an object
+        b'{"errors":[{"detail":"Too many requests.","status":429}]}',
+    ],
+)
+def test_abuseipdb_yields_nothing_rather_than_guessing(content: bytes) -> None:
+    """An error or unexpected shape is a zero-record source, never a partial parse.
+
+    A partial parse here would silently drop most of an independence class while
+    still reporting the source as healthy, which is worse than reporting nothing.
+    """
+    from xfeeds.collectors.parsers import abuseipdb
+
+    records = list(abuseipdb(content, abuseipdb_config(), datetime(2026, 8, 14, tzinfo=UTC)))
+    assert records == []
+
+
+def test_abuseipdb_sends_the_key_and_the_free_tier_params(
+    httpx_mock: HTTPXMock, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The key goes in a Key header and the tier limits go on the query string."""
+    import xfeeds.collectors.base
+
+    # Redirect the cache: this source has a 6-hour interval, so a body written
+    # into the real cache would suppress every later fetch in the suite.
+    monkeypatch.setattr(xfeeds.collectors.base, "CACHE_DIR", tmp_path / "sources")
+    monkeypatch.setenv("ABUSEIPDB_API_KEY", "s3cret")
+    httpx_mock.add_response(content=ABUSEIPDB_FIXTURE.read_bytes())
+
+    result = fetch_source(abuseipdb_config(), DEFAULTS)
+
+    assert result.success is True
+    request = httpx_mock.get_requests()[0]
+    assert request.headers["Key"] == "s3cret"
+    assert request.url.params["confidenceMinimum"] == "100"
+    assert request.url.params["limit"] == "10000"
+
+
+def test_abuseipdb_skips_cleanly_when_the_key_is_absent(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Enabling the source must stay safe on a clone with no secret configured.
+
+    AGENTS.md rule 6: a keyed source with no key skips; it does not fail the run
+    and it does not raise. The cache is redirected at an empty directory so this
+    asserts the no-credential path rather than a cache hit from another test.
+    """
+    import xfeeds.collectors.base
+
+    monkeypatch.setattr(xfeeds.collectors.base, "CACHE_DIR", tmp_path / "sources")
+    monkeypatch.delenv("ABUSEIPDB_API_KEY", raising=False)
+
+    result = fetch_source(abuseipdb_config(), DEFAULTS)
+
+    assert result.success is False
+    assert result.skipped_no_credential is True
+    assert result.error is not None and "ABUSEIPDB_API_KEY" in result.error

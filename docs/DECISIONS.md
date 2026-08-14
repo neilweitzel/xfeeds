@@ -104,7 +104,7 @@ Without this rule, adding a mirror or an aggregator silently inflates every scor
 Republishing other people's data is the whole product, so licence terms are a hard constraint enforced in code via a `redistribute` flag — checked in the emitters, not merely documented.
 
 - **DShield/SANS is excluded.** Its feed header declares **CC BY-NC-SA 2.5**. NonCommercial breaks the promise that anyone can use xfeeds output, and ShareAlike would attach viral terms to every file containing it. It contributes only 20 /24 blocks — not worth compromising the licence of the entire project.
-- **AbuseIPDB defaults to `redistribute: false`.** It is a strong scoring signal, but their terms restrict republishing the blacklist verbatim. It informs confidence; its rows are not emitted until the terms are confirmed in writing.
+- **AbuseIPDB defaults to `redistribute: false`.** It is a strong scoring signal, but their terms restrict republishing the blacklist verbatim. It informs confidence; its rows are not emitted until the terms are confirmed in writing. **Updated 2026-08-14:** the free-tier key is now configured and the source is enabled, which changes nothing about redistribution — `redistribute` stays `false`, and `test_record_sourced_only_from_non_redistributable_is_never_published` is what enforces it. Having the key is not permission to republish.
 - **Spamhaus requires attribution and rate discipline.** Credit must be given and "the date and copy text should remain with the file and data"; automated fetches must be **at least one hour apart** ([Spamhaus FAQ](https://check.spamhaus.org/faqs/do-not-route-or-peer-drop/)). The 6-hour cron complies comfortably; the header is preserved verbatim in output.
 - **CINS Army has no formal licence** — the site says only that the list is shared for others to "parse and use in any way you see fit" ([CINSscore](https://cinsscore.com/#list)). Permissive in intent, not in writing. Flagged `license_risk: medium`, attributed prominently, droppable on request.
 
@@ -141,7 +141,7 @@ Note that Feodo Tracker currently carries **5 IPs** and a last-updated header of
 | ET compromised-ips | `bruteforceblocker` | ❌ disabled | ❌ | — |
 | DShield | `dshield` | ❌ disabled | ❌ licence | — |
 
-**Nine voting classes are defined; seven are active on a fresh clone.** `abuseipdb` and the ThreatFox member of `abusech` ship disabled until their free API keys are in repo secrets. The pipeline must therefore be correct with seven classes and gain accuracy — not change behaviour — when the remaining two are enabled. `xfeeds validate` prints the active class count so this is never ambiguous.
+**Nine voting classes are defined.** `abuseipdb` and the ThreatFox member of `abusech` are keyed; both are enabled in `sources.yaml` and both skip cleanly when their key is absent, so the pipeline must still be correct on a clone with no secrets and gain accuracy — not change behaviour — when the keys are present. `xfeeds validate` prints the active class count so this is never ambiguous. `ABUSEIPDB_API_KEY` was configured on 2026-08-14.
 
 Every class is a distinct sensor network, reporter community, or research team.
 
@@ -172,7 +172,7 @@ Exponential saturation means one loud source can never alone produce a "block th
 | 4 | 214 (0.4%) | high |
 | 5+ | 43 (0.1%) | high |
 
-Measured across the seven currently-active classes, so these are floor figures — enabling AbuseIPDB and ThreatFox moves IPs up, never down.
+Measured before the keyed sources were configured, so these are floor figures — AbuseIPDB and ThreatFox move IPs up, never down. Not re-measured here: the distribution is re-derived every run and published in `feeds/manifest.json`, which is the number to trust.
 
 Total unique across non-Tor voting sources: **54,241**. At ≥2 classes: **12,207**. At ≥3: **1,913**.
 
@@ -303,7 +303,7 @@ The conclusion is uncomfortable but real: **the set of IP feeds that are both
 independent and freely redistributable is small, and xfeeds already has most of
 it.** Growth comes from three directions, none of which is "add more public lists":
 
-1. Keyed free sources with usable terms — ThreatFox (done), AbuseIPDB (pending).
+1. Keyed free sources with usable terms — ThreatFox (done), AbuseIPDB (done 2026-08-14, scoring only).
 2. Original telemetry — the Phase 3 honeypot would be a class nobody else has.
 3. Better use of what we have — enrichment, ASN clustering, confidence tuning.
 
