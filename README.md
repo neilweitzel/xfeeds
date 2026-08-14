@@ -115,6 +115,16 @@ score = 100 × (1 − exp(−raw))
 
 One vote per class, and exponential saturation, so no single source can alone reach the top band. Spamhaus DROP membership and active abuse.ch C2 listings promote directly — justified by precision rather than agreement.
 
+### Three tiers
+
+| Directory | Contents | Licence |
+|---|---|---|
+| `feeds/` | Everything we may republish | Per-source; several publishers grant nothing explicitly |
+| `feeds/noncommercial/` | Adds CC BY-NC-SA sources | CC BY-NC-SA 4.0 |
+| `feeds/clean/` | **Only** sources with a written, named licence permitting commercial redistribution | Per-source, all permissive — see `clean/LICENSE.txt` |
+
+Use `feeds/clean/` if you have to satisfy a legal review. It is much smaller — 23 entries against 4,270 on a 2026-08-14 run — and that is the trade: the primary feed also contains data from publishers who distribute freely but never actually granted a reuse licence, and absence of a prohibition is not a grant. `clean/LICENSE.txt` names the licence, the licence URL and the required credit for every contributing source. See ADR-051.
+
 Only classes we are licensed to republish count toward the threshold that admits a record. Sources we may consume but not republish (AbuseIPDB, GreenSnow, ThreatFox, DataPlane) can raise a record from medium to high, but can never bring one into the feed on their own, and their names are withheld from published records so the feed cannot disclose their membership. See ADR-035.
 
 That split is what makes a restricted source safe to use, and ADR-048 measured the payoff: adding DataPlane and DShield left the published count **unchanged at 3,518** while upgrading 375 records from medium to high. Pure corroboration, zero new exposure.

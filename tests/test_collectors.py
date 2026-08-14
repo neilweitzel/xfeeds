@@ -660,3 +660,99 @@ def test_dataplane_never_reaches_either_published_tier() -> None:
     assert source.redistribute is False
     assert source.redistribute_noncommercial is False
     assert source.noncommercial_compatible is False
+
+
+# --------------------------------------------------------------------------
+# min_score, gzip, and the multi-report DataPlane shapes (ADR-050)
+# --------------------------------------------------------------------------
+
+
+def test_ipthreat_min_score_drops_low_confidence_rows() -> None:
+    """threat-N.txt is a SCORE slice, not a day window, so the floor lives here.
+
+    We fetch the widest file and filter locally; a row below the floor must not
+    reach the scorer, because band assignment counts classes rather than weights,
+    so a score-0 row would admit a record exactly as hard as a score-100 one.
+    """
+    from xfeeds.collectors.parsers import ipthreat
+
+    content = (
+        b"# Format: IP # ThreatLevel ThreatLevelTimestamp CountryCode\n"
+        b"45.33.32.5 # 100 2026-08-14T22:59:09Z BD\n"
+        b"45.33.32.6 # 15 2026-08-14T22:59:09Z GB\n"
+        b"45.33.32.7 # 14 2026-08-14T22:59:09Z GB\n"
+        b"45.33.32.8 # 0 2026-08-14T22:59:09Z CN\n"
+        b"45.33.32.9 # notanumber 2026-08-14T22:59:09Z CN\n"
+    )
+    config = get_mock_config(name="ipthreat", parser="ipthreat", min_score=15)
+    records = list(ipthreat(content, config, datetime(2026, 8, 14, tzinfo=UTC)))
+
+    # 14 and 0 are below the floor; the unparseable score cannot clear it either.
+    assert [str(r.ip_or_cidr) for r in records] == ["45.33.32.5", "45.33.32.6"]
+
+
+def test_ipthreat_without_min_score_keeps_everything() -> None:
+    """The floor is opt-in, so an unset value must not silently filter."""
+    from xfeeds.collectors.parsers import ipthreat
+
+    content = b"45.33.32.5 # 0 2026-08-14T22:59:09Z CN\n45.33.32.6 # 100 2026-08-14T22:59:09Z GB\n"
+    config = get_mock_config(name="ipthreat", parser="ipthreat")
+    records = list(ipthreat(content, config, datetime(2026, 8, 14, tzinfo=UTC)))
+    assert len(records) == 2
+
+
+def test_gzipped_source_is_inflated_before_parsing(
+    httpx_mock: HTTPXMock, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The cache must hold INFLATED bytes so a cache hit matches a fresh fetch."""
+    import gzip as _gzip
+
+    import xfeeds.collectors.base
+
+    monkeypatch.setattr(xfeeds.collectors.base, "CACHE_DIR", tmp_path / "sources")
+    payload = b"45.33.32.5\n45.33.32.6\n"
+    httpx_mock.add_response(content=_gzip.compress(payload))
+
+    config = get_mock_config(name="gz", gzipped=True, min_interval_seconds=3600)
+    result = fetch_source(config, DEFAULTS)
+
+    assert result.success is True
+    assert result.content == payload
+
+    # Second call is served from cache and must be identical, not double-inflated.
+    again = fetch_source(config, DEFAULTS)
+    assert again.cached is True
+    assert again.content == payload
+
+
+def test_corrupt_gzip_is_a_failure_not_an_empty_parse(
+    httpx_mock: HTTPXMock, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Handing compressed bytes to a parser would look like a quiet upstream."""
+    import xfeeds.collectors.base
+
+    monkeypatch.setattr(xfeeds.collectors.base, "CACHE_DIR", tmp_path / "sources")
+    httpx_mock.add_response(content=b"this is not gzip")
+
+    result = fetch_source(get_mock_config(name="gz2", gzipped=True), DEFAULTS)
+
+    assert result.success is False
+    assert result.error is not None and "decompress" in result.error
+
+
+def test_dataplane_reads_the_timestamp_from_the_end_for_six_column_proto41() -> None:
+    """proto41 inserts firstseen before lastseen; every other report has five columns.
+
+    A fixed index would silently read firstseen as lastseen on that one report, so
+    the parser counts from the end.
+    """
+    from xfeeds.collectors.parsers import dataplane
+
+    five = b"174 | COGENT-174 | 45.33.32.5 | 2026-08-14 15:59:46 | sshpwauth\n"
+    six = b"701 | UUNET | 45.33.32.6 | 2026-08-01 01:02:03 | 2026-08-14 15:59:46 | proto41\n"
+    config = get_mock_config(name="dp", parser="dataplane")
+    records = list(dataplane(five + six, config, datetime(2026, 8, 14, 17, tzinfo=UTC)))
+
+    assert [str(r.ip_or_cidr) for r in records] == ["45.33.32.5", "45.33.32.6"]
+    # Both must resolve to the 14th - the lastseen column - not proto41's firstseen.
+    assert all(r.source_last_reported == datetime(2026, 8, 14, tzinfo=UTC) for r in records)

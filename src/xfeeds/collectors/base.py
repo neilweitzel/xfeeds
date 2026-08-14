@@ -13,6 +13,7 @@ silently drops every record for that source. That is why the response body is
 persisted alongside the validators rather than only the headers.
 """
 
+import gzip
 import hashlib
 import json
 import time
@@ -227,16 +228,31 @@ def fetch_source(config: SourceConfig, defaults: DefaultsConfig) -> CollectorRes
                     status_code=response.status_code,
                 )
 
+            body = response.content
+            if config.gzipped:
+                try:
+                    body = gzip.decompress(body)
+                except (OSError, gzip.BadGzipFile) as e:
+                    # Do not fall through to the parser with compressed bytes: it
+                    # would report zero records and look like a quiet upstream.
+                    return CollectorResult(
+                        success=False,
+                        error=f"gzipped source did not decompress: {e}",
+                        status_code=response.status_code,
+                    )
+
             meta["last_fetch_time"] = now
             if response.headers.get("etag"):
                 meta["etag"] = response.headers["etag"]
             if response.headers.get("last-modified"):
                 meta["last_modified"] = response.headers["last-modified"]
-            _write_cache(config, meta, response.content)
+            # The cache stores the INFLATED body so a cache hit and a fresh fetch are
+            # indistinguishable downstream.
+            _write_cache(config, meta, body)
 
             return CollectorResult(
                 success=True,
-                content=response.content,
+                content=body,
                 status_code=response.status_code,
                 last_modified_header=meta.get("last_modified"),
             )

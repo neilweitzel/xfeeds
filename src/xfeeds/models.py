@@ -74,6 +74,23 @@ class SourceConfig(BaseModel):
     For sources whose licence permits redistribution but forbids commercial use -
     currently CC BY-NC-SA material. Ignored unless ``redistribute`` is false.
     """
+    explicit_grant: bool = False
+    """The publisher has issued a WRITTEN licence that affirmatively permits
+    redistribution, including commercially.
+
+    This is a higher bar than ``redistribute``, and the distinction is the whole
+    point of the clean tier. ``redistribute`` answers "would republishing this get
+    us in trouble?", which for several sources is "probably not, they publish it
+    freely and say nothing about reuse". That is fine for us and useless to a
+    practitioner who has to satisfy their own legal review, because absence of a
+    prohibition is not a grant.
+
+    True only for a named, citable licence: CC0, Unlicense, MIT, BSD, or CC BY /
+    BY-SA. False for "no terms found", for permissive prose without a licence, and
+    for anything asserting copyright while declining to license it. Deliberately
+    also False for aggregations of upstreams whose own terms are restrictive - a
+    permissive licence over a re-publication does not launder what it contains.
+    """
     noncommercial_compatible: bool = True
     """May appear in the non-commercial tier at all.
 
@@ -91,6 +108,18 @@ class SourceConfig(BaseModel):
     params: dict[str, Any] | None = None
     cache_response: bool | None = None
     levels: list[int] | None = None
+    min_score: int | None = None
+    """Drop rows whose upstream-declared confidence score is below this.
+
+    For sources that publish a per-row score. Fetching the publisher's *widest*
+    file and applying the floor here is strictly better than fetching a
+    pre-filtered file: one request gets the whole corpus, the floor becomes a
+    tunable number in review rather than a URL nobody re-examines, and the score
+    is available for tagging either way. See ADR-050 for the measurement behind
+    the value used for ipthreat.
+    """
+    gzipped: bool = False
+    """Response body is gzip-compressed and must be inflated before parsing."""
     tag_only: bool = False
     require_user_agent: bool = False
     allow_stale_fallback: bool = False

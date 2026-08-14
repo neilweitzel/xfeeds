@@ -465,11 +465,19 @@ def ipthreat(
     """Parse ipthreat.net lists: ``IP # ThreatLevel ISO8601Timestamp CountryCode``.
 
     plain_text can read the addresses out of this file, but it throws away the
-    per-row timestamp. That timestamp is the point: it gives roughly ten days of
-    real dated history on the first run, which the ASN windows use.
+    per-row timestamp and the per-row score. The timestamp gives about two weeks
+    of real dated history on the first run, which the ASN windows use.
+
+    The score is what ``min_score`` filters on, and reading it here is the reason
+    we fetch ``threat-0.txt``. **The N in ipthreat's ``threat-N.txt`` is a minimum
+    score, not a number of days** - verified 2026-08-14, ``threat-0`` has a minimum
+    row score of 0 and ``threat-30`` a minimum of 30, and the files shrink as N
+    rises. We previously read ``threat-30.txt`` believing it was a 30-day window,
+    which silently discarded 96% of the feed. See ADR-050.
     """
     malformed_count = 0
     non_global_count = 0
+    below_score = 0
 
     for raw in content.decode("utf-8", errors="replace").splitlines():
         line = raw.strip()
@@ -490,11 +498,19 @@ def ipthreat(
         reported = _parse_reported_date(fields[1]) if len(fields) > 1 else None
         tags = []
         if fields and fields[0].isdigit():
+            level = int(fields[0])
+            if config.min_score is not None and level < config.min_score:
+                below_score += 1
+                continue
             # Coarse bucket only. The exact level is upstream's scale, not ours, and
             # publishing it verbatim per address would imply we can compare it to
             # our own score.
-            level = int(fields[0])
             tags.append(f"ipthreat-level-{min(100, max(0, level // 25 * 25))}")
+        elif config.min_score is not None:
+            # A row with no parseable score cannot clear a floor. Dropping it is the
+            # conservative reading; counting it as zero would be the same outcome.
+            below_score += 1
+            continue
 
         yield IndicatorRecord(
             ip_or_cidr=ip_obj,
@@ -507,6 +523,8 @@ def ipthreat(
             source_last_reported=reported,
         )
 
+    if below_score:
+        logger.info("ipthreat_below_min_score", source=config.name, dropped=below_score)
     _log_skips(config.name, malformed_count, non_global_count)
 
 
@@ -611,6 +629,12 @@ def dataplane(
     and finds no bare address - and a source that silently yields zero records is
     worse than one that fails, so the shape is validated per row here.
 
+    **The ``proto41`` report has six columns, not five**: it inserts ``firstseen``
+    before ``lastseen``. Verified 2026-08-14 across all 17 IP-bearing reports; every
+    other one is five. So the timestamp is read from the END of the row rather than
+    a fixed index, which handles both layouts and any future column added in the
+    middle.
+
     The per-row ``lastseen`` timestamp is the reason this parser exists rather than
     reusing a generic splitter. It gives seven days of real dated history on the
     first run, which the ASN windows need, and it goes into
@@ -644,7 +668,9 @@ def dataplane(
         if asn.isdigit():
             tags.append(f"asn:{asn}")
 
-        reported = _parse_reported_date(fields[3]) if len(fields) > 3 else None
+        # Last column is the category, the one before it is always lastseen - true
+        # for the five-column reports and for six-column proto41 alike.
+        reported = _parse_reported_date(fields[-2]) if len(fields) > 3 else None
 
         yield IndicatorRecord(
             ip_or_cidr=ip_obj,

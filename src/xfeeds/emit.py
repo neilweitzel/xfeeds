@@ -61,6 +61,23 @@ NONCOMMERCIAL_DIR = "noncommercial"
 
 NONCOMMERCIAL_LICENSE = "CC BY-NC-SA 4.0"
 
+PERMISSIVE_DIR = "clean"
+"""Subdirectory for the clean-provenance tier. Separate directory, separate LICENSE."""
+
+PERMISSIVE_BANNER = [
+    "# " + "=" * 74,
+    "# CLEAN PROVENANCE TIER. Every contributing source below has issued a WRITTEN,",
+    "# NAMED licence that affirmatively permits redistribution, commercially included.",
+    "#",
+    "# This is the file to use if you have to satisfy a legal review. It is much",
+    "# smaller than the primary feed one directory up, and that is the point: the",
+    "# primary feed also contains data from publishers who distribute freely but",
+    "# never actually granted a reuse licence. Absence of a prohibition is not a",
+    "# grant, and this tier contains only grants. Per-source licences are listed",
+    "# below and in LICENSE.txt.",
+    "# " + "=" * 74,
+]
+
 NONCOMMERCIAL_BANNER = [
     "# " + "!" * 74,
     "# NON-COMMERCIAL USE ONLY. This file is NOT the same as the primary feed.",
@@ -72,6 +89,20 @@ NONCOMMERCIAL_BANNER = [
     "# instead. Attribution is required; see LICENSE.txt in this directory.",
     "# " + "!" * 74,
 ]
+
+
+def _tier_licence_line(tier: str) -> str:
+    """What the Licence: header field says for each tier.
+
+    The primary feed genuinely cannot name one licence, because it mixes publishers
+    with incompatible or absent terms - saying so is more useful than inventing a
+    single answer. That admission is what the permissive tier exists to fix.
+    """
+    if tier == "noncommercial":
+        return NONCOMMERCIAL_LICENSE
+    if tier == "permissive":
+        return "per-source, all permissive and named below (see LICENSE.txt)"
+    return "see individual source terms below"
 
 
 def _header(
@@ -100,11 +131,13 @@ def _header(
         "#",
         f"# Generated: {generated_at.isoformat()}",
         f"# Entries:   {len(records)}",
-        f"# Licence:   {NONCOMMERCIAL_LICENSE if tier == 'noncommercial' else 'see individual source terms below'}",
+        f"# Licence:   {_tier_licence_line(tier)}",
         "#",
     ]
     if tier == "noncommercial":
         lines += [*NONCOMMERCIAL_BANNER, "#"]
+    elif tier == "permissive":
+        lines += [*PERMISSIVE_BANNER, "#"]
     lines += [
         "# This list is compiled from public threat intelligence feeds. Each entry is",
         "# corroborated by multiple INDEPENDENT sources, or comes from a source whose",
@@ -508,7 +541,10 @@ def emit_all(
     high = [r for r in records if r.band is Band.HIGH]
     medium = [r for r in records if r.band is Band.MEDIUM]
 
-    title_suffix = " (non-commercial tier)" if tier == "noncommercial" else ""
+    title_suffix = {
+        "noncommercial": " (non-commercial tier)",
+        "permissive": " (clean provenance tier)",
+    }.get(tier, "")
     write_text_feed(
         feeds_dir / "high-confidence.txt",
         "high confidence" + title_suffix,
@@ -527,9 +563,16 @@ def emit_all(
         tier,
         redistributable,
     )
+    contributing_sources = {s for r in records for s in r.sources}
     if tier == "noncommercial":
-        write_noncommercial_license(
-            feeds_dir / "LICENSE.txt", registry, {s for r in records for s in r.sources}
+        write_noncommercial_license(feeds_dir / "LICENSE.txt", registry, contributing_sources)
+    elif tier == "permissive":
+        # Only the sources actually present, not every permissive source configured -
+        # a licence file naming a source that contributed nothing is misleading.
+        write_permissive_license(
+            feeds_dir / "LICENSE.txt",
+            registry,
+            contributing_sources & (redistributable or set()),
         )
     published = high + medium
     write_csv(feeds_dir / "all.csv", published)
@@ -543,3 +586,68 @@ def emit_all(
         json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
     logger.info("emitted", high=len(high), medium=len(medium), dir=str(feeds_dir))
+
+
+def write_permissive_license(path: Path, registry: Registry, contributing: set[str]) -> None:
+    """Write the LICENSE.txt for the clean-provenance tier.
+
+    This file is the deliverable. A practitioner's blocker is rarely "is this
+    allowed" in the abstract - it is being asked by their own legal or procurement
+    review to name the licence for every input, and not being able to. So this
+    enumerates, per contributing source, the licence name and the URL where its text
+    lives, and states plainly which obligations travel with the data.
+    """
+    by_name = {s.name: s for s in registry.sources}
+    lines = [
+        "xfeeds - clean provenance tier",
+        "=" * 60,
+        "",
+        "WHY THIS TIER EXISTS",
+        "",
+        "The primary xfeeds feed is compiled from every usable public source. Several",
+        "of those publishers distribute their data freely and openly but have never",
+        "issued a licence granting reuse. That is fine for us and awkward for you:",
+        "absence of a prohibition is not a grant, and it is not something you can put",
+        "in front of a legal review.",
+        "",
+        "This tier contains ONLY sources that have issued a written, named licence",
+        "affirmatively permitting redistribution, including commercial use. It is",
+        "much smaller than the primary feed. That is the trade you are making, and it",
+        "is deliberate.",
+        "",
+        "PER-SOURCE LICENCES",
+        "",
+    ]
+    for name in sorted(contributing):
+        config = by_name.get(name)
+        if config is None:
+            continue
+        lines.append(f"  {name}")
+        lines.append(f"    Licence: {config.license or 'n.a.'}")
+        if config.license_url:
+            lines.append(f"    Text:    {config.license_url}")
+        if config.credit:
+            lines.append(f"    Credit:  {config.credit}")
+        lines.append("")
+    lines += [
+        "OBLIGATIONS THAT TRAVEL WITH THIS DATA",
+        "",
+        "  - Attribution. Some contributing licences (CC BY, MIT, BSD) require the",
+        "    credit lines above to be retained. Keep them with the data.",
+        "  - ShareAlike. At least one contributing source is CC BY-SA, which asks that",
+        "    derived data be released under the same licence. If you redistribute a",
+        "    modified version of this file, honour that.",
+        "  - No warranty. This is threat intelligence compiled from third parties. It",
+        "    can contain false positives. You are responsible for what you block.",
+        "",
+        "WHAT THIS TIER DOES NOT CONTAIN",
+        "",
+        "  - Anything from a publisher who states no licence.",
+        "  - Anything non-commercial-only (that is the ../noncommercial tier).",
+        "  - Anything we may read but not republish.",
+        "  - Aggregations of other lists, even permissively licensed ones: a permissive",
+        "    licence over a re-publication does not launder the terms of what it",
+        "    contains, so re-aggregators are excluded on provenance grounds.",
+        "",
+    ]
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")

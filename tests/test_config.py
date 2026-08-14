@@ -228,3 +228,133 @@ def test_xfeeds_validate_from_other_dir(tmp_path: Path, monkeypatch: pytest.Monk
     assert result.exit_code == 0
     assert "Successfully loaded" in result.stdout
     assert "Active voting classes: 13" in result.stdout
+
+
+def test_multi_report_sources_are_class_pinned_to_one_vote() -> None:
+    """Several files from ONE operator must never become several independent votes.
+
+    This is the failure mode independence classes exist to prevent, and it is now
+    easy to introduce by accident: DataPlane publishes 17 IP-bearing reports and
+    Blocklist.de publishes several lists, so a copied YAML block with a fresh
+    independence_class would manufacture corroboration out of a single operator's
+    telemetry. Asserted per operator rather than generically, because the mapping
+    from URL host to correct class is a judgement this test needs to encode.
+    """
+    registry = load_registry(Path("sources.yaml"))
+    by_name = {s.name: s for s in registry.sources}
+
+    dataplane = [s for s in registry.sources if s.url.startswith("https://dataplane.org/")]
+    assert len(dataplane) >= 2, "expected several DataPlane reports"
+    assert {s.independence_class for s in dataplane} == {"dataplane"}
+
+    blocklist_de = [s for s in registry.sources if "blocklist.de" in s.url]
+    assert len(blocklist_de) >= 2, "expected several Blocklist.de lists"
+    assert {s.independence_class for s in blocklist_de} == {"blocklist_de"}
+
+    # And every DataPlane report carries the same scoring-only posture, since they
+    # share one licence header that prohibits redistribution outright.
+    for source in dataplane:
+        assert source.redistribute is False, f"{source.name} would be republished"
+        assert source.noncommercial_compatible is False, f"{source.name} reaches the NC tier"
+    assert by_name["dataplane_sshpwauth"].enabled is True
+
+
+def test_stopforumspam_is_scoring_only_in_both_tiers() -> None:
+    """Their No-Derivative-Works clause forbids building upon the data at all.
+
+    The same page also grants "To Share - to copy, distribute and transmit", so the
+    licence contradicts itself; AGENTS.md says bias toward publishing less, so this
+    must stay out of BOTH published tiers. ADR-050.
+    """
+    registry = load_registry(Path("sources.yaml"))
+    source = next(s for s in registry.sources if s.independence_class == "stopforumspam")
+
+    assert source.enabled is True
+    assert source.vote is True
+    assert source.redistribute is False
+    assert source.redistribute_noncommercial is False
+    assert source.noncommercial_compatible is False
+    # 2 downloads per IP per day is a published cap; 4 runs a day must not exceed it.
+    assert source.min_interval_seconds is not None
+    assert source.min_interval_seconds >= 43200
+
+
+def test_ipthreat_uses_the_full_corpus_with_an_explicit_floor() -> None:
+    """threat-N.txt is a minimum SCORE, not a day window.
+
+    Fetching a pre-filtered URL hid the threshold in a filename. The floor must be
+    a reviewable number, and the URL must be the widest file so the floor can move
+    without changing the endpoint.
+    """
+    registry = load_registry(Path("sources.yaml"))
+    source = next(s for s in registry.sources if s.independence_class == "ipthreat")
+
+    assert source.url.endswith("threat-0.txt"), "must fetch the full corpus"
+    assert source.min_score is not None, "the floor must be explicit, not implied by the URL"
+    # Below 15 the feed leaves the 2,000-4,000 high-confidence range ADR-015 committed
+    # to. Lowering it is a deliberate policy change that needs its own measurement.
+    assert source.min_score >= 15
+
+
+def test_every_clean_tier_source_can_actually_name_its_licence() -> None:
+    """The clean tier's entire promise is that each contributor has a NAMED licence.
+
+    This is the guard that keeps the promise honest. The first draft of the tier
+    shipped with Tor in it, inferring CC0 from metrics.torproject.org while the
+    source's own licence field still read "No licence stated on the endpoint", and
+    with et_compromised carrying no licence fields at all so the generated
+    LICENSE.txt rendered "Licence: n.a." to the reader. Both were caught only by
+    looking at the output. A tier that claims every source has a grant must not
+    contain a source whose own metadata says otherwise.
+    """
+    registry = load_registry(Path("sources.yaml"))
+    granted = [s for s in registry.sources if s.explicit_grant]
+    assert granted, "expected at least one source with an explicit licence grant"
+
+    forbidden = ("no licence", "no license", "n.a.", "unclear", "not stated", "see terms")
+    for source in granted:
+        assert source.license, f"{source.name}: explicit_grant with no licence name"
+        assert source.license_url, f"{source.name}: explicit_grant with no licence URL"
+        lowered = source.license.lower()
+        for phrase in forbidden:
+            assert phrase not in lowered, (
+                f"{source.name}: explicit_grant but its licence reads {source.license!r}, "
+                f"which contains {phrase!r}. Absence of a prohibition is not a grant."
+            )
+
+
+def test_clean_tier_is_a_strict_subset_of_the_primary_feed() -> None:
+    """A source we may not republish at all cannot appear in a MORE permissive tier.
+
+    Guards the ordering invariant between the three tiers, which is easy to break
+    by setting explicit_grant on a scoring-only source.
+    """
+    from xfeeds.score import noncommercial_sources, open_sources, permissive_sources
+
+    registry = load_registry(Path("sources.yaml"))
+    clean = permissive_sources(registry)
+    primary = open_sources(registry)
+    noncommercial = noncommercial_sources(registry)
+
+    assert clean, "the clean tier must not be empty"
+    assert clean <= primary, f"clean tier escapes the primary feed: {sorted(clean - primary)}"
+    assert primary <= noncommercial, "the NC tier must contain everything the primary does"
+
+
+def test_clean_tier_excludes_re_aggregators() -> None:
+    """A permissive licence over a re-publication does not launder what it contains.
+
+    IPsum is public domain via the Unlicense and duggytuxy is GPLv3, and both are
+    built from upstream lists whose own terms are restrictive. Including either
+    would defeat the point of the tier while looking perfectly correct.
+    """
+    from xfeeds.score import permissive_sources
+
+    registry = load_registry(Path("sources.yaml"))
+    clean = permissive_sources(registry)
+
+    aggregators = {s.name for s in registry.sources if s.independence_class == "META_aggregate"}
+    assert aggregators, "expected the aggregate sources to still be configured"
+    assert not (clean & aggregators), (
+        f"re-aggregators in the clean tier: {sorted(clean & aggregators)}"
+    )

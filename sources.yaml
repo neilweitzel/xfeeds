@@ -68,11 +68,12 @@ sources:
     credit: "Feodo Tracker - abuse.ch (CC0)"
     url: https://feodotracker.abuse.ch/downloads/ipblocklist.txt
     parser: plain_text
+    explicit_grant: true   # CC0 - abuse.ch Feodo Tracker ToS: datasets usable commercially and non-commercially without limitations
     independence_class: abusech
     weight: 1.0
     categories: [botnet-c2]
     ttl_days: 7
-    license: "abuse.ch - free, see terms"
+    license: "CC0 1.0 - Feodo Tracker ToS: all datasets usable for commercial and non-commercial purpose without any limitations"
     license_url: https://feodotracker.abuse.ch/blocklist/
     notes: >
       Only 5 IPs and header says last updated 2026-03-04 - effectively dormant.
@@ -253,59 +254,95 @@ sources:
       Enabled without the key present is safe: the collector reports
       skipped_no_credential and the run degrades to the other sources.
 
-  - name: stopforumspam_toxic
-    credit: "StopForumSpam toxic CIDR list - stopforumspam.com"
-    redistribute_noncommercial: true
-    url: https://www.stopforumspam.com/downloads/toxic_ip_cidr.txt
+  - name: stopforumspam_listed
+    url: https://www.stopforumspam.com/downloads/listed_ip_30_ipv46.gz
     parser: plain_text
+    gzipped: true
     independence_class: stopforumspam
     weight: 0.5
+    vote: true
     categories: [spam-source, abuse]
-    ttl_days: 30
-    license: "Non-commercial use only; Creative Commons for remaining terms"
-    license_url: https://www.stopforumspam.com/legal
-    license_risk: medium
+    ttl_days: 14
+    license: "Custom CC variant: NonCommercial AND No Derivative Works"
+    license_url: https://www.stopforumspam.com/license
+    license_risk: high
     redistribute: false
+    redistribute_noncommercial: false
+    noncommercial_compatible: false
+    enabled: true
+    min_interval_seconds: 43200
+    cache_response: true
     notes: >
-      Toxic CIDR ranges - whole networks the operator considers irredeemable.
-      Independent of the attack-sensor feeds. NOT redistributed: the terms
-      require non-commercial use, which we cannot impose on downstream consumers
-      of a public feed. Used as a scoring signal only.
+      COMPLIANCE DOWNGRADE plus a 912x volume increase, in the same change.
+      We were publishing this in the non-commercial tier. Re-reading
+      stopforumspam.com/license on 2026-08-14, that is not defensible. The page
+      grants "To Share - to copy, distribute and transmit the work" and then
+      immediately says, under No Derivative Works: "You may not alter, transform, or
+      build upon this work, nor use any manual or automated tools or system to
+      mirror, copy, scan, duplicate, backup, distribute, scrap or spider any of the
+      data on this website". Those two clauses contradict each other, and "build upon
+      this work" describes an aggregated feed exactly. Under AGENTS.md we bias toward
+      publishing less, so: scoring only, in BOTH tiers.
+      Because nothing is republished, volume is now free. We were reading
+      toxic_ip_cidr.txt - 60 CIDRs. This reads listed_ip_30_ipv46.gz - 54,710 IPv4
+      and IPv6 addresses last seen within 30 days, the same site-wide licence, one
+      fetch. Their own downloads page defines the window as a last-seen recency
+      window, which is exactly the semantics we want.
+      OPERATIONAL LIMITS, both real: the listed_* files are capped at 2 downloads per
+      IP per day, hence min_interval_seconds 43200 - four scheduled runs then make
+      two real fetches and serve the cache twice. Separately the site sits behind
+      Cloudflare and answers bursts with 429 "error code: 1015", counting HEAD
+      requests, so never fan out across their files in parallel.
+      Note their NonCommercial clause is narrower than most: "You may use this work
+      on commercial sites however you cannot resell any information gathered from
+      this site". It restricts resale, not commercial use. That does not rescue
+      redistribution, because No Derivative Works is the binding clause here.
 
-  - name: ipthreat_30d
+  - name: ipthreat
     credit: "Data sourced from IPThreat located at https://ipthreat.net"
-    url: https://lists.ipthreat.net/file/ipthreat-lists/threat/threat-30.txt
+    attribution_required: true
+    url: https://lists.ipthreat.net/file/ipthreat-lists/threat/threat-0.txt
     parser: ipthreat
+    explicit_grant: true   # CC BY(-SA) - ipthreat.net/license: re-use and re-mix permitted, even commercially, with attribution and share-alike
+    min_score: 15
     independence_class: ipthreat
     weight: 0.8
     categories: [reported-abuse, scanning]
     ttl_days: 10
-    license: "Creative Commons attribution; derived data under the same CC licence; commercial use expressly permitted"
+    license: "Creative Commons attribution; derived data under the same CC licence"
     license_url: https://ipthreat.net/license
     license_risk: low
-    attribution_required: true
-    noncommercial_compatible: false
+    redistribute: true
+    enabled: true
+    min_interval_seconds: 3600
     notes: >
-      3,266 addresses at threat level 30 or above, from ipthreat.net's own community
-      and honeypot reporting. Genuinely independent: 5.4% overlap with our published
-      feed. Updated hourly despite the site describing monthly dumps, and each row
-      carries its own threat level and timestamp.
-      Licence expressly permits commercial reuse, which is rare in this space, and
-      requires attribution: "Data sourced from IPThreat located at
-      https://ipthreat.net". It also requires derived data under the same CC licence,
-      i.e. ShareAlike. That is why noncommercial_compatible is false - CC BY-SA
-      forbids adding restrictions to an adaptation, so this data may not be mixed
-      into the CC BY-NC-SA tier. Use the threat-30 list rather than threat-14: the
-      number is a minimum threat level, not a day count. See ADR-042.
-
-  # ------------------------------------------ corroboration only (never votes)
-    notes: >
-      Toxic CIDR ranges - whole networks the operator considers irredeemable.
-      Independent of the attack-sensor feeds. Not in the primary feed: the terms read
-      "Your use of this data and supporting software is non-commercial" and "You will
-      not charge money for any software that utilizes the data", with everything else
-      "covered under a Creative Commons License" - no version named, and the page
-      self-describes as a draft. Republished in the non-commercial tier only.
+      RENAMED from ipthreat_30d, because that name encoded a misreading. The N in
+      ipthreat's threat-N.txt is a MINIMUM SCORE, not a number of days - verified
+      2026-08-14: threat-0 has a minimum row score of 0, threat-30 a minimum of 30,
+      and the files get SMALLER as N rises, which a day-window would not do. We were
+      fetching threat-30.txt believing it was a 30-day window and thereby discarding
+      96% of the feed.
+      Now fetches threat-0.txt, the full corpus, and applies the floor locally via
+      min_score so the threshold is a reviewable number instead of a URL nobody
+      re-reads. Measured score distribution on 2026-08-14 of 57,806 rows:
+      score>=0 57,806 / >=1 23,716 / >=5 9,869 / >=15 4,996 / >=30 2,365.
+      min_score is 15, and the anchor for that number is this project's own stated
+      expectation, not taste. README/ADR-015 predict a high-confidence feed of roughly
+      2,000-4,000 entries. Measured end-to-end on 2026-08-14:
+        min_score 30 -> 2,281 rows -> 3,187 high   (inside the range)
+        min_score 15 -> 4,787 rows -> 3,838 high   (inside the range, chosen)
+        min_score  5 -> 9,329 rows -> 4,605 high   (breaks it)
+        min_score  1 -> 22,330 rows -> 6,108 high  (breaks it badly, +118%)
+      15 roughly doubles coverage against the old effective threshold of 30 while
+      keeping the feed inside the range the project committed to. Scores below 15 are
+      91% of the corpus and are dominated by single low-confidence observations;
+      granting those a full class vote is the mistake that keeps sefinek disabled.
+      Lowering this further is a deliberate policy change, not a tuning tweak: it
+      needs its own churn measurement, because band assignment counts CLASSES and not
+      weights, so a low-score row admits exactly as hard as a high-score one.
+      See ADR-050.
+      Renaming costs one run of carried observations under the old key, which
+      degrades gracefully by design (ADR-037).
 
   - name: ipsum_levels
     credit: "IPsum - Miroslav Stampar (stamparm), github.com/stamparm/ipsum"
@@ -347,14 +384,30 @@ sources:
   - name: et_compromised
     url: https://rules.emergingthreats.net/blockrules/compromised-ips.txt
     parser: plain_text
+    credit: "Emerging Threats Open ruleset - Copyright (c) 2003-2026, Emerging Threats. All rights reserved."
+    attribution_required: true
+    license: "BSD 3-clause (Emerging Threats Open ruleset, sids 2000000-2799999)"
+    license_url: https://rules.emergingthreats.net/open/suricata-5.0/rules/LICENSE
+    license_risk: low
+    explicit_grant: true   # BSD 3-clause - Emerging Threats open ruleset LICENSE, sids 2000000-2799999
     independence_class: bruteforceblocker   # same class - NOT independent
-    weight: 0.0
-    vote: false
-    enabled: false
+    weight: 0.6
+    vote: true
+    enabled: true
     notes: >
-      DISABLED as a duplicate. Measured Jaccard 0.953 against bruteforceblocker
-      (531 of 539 IPs identical). It is a mirror, not a second opinion.
-      Class-pinned to bruteforceblocker so it can never double-vote if re-enabled.
+      A DUPLICATE of bruteforceblocker for scoring purposes: measured Jaccard 0.953
+      (531 of 539 IPs identical). It is a mirror, not a second opinion, and it is
+      class-pinned to bruteforceblocker so it can never double-vote.
+      ENABLED in ADR-051 for a reason that did not exist before: the clean tier.
+      It stays class-pinned to bruteforceblocker, so it adds NO vote to the primary
+      feed - Jaccard 0.953 against bruteforceblocker, it is a mirror. But
+      bruteforceblocker publishes no licence at all, while this file is covered by
+      the Emerging Threats BSD 3-clause ruleset licence. So in the clean tier, where
+      bruteforceblocker is excluded for having no grant, this becomes the sole
+      member of its class and contributes the third citable-licence class the tier
+      needs to corroborate anything at all.
+      Costs nothing, unlocks the tier. If it were not class-pinned this would be
+      double-counting, so do not remove that pin.
 
   - name: dshield_block
     credit: "DShield.org Recommended Block List - SANS Internet Storm Center (CC BY-NC-SA)"
@@ -445,11 +498,171 @@ sources:
       Also note their own caveat: "This report is informational. This is not a block
       list." Hence a vote, not a promotion.
 
+  - name: dataplane_telnetlogin
+    url: https://dataplane.org/signals/telnetlogin.txt
+    parser: dataplane
+    independence_class: dataplane
+    weight: 0.7
+    vote: true
+    categories: [telnet-attack, brute-force]
+    ttl_days: 7
+    redistribute: false
+    redistribute_noncommercial: false
+    noncommercial_compatible: false
+    enabled: true
+    license: "Non-commercial use only; redistribution expressly prohibited"
+    license_url: https://dataplane.org/signals/telnetlogin.txt
+    license_risk: medium
+    min_interval_seconds: 3600
+    notes: >
+      Telnet logins - the largest DataPlane report by a wide margin. ~89,312 rows on 2026-08-14.
+      SCORING ONLY IN BOTH TIERS, same as dataplane_sshpwauth - see that entry for
+      the licence reasoning. Class-pinned to `dataplane` so all of these together
+      count as ONE vote, never several: they are one sensor network reporting
+      different protocols, and treating them as independent would manufacture
+      corroboration out of a single operator's telemetry. What they add is coverage -
+      far more addresses get that single dataplane vote.
+
+  - name: dataplane_proto41
+    url: https://dataplane.org/signals/proto41.txt
+    parser: dataplane
+    independence_class: dataplane
+    weight: 0.7
+    vote: true
+    categories: [scanning]
+    ttl_days: 7
+    redistribute: false
+    redistribute_noncommercial: false
+    noncommercial_compatible: false
+    enabled: true
+    license: "Non-commercial use only; redistribution expressly prohibited"
+    license_url: https://dataplane.org/signals/proto41.txt
+    license_risk: medium
+    min_interval_seconds: 3600
+    notes: >
+      IP protocol 41 (6in4 tunnelling) probes. SIX columns, not five. ~55,772 rows on 2026-08-14.
+      SCORING ONLY IN BOTH TIERS, same as dataplane_sshpwauth - see that entry for
+      the licence reasoning. Class-pinned to `dataplane` so all of these together
+      count as ONE vote, never several: they are one sensor network reporting
+      different protocols, and treating them as independent would manufacture
+      corroboration out of a single operator's telemetry. What they add is coverage -
+      far more addresses get that single dataplane vote.
+      Its header inserts a firstseen column before lastseen, so the parser reads the
+      timestamp from the end of the row rather than a fixed index.
+
+  - name: dataplane_sshclient
+    url: https://dataplane.org/signals/sshclient.txt
+    parser: dataplane
+    independence_class: dataplane
+    weight: 0.7
+    vote: true
+    categories: [ssh-attack, scanning]
+    ttl_days: 7
+    redistribute: false
+    redistribute_noncommercial: false
+    noncommercial_compatible: false
+    enabled: true
+    license: "Non-commercial use only; redistribution expressly prohibited"
+    license_url: https://dataplane.org/signals/sshclient.txt
+    license_risk: medium
+    min_interval_seconds: 3600
+    notes: >
+      SSH client connections. Overlaps sshpwauth, which is fine - same class. ~19,446 rows on 2026-08-14.
+      SCORING ONLY IN BOTH TIERS, same as dataplane_sshpwauth - see that entry for
+      the licence reasoning. Class-pinned to `dataplane` so all of these together
+      count as ONE vote, never several: they are one sensor network reporting
+      different protocols, and treating them as independent would manufacture
+      corroboration out of a single operator's telemetry. What they add is coverage -
+      far more addresses get that single dataplane vote.
+      Kept deliberately despite overlapping sshpwauth: within one class the scorer
+      takes the maximum, so an overlap costs nothing and the non-overlapping part is
+      free coverage.
+
+  - name: dataplane_smtpgreet
+    url: https://dataplane.org/signals/smtpgreet.txt
+    parser: dataplane
+    independence_class: dataplane
+    weight: 0.7
+    vote: true
+    categories: [spam-source, abuse]
+    ttl_days: 7
+    redistribute: false
+    redistribute_noncommercial: false
+    noncommercial_compatible: false
+    enabled: true
+    license: "Non-commercial use only; redistribution expressly prohibited"
+    license_url: https://dataplane.org/signals/smtpgreet.txt
+    license_risk: medium
+    min_interval_seconds: 3600
+    notes: >
+      SMTP HELO/EHLO probes. ~9,508 rows on 2026-08-14.
+      SCORING ONLY IN BOTH TIERS, same as dataplane_sshpwauth - see that entry for
+      the licence reasoning. Class-pinned to `dataplane` so all of these together
+      count as ONE vote, never several: they are one sensor network reporting
+      different protocols, and treating them as independent would manufacture
+      corroboration out of a single operator's telemetry. What they add is coverage -
+      far more addresses get that single dataplane vote.
+
+  - name: dataplane_vncrfb
+    url: https://dataplane.org/signals/vncrfb.txt
+    parser: dataplane
+    independence_class: dataplane
+    weight: 0.7
+    vote: true
+    categories: [scanning, brute-force]
+    ttl_days: 7
+    redistribute: false
+    redistribute_noncommercial: false
+    noncommercial_compatible: false
+    enabled: true
+    license: "Non-commercial use only; redistribution expressly prohibited"
+    license_url: https://dataplane.org/signals/vncrfb.txt
+    license_risk: medium
+    min_interval_seconds: 3600
+    notes: >
+      VNC/RFB probes. ~5,384 rows on 2026-08-14.
+      SCORING ONLY IN BOTH TIERS, same as dataplane_sshpwauth - see that entry for
+      the licence reasoning. Class-pinned to `dataplane` so all of these together
+      count as ONE vote, never several: they are one sensor network reporting
+      different protocols, and treating them as independent would manufacture
+      corroboration out of a single operator's telemetry. What they add is coverage -
+      far more addresses get that single dataplane vote.
+
+  - name: blocklist_de_strongips
+    credit: "Blocklist.de - www.blocklist.de"
+    attribution_required: true
+    url: https://lists.blocklist.de/lists/strongips.txt
+    parser: plain_text
+    independence_class: blocklist_de
+    weight: 0.8
+    vote: true
+    categories: [brute-force, reported-abuse]
+    ttl_days: 30
+    license: "No licence stated. Published for public use by blocklist.de; we asked for an explicit statement (ADR-043)"
+    license_url: https://www.blocklist.de/en/export.html
+    redistribute: true
+    enabled: true
+    min_interval_seconds: 3600
+    notes: >
+      Only 348 addresses, and the only Blocklist.de file that is structurally
+      additive: measured 2026-08-14, 104 of them (30%) are NOT in all.txt. That is
+      not fetch skew - both files share a Last-Modified minute. Their export page
+      explains it: all.txt is "the last 48 hours", strongips is "All IPs which are
+      older then 2 month and have more then 5.000 attacks". Persistent heavy
+      attackers that have gone quiet for two days fall out of all.txt and stay here,
+      so this recovers exactly the aged, high-conviction offenders the 48-hour window
+      drops. Longer ttl_days than all.txt for the same reason.
+      Class-pinned to blocklist_de: same operator, so one vote.
+      The other 15 undocumented files under lists.blocklist.de/lists/ were checked
+      and add ZERO addresses beyond all.txt - they are port-numbered and daemon-named
+      aliases of the documented service lists. Do not add them.
+
   # ------------------------------------------------------- added in ADR-048
   - name: sefinek_malicious_ip
     credit: "Malicious IP Addresses - Sefinek, github.com/sefinek/Malicious-IP-Addresses (MIT)"
     url: https://raw.githubusercontent.com/sefinek/Malicious-IP-Addresses/main/lists/main.txt
     parser: plain_text
+    explicit_grant: true   # MIT - github.com/sefinek/Malicious-IP-Addresses LICENSE
     independence_class: sefinek
     weight: 0.5
     vote: true
@@ -529,6 +742,13 @@ sources:
       contamination in other feeds: IPsum L3 lists 265 of them, binary_defense 64,
       blocklist_de 49, greensnow 48. Any IP tagged tor-exit is capped below the
       high-confidence threshold. See docs/DECISIONS.md ADR-013.
+      NOT in the clean tier, deliberately. The Tor Project declares CC0 for "data on
+      this site" at metrics.torproject.org/about.html, but the bulk exit list is
+      served from check.torproject.org with no licence text of any kind, and the
+      canonical LICENSE in their GitLab was unreachable on both 2026-08-13 and
+      2026-08-14. Inferring a grant across hosts is exactly the reasoning the clean
+      tier exists to refuse, so explicit_grant stays false. It costs nothing here:
+      this source is tag-only and casts no vote.
 
 # ----------------------------------------------------------------- allowlists
 # Fetched fresh each run and applied AFTER every other stage. A miss here is a
