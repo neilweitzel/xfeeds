@@ -1,0 +1,112 @@
+{
+  "$defs": {
+    "Band": {
+      "description": "Publication tier for an indicator.\n\nHIGH is safe to drop traffic on. MEDIUM is for challenge or rate-limit\nrather than a hard block. WITHHELD is never published - it is retained only\nso it can corroborate a future observation.",
+      "enum": [
+        "high",
+        "medium",
+        "withheld"
+      ],
+      "title": "Band",
+      "type": "string"
+    }
+  },
+  "description": "One indicator after all observations of it have been collapsed and scored.",
+  "properties": {
+    "band": {
+      "$ref": "#/$defs/Band"
+    },
+    "categories": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Categories",
+      "type": "array"
+    },
+    "first_seen": {
+      "format": "date-time",
+      "title": "First Seen",
+      "type": "string"
+    },
+    "independence_classes": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Independence Classes",
+      "type": "array"
+    },
+    "ip_or_cidr": {
+      "anyOf": [
+        {
+          "format": "ipv4",
+          "type": "string"
+        },
+        {
+          "format": "ipv6",
+          "type": "string"
+        },
+        {
+          "format": "ipv4network",
+          "type": "string"
+        },
+        {
+          "format": "ipv6network",
+          "type": "string"
+        }
+      ],
+      "title": "Ip Or Cidr"
+    },
+    "last_seen": {
+      "format": "date-time",
+      "title": "Last Seen",
+      "type": "string"
+    },
+    "promoted_by": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Promoted By"
+    },
+    "restricted_corroboration": {
+      "default": 0,
+      "title": "Restricted Corroboration",
+      "type": "integer"
+    },
+    "score": {
+      "title": "Score",
+      "type": "number"
+    },
+    "sources": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Sources",
+      "type": "array"
+    },
+    "tags": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Tags",
+      "type": "array"
+    }
+  },
+  "required": [
+    "ip_or_cidr",
+    "score",
+    "band",
+    "independence_classes",
+    "sources",
+    "categories",
+    "first_seen",
+    "last_seen"
+  ],
+  "title": "ScoredIndicator",
+  "type": "object"
+}

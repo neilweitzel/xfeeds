@@ -1,0 +1,722 @@
+{
+  "id": "bundle--00000000-0000-0000-0000-000000000000",
+  "objects": [
+    {
+      "created": "2026-01-01T00:00:00.000Z",
+      "description": "Aggregated public IP threat intelligence. https://github.com/neilweitzel/xfeeds",
+      "id": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "identity_class": "organization",
+      "modified": "2026-01-01T00:00:00.000Z",
+      "name": "xfeeds",
+      "spec_version": "2.1",
+      "type": "identity"
+    },
+    {
+      "confidence": 96,
+      "created": "2026-08-12T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "et_compromised",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipthreat",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--602f381e-96a2-a792-8d70-b19dbea2081c",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "reported-abuse",
+        "scanning"
+      ],
+      "modified": "2026-08-14T00:00:00Z",
+      "name": "Malicious IP 2.57.122.53",
+      "pattern": "[ipv4-addr:value = '2.57.122.53']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-08-12T00:00:00Z"
+    },
+    {
+      "confidence": 93,
+      "created": "2026-08-12T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "et_compromised",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipthreat",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--3c52067f-5798-f0ea-b016-aa6e188833cf",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "reported-abuse",
+        "scanning"
+      ],
+      "modified": "2026-08-14T00:00:00Z",
+      "name": "Malicious IP 27.79.7.170",
+      "pattern": "[ipv4-addr:value = '27.79.7.170']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-08-12T00:00:00Z"
+    },
+    {
+      "confidence": 90,
+      "created": "2026-08-12T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "feodo_tracker",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--73746db2-94ac-f729-4008-a467f08e20f9",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "botnet-c2"
+      ],
+      "modified": "2026-08-14T00:00:00Z",
+      "name": "Malicious IP 27.133.154.218",
+      "pattern": "[ipv4-addr:value = '27.133.154.218']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-08-12T00:00:00Z"
+    },
+    {
+      "confidence": 90,
+      "created": "2026-08-12T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "feodo_tracker",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--aea702d7-19e6-427b-2ca1-2d5dc4f65881",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "botnet-c2"
+      ],
+      "modified": "2026-08-14T00:00:00Z",
+      "name": "Malicious IP 34.204.119.63",
+      "pattern": "[ipv4-addr:value = '34.204.119.63']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-08-12T00:00:00Z"
+    },
+    {
+      "confidence": 96,
+      "created": "2026-08-12T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "et_compromised",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipthreat",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--f594aab2-c462-30ad-e521-40224f7d126f",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "reported-abuse",
+        "scanning"
+      ],
+      "modified": "2026-08-14T00:00:00Z",
+      "name": "Malicious IP 45.154.244.193",
+      "pattern": "[ipv4-addr:value = '45.154.244.193']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-08-12T00:00:00Z"
+    },
+    {
+      "confidence": 90,
+      "created": "2026-08-12T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "feodo_tracker",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--4653f5ef-5d5e-c045-90db-cefa642beab8",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "botnet-c2"
+      ],
+      "modified": "2026-08-14T00:00:00Z",
+      "name": "Malicious IP 50.16.16.211",
+      "pattern": "[ipv4-addr:value = '50.16.16.211']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-08-12T00:00:00Z"
+    },
+    {
+      "confidence": 98,
+      "created": "2026-08-12T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "et_compromised",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipthreat",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--823f689e-fd63-6dad-d645-fe715640a435",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "reported-abuse",
+        "scanning"
+      ],
+      "modified": "2026-08-14T00:00:00Z",
+      "name": "Malicious IP 77.90.185.20",
+      "pattern": "[ipv4-addr:value = '77.90.185.20']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-08-12T00:00:00Z"
+    },
+    {
+      "confidence": 89,
+      "created": "2026-08-12T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "et_compromised",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipthreat",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--044012ee-1b09-14c6-9823-6d4d55be0a65",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "reported-abuse",
+        "scanning"
+      ],
+      "modified": "2026-08-14T00:00:00Z",
+      "name": "Malicious IP 94.183.177.21",
+      "pattern": "[ipv4-addr:value = '94.183.177.21']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-08-12T00:00:00Z"
+    },
+    {
+      "confidence": 96,
+      "created": "2026-08-12T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "et_compromised",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipthreat",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--7ddca311-8a18-8954-1893-40fb804ece5b",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "reported-abuse",
+        "scanning"
+      ],
+      "modified": "2026-08-14T00:00:00Z",
+      "name": "Malicious IP 108.165.164.23",
+      "pattern": "[ipv4-addr:value = '108.165.164.23']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-08-12T00:00:00Z"
+    },
+    {
+      "confidence": 96,
+      "created": "2026-08-12T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "et_compromised",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipthreat",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--bfc24f28-3d4b-4a1a-56cb-32b6aa406e55",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "reported-abuse",
+        "scanning"
+      ],
+      "modified": "2026-08-14T00:00:00Z",
+      "name": "Malicious IP 116.99.49.208",
+      "pattern": "[ipv4-addr:value = '116.99.49.208']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-08-12T00:00:00Z"
+    },
+    {
+      "confidence": 87,
+      "created": "2026-08-12T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "et_compromised",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipthreat",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--56002123-0303-e564-6a3f-9976d8e6ed5e",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "reported-abuse",
+        "scanning"
+      ],
+      "modified": "2026-08-14T00:00:00Z",
+      "name": "Malicious IP 116.99.169.249",
+      "pattern": "[ipv4-addr:value = '116.99.169.249']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-08-12T00:00:00Z"
+    },
+    {
+      "confidence": 89,
+      "created": "2026-08-12T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "et_compromised",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipthreat",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--0bcf056d-a5dd-fcd4-8625-7f9cd9da60ff",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "reported-abuse",
+        "scanning"
+      ],
+      "modified": "2026-08-14T00:00:00Z",
+      "name": "Malicious IP 116.99.171.175",
+      "pattern": "[ipv4-addr:value = '116.99.171.175']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-08-12T00:00:00Z"
+    },
+    {
+      "confidence": 87,
+      "created": "2026-08-12T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "et_compromised",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipthreat",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--fb614985-a8dd-ce90-678e-eb9c2993bc40",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "reported-abuse",
+        "scanning"
+      ],
+      "modified": "2026-08-14T00:00:00Z",
+      "name": "Malicious IP 116.99.172.91",
+      "pattern": "[ipv4-addr:value = '116.99.172.91']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-08-12T00:00:00Z"
+    },
+    {
+      "confidence": 98,
+      "created": "2026-08-12T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "et_compromised",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipthreat",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--d5b9f337-47cf-87b5-13d7-9d243a2e77db",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "reported-abuse",
+        "scanning"
+      ],
+      "modified": "2026-08-14T00:00:00Z",
+      "name": "Malicious IP 129.151.171.7",
+      "pattern": "[ipv4-addr:value = '129.151.171.7']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-08-12T00:00:00Z"
+    },
+    {
+      "confidence": 94,
+      "created": "2026-08-12T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "et_compromised",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipthreat",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--949666c2-7a41-f1a3-6669-0bea4188d849",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "reported-abuse",
+        "scanning"
+      ],
+      "modified": "2026-08-14T00:00:00Z",
+      "name": "Malicious IP 158.51.96.38",
+      "pattern": "[ipv4-addr:value = '158.51.96.38']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-08-12T00:00:00Z"
+    },
+    {
+      "confidence": 96,
+      "created": "2026-08-12T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "et_compromised",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipthreat",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--6e72ce26-5931-5684-f0e2-072e4bcd4d9b",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "reported-abuse",
+        "scanning"
+      ],
+      "modified": "2026-08-14T00:00:00Z",
+      "name": "Malicious IP 161.118.212.147",
+      "pattern": "[ipv4-addr:value = '161.118.212.147']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-08-12T00:00:00Z"
+    },
+    {
+      "confidence": 90,
+      "created": "2026-08-12T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "feodo_tracker",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--ef7f4e9e-6551-d56e-ecd3-82e99ca7a10a",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "botnet-c2"
+      ],
+      "modified": "2026-08-14T00:00:00Z",
+      "name": "Malicious IP 162.243.103.246",
+      "pattern": "[ipv4-addr:value = '162.243.103.246']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-08-12T00:00:00Z"
+    },
+    {
+      "confidence": 97,
+      "created": "2026-08-12T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "et_compromised",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipthreat",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--049f03d9-9f47-a26e-09ec-bd40e6d79563",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "reported-abuse",
+        "scanning"
+      ],
+      "modified": "2026-08-14T00:00:00Z",
+      "name": "Malicious IP 164.92.109.155",
+      "pattern": "[ipv4-addr:value = '164.92.109.155']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-08-12T00:00:00Z"
+    },
+    {
+      "confidence": 90,
+      "created": "2026-08-12T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "feodo_tracker",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--311d31dc-24cf-042a-c812-ed18efbe462f",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "botnet-c2"
+      ],
+      "modified": "2026-08-14T00:00:00Z",
+      "name": "Malicious IP 178.62.3.223",
+      "pattern": "[ipv4-addr:value = '178.62.3.223']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-08-12T00:00:00Z"
+    },
+    {
+      "confidence": 96,
+      "created": "2026-08-12T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "et_compromised",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipthreat",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--bdf2ed47-6bbc-95d9-4db3-4f878da08618",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "reported-abuse",
+        "scanning"
+      ],
+      "modified": "2026-08-14T00:00:00Z",
+      "name": "Malicious IP 191.101.59.133",
+      "pattern": "[ipv4-addr:value = '191.101.59.133']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-08-12T00:00:00Z"
+    },
+    {
+      "confidence": 89,
+      "created": "2026-08-13T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "et_compromised",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipthreat",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--c99a2ffd-f59c-5730-6f01-dad00698324f",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "reported-abuse",
+        "scanning"
+      ],
+      "modified": "2026-08-14T00:00:00Z",
+      "name": "Malicious IP 192.241.245.10",
+      "pattern": "[ipv4-addr:value = '192.241.245.10']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-08-13T00:00:00Z"
+    },
+    {
+      "confidence": 98,
+      "created": "2026-08-12T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "et_compromised",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipthreat",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--deb6f2ee-f769-7d4c-dbec-0615072fae4e",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "reported-abuse",
+        "scanning"
+      ],
+      "modified": "2026-08-14T00:00:00Z",
+      "name": "Malicious IP 195.178.110.137",
+      "pattern": "[ipv4-addr:value = '195.178.110.137']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-08-12T00:00:00Z"
+    },
+    {
+      "confidence": 93,
+      "created": "2026-08-12T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "et_compromised",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipthreat",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--3e6a23df-bfe5-2bb2-e956-a8a9733e1e1b",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "reported-abuse",
+        "scanning"
+      ],
+      "modified": "2026-08-14T00:00:00Z",
+      "name": "Malicious IP 220.76.68.23",
+      "pattern": "[ipv4-addr:value = '220.76.68.23']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-08-12T00:00:00Z"
+    }
+  ],
+  "type": "bundle"
+}

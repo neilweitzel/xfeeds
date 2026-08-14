@@ -1,24 +1,31 @@
-xfeeds run 2026-08-14T17:26:49.412217+00:00
-  sources:   16/17 ok
-  published: 3792 (high 2860, medium 932)
-  withheld:  45214 single-source
-  deltas:    +3 / -2
+xfeeds run 2026-08-14T18:48:58.372678+00:00
+  sources:   23/24 ok
+  published: 4441 (high 3588, medium 853)
+  withheld:  46019 single-source
+  deltas:    +961 / -312
     abuseipdb_blacklist      10000 records
     binary_defense           3786 records
-    blocklist_de             26316 records
-    bruteforceblocker        554 records
+    blocklist_de             26279 records
+    blocklist_de_strongips   348 records
+    bruteforceblocker        555 records
     cins_army                15000 records
-    dataplane_sshpwauth      9771 records
+    dataplane_proto41        55802 records
+    dataplane_smtpgreet      9511 records
+    dataplane_sshclient      19354 records
+    dataplane_sshpwauth      9768 records
+    dataplane_telnetlogin    89315 records
+    dataplane_vncrfb         5374 records
     dshield_block            20 records
+    et_compromised           549 records
     feodo_tracker            stale
-    greensnow                3208 records
+    greensnow                3235 records
     ipsum_levels             26194 records
-    ipthreat_30d             2243 records
+    ipthreat                 4787 records
     spamhaus_drop_v4         1684 records
     spamhaus_drop_v6         91 records
-    stopforumspam_toxic      60 records
+    stopforumspam_listed     54708 records
     threatfox                1112 records
-    tor_exits                1363 records
+    tor_exits                1361 records
     turris_greylist          9488 records
   ! feodo_tracker: upstream last updated 44 days ago - a dead feed is not the same as a quiet internet
-  ! 365 records capped high -> medium as benign scanners
+  ! 497 records capped high -> medium as benign scanners

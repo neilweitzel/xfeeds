@@ -1,0 +1,52 @@
+xfeeds - clean provenance tier
+============================================================
+
+WHY THIS TIER EXISTS
+
+The primary xfeeds feed is compiled from every usable public source. Several
+of those publishers distribute their data freely and openly but have never
+issued a licence granting reuse. That is fine for us and awkward for you:
+absence of a prohibition is not a grant, and it is not something you can put
+in front of a legal review.
+
+This tier contains ONLY sources that have issued a written, named licence
+affirmatively permitting redistribution, including commercial use. It is
+much smaller than the primary feed. That is the trade you are making, and it
+is deliberate.
+
+PER-SOURCE LICENCES
+
+  et_compromised
+    Licence: BSD 3-clause (Emerging Threats Open ruleset, sids 2000000-2799999)
+    Text:    https://rules.emergingthreats.net/open/suricata-5.0/rules/LICENSE
+    Credit:  Emerging Threats Open ruleset - Copyright (c) 2003-2026, Emerging Threats. All rights reserved.
+
+  feodo_tracker
+    Licence: CC0 1.0 - Feodo Tracker ToS: all datasets usable for commercial and non-commercial purpose without any limitations
+    Text:    https://feodotracker.abuse.ch/blocklist/
+    Credit:  Feodo Tracker - abuse.ch (CC0)
+
+  ipthreat
+    Licence: Creative Commons attribution; derived data under the same CC licence
+    Text:    https://ipthreat.net/license
+    Credit:  Data sourced from IPThreat located at https://ipthreat.net
+
+OBLIGATIONS THAT TRAVEL WITH THIS DATA
+
+  - Attribution. Some contributing licences (CC BY, MIT, BSD) require the
+    credit lines above to be retained. Keep them with the data.
+  - ShareAlike. At least one contributing source is CC BY-SA, which asks that
+    derived data be released under the same licence. If you redistribute a
+    modified version of this file, honour that.
+  - No warranty. This is threat intelligence compiled from third parties. It
+    can contain false positives. You are responsible for what you block.
+
+WHAT THIS TIER DOES NOT CONTAIN
+
+  - Anything from a publisher who states no licence.
+  - Anything non-commercial-only (that is the ../noncommercial tier).
+  - Anything we may read but not republish.
+  - Aggregations of other lists, even permissively licensed ones: a permissive
+    licence over a re-publication does not launder the terms of what it
+    contains, so re-aggregators are excluded on provenance grounds.
+
