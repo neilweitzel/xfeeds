@@ -948,6 +948,93 @@ not marketing, so the credit line stays.
   first block was silently discarded by the YAML parser.
 
 
+## GreyNoise caps benign scanners, and RIOT is not obtainable (ADR-049)
+
+**Status:** accepted (2026-08-14)
+
+### The measurement that justifies this
+
+A free-tier GreyNoise key was obtained and pointed at 500 addresses from our own
+published feed. The result:
+
+| GreyNoise classification | Count | Share |
+|---|---:|---:|
+| malicious | 266 | 53% |
+| benign | **85** | **17%** |
+| suspicious | 77 | 15% |
+| unknown | 63 | 13% |
+
+**17% of what we publish is scanning activity GreyNoise considers benign** — the
+sample includes Hurricane Electric ranges tagged as SNMP and F5 BIG-IP crawlers,
+which is research scanning, not attack traffic. For a project whose stated first
+principle is that a false positive drops somebody's real traffic, that number is
+the single largest quality problem measured so far.
+
+### Cap, do not delete
+
+Benign-classified records are demoted **HIGH -> MEDIUM**, not removed. This is
+ADR-013's reasoning applied to a second case: blocking a known research scanner is
+a policy choice belonging to the consumer, and MEDIUM is already documented as
+"challenge or rate-limit rather than a hard block". A consumer who *does* want to
+block Censys can still act on the medium tier.
+
+### The licensing constraint is tighter than for any other source
+
+GreyNoise's EULA forbids free customers from distributing or publishing the
+Platform to third parties. So this integration may only ever **remove** confidence:
+
+- **No tag is written onto a capped record.** A `greynoise-benign` tag would
+  disclose their dataset one address at a time, which is redistribution with extra
+  steps. There is a test asserting the record is not annotated.
+- **Only an aggregate count reaches the manifest** (`benign_scanners_capped`), on
+  the same reasoning ADR-044 used for the insights layer: a count is a statistic
+  derived from data, not an extract of it.
+
+That makes GreyNoise the first source here that influences the output while being
+invisible in it even as a name.
+
+### RIOT is not available, and will not be on a free key
+
+This is worth recording so nobody re-attempts it. RIOT was renamed **Business
+Service Intelligence** and folded into `/v3/ip/:ip`; the v2 `/v2/riot/:ip` endpoint
+now returns HTTP 410. The dataset itself is a separately licensed **add-on** that,
+per [GreyNoise plans](https://www.greynoise.io/plans), "attach[es] to any paid
+platform tier". Our key confirms it directly: every response lists
+`business_service_intelligence` in `request_metadata.restricted_fields`, and the
+field is `found: null` even for Googlebot and Bingbot, which are unambiguous
+business-service entries.
+
+So the Phase 2b "GreyNoise RIOT suppression" item cannot be completed as written.
+What replaced it is better targeted anyway: RIOT identifies benign *business
+infrastructure* (CDNs, public DNS, NTP), which the allowlist already covers from
+authoritative first-party sources. `internet_scanner_intelligence.classification`
+identifies benign *scanners*, which nothing else here covers at all.
+
+Other free-tier limits observed on 2026-08-14: a 10-day lookback window, 37
+restricted fields including `cve`, `scan_ports` and `first_seen`, and HTTP 206 as
+the normal response when some addresses fall outside the window. Undocumented
+request quota — which is precisely why the integration is built to survive a 429.
+
+### Never load-bearing
+
+No key, a connection error, a 401/403/429, or a malformed body all degrade to
+"cap nothing" and the run completes normally. A feed that failed to build because
+an enrichment API was down would be a worse outcome than one that is 17% noisier.
+`quick=true` is used because it carries both fields we read while returning 80 KB
+per 500 addresses instead of 5.5 MB, and one request per run covers the whole
+published feed against a documented 10,000-address batch cap.
+
+### Local reproducibility (`scripts/seed-cache.py`)
+
+Separate but from the same session: local runs could not include the keyed sources
+because the environment's egress proxy is traversable by `curl` but fails the
+pipeline's own TLS handshake, so a local run reported a smaller feed than
+production and could not be used to validate output. Rather than teach the
+collector about proxies, `scripts/seed-cache.py` writes a body fetched by any means
+into `.cache/`, where `fetch_source` serves it exactly as a fresh fetch. Verified:
+seeding ThreatFox reproduced production's 1,112 records precisely.
+
+
 ## Open items
 
 - [ ] **Email Spamhaus** for written confirmation that redistributing DROP inside a public aggregate is permitted. Their Terms of Use §3.1 grant no IP licence while the blocklist page invites free use with credit; we currently publish on the second reading. Highest-value open question in this document (ADR-048).
@@ -955,7 +1042,8 @@ not marketing, so the credit line stays.
 - [ ] Measure sefinek churn across several runs, then decide between enabling it upgrade-only or leaving it out (ADR-048).
 - [ ] Ask Dataplane.org whether they would grant redistribution permission for the non-commercial tier; their header requires express permission rather than forbidding it outright (ADR-048).
 - [x] Decide whether a separately-licensed NC-SA feed variant is worth shipping — done, shipped (ADR-041). DShield remains unattractive on volume, not licence: `block.txt` is only the top 20 /24 subnets.
-- [ ] Free-tier GreyNoise API keys require a business email address; a personal-domain account may be limited to unauthenticated lookups (~10/day). Confirm what tier is actually obtainable before wiring GreyNoise enrichment in Phase 2b.
+- [x] GreyNoise wired up (ADR-049). The obtainable free tier is "Business - Free": enterprise scanner intelligence with a 10-day window, but **not** the Business Service (RIOT) add-on, which is paid-tier only. Benign-scanner capping shipped instead, and it addresses 17% of the published feed.
+- [ ] Watch `benign_scanners_capped` in the manifest across a few runs. If GreyNoise starts returning 429, the run degrades silently by design — the count dropping to 0 while the feed grows is the signal to look for.
 - [ ] Blocklist.de, bruteforceblocker and the Tor exit list state **no licence at all**. We publish them, and now credit them properly (ADR-043), but a credit is not a grant. Still need an explicit statement from each maintainer; this remains the weakest position in the set.
 - [ ] Google Cloud appears prominently in raw volume but drops sharply once normalised by announced size (ADR-045), which is the expected shape for a hyperscaler. Still worth confirming the allowlist covers Google's published service ranges rather than only the ones we happened to add.
 - [ ] Consider whether `source_last_reported` should feed `last_seen` and therefore scoring. It would make recency decay real for the two sources that publish dates, but it restates every score and needs a churn measurement first (ADR-045).

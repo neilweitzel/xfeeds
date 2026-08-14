@@ -64,6 +64,9 @@ jobs:
         env:
           ABUSEIPDB_API_KEY: ${{ secrets.ABUSEIPDB_API_KEY }}
           THREATFOX_AUTH_KEY: ${{ secrets.THREATFOX_AUTH_KEY }}
+          # Optional enrichment. Absent or rate-limited, the run caps nothing and
+          # completes normally - see src/xfeeds/greynoise.py.
+          GREYNOISE_API_KEY: ${{ secrets.GREYNOISE_API_KEY }}
         run: |
           set +e
           uv run xfeeds run ${{ inputs.force && '--force' || '' }} 2>&1 | tee run.log
