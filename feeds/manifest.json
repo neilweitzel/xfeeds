@@ -16,68 +16,68 @@
   ],
   "corroboration_histogram": {
     "1": 1777,
-    "2": 2987,
-    "3": 181,
-    "4": 17
+    "2": 2907,
+    "3": 175,
+    "4": 15
   },
   "counts": {
-    "benign_scanners_capped": 697,
-    "high": 3979,
-    "medium": 983,
+    "benign_scanners_capped": 668,
+    "high": 3934,
+    "medium": 940,
     "promoted": 1777,
-    "published": 4962,
-    "withheld": 42248
+    "published": 4874,
+    "withheld": 42396
   },
   "deltas": {
-    "added": 99,
+    "added": 22,
     "added_examples": [
-      "1.241.64.237",
-      "103.171.55.242",
-      "109.248.156.49",
-      "111.61.87.152",
-      "112.25.140.211",
-      "113.158.205.225",
-      "117.247.81.154",
-      "118.123.116.93",
-      "119.59.105.57",
-      "121.18.148.10",
-      "121.202.206.119",
-      "122.185.44.206",
-      "123.178.210.135",
-      "128.14.232.142",
-      "128.185.209.30",
-      "154.18.197.35",
-      "163.172.112.2",
-      "165.154.135.215",
-      "165.154.163.125",
-      "167.233.211.213"
+      "1.250.67.114",
+      "117.50.178.180",
+      "138.118.215.192",
+      "139.19.117.129",
+      "160.187.247.119",
+      "161.35.108.63",
+      "180.188.24.155",
+      "196.206.225.151",
+      "200.149.213.242",
+      "222.127.54.18",
+      "45.56.100.247",
+      "47.84.107.200",
+      "52.91.204.84",
+      "54.146.134.248",
+      "64.62.156.152",
+      "64.62.197.220",
+      "73.101.102.237",
+      "91.230.168.89",
+      "91.230.168.91",
+      "91.231.89.82"
     ],
-    "removed": 222,
+    "removed": 110,
     "removed_examples": [
-      "100.27.18.199",
-      "100.59.0.92",
-      "101.89.134.2",
-      "103.10.87.52",
-      "103.140.35.140",
-      "103.160.5.123",
-      "103.239.252.66",
-      "103.26.209.157",
-      "106.201.232.211",
-      "106.75.216.134",
-      "109.105.210.77",
-      "109.238.140.87",
-      "111.70.23.245",
-      "112.26.74.90",
-      "114.202.80.152",
-      "114.66.33.15",
-      "116.110.215.74",
-      "116.62.54.194",
-      "117.191.83.250",
-      "117.89.185.202"
+      "100.28.191.174",
+      "103.110.164.69",
+      "103.159.51.70",
+      "103.68.40.204",
+      "104.194.37.176",
+      "104.236.83.40",
+      "108.191.110.130",
+      "111.228.48.181",
+      "111.26.177.216",
+      "111.74.57.220",
+      "114.104.188.248",
+      "115.191.32.57",
+      "118.193.35.202",
+      "118.193.47.114",
+      "118.193.72.187",
+      "118.194.251.101",
+      "139.19.117.130",
+      "145.249.109.110",
+      "147.185.132.174",
+      "147.185.132.195"
     ]
   },
   "filters": {
-    "allowlisted": 4943,
+    "allowlisted": 4932,
     "examples": {
       "allowlisted": [
         "172.70.206.0/23",
@@ -87,11 +87,11 @@
         "34.11.43.142"
       ],
       "not_redistributable": [
+        "76.223.105.230",
+        "13.248.243.5",
         "62.72.59.224",
         "167.71.14.32",
-        "167.99.214.118",
-        "178.62.199.215",
-        "47.84.15.240"
+        "167.99.214.118"
       ],
       "tag_only": [
         "185.220.101.3",
@@ -102,11 +102,11 @@
       ]
     },
     "non_global": 0,
-    "not_redistributable": 212826,
-    "tag_only": 1119,
+    "not_redistributable": 212899,
+    "tag_only": 1122,
     "too_wide": 0
   },
-  "generated_at": "2026-08-15T04:15:25.674889+00:00",
+  "generated_at": "2026-08-15T05:08:13.549785+00:00",
   "project": "https://github.com/neilweitzel/xfeeds",
   "sources": {
     "abuseipdb_blacklist": {
@@ -140,18 +140,18 @@
       "cached": false,
       "error": null,
       "independence_class": "blocklist_de",
-      "last_modified": "2026-08-15T04:06:02+00:00",
+      "last_modified": "2026-08-15T04:48:03+00:00",
       "license": "Free, non-commercial reporting service",
       "license_risk": null,
       "license_url": "https://blocklist.de/",
-      "records": 24756,
+      "records": 24651,
       "redistributable": true,
       "status": "ok",
       "votes": true,
       "weight": 0.8
     },
     "blocklist_de_strongips": {
-      "cached": false,
+      "cached": true,
       "error": null,
       "independence_class": "blocklist_de",
       "last_modified": "2026-08-15T04:06:11+00:00",
@@ -168,11 +168,11 @@
       "cached": false,
       "error": null,
       "independence_class": "bruteforceblocker",
-      "last_modified": "2026-08-15T04:15:39+00:00",
+      "last_modified": "2026-08-15T05:05:49+00:00",
       "license": "No licence stated. Published for public use by the bruteforceblocker project; we asked for an explicit statement (ADR-043)",
       "license_risk": null,
       "license_url": "http://danger.rulez.sk/index.php/bruteforceblocker/",
-      "records": 554,
+      "records": 556,
       "redistributable": true,
       "status": "ok",
       "votes": true,
@@ -182,7 +182,7 @@
       "cached": false,
       "error": null,
       "independence_class": "cins",
-      "last_modified": "2026-08-15T04:04:01+00:00",
+      "last_modified": "2026-08-15T05:04:01+00:00",
       "license": "No formal license published; site states the list is shared with the community to 'parse and use in any way you see fit'",
       "license_risk": "medium",
       "license_url": "https://cinsscore.com/#list",
@@ -193,7 +193,7 @@
       "weight": 0.8
     },
     "dataplane_proto41": {
-      "cached": false,
+      "cached": true,
       "error": null,
       "independence_class": "dataplane",
       "last_modified": "2026-08-15T04:01:08+00:00",
@@ -207,7 +207,7 @@
       "weight": 0.7
     },
     "dataplane_smtpgreet": {
-      "cached": false,
+      "cached": true,
       "error": null,
       "independence_class": "dataplane",
       "last_modified": "2026-08-15T04:03:56+00:00",
@@ -221,7 +221,7 @@
       "weight": 0.7
     },
     "dataplane_sshclient": {
-      "cached": false,
+      "cached": true,
       "error": null,
       "independence_class": "dataplane",
       "last_modified": "2026-08-15T04:05:18+00:00",
@@ -235,7 +235,7 @@
       "weight": 0.7
     },
     "dataplane_sshpwauth": {
-      "cached": false,
+      "cached": true,
       "error": null,
       "independence_class": "dataplane",
       "last_modified": "2026-08-15T04:06:01+00:00",
@@ -249,7 +249,7 @@
       "weight": 0.7
     },
     "dataplane_telnetlogin": {
-      "cached": false,
+      "cached": true,
       "error": null,
       "independence_class": "dataplane",
       "last_modified": "2026-08-15T04:05:57+00:00",
@@ -263,7 +263,7 @@
       "weight": 0.7
     },
     "dataplane_vncrfb": {
-      "cached": false,
+      "cached": true,
       "error": null,
       "independence_class": "dataplane",
       "last_modified": "2026-08-15T04:09:25+00:00",
@@ -277,7 +277,7 @@
       "weight": 0.7
     },
     "dshield_block": {
-      "cached": false,
+      "cached": true,
       "error": null,
       "independence_class": "dshield",
       "last_modified": "2026-08-15T03:44:49+00:00",
@@ -322,11 +322,11 @@
       "cached": false,
       "error": null,
       "independence_class": "greensnow",
-      "last_modified": "2026-08-15T04:15:30+00:00",
+      "last_modified": "2026-08-15T05:08:18+00:00",
       "license": "All rights reserved; reproduction or republication strictly prohibited",
       "license_risk": "high",
       "license_url": "https://greensnow.co/",
-      "records": 3748,
+      "records": 3751,
       "redistributable": false,
       "status": "ok",
       "votes": true,
@@ -346,7 +346,7 @@
       "weight": 0.0
     },
     "ipthreat": {
-      "cached": false,
+      "cached": true,
       "error": null,
       "independence_class": "ipthreat",
       "last_modified": "2026-08-15T04:15:44+00:00",
@@ -408,7 +408,7 @@
       "license": "abuse.ch/Spamhaus platform terms; no redistribution grant (NOT CC0, unlike Feodo Tracker)",
       "license_risk": "high",
       "license_url": "https://abuse.ch/terms-of-use/",
-      "records": 1131,
+      "records": 1133,
       "redistributable": false,
       "status": "ok",
       "votes": true,
@@ -418,11 +418,11 @@
       "cached": false,
       "error": null,
       "independence_class": "tor",
-      "last_modified": "2026-08-15T03:59:00+00:00",
+      "last_modified": "2026-08-15T04:55:05+00:00",
       "license": "No licence stated on the endpoint. Published by the Tor Project as a public service",
       "license_risk": null,
       "license_url": "https://check.torproject.org/torbulkexitlist",
-      "records": 1368,
+      "records": 1371,
       "redistributable": true,
       "status": "ok",
       "votes": false,
