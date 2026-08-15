@@ -1,32 +1,31 @@
-xfeeds run 2026-08-15T12:59:54.023933+00:00
-  sources:   22/24 ok
-  published: 4697 (high 3900, medium 797)
-  withheld:  43937 single-source
-  deltas:    +282 / -406
+xfeeds run 2026-08-15T18:48:16.259493+00:00
+  sources:   23/24 ok
+  published: 4658 (high 3892, medium 766)
+  withheld:  44163 single-source
+  deltas:    +373 / -412
     abuseipdb_blacklist      10000 records
     binary_defense           505 records
-    blocklist_de             25082 records
+    blocklist_de             24781 records
     blocklist_de_strongips   350 records
-    bruteforceblocker        564 records
+    bruteforceblocker        560 records
     cins_army                15000 records
-    dataplane_proto41        55609 records
-    dataplane_smtpgreet      9465 records
-    dataplane_sshclient      18971 records
-    dataplane_sshpwauth      9591 records
-    dataplane_telnetlogin    88941 records
-    dataplane_vncrfb         5407 records
+    dataplane_proto41        55583 records
+    dataplane_smtpgreet      9498 records
+    dataplane_sshclient      19092 records
+    dataplane_sshpwauth      9594 records
+    dataplane_telnetlogin    89171 records
+    dataplane_vncrfb         5241 records
     dshield_block            20 records
     et_compromised           551 records
     feodo_tracker            stale
-    greensnow                2970 records
+    greensnow                2863 records
     ipsum_levels             24606 records
-    ipthreat                 4798 records
+    ipthreat                 4777 records
     spamhaus_drop_v4         1687 records
     spamhaus_drop_v6         91 records
     stopforumspam_listed     53599 records
-    threatfox                1124 records
-    tor_exits                failed (request error: [Errno 104] Connection reset by peer)
+    threatfox                1053 records
+    tor_exits                1382 records
     turris_greylist          9852 records
   ! feodo_tracker: upstream last updated 45 days ago - a dead feed is not the same as a quiet internet
-  ! tor_exits: request error: [Errno 104] Connection reset by peer
-  ! 541 records capped high -> medium as benign scanners
+  ! 526 records capped high -> medium as benign scanners
