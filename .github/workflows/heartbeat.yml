@@ -1,0 +1,219 @@
+name: Heartbeat
+
+# Catches the failure modes "Update feeds" cannot report on itself.
+#
+# That workflow opens an issue when a run *fails*. It says nothing when a run
+# never happens at all - a disabled cron, a GitHub incident, a stuck concurrency
+# group, an expired token - because there is no run to report from. Those look
+# identical to a healthy repository from the Actions tab: no red, just nothing.
+#
+# So this checks the outcome rather than the process: is the published feed
+# actually fresh? Two independent answers, because they fail for different
+# reasons and want different fixes.
+#
+#   1. The committed feeds/manifest.json   - did the pipeline produce a feed?
+#   2. The live GitHub Pages manifest.json - did that feed reach consumers?
+#
+# Fresh repo plus stale Pages is a deploy problem, not a pipeline problem, and
+# those are worth telling apart before you start debugging collectors.
+#
+# Honest limit: this is self-monitoring. If every scheduled workflow in the repo
+# were disabled, this one would be too and nobody would be alerted. That is what
+# keepalive.yml prevents. Genuine out-of-band monitoring means something outside
+# GitHub polling the Pages URL.
+
+on:
+  schedule:
+    # Every 6 hours at :47 - thirty minutes after the :17 feed refresh, which
+    # takes about two minutes, so a healthy run has always finished and pushed
+    # before this looks.
+    - cron: "47 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+env:
+  # Four consecutive missed refreshes. Tolerant of a transient upstream failure
+  # or one skipped run; a real stall trips within a day.
+  MAX_AGE_HOURS: "24"
+  PAGES_URL: "https://neilweitzel.github.io/xfeeds"
+  ISSUE_TITLE: "xfeeds: feed has stopped updating"
+
+jobs:
+  heartbeat:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Measure feed freshness
+        id: age
+        run: |
+          set -uo pipefail
+          now=$(date -u +%s)
+
+          # --- 1. what the pipeline last produced ---------------------------
+          repo_iso=$(jq -r '.generated_at // empty' feeds/manifest.json)
+          if [ -z "${repo_iso}" ]; then
+            echo "::warning::feeds/manifest.json has no generated_at"
+            repo_hours=9999
+            repo_iso="missing"
+          else
+            repo_epoch=$(date -u -d "${repo_iso}" +%s)
+            repo_hours=$(( (now - repo_epoch) / 3600 ))
+          fi
+          echo "Committed manifest: ${repo_hours}h old (${repo_iso})"
+
+          # --- 2. what consumers actually receive ---------------------------
+          # A fetch failure is itself a finding, so never abort here - losing the
+          # repo check along with it would be strictly worse.
+          pages_iso="unreachable"
+          pages_hours=9999
+          if curl -fsS --max-time 30 "${PAGES_URL}/manifest.json" -o /tmp/pages.json; then
+            candidate=$(jq -r '.generated_at // empty' /tmp/pages.json 2>/dev/null || echo "")
+            if [ -n "${candidate}" ]; then
+              pages_iso="${candidate}"
+              pages_epoch=$(date -u -d "${pages_iso}" +%s)
+              pages_hours=$(( (now - pages_epoch) / 3600 ))
+            else
+              pages_iso="unparseable"
+            fi
+          fi
+          echo "Published manifest: ${pages_hours}h old (${pages_iso})"
+
+          stale=false
+          [ "${repo_hours}"  -ge "${MAX_AGE_HOURS}" ] && stale=true
+          [ "${pages_hours}" -ge "${MAX_AGE_HOURS}" ] && stale=true
+
+          {
+            echo "repo_iso=${repo_iso}"
+            echo "repo_hours=${repo_hours}"
+            echo "pages_iso=${pages_iso}"
+            echo "pages_hours=${pages_hours}"
+            echo "stale=${stale}"
+          } >> "$GITHUB_OUTPUT"
+          exit 0
+
+      # Include recent run outcomes so the issue answers "failing, or not running
+      # at all?" without anybody having to go and read the Actions tab.
+      - name: Summarise recent refresh runs
+        id: runs
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const res = await github.rest.actions.listWorkflowRuns({
+              owner: context.repo.owner, repo: context.repo.repo,
+              workflow_id: 'update-feeds.yml', per_page: 6,
+            });
+            const rows = res.data.workflow_runs.map(r =>
+              `- \`${r.status}/${r.conclusion ?? 'n/a'}\` ${r.created_at} (${r.event})`);
+            core.setOutput('summary', rows.join('\n') || '- no runs found at all');
+            core.setOutput('count', String(res.data.total_count));
+
+      - name: Open or update a staleness issue
+        if: steps.age.outputs.stale == 'true'
+        uses: actions/github-script@v7
+        env:
+          # Passed through the environment rather than interpolated into the
+          # script body - values that reach JS as literals can break it, and
+          # GitHub treats direct interpolation as an injection risk.
+          REPO_ISO: ${{ steps.age.outputs.repo_iso }}
+          REPO_HOURS: ${{ steps.age.outputs.repo_hours }}
+          PAGES_ISO: ${{ steps.age.outputs.pages_iso }}
+          PAGES_HOURS: ${{ steps.age.outputs.pages_hours }}
+          RUN_SUMMARY: ${{ steps.runs.outputs.summary }}
+          RUN_COUNT: ${{ steps.runs.outputs.count }}
+        with:
+          script: |
+            const {
+              REPO_ISO, REPO_HOURS, PAGES_ISO, PAGES_HOURS,
+              RUN_SUMMARY, RUN_COUNT, MAX_AGE_HOURS, ISSUE_TITLE,
+            } = process.env;
+
+            const maxAge = Number(MAX_AGE_HOURS);
+            const repoStale  = Number(REPO_HOURS)  >= maxAge;
+            const pagesStale = Number(PAGES_HOURS) >= maxAge;
+
+            let diagnosis;
+            if (repoStale && pagesStale) {
+              diagnosis = 'The pipeline is not producing feeds. Either runs are failing, '
+                + 'or the schedule is not firing at all — the run list below tells you which.';
+            } else if (repoStale) {
+              diagnosis = 'The committed feed is stale but the published one is not. '
+                + 'That is an odd combination and worth a look by hand.';
+            } else {
+              diagnosis = 'The pipeline is producing feeds but they are not reaching '
+                + 'consumers. This is a **deploy** problem rather than a pipeline one — '
+                + 'check the deploy-pages job and the Pages settings, not the collectors.';
+            }
+
+            const body = [
+              `The feed has not refreshed within ${maxAge}h.`,
+              '',
+              '| Check | Age | Timestamp |',
+              '|---|---|---|',
+              `| Committed \`feeds/manifest.json\` | ${REPO_HOURS}h | \`${REPO_ISO}\` |`,
+              `| Published Pages \`manifest.json\` | ${PAGES_HOURS}h | \`${PAGES_ISO}\` |`,
+              '',
+              `**Diagnosis.** ${diagnosis}`,
+              '',
+              `Recent "Update feeds" runs (${RUN_COUNT} total):`,
+              RUN_SUMMARY,
+              '',
+              'If that list is empty or its newest entry is days old, the schedule is not',
+              'firing. Check whether the workflow was disabled — GitHub disables scheduled',
+              'workflows after 60 days of repository inactivity, which is what',
+              '`keepalive.yml` exists to prevent.',
+              '',
+              `Run: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}`
+                + `/actions/runs/${context.runId}`,
+            ].join('\n');
+
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo,
+              state: 'open', labels: 'automated',
+            });
+            const match = existing.data.find(i => i.title === ISSUE_TITLE);
+            if (match) {
+              // Comment rather than open a duplicate every 6 hours.
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: match.number, body,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner, repo: context.repo.repo,
+                title: ISSUE_TITLE, body, labels: ['automated'],
+              });
+            }
+            core.setFailed(`Feed is stale (repo ${REPO_HOURS}h, pages ${PAGES_HOURS}h).`);
+
+      # Close the alert on recovery. An alert that never clears trains you to
+      # ignore it, which costs more than the alert was ever worth.
+      - name: Close the staleness issue once healthy
+        if: steps.age.outputs.stale == 'false'
+        uses: actions/github-script@v7
+        env:
+          REPO_HOURS: ${{ steps.age.outputs.repo_hours }}
+          PAGES_HOURS: ${{ steps.age.outputs.pages_hours }}
+        with:
+          script: |
+            const { REPO_HOURS, PAGES_HOURS, ISSUE_TITLE } = process.env;
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo,
+              state: 'open', labels: 'automated',
+            });
+            for (const issue of existing.data.filter(i => i.title === ISSUE_TITLE)) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: issue.number,
+                body: `Recovered — the feed is refreshing again (committed `
+                  + `${REPO_HOURS}h old, published ${PAGES_HOURS}h old). Closing automatically.`,
+              });
+              await github.rest.issues.update({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: issue.number, state: 'closed',
+              });
+            }

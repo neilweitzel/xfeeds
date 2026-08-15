@@ -354,6 +354,40 @@ xfeeds/
 
 The 6-hour cadence is set by the tightest external constraint: AbuseIPDB allows **5 blacklist calls/day** on the free tier, and Spamhaus requires automated fetches at least an hour apart.
 
+### Watchdogs
+
+Two workflows exist to make an unattended outage visible, because `update-feeds.yml`
+cannot report on itself failing to run.
+
+`heartbeat.yml` — every 6 hours at `:47`, half an hour after the refresh.
+
+It checks freshness in two places, because they fail for different reasons:
+`feeds/manifest.json` in the repository answers *did the pipeline produce a feed*,
+and the same file served from Pages answers *did that feed reach consumers*. A fresh
+repo with a stale Pages copy is a deploy problem, not a collector problem, and the
+issue says so rather than leaving you to guess. Threshold is 24 hours — four missed
+refreshes, so a single transient upstream failure never pages you. The issue is
+opened once, commented on rather than duplicated, and **closed automatically on
+recovery**; an alert that never clears is one you learn to ignore.
+
+`keepalive.yml` — weekly, and normally does nothing at all.
+
+GitHub disables scheduled workflows in a public repository after 60 days without
+repository activity. Healthy operation commits about four times a day, so that clock
+never gets near expiring. The failure it guards against is the compounding one:
+`update-feeds.yml` only commits when a run *succeeds*, so a persistently failing
+pipeline stops committing, and 60 days later the cron is disabled too — turning
+"broken and retrying" into "broken and not even trying", which needs a manual
+re-enable to recover from. If no commit has landed in 14 days, this commits a
+timestamp to `.github/keepalive.txt` and opens an issue making clear that it
+protected the schedule and fixed nothing.
+
+**What this does not cover.** Both are self-monitoring. If every scheduled workflow
+in the repository were disabled, neither would run to tell you. `keepalive.yml`
+makes that situation very unlikely rather than impossible. Genuine out-of-band
+monitoring means something outside GitHub polling
+`https://neilweitzel.github.io/xfeeds/manifest.json` and checking `generated_at`.
+
 ---
 
 ## Roadmap
