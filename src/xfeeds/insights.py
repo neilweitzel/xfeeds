@@ -53,11 +53,232 @@ TOP_ASN_LIMIT = 25
 TOP_COUNTRY_LIMIT = 30
 
 
+MAX_ENTRY_WEIGHT = 1 << 24
+"""Ceiling on how much address space one entry may contribute to an aggregate.
+
+An IPv6 /29 contains 2**99 addresses. Summed raw, a single entry would dominate
+every total it touches by roughly thirty orders of magnitude and render the
+statistic meaningless. 2**24 is a /8 of IPv4 equivalent - larger than any entry
+the CIDR width cap admits for v4, so IPv4 behaviour is unchanged, while v6
+prefixes are bounded to a comparable influence.
+
+Scope for IPv6 is reported separately and honestly as /64 subnet counts by
+:func:`build_family_analysis`, rather than by smuggling 2**99 into a shared total.
+"""
+
+
 def _addresses_of(item: object) -> int:
-    """Size of a published entry, so a /22 is not counted as one address."""
+    """Size of a published entry, so a /22 is not counted as one address.
+
+    Capped: see :data:`MAX_ENTRY_WEIGHT`. Callers use this to weight aggregates,
+    and an uncapped IPv6 prefix breaks every one of them.
+    """
     if isinstance(item, ipaddress.IPv4Network | ipaddress.IPv6Network):
-        return item.num_addresses
+        return min(item.num_addresses, MAX_ENTRY_WEIGHT)
     return 1
+
+
+def _as_network(item: object) -> ipaddress.IPv4Network | ipaddress.IPv6Network:
+    """Normalise an entry to a network so addresses and CIDRs share arithmetic."""
+    if isinstance(item, ipaddress.IPv4Network | ipaddress.IPv6Network):
+        return item
+    if isinstance(item, ipaddress.IPv4Address | ipaddress.IPv6Address):
+        return ipaddress.ip_network(item)
+    raise TypeError(f"not an address or network: {item!r}")  # pragma: no cover - defensive
+
+
+def _fold_small_cells(counts: Counter[str]) -> tuple[list[dict[str, Any]], int, int]:
+    """Split a distribution into named cells and an unnamed remainder.
+
+    Applies :data:`MIN_CELL`, the threshold this project already uses for named
+    ASN and country cells. Reusing it here means the IPv6 aggregations are held to
+    a standard the codebase already enforces and tests, rather than to a new one
+    invented for the occasion.
+    """
+    named = [
+        {"key": key, "count": count} for key, count in sorted(counts.items()) if count >= MIN_CELL
+    ]
+    folded_cells = sum(1 for count in counts.values() if count < MIN_CELL)
+    folded_entries = sum(count for count in counts.values() if count < MIN_CELL)
+    return named, folded_cells, folded_entries
+
+
+def family_observation_coverage(
+    observations: list[IndicatorRecord], registry: Registry
+) -> dict[str, Any]:
+    """Which sources report each address family, published or not.
+
+    The published feed shows only what survived scoring, which for IPv6 means one
+    source. That understates what is actually being *seen*: other sources do report
+    IPv6, their records simply never reach a publishable band.
+
+    Making that visible is what turns "should we add an IPv6 source?" into a
+    measurable question. Without it, a source contributing thousands of withheld
+    IPv6 observations looks identical to one contributing none.
+    """
+    by_source = {s.name: s for s in registry.sources}
+    per_source: dict[str, dict[str, int]] = defaultdict(lambda: {"v4": 0, "v6": 0})
+    for observation in observations:
+        key = f"v{observation.ip_or_cidr.version}"
+        per_source[observation.source][key] += 1
+
+    rows = []
+    for name in sorted(per_source):
+        counts = per_source[name]
+        if not counts["v6"]:
+            continue
+        config = by_source.get(name)
+        rows.append(
+            {
+                "source": name,
+                "independence_class": config.independence_class if config else None,
+                "redistributable": bool(config.redistribute) if config else None,
+                "ipv6_observations": counts["v6"],
+                "ipv4_observations": counts["v4"],
+            }
+        )
+    return {
+        "sources_reporting_ipv6": rows,
+        "note": (
+            "Observations, not published records. A source may report IPv6 and still "
+            "contribute nothing to the feed if its records are never corroborated by "
+            "an independent redistributable source."
+        ),
+    }
+
+
+def build_family_analysis(scored: list[ScoredIndicator]) -> dict[str, Any]:
+    """Per-address-family structure, and an explicit account of what cannot be shown.
+
+    IPv6 in this corpus has zero variance on score, band, source, independence
+    class, categories and first_seen. Rendering the usual corroboration, score,
+    churn or category charts for it would produce a single bar each - the
+    appearance of analysis with none of the substance.
+
+    What *does* carry information is structural: prefix length, the address space
+    each entry covers, and which /12 of global unicast space the listings fall in.
+    Those are reported here, gated on :data:`MIN_CELL` exactly as ASN rollups are.
+
+    Suppressed analyses are enumerated with their reasons rather than silently
+    omitted, so a reader can tell the difference between "no signal" and "we did
+    not look".
+    """
+    out: dict[str, Any] = {}
+    for version in (4, 6):
+        subset = [r for r in scored if r.ip_or_cidr.version == version]
+        if not subset:
+            continue
+        nets = [_as_network(r.ip_or_cidr) for r in subset]
+        prefix_counts: Counter[str] = Counter(f"/{n.prefixlen}" for n in nets)
+        prefix_named, prefix_folded_cells, prefix_folded_entries = _fold_small_cells(prefix_counts)
+
+        # Scope per prefix length. This is the number an operator needs: entry
+        # count says nothing about what applying the feed does to their network.
+        scope_by_prefix = {
+            f"/{n.prefixlen}": (1 if n.prefixlen >= 64 else 2 ** (64 - n.prefixlen))
+            for n in nets
+            if version == 6
+        }
+        blast = {
+            f"/{n.prefixlen}": sum(
+                r.blast_radius_64()
+                for r in subset
+                if _as_network(r.ip_or_cidr).prefixlen == n.prefixlen
+            )
+            for n in nets
+        }
+
+        entry: dict[str, Any] = {
+            "entries": len(subset),
+            "prefix_lengths": prefix_named,
+            "prefix_lengths_folded_cells": prefix_folded_cells,
+            "prefix_lengths_folded_entries": prefix_folded_entries,
+            "blast_radius_64_by_prefix": dict(sorted(blast.items(), key=lambda kv: kv[0])),
+            "blast_radius_64_total": sum(r.blast_radius_64() for r in subset),
+            "independence_classes": len({c for r in subset for c in r.independence_classes}),
+            "sources": sorted({s for r in subset for s in r.sources}),
+        }
+        if version == 6:
+            entry["scope_per_prefix_64"] = scope_by_prefix
+            entry["sites_48_total"] = sum(
+                1 if n.prefixlen >= 48 else 2 ** (48 - n.prefixlen) for n in nets
+            )
+            # /12 of global unicast space. Derived from the address itself, so it
+            # is address-space structure and carries no registry or geographic
+            # claim - see the ADR on why no map is published.
+            block_counts: Counter[str] = Counter(
+                str(ipaddress.ip_network((int(n.network_address) >> 116 << 116, 12))) for n in nets
+            )
+            named, folded_cells, folded_entries = _fold_small_cells(block_counts)
+            entry["unicast_blocks"] = named
+            entry["unicast_blocks_folded_cells"] = folded_cells
+            entry["unicast_blocks_folded_entries"] = folded_entries
+            entry["distinct_allocations_32"] = len({int(n.network_address) >> 96 for n in nets})
+            # Adjacent prefixes under common control are a stronger signal than
+            # the same count of unrelated listings. Reported, never collapsed:
+            # collapsing would diverge from what the upstream published and
+            # destroy the per-entry upstream reference.
+            v6_nets = [n for n in nets if isinstance(n, ipaddress.IPv6Network)]
+            runs: list[dict[str, Any]] = []
+            for parent in ipaddress.collapse_addresses(v6_nets):
+                members = sorted(str(n) for n in v6_nets if n.subnet_of(parent))
+                if len(members) > 1:
+                    runs.append({"aggregate": str(parent), "members": members})
+            entry["contiguous_runs"] = sorted(runs, key=lambda r: str(r["aggregate"]))
+            entry["suppressed"] = _suppressed_analyses(subset)
+        out[f"v{version}"] = entry
+    return out
+
+
+def _suppressed_analyses(records: list[ScoredIndicator]) -> list[dict[str, str]]:
+    """Analyses withheld for this family, each with the reason it carries no signal.
+
+    Computed from the data, so an entry disappears the moment the underlying
+    variance appears. A hard-coded list would keep claiming "single source" long
+    after a second one was enabled.
+    """
+    reasons: list[dict[str, str]] = []
+    classes = {c for r in records for c in r.independence_classes}
+    scores = {r.score for r in records}
+    bands = {r.band.value for r in records}
+    categories = {tuple(sorted(r.categories)) for r in records}
+    sources = {s for r in records for s in r.sources}
+    if len(classes) < 2:
+        reasons.append(
+            {
+                "analysis": "Corroboration histogram",
+                "reason": f"{len(classes)} independence class - the chart would be one bar",
+            }
+        )
+    if len(scores) < 2:
+        reasons.append(
+            {
+                "analysis": "Score distribution",
+                "reason": f"every record scores {next(iter(scores)):.1f}",
+            }
+        )
+    if len(bands) < 2:
+        reasons.append(
+            {"analysis": "Band split", "reason": f"every record is in the {next(iter(bands))} band"}
+        )
+    if len(sources) < 2:
+        reasons.append(
+            {
+                "analysis": "Added and removed each run",
+                "reason": "a single source - the whole family moves as one block",
+            }
+        )
+    if len(categories) < 2:
+        reasons.append(
+            {"analysis": "Category breakdown", "reason": "every record carries the same categories"}
+        )
+    reasons.append(
+        {
+            "analysis": "Network and ASN persistence",
+            "reason": "the IP-to-ASN enrichment table published by iptoasn.com is IPv4-only",
+        }
+    )
+    return reasons
 
 
 def _jaccard(a: set[str], b: set[str]) -> float:
@@ -158,6 +379,8 @@ def build_insights(
         "agreement": {
             "by_independent_class_count": {str(k): v for k, v in sorted(per_key_classes.items())},
         },
+        "families": build_family_analysis([r for r in scored if r.band is not Band.WITHHELD]),
+        "family_coverage": family_observation_coverage(observations, registry),
         "sources": sources,
         "class_overlap": overlaps[:20],
         "attribution": {
@@ -178,16 +401,21 @@ def build_insights(
     asn_meta: dict[int, tuple[str, str]] = {}
     country_addresses: Counter[str] = Counter()
     asn_sources: dict[int, set[str]] = defaultdict(set)
-    unenriched = 0
+    # Two different things were previously summed into one "unenriched" number:
+    # observations the ASN table has no answer for, and IPv6 observations it
+    # structurally cannot answer for because the table is IPv4-only. Merging them
+    # leaves a reader unable to tell a coverage gap from a design limit.
+    unenriched_no_asn = 0
+    unenriched_ipv6 = 0
 
     for observation in observations:
         item = observation.ip_or_cidr
         if isinstance(item, ipaddress.IPv6Address | ipaddress.IPv6Network):
-            unenriched += 1
+            unenriched_ipv6 += 1
             continue
         info = asn_index.summarise(item)
         if info.asn == 0:
-            unenriched += 1
+            unenriched_no_asn += 1
             continue
         weight = min(_addresses_of(item), 1024)
         asn_addresses[info.asn] += weight
@@ -232,7 +460,13 @@ def build_insights(
         "available": True,
         "attribution": ATTRIBUTION_NOTE,
         "distinct_asns_seen": len(asn_addresses),
-        "unenriched_observations": unenriched,
+        "unenriched_observations": unenriched_no_asn + unenriched_ipv6,
+        "unenriched_no_asn": unenriched_no_asn,
+        "unenriched_ipv6": unenriched_ipv6,
+        "ipv6_note": (
+            "IPv6 observations are excluded from network analysis because the "
+            "IP-to-ASN table published by iptoasn.com covers IPv4 only."
+        ),
         "top_asns": top_asns,
         "suppressed": {
             "asns_below_threshold": suppressed_asns,

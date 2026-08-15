@@ -224,6 +224,30 @@ class IndicatorRecord(BaseModel):
     class. It deliberately cannot promote: promotion asserts "safe to block on
     this source's word alone", which requires the source to be saying it now.
     """
+    source_reference: str | None = None
+    """Upstream ticket or listing identifier, where the source publishes one.
+
+    The first question on any false-positive report is "why is this listed", and
+    the strongest possible answer is the upstream's own reference rather than "a
+    source we trust said so". Spamhaus DROP carries an ``sblid`` per netblock whose
+    details are viewable at https://check.spamhaus.org/; that identifier was being
+    discarded at parse time.
+
+    Deliberately generic rather than ``sbl_id``: any source that publishes a
+    stable per-record reference should populate this field.
+
+    Never written to the plain-text feeds. Those are parsed by firewalls, and the
+    header already carries attribution.
+    """
+    source_registry: str | None = None
+    """Which RIR allocated the block, where the source states it.
+
+    Carried for abuse-report routing - it identifies whose abuse contact path
+    applies. It is **not** geolocation and must never be rendered as a country or
+    region: see ADR on why no map is published. Aggregate charts derive the /12
+    block from the address itself rather than reading this field, so the published
+    statistics carry no registry claim at all.
+    """
 
 
 class ScoredIndicator(BaseModel):
@@ -250,6 +274,35 @@ class ScoredIndicator(BaseModel):
     their licence does not let us republish. The count conveys the strength of the
     corroboration without republishing their membership.
     """
+    source_reference: str | None = None
+    """Upstream listing identifier carried through from the observation.
+
+    See :attr:`IndicatorRecord.source_reference`. Only set from a redistributable
+    source: a reference is a citation, and citing a source we may not name would
+    disclose its membership just as surely as listing it in ``sources``.
+    """
+    source_registry: str | None = None
+    """RIR that allocated the block, for abuse-report routing. Never geolocation."""
+
+    @property
+    def address_family(self) -> str:
+        """``"v4"`` or ``"v6"`` - the split that decides which feed file this joins."""
+        return f"v{self.ip_or_cidr.version}"
+
+    def blast_radius_64(self) -> int:
+        """How many /64 subnets this entry covers.
+
+        The honest unit for IPv6 scope. Entry count is close to meaningless when a
+        /29 and a /48 both count as one line but differ by a factor of half a
+        million. For IPv4 this returns the address count, which is the equivalent
+        question at that scale.
+        """
+        item = self.ip_or_cidr
+        if isinstance(item, (ipaddress.IPv4Address, ipaddress.IPv6Address)):
+            return 1
+        if item.version == 4:
+            return item.num_addresses
+        return 1 if item.prefixlen >= 64 else 2 ** (64 - item.prefixlen)
 
     def sort_key(self) -> tuple[int, int, int]:
         """Integer sort key.

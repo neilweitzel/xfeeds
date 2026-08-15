@@ -177,6 +177,14 @@ def spamhaus_json(
                 non_global_count += 1
                 continue
 
+            # sblid is the Spamhaus listing ticket for this netblock, viewable at
+            # https://check.spamhaus.org/. It answers "why is this listed" with the
+            # upstream's own reference, which is the first thing a false-positive
+            # report needs and the one thing we could not previously provide.
+            # rir names the allocating registry - carried for abuse-report routing,
+            # never rendered as geography.
+            sblid = data.get("sblid")
+            rir = data.get("rir")
             yield IndicatorRecord(
                 ip_or_cidr=ip_obj,
                 source=config.name,
@@ -184,6 +192,8 @@ def spamhaus_json(
                 first_seen=fetch_time,
                 last_seen=fetch_time,
                 categories=config.categories,
+                source_reference=str(sblid) if sblid else None,
+                source_registry=str(rir) if rir else None,
             )
         except ValueError:
             malformed_count += 1

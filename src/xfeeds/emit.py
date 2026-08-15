@@ -14,6 +14,7 @@ actually contributed to it.
 
 import csv
 import io
+import ipaddress
 import json
 from collections import Counter
 from datetime import datetime
@@ -23,7 +24,7 @@ from typing import Any
 import structlog
 
 from xfeeds.collectors.parsers import upstream_attribution
-from xfeeds.models import Band, Registry, ScoredIndicator
+from xfeeds.models import Band, IPNetwork, Registry, ScoredIndicator
 
 logger = structlog.get_logger(__name__)
 
@@ -105,6 +106,13 @@ def _tier_licence_line(tier: str) -> str:
     return "see individual source terms below"
 
 
+FAMILY_LABEL: dict[int | None, str] = {
+    4: "IPv4 only",
+    6: "IPv6 only",
+    None: "IPv4 and IPv6",
+}
+
+
 def _header(
     title: str,
     records: list[ScoredIndicator],
@@ -112,6 +120,7 @@ def _header(
     generated_at: datetime,
     tier: str = "primary",
     redistributable: set[str] | None = None,
+    family: int | None = None,
 ) -> str:
     """Comment header for a plain-text feed.
 
@@ -131,9 +140,19 @@ def _header(
         "#",
         f"# Generated: {generated_at.isoformat()}",
         f"# Entries:   {len(records)}",
+        f"# Family:    {FAMILY_LABEL[family]}",
         f"# Licence:   {_tier_licence_line(tier)}",
         "#",
     ]
+    if family == 6 and records:
+        # Scope, not entry count. A /29 and a /48 are both "one entry" and differ
+        # by a factor of half a million, so a v6 line count tells an operator
+        # nothing about what applying this file does to their network.
+        sites = sum(
+            1 if _network_of(r).prefixlen >= 48 else 2 ** (48 - _network_of(r).prefixlen)
+            for r in records
+        )
+        lines += [f"# Scope:     {sites:,} /48 sites", "#"]
     if tier == "noncommercial":
         lines += [*NONCOMMERCIAL_BANNER, "#"]
     elif tier == "permissive":
@@ -154,6 +173,8 @@ def _header(
             *[f"#   {name}" for name in scoring_only],
             "#",
         ]
+    if family is not None:
+        lines += _single_class_notice(records, FAMILY_LABEL[family].replace(" only", ""))
     lines += [
         "# Report a false positive: " + PROJECT_URL + "/issues",
         "#" * 78,
@@ -165,6 +186,80 @@ def _sorted(records: list[ScoredIndicator]) -> list[ScoredIndicator]:
     return sorted(records, key=lambda r: r.sort_key())
 
 
+def of_family(records: list[ScoredIndicator], version: int) -> list[ScoredIndicator]:
+    """Records of one address family."""
+    return [r for r in records if r.ip_or_cidr.version == version]
+
+
+def family_stats(records: list[ScoredIndicator]) -> dict[str, Any]:
+    """Per-family counts, scope and corroboration breadth.
+
+    ``independence_classes`` is the field that makes the single-source notice in
+    :func:`_header` testable, and makes "did corroboration ever improve for this
+    family" a question the history can answer. ``blast_radius_64`` is reported
+    because entry count is a poor proxy for scope in IPv6, where one /29 covers
+    half a million times more subnets than one /48.
+    """
+    stats: dict[str, Any] = {}
+    for version in (4, 6):
+        subset = of_family(records, version)
+        high = [r for r in subset if r.band is Band.HIGH]
+        medium = [r for r in subset if r.band is Band.MEDIUM]
+        classes = {c for r in subset for c in r.independence_classes}
+        sources = {s for r in subset for s in r.sources}
+        allocations = {
+            int(_network_of(r).network_address) >> (128 - 32 if version == 6 else 32 - 16)
+            for r in subset
+        }
+        stats[f"v{version}"] = {
+            "published": len(subset),
+            "high": len(high),
+            "medium": len(medium),
+            "independence_classes": len(classes),
+            "sources": len(sources),
+            "blast_radius_64": sum(r.blast_radius_64() for r in subset),
+            "distinct_allocations": len(allocations),
+        }
+    return stats
+
+
+def _network_of(record: ScoredIndicator) -> IPNetwork:
+    """The record as a network, so bare addresses and CIDRs can share arithmetic."""
+    item = record.ip_or_cidr
+    if isinstance(item, (ipaddress.IPv4Address, ipaddress.IPv6Address)):
+        return ipaddress.ip_network(item)
+    return item
+
+
+def _single_class_notice(records: list[ScoredIndicator], family_label: str) -> list[str]:
+    """Concentration notice for a family that rests on one independence class.
+
+    Computed rather than written down. Hard-coding "IPv6 comes from Spamhaus"
+    would silently go stale the day a second source is enabled, which is the exact
+    failure mode this repository keeps hitting with documentation.
+
+    The point being made is deliberately *not* "this data is weaker". A large share
+    of the IPv4 feed is also promoted on one source's precision. The difference is
+    that with a single class there is no second opinion and no fallback if that
+    source degrades, which is a concentration risk and should be read as one.
+    """
+    if not records:
+        return []
+    classes = {c for r in records for c in r.independence_classes}
+    if len(classes) >= 2:
+        return []
+    contributors = sorted({s for r in records for s in r.sources})
+    return [
+        f"# CONCENTRATION NOTICE - {family_label} coverage in this file rests on a",
+        f"#   single independence class ({', '.join(contributors) or 'unknown'}).",
+        "#   These records are published on that source's precision alone, which is",
+        "#   the same basis used for a large share of the IPv4 feed. The limitation",
+        "#   is concentration, not quality: nothing corroborates these entries, and",
+        "#   nothing covers for them if that one source degrades or disappears.",
+        "#",
+    ]
+
+
 def write_text_feed(
     path: Path,
     title: str,
@@ -173,11 +268,19 @@ def write_text_feed(
     generated_at: datetime,
     tier: str = "primary",
     redistributable: set[str] | None = None,
+    family: int | None = None,
 ) -> None:
-    """One indicator per line with a commented header - the universal format."""
+    """One indicator per line with a commented header - the universal format.
+
+    ``family`` restricts output to one address family. The combined files are kept
+    unchanged because firewall URL tables point at those filenames; the suffixed
+    files exist so a single-stack consumer has something correct to point at.
+    """
+    if family is not None:
+        records = of_family(records, family)
     body = "\n".join(str(r.ip_or_cidr) for r in _sorted(records))
-    header = _header(title, records, registry, generated_at, tier, redistributable)
-    path.write_text(header + body + "\n", encoding="utf-8")
+    header = _header(title, records, registry, generated_at, tier, redistributable, family)
+    path.write_text(header + body + ("\n" if body else ""), encoding="utf-8")
 
 
 def write_noncommercial_license(path: Path, registry: Registry, contributing: set[str]) -> None:
@@ -252,6 +355,7 @@ def write_csv(path: Path, records: list[ScoredIndicator]) -> None:
     writer.writerow(
         [
             "indicator",
+            "address_family",
             "score",
             "band",
             "independence_classes",
@@ -260,12 +364,14 @@ def write_csv(path: Path, records: list[ScoredIndicator]) -> None:
             "tags",
             "first_seen",
             "last_seen",
+            "source_reference",
         ]
     )
     for r in _sorted(records):
         writer.writerow(
             [
                 str(r.ip_or_cidr),
+                r.address_family,
                 f"{r.score:.2f}",
                 r.band.value,
                 "|".join(r.independence_classes),
@@ -274,6 +380,7 @@ def write_csv(path: Path, records: list[ScoredIndicator]) -> None:
                 "|".join(r.tags),
                 r.first_seen.isoformat(),
                 r.last_seen.isoformat(),
+                r.source_reference or "",
             ]
         )
     path.write_text(buffer.getvalue(), encoding="utf-8")
@@ -319,15 +426,40 @@ def write_nftables(path: Path, records: list[ScoredIndicator], generated_at: dat
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
-def write_ipset(path: Path, records: list[ScoredIndicator], generated_at: datetime) -> None:
-    """ipset restore format: pipe straight into `ipset restore`."""
+def write_ipset(
+    path: Path,
+    records: list[ScoredIndicator],
+    generated_at: datetime,
+    family: int = 4,
+    counterpart: str | None = None,
+) -> None:
+    """ipset restore format: pipe straight into `ipset restore`.
+
+    One file per address family, because an ipset holds exactly one: `hash:net
+    family inet` and `hash:net family inet6` are different sets and cannot be
+    merged. Previously this emitted only IPv4 and dropped every v6 record with no
+    comment, no count and no warning, while the dashboard reported the combined
+    count against it. Excluded records are now stated in the header so a silent
+    drop cannot recur.
+    """
+    included = of_family(_sorted(records), family)
+    excluded = len(records) - len(included)
+    set_name = "xfeeds" if family == 4 else "xfeeds6"
+    inet = "inet" if family == 4 else "inet6"
     lines = [
-        f"# xfeeds ipset - generated {generated_at.isoformat()}",
+        f"# xfeeds ipset ({FAMILY_LABEL[family]}) - generated {generated_at.isoformat()}",
         f"# {PROJECT_URL}",
-        "create xfeeds hash:net family inet -exist",
-        "flush xfeeds",
     ]
-    lines += [f"add xfeeds {r.ip_or_cidr}" for r in _sorted(records) if r.ip_or_cidr.version == 4]
+    if excluded:
+        lines.append(
+            f"# {excluded} record(s) of the other address family are NOT in this file"
+            + (f"; see {counterpart}" if counterpart else "")
+        )
+    lines += [
+        f"create {set_name} hash:net family {inet} -exist",
+        f"flush {set_name}",
+    ]
+    lines += [f"add {set_name} {r.ip_or_cidr}" for r in included]
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
@@ -574,18 +706,43 @@ def emit_all(
             registry,
             contributing_sources & (redistributable or set()),
         )
+    # Family-suffixed variants. The combined files above are deliberately left
+    # alone: firewall URL tables and cron jobs point at those exact filenames, so
+    # changing what they return would break working deployments silently. These
+    # are additive, and are what the README now recommends.
+    for family in (4, 6):
+        for band_name, subset in (("high confidence", high), ("medium confidence", medium)):
+            slug = band_name.split()[0]
+            write_text_feed(
+                feeds_dir / f"{slug}-confidence-v{family}.txt",
+                f"{band_name} (IPv{family})" + title_suffix,
+                subset,
+                registry,
+                generated_at,
+                tier,
+                redistributable,
+                family=family,
+            )
     published = high + medium
     write_csv(feeds_dir / "all.csv", published)
     write_json(feeds_dir / "all.json", published, generated_at)
     write_schema(feeds_dir / "schema.json")
     write_nftables(feeds_dir / "nftables.conf", high, generated_at)
-    write_ipset(feeds_dir / "iptables.ipset", high, generated_at)
+    write_ipset(feeds_dir / "iptables.ipset", high, generated_at, 4, "iptables6.ipset")
+    write_ipset(feeds_dir / "iptables6.ipset", high, generated_at, 6, "iptables.ipset")
     write_stix(feeds_dir / "stix-bundle.json", high, generated_at)
     write_misp(feeds_dir / "misp-manifest.json", high, generated_at)
+    manifest = {**manifest, "families": family_stats(published)}
     (feeds_dir / "manifest.json").write_text(
         json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
-    logger.info("emitted", high=len(high), medium=len(medium), dir=str(feeds_dir))
+    logger.info(
+        "emitted",
+        high=len(high),
+        medium=len(medium),
+        v6=len(of_family(published, 6)),
+        dir=str(feeds_dir),
+    )
 
 
 def write_permissive_license(path: Path, registry: Registry, contributing: set[str]) -> None:
