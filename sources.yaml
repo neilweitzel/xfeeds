@@ -282,7 +282,7 @@ sources:
     vote: true
     categories: [spam-source, abuse]
     ttl_days: 14
-    license: "Custom CC variant: NonCommercial AND No Derivative Works"
+    license: "Custom CC variant (NO CC version named): NonCommercial AND No Derivative Works"
     license_url: https://www.stopforumspam.com/license
     license_risk: high
     redistribute: false
@@ -316,6 +316,15 @@ sources:
       on commercial sites however you cannot resell any information gathered from
       this site". It restricts resale, not commercial use. That does not rescue
       redistribution, because No Derivative Works is the binding clause here.
+      RE-REVIEWED 2026-08-15, decision unchanged. Do NOT resolve this to CC BY-NC-ND:
+      the page names no Creative Commons version and says they changed it "just a
+      little", so CC 4.0's Collection-vs-Adaptation rules - under which mere collection
+      is not adaptation, and which would arguably permit republication - do not apply.
+      The decisive and simplest reason it cannot enter feeds/noncommercial/ is outbound:
+      that tier is published CC BY-NC-SA 4.0, and ShareAlike grants downstream adaptation
+      rights we were never granted. Mirror image of the ipthreat exclusion in ADR-041.
+      Their NonCommercial clause is NOT the obstacle - it bars resale and misattribution,
+      not commercial use - so waiving No Derivative Works alone would unblock a lot.
 
   - name: ipthreat
     credit: "Data sourced from IPThreat located at https://ipthreat.net"

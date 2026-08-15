@@ -290,7 +290,7 @@ Most public IP feeds that forbid something forbid *commercial use*, not redistri
 | Licence | Source terms only; no commercial restriction | CC BY-NC-SA 4.0 |
 | Use at work, or in a paid product | Yes | **No** |
 | Published addresses (last run) | 4,204 | **5,281** |
-| Extra sources published in full | — | Turris Sentinel, StopForumSpam |
+| Extra sources published in full | — | Turris Sentinel, DShield |
 
 If you are running a home lab, a personal server, a school or a charity, take the non-commercial tier: it sees about a quarter more. If you are at a company or building anything anyone pays for, take the primary feed. The distinction is real, not a formality — `feeds/noncommercial/LICENSE.txt` states it plainly and every file in that directory leads with a banner.
 
