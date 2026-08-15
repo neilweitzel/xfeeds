@@ -181,6 +181,11 @@ def score_indicators(
         last_seen = max(o.last_seen for o in datable)
         ipsum_level = 0
         promoted_by: str | None = None
+        # (source name, value) pairs, resolved after the loop by sorting on the
+        # source name. Taking the first observation to arrive would make the
+        # output depend on collector ordering and break byte-identical reruns.
+        reference_candidates: list[tuple[str, str]] = []
+        registry_candidates: list[tuple[str, str]] = []
 
         for observation in observations:
             config = by_source.get(observation.source)
@@ -193,6 +198,13 @@ def score_indicators(
                 sources.add(observation.source)
                 categories.update(observation.categories)
                 tags.update(observation.tags)
+                # A citation may only come from a source we are allowed to name.
+                # Publishing a reference from a restricted source would disclose
+                # its membership exactly as listing it in `sources` would.
+                if observation.source_reference:
+                    reference_candidates.append((observation.source, observation.source_reference))
+                if observation.source_registry:
+                    registry_candidates.append((observation.source, observation.source_registry))
 
             for tag in observation.tags:
                 if tag.startswith("ipsum-level-"):
@@ -239,6 +251,9 @@ def score_indicators(
             if promotes:
                 promoted_by = observation.source
 
+        source_reference = min(reference_candidates)[1] if reference_candidates else None
+        source_registry = min(registry_candidates)[1] if registry_candidates else None
+
         raw = sum(best_per_class.values())
         if ipsum_level >= IPSUM_PRIOR_LEVEL:
             raw += IPSUM_PRIOR_BONUS
@@ -276,6 +291,8 @@ def score_indicators(
                 first_seen=first_seen,
                 last_seen=last_seen,
                 promoted_by=promoted_by,
+                source_reference=source_reference,
+                source_registry=source_registry,
             )
         )
 

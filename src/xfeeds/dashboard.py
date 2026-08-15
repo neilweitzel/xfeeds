@@ -115,6 +115,13 @@ margin-bottom:10px;font-weight:600;font-size:14px}
 .k-high{background:#3fb950}
 .k-med{background:#d29922}
 .note.warn{color:#d29922}
+/* Prefix-width bars. Sized relative to the largest cell rather than to an axis:
+   the number beside each bar is the fact, the bar only ranks them at a glance. */
+.pbar{height:9px;border-radius:5px;background:#58a6ff;min-width:2px}
+td:has(>.pbar){width:34%;padding-right:14px}
+.runs{margin:8px 0 0;padding-left:18px;font-size:13px;color:var(--muted);
+  line-height:1.85}
+.runs code{font-size:12px}
 @media (max-width:640px){
 /* SVG text scales with the viewBox, so on a phone the axis labels render at about
    four pixels whatever size they are set to. Hide them and let the HTML hint line
@@ -139,7 +146,7 @@ font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
 .spectrum .axline{stroke:var(--line);stroke-width:1}
 """
 
-SCRIPT = """
+SCRIPT = r"""
 // Tabbed setup guides.
 // Tabs are scoped to their own group; the page has more than one set.
 document.querySelectorAll('.tab').forEach(function(t){
@@ -175,6 +182,51 @@ function ipToInt(s){
   }
   return n;
 }
+// IPv6 to BigInt. 128 bits does not fit a JS number, so the v6 index carries its
+// bounds as decimal strings and every comparison on this path uses BigInt.
+function ip6ToBig(s){
+  s=s.trim().replace(/^\[/,'').replace(/\]$/,'');
+  var slash=s.indexOf('/');
+  if(slash>-1) s=s.slice(0,slash);   // accept a pasted prefix, match its base
+  if(s.indexOf(':')<0) return null;
+  if((s.match(/::/g)||[]).length>1) return null;
+  // IPv4-mapped form such as ::ffff:192.0.2.1 - the trailing dotted quad stands
+  // in for the final two 16-bit groups.
+  var tail=null;
+  if(s.indexOf('.')>-1){
+    var cut=s.lastIndexOf(':')+1;
+    var v4=ipToInt(s.slice(cut));
+    if(v4===null) return null;
+    tail=[Math.floor(v4/65536),v4%65536];
+    s=s.slice(0,cut)+'0:0';
+  }
+  function grp(part){
+    if(part==='') return [];
+    var out=part.split(':');
+    for(var i=0;i<out.length;i++){
+      if(!/^[0-9a-fA-F]{1,4}$/.test(out[i])) return null;
+      out[i]=parseInt(out[i],16);
+    }
+    return out;
+  }
+  var halves=s.split('::');
+  if(halves.length>2) return null;
+  var head=grp(halves[0]); if(head===null) return null;
+  var rest=halves.length===2?grp(halves[1]):[]; if(rest===null) return null;
+  var total=head.length+rest.length;
+  var all;
+  if(halves.length===2){
+    if(total>7) return null;                       // :: must cover >=1 group
+    all=head.concat(new Array(8-total).fill(0)).concat(rest);
+  } else {
+    if(total!==8) return null;
+    all=head;
+  }
+  if(tail){ all[6]=tail[0]; all[7]=tail[1]; }
+  var n=0n;
+  for(var j=0;j<8;j++){ n=(n<<16n)+BigInt(all[j]); }
+  return n;
+}
 function render(html){document.getElementById('res').innerHTML=html;}
 function esc(s){return String(s).replace(/[&<>]/g,function(c){
   return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c];});}
@@ -182,10 +234,12 @@ function esc(s){return String(s).replace(/[&<>]/g,function(c){
 function lookup(){
   var q=document.getElementById('ip').value.trim();
   if(!q){render('');return;}
-  var n=ipToInt(q);
-  if(n===null){
-    render('<div class="verdict"><div class="vt">Not a valid IPv4 address</div>'+
-      '<div class="note">Enter something like 45.33.32.156.</div></div>');
+  var n=ipToInt(q), n6=null;
+  if(n===null){ n6=ip6ToBig(q); }
+  if(n===null && n6===null){
+    render('<div class="verdict"><div class="vt">Not a valid IP address</div>'+
+      '<div class="note">Enter something like 45.33.32.156 or '+
+      '2001:678:254::1.</div></div>');
     return;
   }
   if(!IDX){
@@ -204,9 +258,19 @@ function lookup(){
     return;
   }
   var hit=null;
-  for(var i=0;i<IDX.r.length;i++){
-    var e=IDX.r[i];
-    if(n>=e[0] && n<=e[1]){hit=e;break;}
+  if(n6!==null){
+    // v6 bounds arrive as decimal strings; compare as BigInt so a 128-bit
+    // range is not silently truncated to 53 bits of precision.
+    var r6=IDX.r6||[];
+    for(var k=0;k<r6.length;k++){
+      var f=r6[k];
+      if(n6>=BigInt(f[0]) && n6<=BigInt(f[1])){hit=f;break;}
+    }
+  } else {
+    for(var i=0;i<IDX.r.length;i++){
+      var e=IDX.r[i];
+      if(n>=e[0] && n<=e[1]){hit=e;break;}
+    }
   }
   if(!hit){
     render('<div class="verdict miss"><div class="vt">'+esc(q)+
@@ -217,6 +281,7 @@ function lookup(){
   }
   var band=hit[3], cls=hit[4], score=hit[2], label=hit[5], srcs=hit[6];
   var rst=hit[7]||0;  // classes that corroborated under a non-redistributable licence
+  var ref=hit[8]||'';  // upstream listing ticket, where the source publishes one
   var css = band==='high' ? 'hit-high' : 'hit-med';
   var head = band==='high'
     ? esc(q)+' is listed — high confidence'
@@ -248,6 +313,9 @@ function lookup(){
     '<dt>Independent sources</dt><dd>'+(cls+rst)+(cls===1&&rst===0?' (promoted)':'')+
       (rst>0?' <span class="note">('+rst+' unnamed)</span>':'')+'</dd>'+
     '<dt>Reported by</dt><dd>'+esc(srcs)+'</dd>'+
+    (ref?'<dt>Upstream listing</dt><dd><code>'+esc(ref)+'</code> — '+
+      '<a href="https://check.spamhaus.org/" rel="noopener">look up the reason '+
+      'for this listing</a></dd>':'')+
     '</dl>'+
     '<div class="note" style="margin-top:11px">Think this is wrong? '+
     '<a href="'+PROJECT+'/issues/new?title=False+positive:+'+encodeURIComponent(q)+
@@ -397,30 +465,226 @@ def build_lookup_index(records: list[ScoredIndicator]) -> dict[str, Any]:
     Ranges are stored as integer [start, end] pairs so a CIDR match works the
     same as a single address. Roughly 300 KB for 4,000 entries, fetched only when
     somebody actually uses the box.
+
+    IPv6 lives in a parallel ``r6`` array with its bounds as decimal **strings**.
+    A 128-bit bound cannot survive JSON's number type - it exceeds
+    ``Number.MAX_SAFE_INTEGER`` and would silently lose precision - so the client
+    parses those with ``BigInt``. Keeping them in a separate array lets the IPv4
+    path, which is 98% of lookups, stay on plain numbers.
+
+    Previously v6 records were skipped entirely, so the box reported prefixes the
+    feed was actively blocking as not listed.
     """
-    rows = []
+    rows: list[list[Any]] = []
+    rows6: list[list[Any]] = []
     for r in sorted(records, key=lambda r: r.sort_key()):
         item = r.ip_or_cidr
-        if item.version != 4:
-            continue
         if isinstance(item, (ipaddress.IPv4Network, ipaddress.IPv6Network)):
             lo = int(item.network_address)
             hi = int(item.broadcast_address)
         else:
             lo = hi = int(item)
-        rows.append(
-            [
-                lo,
-                hi,
-                round(r.score),
-                r.band.value,
-                len(r.independence_classes),
-                str(item),
-                ", ".join(r.sources),
-                r.restricted_corroboration,
-            ]
+        common = [
+            round(r.score),
+            r.band.value,
+            len(r.independence_classes),
+            str(item),
+            ", ".join(r.sources),
+            r.restricted_corroboration,
+            r.source_reference or "",
+        ]
+        if item.version == 4:
+            rows.append([lo, hi, *common])
+        else:
+            rows6.append([str(lo), str(hi), *common])
+    return {"v": 2, "r": rows, "r6": rows6}
+
+
+def _ipv6_panel(insights: dict[str, Any]) -> str:
+    """What IPv6 coverage exists, how wide it reaches, and what cannot be shown.
+
+    Deliberately not a parallel set of the IPv4 charts. The v6 corpus has no
+    variance in score, band, source or category, so each of those charts would be a
+    single bar - the appearance of analysis with none of the substance. What is
+    shown instead is structural: prefix width, the address space it reaches, and
+    which /12 of global unicast space the listings sit in.
+
+    The wide prefixes are defended here rather than in the README. General IPv6
+    practice treats a /64 as one actor and a /32 as an entire ISP that should almost
+    never be blocked wholesale. Half of these entries are /32 or wider, and without
+    the reason an analyst reads the feed as recklessly aggregated.
+    """
+    fam = (insights or {}).get("families", {}).get("v6")
+    if not fam or not fam.get("entries"):
+        return ""
+    entries = int(fam["entries"])
+    sites = int(fam.get("sites_48_total", 0))
+    allocations = int(fam.get("distinct_allocations_32", 0))
+    classes = int(fam.get("independence_classes", 0))
+    sources = fam.get("sources") or []
+    blast_by_prefix = fam.get("blast_radius_64_by_prefix", {})
+    total_blast = int(fam.get("blast_radius_64_total", 0)) or 1
+
+    prefix_rows = sorted(
+        ((str(row["key"]), int(row["count"])) for row in fam.get("prefix_lengths", [])),
+        key=lambda kv: int(kv[0].lstrip("/")),
+    )
+    widest = min((int(k.lstrip("/")) for k, _ in prefix_rows), default=0)
+    bars = []
+    for key, count in prefix_rows:
+        blast = int(blast_by_prefix.get(key, 0))
+        share = 100.0 * blast / total_blast
+        # The bar encodes reach, not entry count. Encoding entries would put the
+        # longest bar against /48 - the rows with the least reach - directly
+        # contradicting the two columns beside it and the point this table makes.
+        width = max(0.6, share)
+        # A row that is a real but tiny fraction must not print as 0.0%: that
+        # reads as "none" when it means "three ten-thousandths of a percent".
+        share_text = format(share, ".1f") + "%" if share >= 0.1 else "&lt;0.1%"
+        bars.append(
+            "<tr><td><code>"
+            + esc_html(key)
+            + "</code></td>"
+            + '<td class="num">'
+            + str(count)
+            + "</td>"
+            + '<td><div class="pbar" style="width:'
+            + format(width, ".2f")
+            + '%"></div></td>'
+            + '<td class="num">'
+            + format(blast, ",")
+            + "</td>"
+            + '<td class="num">'
+            + share_text
+            + "</td></tr>"
         )
-    return {"v": 1, "r": rows}
+    folded_cells = int(fam.get("prefix_lengths_folded_cells", 0))
+    folded_entries = int(fam.get("prefix_lengths_folded_entries", 0))
+    if folded_cells:
+        bars.append(
+            '<tr><td class="note">'
+            + str(folded_cells)
+            + " other widths</td>"
+            + '<td class="num">'
+            + str(folded_entries)
+            + "</td><td></td>"
+            + '<td class="num">&mdash;</td><td class="num">&mdash;</td></tr>'
+        )
+
+    blocks = "".join(
+        "<tr><td><code>"
+        + esc_html(str(row["key"]))
+        + "</code></td>"
+        + '<td class="num">'
+        + str(int(row["count"]))
+        + "</td></tr>"
+        for row in fam.get("unicast_blocks", [])
+    )
+    folded_blocks = int(fam.get("unicast_blocks_folded_cells", 0))
+    if folded_blocks:
+        blocks += (
+            '<tr><td class="note">'
+            + str(folded_blocks)
+            + " other block(s)</td>"
+            + '<td class="num">'
+            + str(int(fam.get("unicast_blocks_folded_entries", 0)))
+            + "</td></tr>"
+        )
+
+    runs = fam.get("contiguous_runs") or []
+    runs_html = ""
+    if runs:
+        items = "".join(
+            "<li><code>"
+            + esc_html(str(r["aggregate"]))
+            + "</code> &larr; "
+            + ", ".join(
+                "<code>" + esc_html(str(m)) + "</code>" for r_m in [r["members"]] for m in r_m
+            )
+            + "</li>"
+            for r in runs
+        )
+        runs_html = (
+            "<h3>Adjacent prefixes</h3>"
+            + '<p class="note">Listings that sit next to each other in address space. '
+            + "Contiguous allocations under common control are a stronger signal than the "
+            + "same number of unrelated listings. They are reported, not merged: merging "
+            + "would diverge from what the upstream published and lose the per-entry "
+            + 'listing reference.</p><ul class="runs">'
+            + items
+            + "</ul>"
+        )
+
+    suppressed = "".join(
+        "<tr><td>"
+        + esc_html(str(s["analysis"]))
+        + "</td>"
+        + '<td class="note">'
+        + esc_html(str(s["reason"]))
+        + "</td></tr>"
+        for s in fam.get("suppressed", [])
+    )
+
+    concentration = ""
+    if classes < 2:
+        named = ", ".join(esc_html(str(s)) for s in sources) or "a single source"
+        concentration = (
+            '<p class="note warn">All IPv6 coverage here comes from one independence '
+            + "class ("
+            + named
+            + "). These records are published on that source&#39;s "
+            + "precision alone &mdash; the same basis as a large share of the IPv4 feed "
+            + "&mdash; so the limitation is <strong>concentration, not quality</strong>: "
+            + "nothing corroborates them, and nothing covers for them if that source "
+            + "degrades.</p>"
+        )
+
+    return (
+        "\n<h2>IPv6 coverage</h2>\n"
+        + '<p class="note">'
+        + format(entries, ",")
+        + " prefixes across "
+        + format(allocations, ",")
+        + " distinct /32 allocations, reaching "
+        + format(sites, ",")
+        + " /48 sites. No individual addresses: every entry is a "
+        + "prefix.</p>\n"
+        + concentration
+        + '\n<div class="grid2">\n<div>\n'
+        + "<h3>How wide each entry reaches</h3>\n"
+        + '<p class="note">Entry count is a poor measure for IPv6 &mdash; a /29 and a '
+        + "/48 are both one line and differ by a factor of half a million. The bar and "
+        + "the last two columns show reach instead, which is why the most numerous row "
+        + "is not the widest bar.</p>\n"
+        + '<table>\n<tr><th>Prefix</th><th class="num">Entries</th><th></th>'
+        + '<th class="num">/64 subnets</th><th class="num">Reach</th></tr>\n'
+        + "".join(bars)
+        + "\n</table>\n"
+        + '<p class="note">The widest entry is a /'
+        + str(widest)
+        + ". General IPv6 "
+        + "practice treats a /64 as one actor and a /32 as an entire ISP that should "
+        + "almost never be blocked outright. These are wider on purpose: Spamhaus DROP "
+        + "lists netblocks leased or stolen outright by criminal operations, published "
+        + "for firewall and backbone use, where the whole allocation is the finding. "
+        + "Review the widest entries before deploying them.</p>\n"
+        + "</div>\n<div>\n<h3>Where in global unicast space</h3>\n"
+        + '<p class="note">Which /12 of <code>2000::/3</code> the listings fall in, '
+        + "derived from the address itself. This is address-space structure, not "
+        + "geography &mdash; no registration country is published anywhere on this "
+        + "page.</p>\n"
+        + '<table><tr><th>Block</th><th class="num">Entries</th></tr>'
+        + blocks
+        + "</table>\n"
+        + runs_html
+        + "\n</div>\n</div>\n\n"
+        + "<h3>Not shown for IPv6, and why</h3>\n"
+        + '<p class="note">Each of these would render a single bar. Listing them is '
+        + "more useful than leaving a reader to guess whether we looked.</p>\n"
+        + "<table><tr><th>Analysis</th><th>Reason</th></tr>"
+        + suppressed
+        + "</table>\n"
+    )
 
 
 def esc_html(value: str) -> str:
@@ -753,6 +1017,13 @@ def render(
     nc_high = nc.get("high", 0)
     nc_medium = nc.get("medium", 0)
     published = counts.get("published", 0)
+    # Per-family counts come from the manifest rather than being recomputed, and the
+    # downloads table uses them instead of the combined high count. Reporting the
+    # combined figure against iptables.ipset was how that file's published entry
+    # count came to be wrong by every IPv6 record in the feed.
+    families = manifest.get("families", {})
+    fam4 = families.get("v4", {})
+    fam6 = families.get("v6", {})
     withheld = counts.get("withheld", 0)
     seen = published + withheld
     pct = round(withheld / seen * 100) if seen else 0
@@ -786,6 +1057,7 @@ published.</p>
 {_spectrum_svg(spectrum)}
 {_timeline_svg(history)}
 {_asn_windows(asn_win)}
+{_ipv6_panel(insights or {})}
 
 <div class="cards">
 <div class="card"><div class="n high">{counts.get("high", 0):,}</div>
@@ -829,9 +1101,15 @@ sent anywhere, and no query is logged.</p>
 first command from cron every 6 hours to stay current.</p>
 <pre><code>curl -sS {base_url}/iptables.ipset | sudo ipset restore -!
 sudo iptables -I INPUT -m set --match-set xfeeds src -j DROP</code></pre>
+<h3>IPv6</h3>
+<p class="note">An ipset holds one address family, so IPv6 needs its own set and its
+own rule. Skip this if you are single-stack IPv4.</p>
+<pre><code>curl -sS {base_url}/iptables6.ipset | sudo ipset restore -!
+sudo ip6tables -I INPUT -m set --match-set xfeeds6 src -j DROP</code></pre>
 <h3>Keep it updated</h3>
 <pre><code># /etc/cron.d/xfeeds
-17 */6 * * * root curl -sS {base_url}/iptables.ipset | ipset restore -!</code></pre>
+17 */6 * * * root curl -sS {base_url}/iptables.ipset | ipset restore -!
+17 */6 * * * root curl -sS {base_url}/iptables6.ipset | ipset restore -!</code></pre>
 </div>
 
 <div class="tabpanel" id="p-nft" hidden>
@@ -887,31 +1165,54 @@ custom lists, so the high-confidence tier is the right one to use.</p>
 </div>
 
 <h2>All downloads</h2>
+<p class="note">The combined files carry both address families. If your firewall or
+tooling is single-stack, take the matching <code>-v4</code> or <code>-v6</code> file
+instead &mdash; a v4-only parser will choke on an IPv6 line.</p>
 <table>
-<tr><th>File</th><th>What it is</th><th class="num">Entries</th></tr>
+<tr><th>File</th><th>What it is</th><th>Family</th><th class="num">Entries</th></tr>
 <tr><td><a href="high-confidence.txt">high-confidence.txt</a></td>
     <td>Safe to block. Corroborated across independent sources.</td>
+    <td>both</td>
     <td class="num">{counts.get("high", 0):,}</td></tr>
+<tr><td><a href="high-confidence-v4.txt">high-confidence-v4.txt</a></td>
+    <td>Safe to block, IPv4 only.</td><td>IPv4</td>
+    <td class="num">{fam4.get("high", 0):,}</td></tr>
+<tr><td><a href="high-confidence-v6.txt">high-confidence-v6.txt</a></td>
+    <td>Safe to block, IPv6 only.</td><td>IPv6</td>
+    <td class="num">{fam6.get("high", 0):,}</td></tr>
 <tr><td><a href="medium-confidence.txt">medium-confidence.txt</a></td>
     <td>Two independent sources. Challenge or rate-limit rather than drop.</td>
+    <td>both</td>
     <td class="num">{counts.get("medium", 0):,}</td></tr>
+<tr><td><a href="medium-confidence-v4.txt">medium-confidence-v4.txt</a></td>
+    <td>Challenge or rate-limit, IPv4 only.</td><td>IPv4</td>
+    <td class="num">{fam4.get("medium", 0):,}</td></tr>
+<tr><td><a href="medium-confidence-v6.txt">medium-confidence-v6.txt</a></td>
+    <td>Challenge or rate-limit, IPv6 only.</td><td>IPv6</td>
+    <td class="num">{fam6.get("medium", 0):,}</td></tr>
 <tr><td><a href="all.csv">all.csv</a></td>
-    <td>Both tiers with scores, sources and dates.</td>
+    <td>Both tiers with scores, sources and dates.</td><td>both</td>
     <td class="num">{published:,}</td></tr>
 <tr><td><a href="all.json">all.json</a></td><td>Full provenance per address.</td>
-    <td class="num">{published:,}</td></tr>
+    <td>both</td><td class="num">{published:,}</td></tr>
 <tr><td><a href="stix-bundle.json">stix-bundle.json</a></td><td>STIX 2.1 bundle.</td>
-    <td class="num">{counts.get("high", 0):,}</td></tr>
+    <td>both</td><td class="num">{counts.get("high", 0):,}</td></tr>
 <tr><td><a href="misp-manifest.json">misp-manifest.json</a></td><td>MISP feed.</td>
-    <td class="num">{counts.get("high", 0):,}</td></tr>
-<tr><td><a href="nftables.conf">nftables.conf</a></td><td>nftables sets.</td>
-    <td class="num">{counts.get("high", 0):,}</td></tr>
-<tr><td><a href="iptables.ipset">iptables.ipset</a></td><td>ipset restore format.</td>
-    <td class="num">{counts.get("high", 0):,}</td></tr>
+    <td>both</td><td class="num">{counts.get("high", 0):,}</td></tr>
+<tr><td><a href="nftables.conf">nftables.conf</a></td>
+    <td>nftables sets &mdash; <code>blocklist4</code> and <code>blocklist6</code>.</td>
+    <td>both</td><td class="num">{counts.get("high", 0):,}</td></tr>
+<tr><td><a href="iptables.ipset">iptables.ipset</a></td>
+    <td>ipset restore format, set <code>xfeeds</code>.</td><td>IPv4</td>
+    <td class="num">{fam4.get("high", 0):,}</td></tr>
+<tr><td><a href="iptables6.ipset">iptables6.ipset</a></td>
+    <td>ipset restore format, set <code>xfeeds6</code>. An ipset holds one family.</td>
+    <td>IPv6</td><td class="num">{fam6.get("high", 0):,}</td></tr>
 <tr><td><a href="manifest.json">manifest.json</a></td>
-    <td>Run metadata, per-source status and licences.</td><td class="num">—</td></tr>
+    <td>Run metadata, per-source status and licences.</td><td>&mdash;</td>
+    <td class="num">&mdash;</td></tr>
 <tr><td><a href="history.json">history.json</a></td><td>Per-run history.</td>
-    <td class="num">{len(history)}</td></tr>
+    <td>&mdash;</td><td class="num">{len(history)}</td></tr>
 </table>
 
 <h2>Safe-to-block list over time</h2>

@@ -149,23 +149,38 @@ counts, history and per-source status, plus every artifact below.
 Pages is the canonical URL rather than `raw.githubusercontent.com`, which caps
 near 5,000 requests/hour/IP and blocks the IP for 30 minutes when exceeded.
 
-| File | Use |
-|---|---|
-| `high-confidence.txt` | Safe-to-block. One IP or CIDR per line, `#` comments. |
-| `medium-confidence.txt` | Challenge or rate-limit rather than a hard block. |
-| `all.csv` | MISP CSV feeds, OpenCTI CSV mappers, Splunk lookups. |
-| `all.json` + `schema.json` | Full provenance, with a published JSON Schema. |
-| `stix-bundle.json` | STIX 2.1 — OpenCTI, Elastic, most TIPs. |
-| `misp-manifest.json` | Native MISP feed. |
-| `nftables.conf`, `iptables.ipset` | Enforcement-ready firewall formats. |
-| `manifest.json` | Per-source status, licences, counts, deltas. |
-| `history.json` | Rolling per-run history behind the charts. |
+| File | Family | Use |
+|---|---|---|
+| `high-confidence.txt` | both | Safe-to-block. One IP or CIDR per line, `#` comments. |
+| `high-confidence-v4.txt` | IPv4 | Same, IPv4 only. **Use this if your tooling is single-stack.** |
+| `high-confidence-v6.txt` | IPv6 | Same, IPv6 only. |
+| `medium-confidence.txt` | both | Challenge or rate-limit rather than a hard block. |
+| `medium-confidence-v4.txt` / `-v6.txt` | one each | Family-split equivalents. |
+| `all.csv` | both | MISP CSV feeds, OpenCTI CSV mappers, Splunk lookups. Carries `address_family` and `source_reference`. |
+| `all.json` + `schema.json` | both | Full provenance, with a published JSON Schema. |
+| `stix-bundle.json` | both | STIX 2.1 — OpenCTI, Elastic, most TIPs. |
+| `misp-manifest.json` | both | Native MISP feed. |
+| `nftables.conf` | both | `blocklist4` and `blocklist6` sets in one file. |
+| `iptables.ipset` | IPv4 | ipset restore format, set `xfeeds`. |
+| `iptables6.ipset` | IPv6 | ipset restore format, set `xfeeds6`. An ipset holds one family. |
+| `manifest.json` | — | Per-source status, licences, counts, deltas, per-family breakdown. |
+| `history.json` | — | Rolling per-run history behind the charts. |
+
+The combined files carry both address families and are unchanged — existing
+firewall URL tables keep working. If your tooling is single-stack, point it at the
+suffixed file: a v4-only parser will choke on an IPv6 line.
 
 **ipset / iptables**
 
+An ipset holds exactly one address family, so IPv6 needs its own set and rule.
+Skip the second pair if you are single-stack IPv4.
+
 ```bash
-curl -sS https://neilweitzel.github.io/xfeeds/iptables.ipset | sudo ipset restore -!
-sudo iptables -I INPUT -m set --match-set xfeeds src -j DROP
+curl -sS https://neilweitzel.github.io/xfeeds/iptables.ipset  | sudo ipset restore -!
+sudo iptables  -I INPUT -m set --match-set xfeeds  src -j DROP
+
+curl -sS https://neilweitzel.github.io/xfeeds/iptables6.ipset | sudo ipset restore -!
+sudo ip6tables -I INPUT -m set --match-set xfeeds6 src -j DROP
 ```
 
 **nftables**
@@ -176,7 +191,44 @@ sudo nft -f nftables.conf
 ```
 
 **Anything else** — pfSense and OPNsense URL tables, MikroTik address lists,
-Cloudflare lists, nginx `deny` maps: point them at `high-confidence.txt`.
+Cloudflare lists, nginx `deny` maps: point them at `high-confidence.txt`, or at
+`high-confidence-v4.txt` if the target only understands IPv4.
+
+### IPv6 coverage
+
+xfeeds publishes IPv6 as a separate track. It is small and structurally different
+from the IPv4 feed: **91 prefixes from a single source family, Spamhaus DROPv6.**
+
+**What the limitation actually is.** Those records are promoted on that source's
+precision alone. So are 1,681 IPv4 records — 44% of the IPv4 high-confidence feed
+rests on exactly the same basis. The problem with IPv6 is not that the data is
+weaker; it is that there is no second source, so nothing corroborates it and
+nothing covers for it if that source degrades. Treat it as a **concentration
+risk**, not a quality one. The feed header says so, and says it only while it
+remains true — the notice is computed from the independence-class count.
+
+**The prefixes are wide on purpose.** /29 to /48, with no individual addresses.
+General IPv6 practice is to work at /64 and to treat a /32 as an entire ISP that
+should almost never be blocked wholesale. DROP is the documented exception: it
+lists netblocks leased or stolen outright by criminal operations, published for
+firewall and backbone use, where the whole allocation is the finding.
+
+Applying the IPv6 feed covers **11,488,576 /48 sites**, and 18 entries account for
+82% of that. Entry count is a poor guide here — review the widest entries before
+deploying them. The dashboard breaks this down by prefix width.
+
+**Other sources do report IPv6, and it is deliberately not published.**
+Blocklist.de contributes about 431 IPv6 hosts per run. Every one is withheld,
+because nothing corroborates them: zero of those hosts fall inside a Spamhaus
+DROPv6 prefix. The two sources observe different things — compromised individual
+hosts versus criminal-controlled allocations — so they cannot corroborate each
+other even in principle. Publishing IPv6 host indicators needs a second
+redistributable source that also reports hosts. `insights.json` reports the
+per-source IPv6 observation counts so this stays measurable.
+
+**Which file.** Single-stack IPv4: `high-confidence-v4.txt` and `iptables.ipset`.
+Dual-stack: both, or `nftables.conf`, which has always carried both families in
+separate sets.
 
 Pull every 6 hours or less often. The feed is rebuilt on a 6-hour cadence, so
 polling faster only wastes both our bandwidth.
@@ -185,16 +237,25 @@ polling faster only wastes both our bandwidth.
 
 ```bash
 uv run xfeeds explain 45.33.32.156
+uv run xfeeds explain 2001:678:254::1
 ```
 
 Prints the sources that reported it, their independence classes and weights, the
 score, and — if it was excluded — which specific rule excluded it. This is the
 tool for triaging a false-positive report.
 
+Where the upstream publishes a stable listing identifier, it is carried through as
+`source_reference` in `all.json` and `all.csv` and shown in the dashboard lookup.
+Spamhaus DROP records carry their SBL ticket, whose details are viewable at
+[check.spamhaus.org](https://check.spamhaus.org/) by IP, range, or ticket number —
+so "why is this listed" can be answered with the upstream's own reference rather
+than "a source we trust said so". It is deliberately absent from the plain-text
+feeds, which firewalls parse.
+
 ## Safety rails (non-negotiable)
 
 - **Allowlist last.** Applied after every other stage, from live upstreams: Cloudflare, Google Cloud, Googlebot, Bingbot, GitHub, plus static RFC1918/bogons and public resolvers. A failed allowlist fetch is a hard failure, not a warning.
-- **CIDR width cap.** Reject prefixes wider than /22 (IPv4) or /48 (IPv6) unless from Spamhaus DROP.
+- **CIDR width cap.** Reject prefixes wider than /22 (IPv4) or /48 (IPv6) unless from Spamhaus DROP. The IPv6 exemption is load-bearing, not incidental: DROPv6 legitimately publishes /29s and /32s because it lists whole criminal-controlled allocations, so every IPv6 entry wider than /48 in the feed is there on that exemption.
 - **Churn guard.** A run that would add or remove more than 25% of the feed fails, opens an issue, and leaves the previous feed in place.
 - **Redistribution flags enforced in code.** Sources marked `redistribute: false` inform scoring and never reach an emitter.
 - **Provenance always.** No IP ships without a named source in `all.json`.
@@ -203,6 +264,12 @@ tool for triaging a false-positive report.
 ## What the dashboard shows
 
 **The IPv4 space as one strip.** 512 slices of 8.4 million addresses, log-scaled, lowest address on the left. It answers something the feed files cannot: how much of the internet we see activity in at all. Currently 402 of 512 slices. Multicast and reserved space is shaded so an empty tail is not mistaken for a broken chart.
+
+**IPv6 gets structure, not a copy of the IPv4 charts.** The v6 corpus has zero variance in score, band, source and category, so a corroboration histogram or score distribution would render one bar each — the appearance of analysis with none of the substance. Those are suppressed, and the page lists which ones and why, so a reader can tell "no signal" from "we did not look". What is shown instead is structural and clears the same `MIN_CELL` threshold used for named ASN cells: entries by prefix width, the /64 subnets each width actually reaches, which /12 of `2000::/3` the listings fall in, and adjacent prefixes under apparent common control. Adjacency is reported, never merged — merging would diverge from what Spamhaus published and destroy the per-entry listing reference.
+
+**Reach, not entry count.** For IPv6 the bar beside each prefix width encodes address space reached rather than number of entries, which is why the most numerous row (/48, 32 entries) has the shortest bar and the least numerous (/29, 18 entries) carries 82% of the total. A feed that reports "91 entries" and stops has told an operator nothing about what applying it does.
+
+**ASN analysis is IPv4-only,** because the `iptoasn.com` enrichment table is. That is now reported as its own figure rather than folded into an unexplained "unenriched" residual.
 
 **There is no map, deliberately.** The country in an IP-to-ASN table is where the AS *number is registered* — for a hosting company that is where its paperwork lives, not where traffic came from. A chart headed "listed addresses by country" would put 19,000 addresses on Romania because M247 is registered there, and be the most confidently wrong thing on the page. Address space is the coordinate system this data actually has.
 

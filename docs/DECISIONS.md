@@ -1229,8 +1229,167 @@ fix is more permissively-licensed independent sources, and the tier grows
 automatically the moment one is added.
 
 
+## IPv6 dual-track output, and what its aggregations may claim
+
+IPv6 had been shipping inside the combined feeds since `spamhaus_drop_v6` was
+enabled. Ninety-two v6 lines sat in `high-confidence.txt` inline with the v4 lines,
+so **every single-stack IPv4 consumer was already receiving lines it could not
+parse.** This was a live defect, not a roadmap item, and it set the shape of the
+fix: family-suffixed files are added *alongside* the combined ones rather than
+changing what `high-confidence.txt` returns, because firewall URL tables and cron
+jobs point at that exact filename.
+
+### Two defects found while measuring
+
+`write_ipset` declared `create xfeeds hash:net family inet` and then filtered
+`version == 4`, dropping all 91 IPv6 records with no comment, no count and no
+warning — while the dashboard reported the combined high count (3,902) against a
+file holding 3,811. An ipset holds exactly one address family, so `iptables6.ipset`
+is mandatory rather than a convenience. Both files now state what they exclude, and
+the downloads table reads per-family counts from the manifest.
+
+`build_lookup_index` contained a bare `if item.version != 4: continue`, so the
+dashboard's "Check an address" box reported IPv6 prefixes the feed was **actively
+blocking** as not listed — confidently wrong answers on the one interactive feature
+on the page, during exactly the triage task it exists for. IPv6 bounds exceed
+`Number.MAX_SAFE_INTEGER`, which is presumably why it was skipped; they are now
+carried as decimal strings in a parallel `r6` array and compared with `BigInt`,
+leaving the IPv4 fast path on plain numbers. A test asserts the bounds genuinely
+exceed 2**53 so nobody "simplifies" them back into JSON numbers.
+
+### IPv6 is not capped below `high`
+
+Considered and rejected. **44.2% of the IPv4 high-confidence feed is single-class**
+— 1,686 of 3,811 records, of which 1,681 are promoted by `spamhaus_drop_v4`, the
+direct sibling of `spamhaus_drop_v6`. Same source family, same `promotes` path,
+same trust basis. Capping IPv6 on corroboration grounds would require capping those
+1,681 IPv4 records identically.
+
+The honest disclosure is therefore about **concentration, not quality**: nothing
+corroborates the IPv6 records and nothing covers for them if that one source
+degrades. The notice is computed from the independence-class count, so it
+disappears by itself the day a second IPv6 source lands.
+
+### What the IPv6 aggregations may and may not claim
+
+The 91 IPv6 records have **zero variance** on score (all 90.0), band (all high),
+source, independence class, categories and `first_seen`. That is a degenerate
+sample, not a small one. A corroboration histogram, score distribution, churn chart
+or category breakdown would each render exactly one bar, so they are suppressed and
+the page enumerates which and why — a reader can tell "no signal" from "we did not
+look", and each reason is recomputed from the data rather than written down.
+
+Structural aggregations *are* published, because their cells clear `MIN_CELL = 5`,
+the threshold already enforced for named ASN and country cells. Prefix length gives
+3 named cells covering 85% of entries; the `2000::/3` /12 block gives 5 cells
+covering 93%. This applies a rule the codebase already tests rather than inventing a
+statistical standard for the occasion.
+
+**Blast radius is reported alongside entry count** because entry count is close to
+meaningless for IPv6: the feed reaches 752,915,316,736 /64 subnets, and 18 entries
+(20%) carry 82% of that while 32 entries (35%) carry 0.0003%. The prefix-width bar
+therefore encodes reach rather than entries — encoding entries would put the longest
+bar on the rows with the least reach and contradict the columns beside it.
+
+`_addresses_of` now caps entry weight at 2**24. An IPv6 /29 holds 2**99 addresses;
+summed raw it is not a large contributor to an aggregate, it is the only one. IPv4
+behaviour is unchanged because the width cap admits nothing near that ceiling.
+
+A proposed `2000::/3` spectrum strip was **dropped**. Over 91 single-source entries
+it renders 70 scattered marks and says less than the /12 table does. The IPv4 strip
+earns its place across 4,730 entries; the IPv6 equivalent does not earn its own.
+
+### Upstream references were being discarded
+
+The DROP payload is `{"cidr":..., "sblid":"SBL697648", "rir":"ripencc"}` and
+`spamhaus_json` read only `cidr`. The SBL ticket is an authoritative upstream
+citation for *why* a netblock is listed, looked up at
+[check.spamhaus.org](https://check.spamhaus.org/). That is the first question on
+every false-positive report and `explain` could not answer it.
+
+A generic `source_reference` field — not `sbl_id`, so any source publishing a stable
+per-record reference can populate it — now carries it into `all.json`, `all.csv` and
+the dashboard lookup. It is kept out of the plain-text feeds, which firewalls parse,
+and only ever populated from a redistributable source: citing a source we may not
+name would disclose its membership just as surely as listing it in `sources`. The
+1,681 IPv4 records promoted by `spamhaus_drop_v4` gain this too.
+
+`rir` is carried as `source_registry` for abuse-report routing only. It is **not**
+geolocation and is never rendered as a country or region. The published /12
+distribution is derived from the address itself, so the statistics carry no registry
+claim at all.
+
+## Source audit, 2026-08-15
+
+Re-audited every enabled endpoint directly. Only annotations changed; **no source
+was enabled, disabled, or had its URL altered**, so feed volume is untouched.
+
+### Feodo Tracker is 163 days stale, and stays enabled
+
+Worse than the ~43 days previously recorded. abuse.ch's FAQ explains it rather than
+it being a broken fetch: the families Feodo tracks (Emotet, Dridex, TrickBot,
+QakBot, BazarLoader) have almost no live C2 left after the 2021 Emotet takedown and
+Operation Endgame in 2024. No replacement endpoint exists. It remains the only CC0
+source that can promote on its own and its false-positive rate is near zero, so a
+maintainer-explained lull is not grounds to drop it. The staleness warning is
+correct and should keep firing.
+
+### SSLBL has no successor, and ELLIO is gone for good
+
+SSLBL is still frozen at its 2025-01-03 deprecation notice, and abuse.ch created no
+free replacement — that capability moved into the paid Spamhaus/abuse.ch Real Time
+Feeds bundle. The ELLIO community feed now 301-redirects to an account-gated
+platform with no free download. Both are recorded here so neither is re-added on a
+future sweep.
+
+### No new source is being added, and the reason is specific
+
+Surveyed public feeds for a second IPv6 source. The finding is more interesting than
+the survey:
+
+- **Blocklist.de already reports IPv6** — about 431 individual `/128` hosts per run,
+  parsed and scored today, every one withheld. It is genuinely independent of
+  Spamhaus and is already our largest independent IPv4 sensor network.
+- **But it cannot corroborate Spamhaus DROPv6.** Measured: **zero** of those 431
+  hosts fall inside any of the 91 DROPv6 prefixes. The two sources observe different
+  phenomena — compromised individual hosts versus criminal-controlled allocations —
+  so they will not agree on an indicator even in principle. Adding IPv6 sources is
+  not sufficient; publishing IPv6 host indicators needs a second **redistributable**
+  source that also reports *hosts*.
+- **ipthreat is disqualified for IPv6 purposes**: its own blog lists Spamhaus
+  DROP/EDROP among its inputs, so using it would re-publish Spamhaus under another
+  name and manufacture exactly the false corroboration independence classes exist to
+  prevent.
+- **DataPlane.org and StopForumSpam carry IPv6 but cannot be republished.**
+  DataPlane's header expressly prohibits redistribution. StopForumSpam is CC BY-NC-**ND** —
+  No Derivative Works, which is *stricter* than the CC BY-NC-SA the non-commercial
+  tier assumes, and that warrants re-reviewing its existing placement in that tier.
+- **Turris Sentinel, CINS Army and GreenSnow are IPv4-only**, verified by fetch.
+- **Team Cymru IPv6 fullbogons** is real IPv6 data but the wrong category — unallocated
+  space, an allowlist input rather than a blocklist one.
+
+`insights.json` now reports per-source IPv6 observation counts, so "should we add an
+IPv6 source" is a measurable question rather than a guess: a source contributing
+thousands of withheld IPv6 observations no longer looks identical to one
+contributing none.
+
+### Licence gaps re-checked and still open
+
+bruteforceblocker, blocklist_de, blocklist_de_strongips and the Tor exit list still
+publish **no licence at all** — homepages, GitHub mirrors and export pages all
+re-checked. ipthreat's licence page still contradicts itself, opening with
+"creative-commons by attribution" and then saying "the creative commons by sa
+license can be used as a guide". Both remain open items below. The Tor exit list URL
+is confirmed still canonical, and `dshield_block` is confirmed still exactly 20 rows
+of top-20 /24 subnets.
+
+
+
 ## Open items
 
+- [ ] **Find a second IPv6 source that reports individual hosts and permits redistribution.** This is the only change that would let IPv6 participate in independence scoring at all. Blocklist.de already supplies the host-level IPv6 volume (431/run) but has no licence, and nothing else surveyed is both host-level and redistributable. Everything conditional in the IPv6 work keys off this.
+- [ ] **Re-review StopForumSpam's placement in the non-commercial tier.** Its licence is CC BY-NC-ND, not the CC BY-NC-SA that tier assumes. No-Derivative-Works may be incompatible with republishing it inside an aggregate at all, which is a stronger objection than the scoring-only restriction currently recorded.
+- [ ] **Decide whether Blocklist.de's IPv6 hosts should ever publish.** They are withheld correctly today. If its licence gap is ever resolved and a second host-level source appears, this becomes a volume question and needs a churn measurement first.
 - [ ] **Email Spamhaus** for written confirmation that redistributing DROP inside a public aggregate is permitted. Their Terms of Use §3.1 grant no IP licence while the blocklist page invites free use with credit; we currently publish on the second reading. Highest-value open question in this document (ADR-048).
 - [ ] Confirm AbuseIPDB redistribution terms in writing; flip `redistribute` if permitted. Key is now configured and the source is live as a scoring input (ADR-048).
 - [ ] Measure sefinek churn across several runs, then decide between enabling it upgrade-only or leaving it out (ADR-048/ADR-051). It is now the single biggest lever on the clean tier: enabling it takes that tier from 23 to 223 entries, at the cost of pushing the primary feed outside its committed range.
