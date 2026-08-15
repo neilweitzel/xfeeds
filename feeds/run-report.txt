@@ -1,31 +1,32 @@
-xfeeds run 2026-08-15T05:08:13.549785+00:00
-  sources:   23/24 ok
-  published: 4874 (high 3934, medium 940)
-  withheld:  42396 single-source
-  deltas:    +22 / -110
+xfeeds run 2026-08-15T06:58:34.649690+00:00
+  sources:   22/24 ok
+  published: 4821 (high 3902, medium 919)
+  withheld:  43107 single-source
+  deltas:    +107 / -160
     abuseipdb_blacklist      10000 records
     binary_defense           505 records
-    blocklist_de             24651 records
+    blocklist_de             24897 records
     blocklist_de_strongips   349 records
-    bruteforceblocker        556 records
+    bruteforceblocker        failed (request error: The read operation timed out)
     cins_army                15000 records
-    dataplane_proto41        55617 records
-    dataplane_smtpgreet      9475 records
-    dataplane_sshclient      18975 records
-    dataplane_sshpwauth      9624 records
-    dataplane_telnetlogin    88634 records
-    dataplane_vncrfb         5383 records
+    dataplane_proto41        55602 records
+    dataplane_smtpgreet      9460 records
+    dataplane_sshclient      18920 records
+    dataplane_sshpwauth      9602 records
+    dataplane_telnetlogin    88199 records
+    dataplane_vncrfb         5384 records
     dshield_block            20 records
     et_compromised           551 records
     feodo_tracker            stale
-    greensnow                3751 records
+    greensnow                3737 records
     ipsum_levels             24606 records
-    ipthreat                 4780 records
+    ipthreat                 4781 records
     spamhaus_drop_v4         1684 records
     spamhaus_drop_v6         91 records
-    stopforumspam_listed     54708 records
-    threatfox                1133 records
-    tor_exits                1371 records
+    stopforumspam_listed     53599 records
+    threatfox                1143 records
+    tor_exits                1376 records
     turris_greylist          9852 records
   ! feodo_tracker: upstream last updated 45 days ago - a dead feed is not the same as a quiet internet
-  ! 668 records capped high -> medium as benign scanners
+  ! bruteforceblocker: request error: The read operation timed out
+  ! 650 records capped high -> medium as benign scanners
