@@ -1,32 +1,32 @@
-xfeeds run 2026-08-15T06:58:34.649690+00:00
+xfeeds run 2026-08-15T12:59:54.023933+00:00
   sources:   22/24 ok
-  published: 4821 (high 3902, medium 919)
-  withheld:  43107 single-source
-  deltas:    +107 / -160
+  published: 4697 (high 3900, medium 797)
+  withheld:  43937 single-source
+  deltas:    +282 / -406
     abuseipdb_blacklist      10000 records
     binary_defense           505 records
-    blocklist_de             24897 records
-    blocklist_de_strongips   349 records
-    bruteforceblocker        failed (request error: The read operation timed out)
+    blocklist_de             25082 records
+    blocklist_de_strongips   350 records
+    bruteforceblocker        564 records
     cins_army                15000 records
-    dataplane_proto41        55602 records
-    dataplane_smtpgreet      9460 records
-    dataplane_sshclient      18920 records
-    dataplane_sshpwauth      9602 records
-    dataplane_telnetlogin    88199 records
-    dataplane_vncrfb         5384 records
+    dataplane_proto41        55609 records
+    dataplane_smtpgreet      9465 records
+    dataplane_sshclient      18971 records
+    dataplane_sshpwauth      9591 records
+    dataplane_telnetlogin    88941 records
+    dataplane_vncrfb         5407 records
     dshield_block            20 records
     et_compromised           551 records
     feodo_tracker            stale
-    greensnow                3737 records
+    greensnow                2970 records
     ipsum_levels             24606 records
-    ipthreat                 4781 records
-    spamhaus_drop_v4         1684 records
+    ipthreat                 4798 records
+    spamhaus_drop_v4         1687 records
     spamhaus_drop_v6         91 records
     stopforumspam_listed     53599 records
-    threatfox                1143 records
-    tor_exits                1376 records
+    threatfox                1124 records
+    tor_exits                failed (request error: [Errno 104] Connection reset by peer)
     turris_greylist          9852 records
   ! feodo_tracker: upstream last updated 45 days ago - a dead feed is not the same as a quiet internet
-  ! bruteforceblocker: request error: The read operation timed out
-  ! 650 records capped high -> medium as benign scanners
+  ! tor_exits: request error: [Errno 104] Connection reset by peer
+  ! 541 records capped high -> medium as benign scanners
