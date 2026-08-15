@@ -36,7 +36,11 @@ jobs:
     outputs:
       changed: ${{ steps.commit.outputs.changed }}
     steps:
+      # Full history so the push-retry below can rebase onto origin/main. A
+      # shallow clone cannot always find a merge base to rebase against.
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       - uses: astral-sh/setup-uv@v9.0.0
         with:
@@ -88,7 +92,27 @@ jobs:
           ADDED=$(grep -oP '\+\K[0-9]+(?= / -)' run.log | head -1 || echo 0)
           REMOVED=$(grep -oP '/ -\K[0-9]+' run.log | head -1 || echo 0)
           git commit -m "chore(feeds): refresh $(date -u +%Y-%m-%dT%H:%MZ) (+${ADDED}/-${REMOVED})"
-          git push
+
+          # A manual dispatch and a queued scheduled run can both target main,
+          # and a run held by the concurrency group keeps the checkout it
+          # resolved at queue time - so by the time it pushes, main may have
+          # moved. Rebase and retry instead of failing the whole run.
+          #
+          # -X theirs resolves in favour of the commit being replayed (ours),
+          # not the upstream one. That is what we want: feeds/ is regenerated
+          # wholesale each run, so the newer snapshot supersedes the older one
+          # rather than merging with it.
+          for attempt in 1 2 3; do
+            if git push; then
+              exit 0
+            fi
+            echo "Push rejected (attempt ${attempt}/3); rebasing onto origin/main."
+            git fetch origin main
+            git rebase -X theirs origin/main || { git rebase --abort; true; }
+            sleep $((attempt * 5))
+          done
+          echo "::error::Could not push refreshed feeds after 3 attempts."
+          exit 1
 
       # A tripped churn guard (exit 2) means an upstream probably broke. Surface
       # it as an issue rather than failing silently in the Actions tab.
