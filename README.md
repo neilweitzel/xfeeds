@@ -412,6 +412,21 @@ monitoring means something outside GitHub polling
 
 ---
 
+## Releases
+
+Tagged releases and the change history live in [`CHANGELOG.md`](CHANGELOG.md).
+
+Versions describe the **pipeline and its published contracts** — feed paths, record
+schema, and manifest fields — not the feed contents, which are regenerated every six
+hours. Feed URLs are stable and served from GitHub Pages, so pinning a tag does not
+change what a consumer fetches; it only tells you which pipeline produced the
+contracts you are integrating against.
+
+`v1.0.0-rc.1` is a release candidate under a roughly one-month burn-in window. If it
+needs no corrective work it will be promoted to `v1.0.0` unchanged.
+
+---
+
 ## Roadmap
 
 **Phase 2a — aggregation MVP** ✅ shipped
