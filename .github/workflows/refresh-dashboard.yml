@@ -1,0 +1,85 @@
+name: Refresh dashboard
+
+# Re-render the published page when the code that renders it changes.
+#
+# The pipeline writes feeds/index.html, so a merge that only changes the
+# generator leaves the published dashboard showing the previous build until the
+# next six-hourly refresh happens to regenerate it. That is how PRs #29 and #31
+# merged at 15:48 UTC and the live page still served the 13:07 build.
+#
+# Adding src/** to pages.yml would not fix this: that workflow publishes what is
+# committed, and the committed index.html is the stale one. The page has to be
+# re-rendered first, which is what `xfeeds dashboard` does - reading the feeds
+# already on disk, with no network access and without spending any of the
+# five-per-day AbuseIPDB budget that rations a full `xfeeds run`.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/xfeeds/dashboard.py"
+      - "src/xfeeds/insights.py"
+      - ".github/workflows/refresh-dashboard.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# Never regenerate twice at once: both runs would rewrite the same files and the
+# second push would be rejected. Unlike the feed refresh, losing an older run
+# here is fine - the newer code is the one to render from.
+concurrency:
+  group: refresh-dashboard
+  cancel-in-progress: true
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      # Full history so the push retry below can rebase, matching update-feeds.
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: astral-sh/setup-uv@v9.0.0
+        with:
+          version: "0.12.3"
+          enable-cache: true
+
+      - name: Install Python and dependencies
+        run: |
+          uv python install 3.13
+          uv sync --dev
+
+      - name: Re-render the dashboard
+        run: uv run xfeeds dashboard
+
+      - name: Commit the re-rendered page
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add feeds/index.html feeds/lookup.json
+          if git diff --cached --quiet; then
+            echo "Rendered output is unchanged; nothing to commit."
+            exit 0
+          fi
+          git commit -m "chore(dashboard): re-render for $(git rev-parse --short HEAD)"
+
+          # A feed refresh may land between our checkout and our push. feeds/ is
+          # regenerated wholesale, so replaying ours on top is safe, and pages.yml
+          # publishes whatever ends up on main afterwards either way.
+          for attempt in 1 2 3; do
+            if git push; then
+              exit 0
+            fi
+            echo "Push rejected (attempt ${attempt}/3); rebasing onto origin/main."
+            git fetch origin main
+            git rebase -X theirs origin/main || { git rebase --abort; true; }
+            sleep $((attempt * 5))
+          done
+          echo "::error::Could not push the re-rendered dashboard after 3 attempts."
+          exit 1
+
+      # Publication is left to pages.yml, which this workflow reaches through its
+      # workflow_run trigger. Our commit is pushed with GITHUB_TOKEN and so cannot
+      # trigger pages.yml by push, exactly as with the feed refresh.

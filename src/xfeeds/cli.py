@@ -120,6 +120,43 @@ def run(
 
 
 @app.command()
+def dashboard(
+    feeds_dir: Annotated[
+        Path, typer.Option("--feeds", help="Directory holding the published feeds")
+    ] = REPO_ROOT / "feeds",
+) -> None:
+    """Re-render index.html from the feeds already on disk.
+
+    Separate from ``run`` because rendering needs no network and the pipeline
+    cannot simply be re-run to pick up a presentation change: AbuseIPDB allows
+    five blacklist calls a day on the free tier, so ``run`` is rationed. Before
+    this existed, a change to the dashboard generator could not reach the
+    published page until the next scheduled refresh happened to fire, which left
+    a merged improvement invisible for up to six hours.
+
+    Reads the committed manifest, history, published records and insights, and
+    rewrites index.html and lookup.json beside them.
+    """
+    configure_logging()
+    from xfeeds.dashboard import write_dashboard
+
+    if not (feeds_dir / "manifest.json").exists():
+        typer.secho(
+            f"Error: no manifest.json in '{feeds_dir}'. Run 'xfeeds run' first.",
+            fg=typer.colors.RED,
+        )
+        raise typer.Exit(code=1)
+
+    try:
+        out = write_dashboard(feeds_dir)
+    except (OSError, ValueError, KeyError) as e:
+        typer.secho(f"Could not render the dashboard: {e}", fg=typer.colors.RED)
+        raise typer.Exit(code=1) from e
+
+    typer.secho(f"Wrote {out}", fg=typer.colors.GREEN)
+
+
+@app.command()
 def explain(
     indicator: Annotated[str, typer.Argument(help="IP address to explain")],
     config_file: Annotated[

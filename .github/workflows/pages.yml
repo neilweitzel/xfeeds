@@ -4,12 +4,28 @@ name: Publish to Pages
 # which is capped near 5,000 requests/hour/IP and blocks the IP for 30 minutes
 # when exceeded. A feed pulled by many hosts behind shared NAT is exactly the
 # traffic shape that trips that limit; Pages is CDN-backed with no such cap.
+#
+# This workflow is also the safety net for the primary publish path. "Update
+# feeds" deploys Pages from inside itself, because its own commit is pushed with
+# GITHUB_TOKEN and GitHub deliberately does not start workflows from such a push
+# - so a `push` trigger here can never see the scheduled refresh. That worked
+# until the deploy job itself failed: on 2026-08-17 the refresh committed new
+# feeds and its deploy job then died fetching an action from codeload (HTTP 429),
+# leaving main fresh, Pages a build behind, and nothing able to retry until the
+# next six-hourly run.
+#
+# workflow_run is not subject to the GITHUB_TOKEN restriction, so it gives
+# publication a second, independent path. The freshness check below means this
+# costs nothing when the primary path already succeeded.
 on:
   push:
     branches: [main]
     paths:
       - "feeds/**"
       - ".github/workflows/pages.yml"
+  workflow_run:
+    workflows: ["Update feeds", "Refresh dashboard"]
+    types: [completed]
   workflow_dispatch:
 
 permissions:
@@ -28,9 +44,48 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      # main rather than github.sha. Under workflow_run, github.sha is the head of
+      # the run that triggered us, which for a refresh is the commit *before* it
+      # pushed its feeds - checking that out would republish the previous build.
       - uses: actions/checkout@v7
+        with:
+          ref: main
 
+      # Only publish if consumers are actually behind. Compares the committed
+      # dashboard against the live one by hash, so it covers both a feed refresh
+      # (index.html carries generated_at, so it changes every run) and a
+      # presentation-only change (index.html changes while manifest.json does
+      # not). Comparing manifests alone would have skipped the latter.
+      #
+      # An unreachable or absent live page counts as stale: publishing is the
+      # right response to "cannot confirm consumers have it".
+      - name: Check whether Pages is already current
+        id: freshness
+        env:
+          PAGES_URL: "https://neilweitzel.github.io/xfeeds"
+        run: |
+          set -uo pipefail
+          committed=$(sha256sum feeds/index.html | cut -d' ' -f1)
+          live="unreachable"
+          if curl -fsS --max-time 30 "${PAGES_URL}/index.html" -o /tmp/live.html; then
+            live=$(sha256sum /tmp/live.html | cut -d' ' -f1)
+          fi
+          echo "committed=${committed}"
+          echo "live=${live}"
+          if [ "${committed}" = "${live}" ]; then
+            echo "Pages already serves this build; nothing to deploy."
+            echo "stale=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "stale=true" >> "$GITHUB_OUTPUT"
+          fi
+          exit 0
+
+      # A failed or cancelled producer still reaches us, and that is the case
+      # worth publishing for: its refresh job may well have committed before the
+      # deploy half died. So the producer's conclusion is deliberately not
+      # gated on - the freshness check above decides, on evidence.
       - name: Prepare site
+        if: steps.freshness.outputs.stale == 'true'
         run: |
           mkdir -p _site
           cp -r feeds/* _site/
@@ -41,8 +96,11 @@ jobs:
           EOF
 
       - uses: actions/configure-pages@v5
+        if: steps.freshness.outputs.stale == 'true'
       - uses: actions/upload-pages-artifact@v3
+        if: steps.freshness.outputs.stale == 'true'
         with:
           path: _site
       - id: deployment
+        if: steps.freshness.outputs.stale == 'true'
         uses: actions/deploy-pages@v4
