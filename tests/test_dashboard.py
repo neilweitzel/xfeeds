@@ -297,14 +297,30 @@ def test_no_external_resource_references() -> None:
         assert "<link href=" not in page
 
 
-def test_console_safe_to_block_uses_plain_stat_text() -> None:
-    """The product value is not an alarm and must not inherit the danger band token."""
+def test_console_safe_to_block_uses_plain_hero_text() -> None:
+    """The product value is not an alarm and must not inherit the danger band token.
+
+    The hero numbers rail carries the same requirement as the old .stat rail: the
+    "safe to block" count is the good news of the page, so it must not pick up any
+    high-severity styling. This walks whichever wrapper actually renders the count.
+    """
     console, _ = _pages()
-    safe_stat = re.search(
-        r'<div class="stat"><b([^>]*)>[^<]+</b><span>safe to block</span>', console
+    hero_num = re.search(
+        r'<div class="hero-num[^"]*"[^>]*><b[^>]*>[^<]+</b>'
+        r'<span class="hero-num-label">Safe to block</span>',
+        console,
+        re.IGNORECASE,
     )
-    assert safe_stat is not None
-    assert "high" not in safe_stat.group(1)
+    assert hero_num is not None, "Safe-to-block hero card not found"
+    # Nothing on the card may inherit the .high danger colour token.
+    card = re.search(
+        r'<div class="hero-num[^"]*"[^>]*>(?:(?!</div>).)*Safe to block(?:(?!</div>).)*</div>',
+        console,
+        re.DOTALL,
+    )
+    assert card is not None
+    assert 'class="high"' not in card.group(0)
+    assert "var(--high)" not in card.group(0)
 
 
 def test_print_rules_and_console_prose_budget() -> None:
@@ -525,3 +541,127 @@ def test_copy_click_is_always_acknowledged() -> None:
     assert "'Selected'" in console
     # aria-label masks button text from screen readers, so the status node is required.
     assert 'role="status"' in console
+
+
+def test_console_leads_with_data_before_command() -> None:
+    """The console must open with the corpus, not with the install command.
+
+    A firewall operator arriving at xfeeds should see the value of the feed
+    before being asked to run anything. Ordering by ``main`` position keeps the
+    check honest against future rewrites: numbers rail, then the history chart,
+    then the address lookup, then the downloads, and only then the deploy
+    section that carries the platform tabs and the copy command. The about
+    band and licensing footer sit below the fold.
+    """
+    console, _ = _pages()
+    main = re.search(r"<main[^>]*>(.*?)</main>", console, re.DOTALL)
+    assert main is not None, "console has no <main>"
+    body = main.group(1)
+
+    markers = [
+        ("hero numbers", 'class="hero-numbers"'),
+        ("history chart", 'class="hero-svg"'),
+        ("address lookup", 'id="lookup-form"'),
+        ("downloads", 'id="feeds-title"'),
+        ("deploy", 'id="deploy-title"'),
+    ]
+    positions = {label: body.find(needle) for label, needle in markers}
+    for label, position in positions.items():
+        assert position >= 0, f"missing landmark: {label}"
+
+    order = sorted(positions, key=lambda label: positions[label])
+    assert order == [label for label, _ in markers], (
+        "console landmarks are out of order; got " + " -> ".join(order)
+    )
+
+    # About and footer live outside <main>, but must sit below every landmark in
+    # source order, since that is what governs both visual position and reading
+    # order for screen readers.
+    about = console.find('id="about-title"')
+    footer = console.find("<footer")
+    assert about > console.find("</main>") > 0
+    assert footer > about
+
+
+def test_console_command_no_longer_dominates_the_hero() -> None:
+    """The install command must not sit inside the data-first hero.
+
+    The old console rendered the platform terminal beside the H1, which put the
+    largest thing on the page at the top and made the numbers feel like a
+    caption. The reorder moves that block into its own deploy section below the
+    downloads, and this asserts it stayed there.
+    """
+    console, _ = _pages()
+    hero = re.search(r'<section class="data-hero"[^>]*>(.*?)</section>', console, re.DOTALL)
+    assert hero is not None
+    hero_body = hero.group(1)
+    assert 'class="terminal"' not in hero_body
+    assert 'class="platforms"' not in hero_body
+    assert 'class="copy"' not in hero_body
+
+    # The command still exists on the page, just further down.
+    assert console.count('class="terminal"') >= 1
+    assert 'id="deploy-title"' in console
+
+
+def test_hero_chart_carries_the_history_it_advertises() -> None:
+    """The hero chart must render actual data with legible axes, not a stub.
+
+    A visual has to earn its position at the top of the page. This checks the
+    SVG has a viewBox, y-axis grid lines with numeric labels, and an accessible
+    hit target per refresh so a keyboard user can read every column. The chart
+    is the reason to lead with data; a decorative sparkline would defeat the
+    reorder.
+    """
+    console, _ = _pages()
+    svg = re.search(r'<svg class="hero-svg"[^>]*>(.*?)</svg>', console, re.DOTALL)
+    assert svg is not None, "hero SVG missing"
+    body = svg.group(0)
+    assert 'viewBox="0 0 900 260"' in body
+    assert 'role="img"' in body and "aria-label" in body
+
+    # Y-axis: at least three labelled grid lines with numeric values.
+    labels = re.findall(r'text-anchor="end">([\d,]+)</text>', body)
+    assert len(labels) >= 3, f"expected multiple y-axis labels, got {labels}"
+
+    # A hit column per run means the tooltip serves every refresh, not just a summary.
+    # The check uses the manifest's own run count so a light fixture and a full
+    # 40-run production history are both valid.
+    expected_hits = len(_history())
+    hits = re.findall(r'<rect class="hit-col"', body)
+    assert len(hits) == expected_hits, (
+        f"expected one hit column per history run ({expected_hits}), got {len(hits)}"
+    )
+
+    # Roving tabindex: only the first column is initially tabbable, the rest
+    # respond to arrow keys. Handing every column its own tab stop would push
+    # every element below the hero out of a keyboard user's reach, which is the
+    # same defect the /8 address grid used to have.
+    tabbable_hits = re.findall(r'<rect class="hit-col"[^>]*tabindex="0"', body)
+    reachable_by_arrows = re.findall(r'<rect class="hit-col"[^>]*tabindex="-1"', body)
+    assert len(tabbable_hits) == 1, f"expected one tabbable hit column, got {len(tabbable_hits)}"
+    assert len(reachable_by_arrows) == len(hits) - 1, "remaining columns must sit at tabindex=-1"
+    # Every column still describes its own data through data-tip.
+    described = re.findall(r'<rect class="hit-col"[^>]*data-tip="[^"]+"', body)
+    assert len(described) == len(hits), "some hit columns have no tip"
+    # The client script must actually implement arrow-key movement.
+    assert "ArrowRight" in console and "ArrowLeft" in console
+
+
+def test_project_story_is_reachable_after_the_data() -> None:
+    """The about band explains what xfeeds is, but only after the data has spoken.
+
+    Putting the project story below the operational surface is deliberate: an
+    operator who already knows what xfeeds is shouldn't have to scroll past
+    marketing to reach the corpus. This asserts the story is present, in that
+    position, and still names the two things that matter contractually — the
+    licence tiers and where to file a false positive.
+    """
+    console, _ = _pages()
+    about = re.search(r'<section class="about-band"[^>]*>(.*?)</section>', console, re.DOTALL)
+    assert about is not None, "about band missing"
+    about_body = about.group(1)
+    for phrase in ("licence tiers", "false positive", "analysis surface"):
+        assert phrase.lower() in about_body.lower(), f"about band missing: {phrase}"
+    # And it sits below the downloads in source order.
+    assert console.find('id="about-title"') > console.find('id="feeds-title"')
