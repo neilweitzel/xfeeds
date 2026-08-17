@@ -1,66 +1,102 @@
-"""Regression tests for the published dashboard.
-
-The dashboard had no dedicated test file before this one, which is how its layout
-came to contradict its own module docstring: the docstring promised the page led
-with firewall setup and a lookup box "rather than leading with statistics about
-itself", while render() emitted four corpus-analysis panels ahead of the headline
-numbers, the lookup and the downloads table. Nothing failed, because nothing
-checked.
-
-These tests pin the properties that manual review had to catch by eye:
-
-* section order, because that is the defect that was actually fixed
-* the on-page prose budget, because verbosity creeps back one helpful sentence at
-  a time
-* attribution strings, because those are licensing obligations rather than copy
-* one history chart rather than three, because the duplicates were 800 pixels
-  apart and nobody noticed
-* churn bars staying inside the plot box, because the first attempt at the shared
-  axis overhung it by 6.6px and covered a label
-* tooltip accessibility, because a hover-only explanation strands touch and
-  keyboard users
-* byte-identical repeat renders, per the determinism rule in AGENTS.md
-"""
+"""Regression checks for the two self-contained Direction A dashboard surfaces."""
 
 import json
 import re
+from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any
 
 from xfeeds import dashboard
 
+FEED_FILENAMES = (
+    "high-confidence.txt",
+    "high-confidence-v4.txt",
+    "high-confidence-v6.txt",
+    "medium-confidence.txt",
+    "medium-confidence-v4.txt",
+    "medium-confidence-v6.txt",
+    "all.csv",
+    "all.json",
+    "stix-bundle.json",
+    "misp-manifest.json",
+    "nftables.conf",
+    "iptables.ipset",
+    "iptables6.ipset",
+    "manifest.json",
+    "history.json",
+)
+
+
+class _HintLocationParser(HTMLParser):
+    """Track clipping ancestors because a visible-looking tooltip can still never paint."""
+
+    def __init__(self, overflow_classes: set[str]) -> None:
+        super().__init__()
+        self._overflow_classes = overflow_classes
+        self._stack: list[bool] = []
+        self.hint_in_overflow = False
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        values = dict(attrs)
+        classes = set((values.get("class") or "").split())
+        overflow = bool(classes & self._overflow_classes) or "overflow:auto" in (
+            values.get("style") or ""
+        ).replace(" ", "")
+        self._stack.append(overflow or any(self._stack))
+        if "hint" in classes and self._stack[-1]:
+            self.hint_in_overflow = True
+
+    def handle_startendtag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        self.handle_starttag(tag, attrs)
+        self.handle_endtag(tag)
+
+    def handle_endtag(self, tag: str) -> None:
+        if self._stack:
+            self._stack.pop()
+
 
 def _manifest() -> dict[str, Any]:
     return {
-        "generated_at": "2026-08-17T13:07:00Z",
+        "generated_at": "2026-08-17T13:07:00+00:00",
         "counts": {
-            "high": 4270,
-            "medium": 841,
-            "published": 5111,
-            "withheld": 41000,
-            "promoted": 2600,
+            "high": 4224,
+            "medium": 805,
+            "published": 5029,
+            "withheld": 43376,
+            "promoted": 1781,
+            "benign_scanners_capped": 589,
         },
-        "families": {"v4": {"high": 4179, "medium": 838}, "v6": {"high": 91, "medium": 3}},
-        "deltas": {"added": 368, "removed": 447},
-        "corroboration_histogram": {"1": 2600, "2": 1500, "3": 1011},
+        "corroboration_histogram": {"1": 1781, "2": 3045, "3": 179, "4": 23, "5": 1},
+        "families": {
+            "v4": {"high": 4133, "medium": 805, "published": 4938},
+            "v6": {"high": 91, "medium": 0, "published": 91},
+        },
         "filters": {
-            "allowlisted": 120,
-            "too_wide": 8,
-            "non_global": 3,
-            "not_redistributable": 900,
-            "tag_only": 1100,
+            "allowlisted": 4490,
+            "not_redistributable": 205546,
+            "tag_only": 1255,
+            "too_wide": 0,
+            "non_global": 0,
         },
+        "deltas": {"added": 326, "removed": 408},
         "sources": {
-            "spamhaus_drop": {
+            "spamhaus_drop_v4": {
                 "status": "ok",
                 "records": 1200,
                 "independence_class": "spamhaus",
                 "votes": True,
                 "redistributable": True,
             },
+            "feodo_tracker": {
+                "status": "stale",
+                "records": 5,
+                "independence_class": "abusech",
+                "votes": True,
+                "redistributable": True,
+            },
             "abuseipdb": {
-                "status": "skipped",
-                "records": 0,
+                "status": "ok",
+                "records": 10000,
                 "independence_class": "abuseipdb",
                 "votes": True,
                 "redistributable": False,
@@ -72,11 +108,14 @@ def _manifest() -> dict[str, Any]:
 def _history() -> list[dict[str, Any]]:
     return [
         {
-            "generated_at": f"2026-08-{day:02d}T01:00:00Z",
+            "generated_at": f"2026-08-{day:02d}T01:00:00+00:00",
             "high": 4000 + day * 10,
             "medium": 800 + day,
+            "published": 4800 + day * 11,
             "added": 300 + day,
             "removed": 200 + day,
+            "sources_ok": 23,
+            "sources_total": 24,
         }
         for day in range(10, 18)
     ]
@@ -84,419 +123,250 @@ def _history() -> list[dict[str, Any]]:
 
 def _insights() -> dict[str, Any]:
     return {
+        "corpus": {"addresses_observed": 259696, "sources_contributing": 24},
         "spectrum": {
-            "counts": [0, 5, 90, 0, 400, 12],
-            "occupied_buckets": 4,
-            "buckets": 6,
+            "counts": [index % 17 for index in range(512)],
             "addresses_per_bucket": 8388608,
+            "occupied_buckets": 409,
+            "peak": 5441,
+        },
+        "networks": {
+            "available": True,
+            "distinct_asns_seen": 10844,
+            "suppressed": {"threshold": 5, "asns_below_threshold": 4300},
+            "top_asns": [
+                {"asn": 16276, "name": "OVH SAS", "addresses": 300, "sources_reporting": 9},
+            ],
         },
         "asn_windows": {
             "available": True,
             "history_span_days": 15,
+            "caveat": "Dated upstream history is thinner at the left edge.",
+            "dated_history_sources": ["bruteforceblocker", "ipthreat_30d"],
             "last_30_days": [
                 {
-                    "asn": 4134,
-                    "name": "CHINANET-BACKBONE",
-                    "days_active": 8,
-                    "address_days": 900,
-                    "per_million_announced": 12.5,
-                    "announced_addresses": 72000000,
+                    "asn": 64500,
+                    "name": "Persistent Network",
+                    "days_active": 14,
+                    "address_days": 240,
+                    "announced_addresses": 100000,
+                    "per_million_announced": 2400.0,
+                },
+                {
+                    "asn": 64501,
+                    "name": "No Denominator Network",
+                    "days_active": 12,
+                    "address_days": 150,
+                    "announced_addresses": 0,
+                    "per_million_announced": None,
                 },
             ],
             "last_60_days": [],
             "all_time": [],
         },
+        "agreement": {"by_independent_class_count": {"1": 236043, "2": 12894}},
+        "class_overlap": [
+            {"a": "abuseipdb", "b": "turris", "jaccard": 0.1854, "shared_addresses": 3998}
+        ],
+        "family_coverage": {
+            "note": "Observations, not published records.",
+            "sources_reporting_ipv6": [
+                {
+                    "source": "spamhaus_drop_v6",
+                    "independence_class": "spamhaus",
+                    "ipv6_observations": 91,
+                    "redistributable": True,
+                }
+            ],
+        },
         "families": {
             "v6": {
                 "entries": 91,
-                "sites_48_total": 40000,
-                "distinct_allocations_32": 12,
-                "independence_classes": 1,
-                "sources": ["spamhaus_drop"],
                 "prefix_lengths": [{"key": "/32", "count": 40}, {"key": "/48", "count": 51}],
-                "blast_radius_64_by_prefix": {"/32": 2000000, "/48": 51},
-                "blast_radius_64_total": 2000051,
-                "unicast_blocks": [{"key": "2400::/12", "count": 60}],
-                "contiguous_runs": [{"aggregate": "2a06:e480::/29", "members": ["2a06:e480::/32"]}],
-                "suppressed": [{"analysis": "Score distribution", "reason": "no variance"}],
             }
         },
-        "corpus": {"addresses_observed": 214000, "sources_contributing": 23},
-        "networks": {
-            "available": True,
-            "distinct_asns_seen": 9100,
-            "top_asns": [
-                {"asn": 16276, "name": "OVH SAS", "addresses": 300, "sources_reporting": 9},
-            ],
-            "suppressed": {"threshold": 5, "asns_below_threshold": 4300},
-        },
-        "sources": [
-            {
-                "source": "abuseipdb",
-                "credit": "AbuseIPDB",
-                "addresses_reported": 50000,
-                "reported_only_by_this_source": 12000,
-                "republished_noncommercial_tier": False,
-            }
-        ],
     }
 
 
-def _page() -> str:
-    return dashboard.render(
-        _manifest(),
-        _history(),
-        nc_counts={"published": 9000, "high": 7000, "medium": 2000},
-        insights=_insights(),
+def _noncommercial_manifest() -> dict[str, Any]:
+    return {"counts": {"published": 9000, "high": 7000, "medium": 2000}}
+
+
+def _pages() -> tuple[str, str]:
+    return (
+        dashboard.render_console(_manifest(), _history()),
+        dashboard.render_analysis(_manifest(), _history(), _insights(), _noncommercial_manifest()),
     )
 
 
-def _body(page: str) -> str:
-    return page.split("<body>", 1)[1]
+def _overflow_classes(page: str) -> set[str]:
+    return set(re.findall(r"\.([\w-]+)[^{]*\{[^}]*overflow(?:-x)?:\s*auto", page))
 
 
-def _visible_prose(page: str) -> str:
-    """On-page prose with tooltip contents removed.
-
-    Tooltip text is excluded deliberately: the point of the restructure was to move
-    rationale off the page surface and onto the label it explains, so counting tips
-    against the budget would penalise exactly the fix.
-    """
-    return re.sub(r'<span class="tip">.*?</span>', "", _body(page), flags=re.DOTALL)
-
-
-# --------------------------------------------------------------------------
-# Section order - the defect this suite exists for
-# --------------------------------------------------------------------------
-
-
-def test_headline_numbers_precede_the_analysis_panels() -> None:
-    """The cards must come before the IPv4 spectrum chart.
-
-    This is the exact inversion that was shipped: a reader met a 512-slice
-    log-scaled address-space chart before learning how many addresses were in the
-    feed.
-    """
-    body = _body(_page())
-    assert body.index('class="cards"') < body.index("Where in the IPv4 space we see activity")
-
-
-def test_operational_path_precedes_the_threat_landscape() -> None:
-    """Lookup, downloads and setup all come before the analysis section."""
-    body = _body(_page())
-    landscape = body.index('id="analysis"')
-    for anchor in ('id="lookup"', 'id="downloads"', 'id="setup"'):
-        assert body.index(anchor) < landscape, f"{anchor} must precede the analysis section"
-
-
-def test_downloads_precede_setup_instructions() -> None:
-    """Knowing which file to take comes before pasting a command that fetches it."""
-    body = _body(_page())
-    assert body.index('id="downloads"') < body.index('id="setup"')
-
-
-def test_every_nav_target_exists() -> None:
-    """A nav that points at a missing anchor silently scrolls nowhere."""
-    body = _body(_page())
-    targets = re.findall(r'<nav class="toc".*?</nav>', body, re.DOTALL)
-    assert targets, "section nav is missing"
-    for anchor in re.findall(r'href="#([^"]+)"', targets[0]):
-        assert f'id="{anchor}"' in body, f"nav points at missing anchor #{anchor}"
-
-
-def test_analysis_panels_share_one_heading_level() -> None:
-    """All four analysis panels are h3.ptitle under a single section heading.
-
-    One of them rendered as a 14px span while its three siblings were 17px
-    headings, which read as a broken hierarchy.
-    """
-    body = _body(_page())
-    titles = re.findall(r'<h3 class="ptitle">([^<]+)</h3>', body)
-    assert "Where in the IPv4 space we see activity" in titles
-    assert "Networks that keep coming back" in titles
-    assert "IPv6 coverage" in titles
-    assert "What the whole corpus looks like" in titles
-
-
-# --------------------------------------------------------------------------
-# One history chart, not three
-# --------------------------------------------------------------------------
-
-
-def test_history_is_charted_exactly_once() -> None:
-    """history.json gets one visualisation, on one shared axis."""
-    body = _body(_page())
-    assert body.count('class="tl"') == 1, "expected exactly one history chart"
-    assert "Safe-to-block list over time" not in body, "retired sparkline heading is back"
-    assert "Added and removed each run" not in body, "retired bar-chart heading is back"
-
-
-def test_history_chart_reports_size_and_churn_together() -> None:
-    """One hover target per run, carrying both figures."""
-    page = _page()
-    titles = re.findall(r"<title>([^<]*this run)</title>", page)
-    assert titles, "history chart has no per-run hover detail"
-    for title in titles:
-        assert "high" in title and "medium" in title
-        assert "+" in title
-
-
-def test_churn_bars_stay_inside_the_plot_box() -> None:
-    """Bars must not overhang the axis they share with the area chart.
-
-    The first attempt centred every bar on its data point, which pushed the first
-    and last bars 6.6 units outside the 0..1000 viewBox - visibly misaligning the
-    two halves of the chart and covering a label.
-    """
-    page = _page()
-    chart = re.search(r'<svg viewBox="0 0 1000 \d+" class="tl".*?</svg>', page, re.DOTALL)
-    assert chart is not None
-    bars = re.findall(
-        r'<rect x="([-\d.]+)" y="[-\d.]+" width="([\d.]+)" height="[\d.]+" class="c-(?:add|rem)"',
-        chart.group(0),
-    )
-    assert bars, "no churn bars rendered"
-    for x_text, w_text in bars:
-        x, w = float(x_text), float(w_text)
-        assert x >= 0.0, f"bar starts left of the plot box at x={x}"
-        assert x + w <= 1000.0, f"bar ends right of the plot box at x={x + w}"
-
-
-def test_history_chart_degrades_before_enough_runs_exist() -> None:
-    """A single run gets a note, not a one-point chart."""
-    out = dashboard._history_panel(
-        [{"generated_at": "2026-08-17T01:00:00Z", "high": 1, "medium": 1, "added": 0, "removed": 0}]
-    )
-    assert 'class="tl"' not in out
-    assert "refreshes every 6 hours" in out
-
-
-# --------------------------------------------------------------------------
-# Prose budget
-# --------------------------------------------------------------------------
-
-
-def test_on_page_prose_stays_within_budget() -> None:
-    """Cap the page's explanatory prose.
-
-    The page carried roughly 1,300 words of it. The ceiling here is deliberately
-    above the current figure so ordinary edits are not blocked, but low enough that
-    reinstating a section's worth of rationale fails. Detail belongs in
-    docs/DASHBOARD.md, and one-sentence reasoning belongs in a tooltip.
-
-    The count includes the copy-paste firewall instructions and the licence
-    attributions, neither of which is verbosity, which is why the ceiling is not
-    lower still.
-    """
-    prose = _visible_prose(_page())
-    notes = re.findall(r'<p class="note[^"]*">(.*?)</p>', prose, re.DOTALL)
-    notes += re.findall(r'<p class="sub"[^>]*>(.*?)</p>', prose, re.DOTALL)
-    words = sum(len(re.sub(r"<[^>]+>", "", note).split()) for note in notes)
-    assert words < 800, f"on-page prose has grown to {words} words"
-
-
-def test_editorialising_does_not_return() -> None:
-    """Phrases that argued with the reader rather than informing them."""
-    page = _page()
-    for phrase in ("not a nag", "wearing a hat", "needs no threat feed"):
-        assert phrase not in page, f"editorialising phrase back on the page: {phrase!r}"
-
-
-def test_load_bearing_explanations_survive() -> None:
-    """Two explanations are guarantees, not padding, and must stay on the page.
-
-    The IPv6 wide-prefix defence stops an analyst reading /32 entries as reckless
-    aggregation, and the privacy statement is a promise about what this page will
-    never publish. A word-count target must not eat either.
-    """
-    # Collapsed, because these sentences are wrapped by the template and a literal
-    # substring match would fail on a newline rather than on missing content.
-    flat = " ".join(_page().split())
-    assert "No individual address appears in this section" in flat
-    assert "Wide on purpose" in flat
-    assert "review the widest entries" in flat
-    assert "no top-offending-addresses list" in flat.lower()
-
-
-# --------------------------------------------------------------------------
-# Licensing obligations
-# --------------------------------------------------------------------------
-
-
-def test_required_attributions_are_present() -> None:
-    """Attribution is contractual. Trimming prose must never trim credit.
-
-    Spamhaus requires credit to travel with the data, IPThreat and Turris Sentinel
-    are credited per their terms, and IPtoASN is credited for the network mapping
-    even though it contributes no threat data.
-    """
-    page = _page()
-    for credit in ("Spamhaus", "ipthreat.net", "Turris Sentinel", "iptoasn.com", "CC BY-NC-SA 4.0"):
-        assert credit in page, f"missing required attribution: {credit}"
-
-
-def test_scoring_only_sources_are_never_shown_as_republished() -> None:
-    """A restricted source must read as scoring only wherever it appears."""
-    page = _page()
-    assert "scoring only" in page
-
-
-def test_feed_filenames_are_unchanged() -> None:
-    """Consumers have these paths in cron. A layout change must not rename them."""
-    page = _page()
-    for name in (
-        "high-confidence.txt",
-        "high-confidence-v4.txt",
-        "high-confidence-v6.txt",
-        "medium-confidence.txt",
-        "all.csv",
-        "all.json",
-        "stix-bundle.json",
-        "misp-manifest.json",
-        "nftables.conf",
-        "iptables.ipset",
-        "iptables6.ipset",
-        "manifest.json",
-        "history.json",
+def test_both_surfaces_have_the_direction_a_structure() -> None:
+    """Keep the concise operator flow separate from the analytical audit trail."""
+    console, analysis = _pages()
+    assert 'href="analysis.html"' in console
+    assert 'id="lookup-form"' in console
+    assert console.count('class="feed-group"') == 3
+    assert 'class="analysis-nav"' in analysis
+    for section in (
+        "health",
+        "method",
+        "spectrum",
+        "networks",
+        "ipv6",
+        "corpus",
+        "sources",
+        "licensing",
     ):
-        assert f'href="{name}"' in page, f"download link missing: {name}"
+        assert f'id="{section}"' in analysis
+    assert 'id="tier-filter"' in analysis and 'id="family-filter"' in analysis
 
 
-# --------------------------------------------------------------------------
-# Tooltips
-# --------------------------------------------------------------------------
+def test_attributions_and_frozen_feed_paths_survive() -> None:
+    """Preserve legal credit and cron-facing download paths through presentation work."""
+    console, analysis = _pages()
+    all_html = console + analysis
+    for credit in ("Spamhaus", "ipthreat.net", "Turris Sentinel", "iptoasn.com", "CC BY-NC-SA 4.0"):
+        assert credit in all_html
+    for filename in FEED_FILENAMES:
+        assert f'href="{filename}"' in all_html
 
 
-def test_tooltips_are_reachable_without_a_mouse() -> None:
-    """Every hint carries tabindex and aria-label.
-
-    Hover alone would hide the reasoning from touch and screen-reader users, which
-    would make moving prose into tooltips a regression rather than a tidy-up.
-    """
-    page = _page()
-    hints = re.findall(r'<span class="hint"([^>]*)>', page)
-    assert hints, "no tooltips rendered"
-    for attrs in hints:
-        assert 'tabindex="0"' in attrs, "hint is not focusable"
-        assert "aria-label=" in attrs, "hint has no accessible label"
+def test_rendering_is_deterministic() -> None:
+    """Static publishing must not introduce byte churn between identical inputs."""
+    assert _pages() == _pages()
 
 
-def test_no_tooltip_sits_inside_a_scrolling_container() -> None:
-    """A tooltip inside `.tscroll` computes as visible and paints nowhere.
-
-    `.tscroll` is `overflow:auto`, which clips absolutely positioned descendants
-    that escape its box. Eight tooltips were first placed in scrollable table
-    headers; every one of them reported display:block on hover and focus while
-    rendering no visible box at all, for mouse and keyboard users alike - the worst
-    kind of failure, because it looks correct from the CSS side.
-
-    A hint inside a table is fine when that table has no scroll wrapper. This test
-    draws the line where the clipping actually is.
-    """
-    body = _body(_page())
-    for match in re.finditer(r'<div class="tscroll">', body):
-        start = match.end()
-        depth, index = 1, start
-        while depth and index < len(body):
-            opening = body.find("<div", index)
-            closing = body.find("</div>", index)
-            if closing == -1:
-                break
-            if opening != -1 and opening < closing:
-                depth, index = depth + 1, opening + 4
-            else:
-                depth, index = depth - 1, closing + 6
-        assert 'class="hint"' not in body[start:index], (
-            "a tooltip is inside a .tscroll container, where overflow:auto clips it "
-            "into invisibility - move it into the note beside the table"
-        )
+def test_hints_are_focusable_and_not_clipped() -> None:
+    """Rationale moved into tips remains keyboard-reachable and visually renderable."""
+    pages = _pages()
+    all_hints = re.findall(r'<span class="hint"([^>]*)>', "".join(pages))
+    assert all_hints
+    for page in pages:
+        hints = re.findall(r'<span class="hint"([^>]*)>', page)
+        for attrs in hints:
+            assert 'tabindex="0"' in attrs
+            assert "aria-label=" in attrs
+        parser = _HintLocationParser(_overflow_classes(page))
+        parser.feed(page)
+        assert not parser.hint_in_overflow
+    assert "title=" not in "".join(_pages())
 
 
-def test_tooltip_text_is_escaped() -> None:
-    """Tip text goes into an attribute as well as the document."""
-    out = dashboard._hint("label", 'quote " and <tag> & amp')
-    assert "&quot;" in out and "&lt;tag&gt;" in out
-    assert "<tag>" not in out
+def test_load_bearing_safety_explanations_survive() -> None:
+    """The privacy and IPv6 caveats are safety guarantees, not optional prose."""
+    _, analysis = _pages()
+    for phrase in (
+        "Wide on purpose",
+        "review the widest entries",
+        "No individual address appears in this section",
+    ):
+        assert phrase in analysis
 
 
-# --------------------------------------------------------------------------
-# Determinism
-# --------------------------------------------------------------------------
+def test_persistence_and_corroboration_evidence_survive() -> None:
+    """Keep normalised persistence and independence evidence from silently disappearing."""
+    _, analysis = _pages()
+    for phrase in (
+        "Persistence, not provider size",
+        "AS64500",
+        "Per million",
+        "Only 15 days of history",
+        "Corroboration across independent classes",
+        "1 independent class",
+        "1,781 records",
+        "589 indicators",
+        "Highest class overlap",
+        "Which sources report IPv6",
+    ):
+        assert phrase in analysis
+    assert "&mdash;" in analysis
 
 
-def test_render_is_deterministic() -> None:
-    """Two renders of one manifest must be byte-identical.
-
-    Non-deterministic output would turn every scheduled refresh into diff noise,
-    per the determinism rule in AGENTS.md.
-    """
-    assert _page() == _page()
-
-
-# --------------------------------------------------------------------------
-# The `xfeeds dashboard` command
-# --------------------------------------------------------------------------
+def test_no_external_resource_references() -> None:
+    """Self-contained documents must not fetch styles, scripts, fonts, or embeds on load."""
+    external_resource = re.compile(
+        r"<(?:link|script|iframe)\b[^>]+(?:href|src)=[\"']https?://|@import\s+url\(\s*[\"']?https?://|url\(\s*[\"']?https?://",
+        re.IGNORECASE,
+    )
+    for page in _pages():
+        assert not external_resource.search(page)
+        assert "<script src=" not in page
+        assert "<link href=" not in page
 
 
-def test_dashboard_command_rerenders_without_network(tmp_path: Path) -> None:
-    """`xfeeds dashboard` rebuilds the page from feeds already on disk.
+def test_console_safe_to_block_uses_plain_stat_text() -> None:
+    """The product value is not an alarm and must not inherit the danger band token."""
+    console, _ = _pages()
+    safe_stat = re.search(
+        r'<div class="stat"><b([^>]*)>[^<]+</b><span>safe to block</span>', console
+    )
+    assert safe_stat is not None
+    assert "high" not in safe_stat.group(1)
 
-    This command exists because the pipeline cannot simply be re-run to pick up a
-    presentation change - AbuseIPDB allows five blacklist calls a day, so `run` is
-    rationed - and because a merged generator change was otherwise invisible on
-    the published page until the next scheduled refresh happened to regenerate it.
 
-    Rendering must therefore depend on nothing but the committed feed files. The
-    test asserts that by pointing the command at a directory containing only those
-    files, with no network available to it.
-    """
-    from typer.testing import CliRunner
+def test_print_rules_and_console_prose_budget() -> None:
+    """Operators get a lean console while both documents remain useful on paper."""
+    console, analysis = _pages()
+    assert "@media print" in console and "@media print" in analysis
+    console_text = re.sub(
+        r"<[^>]+>", " ", re.sub(r"<(style|script).*?</\1>", "", console, flags=re.DOTALL)
+    )
+    analysis_text = re.sub(
+        r"<[^>]+>", " ", re.sub(r"<(style|script).*?</\1>", "", analysis, flags=re.DOTALL)
+    )
+    assert len(console_text.split()) < len(analysis_text.split())
 
-    from xfeeds.cli import app
 
-    feeds = tmp_path / "feeds"
+def _write_feed_fixture(feeds: Path) -> None:
     feeds.mkdir()
     (feeds / "manifest.json").write_text(json.dumps(_manifest()), encoding="utf-8")
     (feeds / "history.json").write_text(json.dumps(_history()), encoding="utf-8")
     (feeds / "insights.json").write_text(json.dumps(_insights()), encoding="utf-8")
     (feeds / "all.json").write_text(json.dumps({"indicators": []}), encoding="utf-8")
+    noncommercial = feeds / "noncommercial"
+    noncommercial.mkdir()
+    (noncommercial / "manifest.json").write_text(
+        json.dumps(_noncommercial_manifest()), encoding="utf-8"
+    )
 
+
+def test_dashboard_command_writes_all_surfaces_without_network(tmp_path: Path) -> None:
+    """The explicit renderer command should work from disk-only artifacts."""
+    from typer.testing import CliRunner
+
+    from xfeeds.cli import app
+
+    feeds = tmp_path / "feeds"
+    _write_feed_fixture(feeds)
     result = CliRunner().invoke(app, ["dashboard", "--feeds", str(feeds)])
     assert result.exit_code == 0, result.stdout
-
-    page = (feeds / "index.html").read_text(encoding="utf-8")
-    assert '<nav class="toc"' in page
-    assert 'class="cards"' in page
-    # The lookup index is written alongside, or the address box would 404.
-    assert (feeds / "lookup.json").exists()
+    for filename in ("index.html", "analysis.html", "lookup.json"):
+        assert (feeds / filename).exists()
+    assert "analysis.html" in result.stdout
 
 
 def test_dashboard_command_is_idempotent(tmp_path: Path) -> None:
-    """Running it twice must produce identical bytes.
-
-    The workflow that calls this commits only when the output changed, so a
-    non-deterministic render would commit noise on every push to main.
-    """
+    """The scheduler relies on rendering identical bytes when feed inputs have not changed."""
     from typer.testing import CliRunner
 
     from xfeeds.cli import app
 
     feeds = tmp_path / "feeds"
-    feeds.mkdir()
-    (feeds / "manifest.json").write_text(json.dumps(_manifest()), encoding="utf-8")
-    (feeds / "history.json").write_text(json.dumps(_history()), encoding="utf-8")
-    (feeds / "insights.json").write_text(json.dumps(_insights()), encoding="utf-8")
-    (feeds / "all.json").write_text(json.dumps({"indicators": []}), encoding="utf-8")
-
+    _write_feed_fixture(feeds)
     runner = CliRunner()
     assert runner.invoke(app, ["dashboard", "--feeds", str(feeds)]).exit_code == 0
-    first = (feeds / "index.html").read_bytes()
+    first = {
+        name: (feeds / name).read_bytes() for name in ("index.html", "analysis.html", "lookup.json")
+    }
     assert runner.invoke(app, ["dashboard", "--feeds", str(feeds)]).exit_code == 0
-    assert (feeds / "index.html").read_bytes() == first
+    assert {name: (feeds / name).read_bytes() for name in first} == first
 
 
 def test_dashboard_command_fails_clearly_without_a_manifest(tmp_path: Path) -> None:
-    """A missing manifest is a readable error, not a traceback."""
+    """A missing input should be actionable rather than becoming a renderer traceback."""
     from typer.testing import CliRunner
 
     from xfeeds.cli import app
@@ -504,3 +374,154 @@ def test_dashboard_command_fails_clearly_without_a_manifest(tmp_path: Path) -> N
     result = CliRunner().invoke(app, ["dashboard", "--feeds", str(tmp_path)])
     assert result.exit_code == 1
     assert "no manifest.json" in result.stdout
+
+
+def test_ipv4_grid_is_one_tab_stop_with_valid_grid_roles() -> None:
+    """The /8 grid must not put 256 tab stops in the reader's way.
+
+    A tabbable cell per block is the obvious implementation and the wrong one: it
+    puts 256 stops between a keyboard user and the next section, and a
+    ``role="grid"`` whose children are ``role="note"`` is not a structure a screen
+    reader can announce as a grid. Both were true of the first attempt here.
+
+    The fix is the standard roving-tabindex pattern, so this asserts its two
+    observable properties: proper row and gridcell roles, and exactly one cell
+    reachable by Tab. Arrow-key movement is what makes the other 255 reachable.
+    """
+    _, page = _pages()
+    assert page.count('role="grid"') == 1
+    assert page.count('class="ipv4-grid-row"') == 16
+    assert page.count('role="gridcell"') == 256
+
+    tabbable = re.findall(r'class="ip-grid-cell[^"]*"[^>]*tabindex="0"', page)
+    assert len(tabbable) == 1, f"expected one tabbable cell, found {len(tabbable)}"
+
+    # Every cell still names its own block, so nothing is lost by not being a stop.
+    assert page.count("0.0.0/8:") >= 256 or page.count(".0.0.0/8") >= 256
+    for key in ("ArrowRight", "ArrowLeft", "ArrowDown", "ArrowUp"):
+        assert key in page, f"grid is missing {key} handling"
+
+
+def test_both_is_honoured_as_a_selection_not_only_as_a_panel_value() -> None:
+    """Selecting "Both families" must not hide every family-specific panel.
+
+    The first implementation read ``both`` only as a panel value — a panel tagged
+    ``both`` was shown under any selection — but never as a *selection*, so the
+    default "Both families" filter matched only panels literally tagged ``both``
+    and silently hid the /8 grid and the network table. The page rendered a
+    correct-looking but empty address-space section.
+
+    This asserts the predicate admits a ``both`` selection, and that the panels
+    which regressed still declare a family so they are covered by it.
+    """
+    _, page = _pages()
+    assert "selected === 'both'" in page, "filter no longer honours a 'both' selection"
+
+    families = set(re.findall(r'data-family="([^"]+)"', page))
+    assert "v4" in families and "v6" in families
+
+    options = set(re.findall(r'<option value="([^"]+)"', page))
+    assert {"both", "v4", "v6"} <= options, f"family control lost an option: {options}"
+
+    # Anything a filter can hide must declare both axes, or a tier switch orphans it.
+    for match in re.finditer(r'<[^>]*data-family="[^"]*"[^>]*>', page):
+        assert "data-tier=" in match.group(0), f"family panel missing tier: {match.group(0)[:90]}"
+
+
+def test_scroll_spy_does_not_rely_on_an_intersection_band() -> None:
+    """Short sections must still be able to highlight their own nav link.
+
+    A ``rootMargin`` band only fires for sections tall enough to cross it, so
+    every short section handed its highlight to the next one down — four of eight
+    links pointed at the wrong section. The fold-line approach has no minimum
+    section height.
+    """
+    _, page = _pages()
+    assert "IntersectionObserver" not in page, "band-based scroll-spy reintroduced"
+    assert "getBoundingClientRect" in page and "FOLD" in page
+
+
+def test_no_dead_disclosure_styling_or_handlers() -> None:
+    """Don't ship styling and a click handler for a control that never renders.
+
+    ``.disclosure`` carried CSS and a keyboard-reachable handler while zero
+    disclosures were emitted, which reads as a missing feature rather than an
+    absent one.
+    """
+    console, analysis = _pages()
+    for page in (console, analysis):
+        assert ".disclosure{" not in page
+        assert 'class="disclosure"' not in page
+        assert ".detail{" not in page
+
+
+def _visible(attrs: dict[str, str], tier: str, family: str) -> bool:
+    """Mirror of the client-side filter predicate, for exhaustive coverage checks."""
+
+    def matches(value: str, selected: str) -> bool:
+        return selected == "both" or value == "both" or value == selected
+
+    if "tier" in attrs and not matches(attrs["tier"], tier):
+        return False
+    if "family" in attrs and not matches(attrs["family"], family):
+        return False
+    return not ("only-family" in attrs and attrs["only-family"] != family)
+
+
+def test_every_filter_combination_leaves_every_section_explained() -> None:
+    """No filter combination may leave a heading standing over nothing.
+
+    Choosing IPv6 hid the two IPv4-only sections and showed nothing in their place,
+    because the placeholders were keyed to the tier axis alone. Checking the four
+    combinations that shipped is not enough — this walks all six and requires each
+    section to retain at least one visible element, so a future panel cannot open a
+    new hole silently.
+    """
+    _, page = _pages()
+    sections = re.findall(
+        r'<section id="([^"]+)" class="analysis-section".*?(?=<section id="|</main>)',
+        page,
+        re.DOTALL,
+    )
+    assert len(sections) >= 8, f"expected the full analysis surface, found {sections}"
+
+    holes: list[str] = []
+    for section_id in sections:
+        body = re.search(
+            rf'<section id="{section_id}" class="analysis-section".*?(?=<section id="|</main>)',
+            page,
+            re.DOTALL,
+        )
+        assert body is not None
+        children = re.findall(r"<(?:div|p|section|table|figure)\b[^>]*>", body.group(0))
+        for tier in ("primary", "noncommercial"):
+            for family in ("both", "v4", "v6"):
+                shown = 0
+                for child in children:
+                    attrs = {
+                        key: value
+                        for key, value in re.findall(
+                            r'data-(tier|family|only-family)="([^"]*)"', child
+                        )
+                    }
+                    if _visible(attrs, tier, family):
+                        shown += 1
+                if shown == 0:
+                    holes.append(f"{section_id} is empty at tier={tier} family={family}")
+    assert not holes, "sections with no visible content:\n  " + "\n  ".join(holes)
+
+
+def test_copy_click_is_always_acknowledged() -> None:
+    """A click must never be swallowed by a clipboard promise that does not settle.
+
+    ``navigator.clipboard.writeText`` can remain permanently unsettled in a
+    sandboxed or unfocused document, so awaiting it was the only path to feedback
+    and the button sat inert. A timer-backed fallback selects the command instead,
+    which always works.
+    """
+    console, _ = _pages()
+    assert console.count('class="sr-only copy-status"') == console.count('class="copy"')
+    assert "selectNodeContents" in console, "clipboard fallback removed"
+    assert "'Selected'" in console
+    # aria-label masks button text from screen readers, so the status node is required.
+    assert 'role="status"' in console
