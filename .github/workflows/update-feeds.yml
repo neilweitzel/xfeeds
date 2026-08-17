@@ -166,11 +166,20 @@ jobs:
             core.setFailed(`xfeeds run exited ${code}`);
 
   # Deploy from inside this workflow rather than depending on pages.yml, which a
-  # GITHUB_TOKEN push cannot trigger.
+  # GITHUB_TOKEN push cannot trigger. This is the primary publish path; pages.yml
+  # picks up after us on workflow_run if this job fails or is cancelled.
   deploy-pages:
     needs: refresh
     if: needs.refresh.outputs.changed == 'true'
     runs-on: ubuntu-latest
+    # Shares pages.yml's group so the two publishers can never deploy at once.
+    # Without this they were in different groups entirely, and a manual "Publish
+    # to Pages" run overlapping a scheduled refresh could land the older artifact
+    # last. cancel-in-progress stays false: a half-finished Pages deployment is
+    # worse than a queued one.
+    concurrency:
+      group: pages
+      cancel-in-progress: false
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

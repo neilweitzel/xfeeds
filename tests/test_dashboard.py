@@ -22,7 +22,9 @@ These tests pin the properties that manual review had to catch by eye:
 * byte-identical repeat renders, per the determinism rule in AGENTS.md
 """
 
+import json
 import re
+from pathlib import Path
 from typing import Any
 
 from xfeeds import dashboard
@@ -429,3 +431,76 @@ def test_render_is_deterministic() -> None:
     per the determinism rule in AGENTS.md.
     """
     assert _page() == _page()
+
+
+# --------------------------------------------------------------------------
+# The `xfeeds dashboard` command
+# --------------------------------------------------------------------------
+
+
+def test_dashboard_command_rerenders_without_network(tmp_path: Path) -> None:
+    """`xfeeds dashboard` rebuilds the page from feeds already on disk.
+
+    This command exists because the pipeline cannot simply be re-run to pick up a
+    presentation change - AbuseIPDB allows five blacklist calls a day, so `run` is
+    rationed - and because a merged generator change was otherwise invisible on
+    the published page until the next scheduled refresh happened to regenerate it.
+
+    Rendering must therefore depend on nothing but the committed feed files. The
+    test asserts that by pointing the command at a directory containing only those
+    files, with no network available to it.
+    """
+    from typer.testing import CliRunner
+
+    from xfeeds.cli import app
+
+    feeds = tmp_path / "feeds"
+    feeds.mkdir()
+    (feeds / "manifest.json").write_text(json.dumps(_manifest()), encoding="utf-8")
+    (feeds / "history.json").write_text(json.dumps(_history()), encoding="utf-8")
+    (feeds / "insights.json").write_text(json.dumps(_insights()), encoding="utf-8")
+    (feeds / "all.json").write_text(json.dumps({"indicators": []}), encoding="utf-8")
+
+    result = CliRunner().invoke(app, ["dashboard", "--feeds", str(feeds)])
+    assert result.exit_code == 0, result.stdout
+
+    page = (feeds / "index.html").read_text(encoding="utf-8")
+    assert '<nav class="toc"' in page
+    assert 'class="cards"' in page
+    # The lookup index is written alongside, or the address box would 404.
+    assert (feeds / "lookup.json").exists()
+
+
+def test_dashboard_command_is_idempotent(tmp_path: Path) -> None:
+    """Running it twice must produce identical bytes.
+
+    The workflow that calls this commits only when the output changed, so a
+    non-deterministic render would commit noise on every push to main.
+    """
+    from typer.testing import CliRunner
+
+    from xfeeds.cli import app
+
+    feeds = tmp_path / "feeds"
+    feeds.mkdir()
+    (feeds / "manifest.json").write_text(json.dumps(_manifest()), encoding="utf-8")
+    (feeds / "history.json").write_text(json.dumps(_history()), encoding="utf-8")
+    (feeds / "insights.json").write_text(json.dumps(_insights()), encoding="utf-8")
+    (feeds / "all.json").write_text(json.dumps({"indicators": []}), encoding="utf-8")
+
+    runner = CliRunner()
+    assert runner.invoke(app, ["dashboard", "--feeds", str(feeds)]).exit_code == 0
+    first = (feeds / "index.html").read_bytes()
+    assert runner.invoke(app, ["dashboard", "--feeds", str(feeds)]).exit_code == 0
+    assert (feeds / "index.html").read_bytes() == first
+
+
+def test_dashboard_command_fails_clearly_without_a_manifest(tmp_path: Path) -> None:
+    """A missing manifest is a readable error, not a traceback."""
+    from typer.testing import CliRunner
+
+    from xfeeds.cli import app
+
+    result = CliRunner().invoke(app, ["dashboard", "--feeds", str(tmp_path)])
+    assert result.exit_code == 1
+    assert "no manifest.json" in result.stdout

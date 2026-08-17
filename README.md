@@ -324,7 +324,7 @@ xfeeds/
 ├── pyproject.toml / uv.lock
 ├── docs/DECISIONS.md         # architecture decision record
 ├── src/xfeeds/
-│   ├── cli.py                # xfeeds run | validate | diff | explain <ip>
+│   ├── cli.py                # xfeeds run | validate | dashboard | explain <ip>
 │   ├── collectors/           # plaintext, netset, json, spamhaus, abuseipdb, threatfox
 │   ├── normalize.py
 │   ├── score.py              # independence-class weighting
@@ -353,6 +353,28 @@ xfeeds/
 - On failure or churn trip: open/update an issue with the run report.
 
 The 6-hour cadence is set by the tightest external constraint: AbuseIPDB allows **5 blacklist calls/day** on the free tier, and Spamhaus requires automated fetches at least an hour apart.
+
+### How publishing actually reaches Pages
+
+A push made with `GITHUB_TOKEN` [does not start another workflow](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/trigger-a-workflow) — GitHub blocks that to prevent recursion. So the refresh commit can never trigger `pages.yml` by `push`, and there are three deliberate paths instead:
+
+| Path | Trigger | Role |
+|---|---|---|
+| `update-feeds.yml` → `deploy-pages` | inside the refresh run | **Primary.** Publishes every scheduled refresh. |
+| `pages.yml` | `workflow_run` on the producers completing | **Fallback.** Publishes if the primary failed or was cancelled. |
+| `refresh-dashboard.yml` | push to `src/xfeeds/dashboard.py` or `insights.py` | Re-renders the page when the generator changes, then `pages.yml` publishes it. |
+
+Both publishers share the `pages` concurrency group, so they can never deploy at once and land an older artifact last. `pages.yml` compares the committed `feeds/index.html` against the live one by hash and skips when consumers are already current, so the fallback costs nothing on a healthy run.
+
+Why the fallback exists: on 2026-08-17 a refresh committed new feeds and its deploy job then died fetching an action from codeload (HTTP 429). `main` was fresh, Pages was a build behind, and nothing could retry until the next six-hourly run.
+
+### Re-rendering the page without running the pipeline
+
+```bash
+uv run xfeeds dashboard
+```
+
+Rebuilds `feeds/index.html` and `feeds/lookup.json` from the feed files already on disk. No network access, and it spends none of the rationed AbuseIPDB budget that `xfeeds run` needs — so this is the way to pick up a presentation change.
 
 ### Watchdogs
 
