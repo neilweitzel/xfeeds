@@ -34,11 +34,24 @@ body{margin:0;background:var(--bg);color:var(--text);
 font:15px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
 .wrap{max-width:1080px;margin:0 auto;padding:34px 20px 72px}
 a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
-header{border-bottom:1px solid var(--line);padding-bottom:22px;margin-bottom:30px}
+header{border-bottom:1px solid var(--line);padding-bottom:22px;margin-bottom:24px}
+/* Sticky nav rather than collapsing panels. The page is long because the data is
+   worth showing; the fix for length is wayfinding, not concealment. */
+nav.toc{position:sticky;top:0;z-index:20;display:flex;gap:2px;flex-wrap:wrap;
+background:#0d1117f2;backdrop-filter:blur(8px);border-bottom:1px solid var(--line);
+margin:0 -20px 26px;padding:9px 20px}
+nav.toc a{color:var(--muted);font-size:12.5px;padding:5px 10px;border-radius:6px;
+white-space:nowrap}
+nav.toc a:hover{color:var(--text);background:var(--panel);text-decoration:none}
+h2[id],section[id]{scroll-margin-top:64px}
 h1{margin:0 0 6px;font-size:28px;letter-spacing:-.02em}
 h2{font-size:13px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);
 margin:40px 0 14px;font-weight:600}
 h3{font-size:15px;margin:20px 0 8px}
+/* Analysis panels sit under one "Threat landscape" h2, so their own titles are a
+   level down and their internal subheadings a level below that. */
+h3.ptitle{font-size:17px;margin:32px 0 10px;letter-spacing:-.01em}
+h4{font-size:14px;margin:18px 0 7px;color:var(--text)}
 .sub{color:var(--muted);margin:0}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:15px}
@@ -111,6 +124,9 @@ margin-bottom:10px;font-weight:600;font-size:14px}
 .tl .a-med{fill:#d2992233;stroke:#d29922;stroke-width:1.2}
 .tl .hit{fill:transparent}
 .tl .hit:hover{fill:#ffffff18}
+.tl .c-add{fill:#3fb950;opacity:.85}
+.tl .c-rem{fill:#f85149;opacity:.85}
+.tl .cax{stroke:var(--line);stroke-width:1}
 .k{display:inline-block;width:9px;height:9px;border-radius:2px;margin:0 4px 0 9px}
 .k-high{background:#3fb950}
 .k-med{background:#d29922}
@@ -328,72 +344,6 @@ document.getElementById('ip').addEventListener('keydown',function(e){
 """
 
 
-def _sparkline(values: list[float], labels: list[str], colour: str, height: int = 92) -> str:
-    if len(values) < 2:
-        return (
-            '<p class="note">Charts appear once a few runs have accumulated — '
-            "the feed refreshes every 6 hours.</p>"
-        )
-    width, pad = 1020, 24
-    top, bottom = max(values), min(values)
-    span = max(top - bottom, 1)
-    step = (width - 2 * pad) / (len(values) - 1)
-    pts = [
-        (pad + i * step, height - pad - ((v - bottom) / span) * (height - 2 * pad))
-        for i, v in enumerate(values)
-    ]
-    line = " ".join(f"{x:.1f},{y:.1f}" for x, y in pts)
-    area = f"{pad},{height - pad} {line} {pad + (len(values) - 1) * step:.1f},{height - pad}"
-    return (
-        f'<svg viewBox="0 0 {width} {height}" width="100%" height="{height}" '
-        f'role="img" aria-label="feed size over time">'
-        f'<polygon points="{area}" fill="{colour}" opacity="0.13"/>'
-        f'<polyline points="{line}" fill="none" stroke="{colour}" stroke-width="2"/>'
-        f'<text x="{pad}" y="12">{labels[0]}</text>'
-        f'<text x="{width - pad}" y="12" text-anchor="end">{labels[-1]}</text>'
-        f'<text x="{pad}" y="{height - 5}">low {bottom:,.0f}</text>'
-        f'<text x="{width - pad}" y="{height - 5}" text-anchor="end">high {top:,.0f}</text>'
-        f"</svg>"
-    )
-
-
-def _bars(history: list[dict[str, Any]]) -> str:
-    if len(history) < 2:
-        return (
-            '<p class="note">Charts appear once a few runs have accumulated — '
-            "the feed refreshes every 6 hours.</p>"
-        )
-    recent = history[-60:]
-    width, height, pad = 1020, 108, 20
-    mid = height / 2
-    peak = max((max(h.get("added", 0), h.get("removed", 0)) for h in recent), default=1) or 1
-    slot = (width - 2 * pad) / len(recent)
-    bw = max(2.0, slot * 0.62)
-    parts = []
-    for i, h in enumerate(recent):
-        x = pad + i * slot
-        up = (h.get("added", 0) / peak) * (mid - pad)
-        dn = (h.get("removed", 0) / peak) * (mid - pad)
-        if up:
-            parts.append(
-                f'<rect x="{x:.1f}" y="{mid - up:.1f}" width="{bw:.1f}" '
-                f'height="{up:.1f}" fill="#3fb950" opacity="0.85"/>'
-            )
-        if dn:
-            parts.append(
-                f'<rect x="{x:.1f}" y="{mid:.1f}" width="{bw:.1f}" '
-                f'height="{dn:.1f}" fill="#f85149" opacity="0.85"/>'
-            )
-    parts.append(f'<line x1="{pad}" y1="{mid}" x2="{width - pad}" y2="{mid}" stroke="#30363d"/>')
-    return (
-        f'<svg viewBox="0 0 {width} {height}" width="100%" height="{height}" '
-        f'role="img" aria-label="additions and removals per run">'
-        + "".join(parts)
-        + f'<text x="{pad}" y="12">added</text>'
-        + f'<text x="{pad}" y="{height - 4}">removed</text></svg>'
-    )
-
-
 def _corroboration(manifest: dict[str, Any]) -> str:
     hist = manifest.get("corroboration_histogram", {})
     if not hist:
@@ -605,7 +555,7 @@ def _ipv6_panel(insights: dict[str, Any]) -> str:
             for r in runs
         )
         runs_html = (
-            "<h3>Adjacent prefixes</h3>"
+            "<h4>Adjacent prefixes</h4>"
             + '<p class="note">Listings that sit next to each other in address space. '
             + "Contiguous allocations under common control are a stronger signal than the "
             + "same number of unrelated listings. They are reported, not merged: merging "
@@ -640,7 +590,7 @@ def _ipv6_panel(insights: dict[str, Any]) -> str:
         )
 
     return (
-        "\n<h2>IPv6 coverage</h2>\n"
+        '\n<h3 class="ptitle">IPv6 coverage</h3>\n'
         + '<p class="note">'
         + format(entries, ",")
         + " prefixes across "
@@ -651,7 +601,7 @@ def _ipv6_panel(insights: dict[str, Any]) -> str:
         + "prefix.</p>\n"
         + concentration
         + '\n<div class="grid2">\n<div>\n'
-        + "<h3>How wide each entry reaches</h3>\n"
+        + "<h4>How wide each entry reaches</h4>\n"
         + '<p class="note">Entry count is a poor measure for IPv6 &mdash; a /29 and a '
         + "/48 are both one line and differ by a factor of half a million. The bar and "
         + "the last two columns show reach instead, which is why the most numerous row "
@@ -668,7 +618,7 @@ def _ipv6_panel(insights: dict[str, Any]) -> str:
         + "lists netblocks leased or stolen outright by criminal operations, published "
         + "for firewall and backbone use, where the whole allocation is the finding. "
         + "Review the widest entries before deploying them.</p>\n"
-        + "</div>\n<div>\n<h3>Where in global unicast space</h3>\n"
+        + "</div>\n<div>\n<h4>Where in global unicast space</h4>\n"
         + '<p class="note">Which /12 of <code>2000::/3</code> the listings fall in, '
         + "derived from the address itself. This is address-space structure, not "
         + "geography &mdash; no registration country is published anywhere on this "
@@ -678,7 +628,7 @@ def _ipv6_panel(insights: dict[str, Any]) -> str:
         + "</table>\n"
         + runs_html
         + "\n</div>\n</div>\n\n"
-        + "<h3>Not shown for IPv6, and why</h3>\n"
+        + "<h4>Not shown for IPv6, and why</h4>\n"
         + '<p class="note">Each of these would render a single bar. Listing them is '
         + "more useful than leaving a reader to guess whether we looked.</p>\n"
         + "<table><tr><th>Analysis</th><th>Reason</th></tr>"
@@ -755,8 +705,9 @@ def _spectrum_svg(spectrum: dict[str, Any]) -> str:
     occupied = int(spectrum.get("occupied_buckets", 0))
     total = int(spectrum.get("buckets", len(counts)))
     return f"""
+<h3 class="ptitle">Where in the IPv4 space we see activity</h3>
 <div class="chart">
-<div class="chead"><span>Where in the IPv4 space we see activity</span>
+<div class="chead"><span>One bar per /9 slice, log-scaled</span>
 <span class="note">{occupied} of {total} slices touched</span></div>
 <div class="axhint"><span>horizontal axis: every IPv4 address, in order</span>
 <span class="axarrow">0.0.0.0 &rarr; 255.255.255.255</span></div>
@@ -778,23 +729,46 @@ reported to us.</p>
 """
 
 
-def _timeline_svg(history: list[dict[str, Any]]) -> str:
-    """Published high and medium counts across every run we have recorded."""
-    # History rows carry high/medium at the top level, not under "counts".
+def _history_panel(history: list[dict[str, Any]]) -> str:
+    """Feed size and per-run churn in one chart, on one shared time axis.
+
+    Previously this was three separate charts in two disconnected places on the
+    page: this stacked area, a high-confidence sparkline that was a strict subset
+    of it, and an added/removed bar chart far below. Churn is only meaningful
+    against the total it changes, so the bars belong on the same x axis as the
+    line they move - reading them 800 pixels apart asked the reader to hold two
+    unaligned axes in their head, and the sparkline said nothing this does not.
+    """
+    # History rows carry high/medium/added/removed at the top level, not under
+    # "counts".
     points = [
         (
             int(h.get("high", 0)),
             int(h.get("medium", 0)),
+            int(h.get("added", 0)),
+            int(h.get("removed", 0)),
             str(h.get("generated_at", ""))[:16].replace("T", " "),
         )
         for h in history
     ]
     points = [p for p in points if p[0] or p[1]]
     if len(points) < 2:
-        return ""
+        return (
+            '<p class="note">Charts appear once a few runs have accumulated &mdash; '
+            "the feed refreshes every 6 hours.</p>"
+        )
+
     width, height = 1000.0, 130.0
-    peak = max(h + m for h, m, _ in points) or 1
+    # The churn strip hangs below the area chart and shares its x mapping, so a
+    # spike in the bars sits directly under the step it caused in the line.
+    gap, churn_h = 16.0, 56.0
+    churn_top = height + gap
+    churn_mid = churn_top + churn_h / 2
+    total_h = churn_top + churn_h
+
+    peak = max(h + m for h, m, _, _, _ in points) or 1
     step = width / max(len(points) - 1, 1)
+    churn_peak = max((max(a, r) for _, _, a, r, _ in points), default=1) or 1
 
     def path(values: list[int], stacked: list[int] | None = None) -> str:
         top = []
@@ -809,29 +783,60 @@ def _timeline_svg(history: list[dict[str, Any]]) -> str:
             bottom.append(f"{i * step:.2f},{y:.2f}")
         return "M" + " L".join(top + bottom) + " Z"
 
-    highs = [h for h, _, _ in points]
-    mediums = [m for _, m, _ in points]
-    dots = "".join(
-        f'<circle cx="{i * step:.2f}" cy="{height - ((h + m) / peak) * height:.2f}" r="9" '
-        f'class="hit"><title>{label}: {h:,} high, {m:,} medium</title></circle>'
-        for i, (h, m, label) in enumerate(points)
+    highs = [h for h, _, _, _, _ in points]
+    mediums = [m for _, m, _, _, _ in points]
+
+    # Bars are clamped inside the plot box so the churn strip shares its exact left
+    # and right edges with the area chart above it. Centring the first and last bar
+    # on their data point would push them past the axis and break that alignment,
+    # which is the whole reason the two views share one axis.
+    bw = max(1.5, step * 0.5)
+    bars = []
+    for i, (_, _, added, removed, _) in enumerate(points):
+        x = min(max(i * step - bw / 2, 0.0), width - bw)
+        up = (added / churn_peak) * (churn_h / 2)
+        dn = (removed / churn_peak) * (churn_h / 2)
+        if up:
+            bars.append(
+                f'<rect x="{x:.2f}" y="{churn_mid - up:.2f}" width="{bw:.2f}" '
+                f'height="{up:.2f}" class="c-add"/>'
+            )
+        if dn:
+            bars.append(
+                f'<rect x="{x:.2f}" y="{churn_mid:.2f}" width="{bw:.2f}" '
+                f'height="{dn:.2f}" class="c-rem"/>'
+            )
+
+    # One hover target per run spanning both regions, so a single hover reports
+    # the size and the churn together rather than needing two separate hovers.
+    hits = "".join(
+        f'<rect x="{min(max(i * step - step / 2, 0.0), width - step):.2f}" y="0" '
+        f'width="{step:.2f}" '
+        f'height="{total_h:.0f}" class="hit">'
+        f"<title>{label}: {h:,} high, {m:,} medium &#183; "
+        f"+{a:,} / &#8722;{r:,} this run</title></rect>"
+        for i, (h, m, a, r, label) in enumerate(points)
     )
+
     return f"""
 <div class="chart">
-<div class="chead"><span>Published addresses over time</span>
-<span class="note">{len(points)} runs &middot; {points[0][2]} to {points[-1][2]}</span></div>
-<svg viewBox="0 0 {width:.0f} {height:.0f}" class="tl" role="img"
-     aria-label="Published high and medium confidence counts over time">
+<div class="chead"><span>Feed size and churn per run</span>
+<span class="note">{len(points)} runs &middot; {points[0][4]} to {points[-1][4]}</span></div>
+<svg viewBox="0 0 {width:.0f} {total_h:.0f}" class="tl" role="img"
+     aria-label="Published high and medium confidence counts over time, with
+     addresses added and removed each run">
 <path d="{path(mediums, highs)}" class="a-med"/>
 <path d="{path(highs)}" class="a-high"/>
 <line x1="0" y1="1" x2="{width:.0f}" y2="1" class="yax"/>
 <text x="4" y="12" class="ylab">{peak:,} published</text>
-{dots}
+{"".join(bars)}
+<line x1="0" y1="{churn_mid:.2f}" x2="{width:.0f}" y2="{churn_mid:.2f}" class="cax"/>
+{hits}
 </svg>
 <p class="note"><span class="k k-high"></span>high confidence
-<span class="k k-med"></span>medium. Hover any point for the run. Steps rather than
-a smooth curve are expected: this refreshes every six hours, and a source dropping
-out or returning moves the whole line.</p>
+<span class="k k-med"></span>medium, with additions above and removals below the
+centre line, on the same time axis. Bars scale to &plusmn;{churn_peak:,}, the largest
+single-run change. Hover any run for its figures.</p>
 </div>
 """
 
@@ -897,7 +902,7 @@ def _asn_windows(windows: dict[str, Any]) -> str:
         )
 
     return f"""
-<h2>Networks that keep coming back</h2>
+<h3 class="ptitle">Networks that keep coming back</h3>
 <p class="note">Sorted by <strong>days seen</strong>, not by volume. Individual
 addresses churn out within about a week, so a big one-day number is an incident and
 a network present on eight separate days is a standing pattern. <strong>Per
@@ -956,7 +961,7 @@ def _insights_section(insights: dict[str, Any]) -> str:
     )
 
     return f"""
-<h2>What the whole corpus looks like</h2>
+<h3 class="ptitle">What the whole corpus looks like</h3>
 <p class="note">The feeds above contain only what we are licensed to republish.
 These figures cover <strong>everything we look at</strong> —
 {int(corpus.get("addresses_observed", 0)):,} addresses from
@@ -971,7 +976,7 @@ no cell can identify a single address. That is a deliberate limit, not an
 oversight: a &ldquo;top offending addresses&rdquo; list would be the data itself
 wearing a hat.</p>
 
-<h3>Networks with the most listed addresses in this run</h3>
+<h4>Networks with the most listed addresses in this run</h4>
 <div class="tscroll">
 <table>
 <tr><th>ASN</th><th>Network</th>
@@ -983,7 +988,7 @@ wearing a hat.</p>
 reported by nine or ten independent sources is not having a bad week — that is a
 sustained pattern, and worth a look at the whole network rather than one address.</p>
 
-<h3>Sources credited here that appear in no feed file</h3>
+<h4>Sources credited here that appear in no feed file</h4>
 <div class="tscroll">
 <table>
 <tr><th>Source</th><th>Credit</th><th class="num">Addresses seen</th>
@@ -1029,7 +1034,6 @@ def render(
     pct = round(withheld / seen * 100) if seen else 0
     sources = manifest.get("sources", {})
     filters = manifest.get("filters", {})
-    labels = [h["generated_at"][:10] for h in history] or ["—"]
     ok = sum(1 for s in sources.values() if s.get("status") == "ok")
     configured = sum(1 for s in sources.values() if s.get("status") != "skipped")
 
@@ -1054,10 +1058,15 @@ published.</p>
 · <a href="{PROJECT_URL}">source and docs</a></p>
 </header>
 
-{_spectrum_svg(spectrum)}
-{_timeline_svg(history)}
-{_asn_windows(asn_win)}
-{_ipv6_panel(insights or {})}
+<nav class="toc" aria-label="Sections">
+<a href="#lookup">Check an address</a>
+<a href="#downloads">Downloads</a>
+<a href="#setup">Set it up</a>
+<a href="#health">Feed health</a>
+<a href="#sources">Sources</a>
+<a href="#analysis">Threat landscape</a>
+<a href="#licensing">Licensing</a>
+</nav>
 
 <div class="cards">
 <div class="card"><div class="n high">{counts.get("high", 0):,}</div>
@@ -1073,7 +1082,7 @@ published.</p>
   <div class="l">changed this run</div></div>
 </div>
 
-<h2>Check an address</h2>
+<h2 id="lookup">Check an address</h2>
 <div id="look">
   <input id="ip" type="text" placeholder="e.g. 45.33.32.156" spellcheck="false"
          autocomplete="off" aria-label="IP address to check">
@@ -1083,7 +1092,58 @@ published.</p>
 <p class="note" style="margin-top:10px">Runs entirely in your browser. Nothing is
 sent anywhere, and no query is logged.</p>
 
-<h2>Set it up</h2>
+<h2 id="downloads">Downloads</h2>
+<p class="note">The combined files carry both address families. If your firewall or
+tooling is single-stack, take the matching <code>-v4</code> or <code>-v6</code> file
+instead &mdash; a v4-only parser will choke on an IPv6 line.</p>
+<table>
+<tr><th>File</th><th>What it is</th><th>Family</th><th class="num">Entries</th></tr>
+<tr><td><a href="high-confidence.txt">high-confidence.txt</a></td>
+    <td>Safe to block. Corroborated across independent sources.</td>
+    <td>both</td>
+    <td class="num">{counts.get("high", 0):,}</td></tr>
+<tr><td><a href="high-confidence-v4.txt">high-confidence-v4.txt</a></td>
+    <td>Safe to block, IPv4 only.</td><td>IPv4</td>
+    <td class="num">{fam4.get("high", 0):,}</td></tr>
+<tr><td><a href="high-confidence-v6.txt">high-confidence-v6.txt</a></td>
+    <td>Safe to block, IPv6 only.</td><td>IPv6</td>
+    <td class="num">{fam6.get("high", 0):,}</td></tr>
+<tr><td><a href="medium-confidence.txt">medium-confidence.txt</a></td>
+    <td>Two independent sources. Challenge or rate-limit rather than drop.</td>
+    <td>both</td>
+    <td class="num">{counts.get("medium", 0):,}</td></tr>
+<tr><td><a href="medium-confidence-v4.txt">medium-confidence-v4.txt</a></td>
+    <td>Challenge or rate-limit, IPv4 only.</td><td>IPv4</td>
+    <td class="num">{fam4.get("medium", 0):,}</td></tr>
+<tr><td><a href="medium-confidence-v6.txt">medium-confidence-v6.txt</a></td>
+    <td>Challenge or rate-limit, IPv6 only.</td><td>IPv6</td>
+    <td class="num">{fam6.get("medium", 0):,}</td></tr>
+<tr><td><a href="all.csv">all.csv</a></td>
+    <td>Both tiers with scores, sources and dates.</td><td>both</td>
+    <td class="num">{published:,}</td></tr>
+<tr><td><a href="all.json">all.json</a></td><td>Full provenance per address.</td>
+    <td>both</td><td class="num">{published:,}</td></tr>
+<tr><td><a href="stix-bundle.json">stix-bundle.json</a></td><td>STIX 2.1 bundle.</td>
+    <td>both</td><td class="num">{counts.get("high", 0):,}</td></tr>
+<tr><td><a href="misp-manifest.json">misp-manifest.json</a></td><td>MISP feed.</td>
+    <td>both</td><td class="num">{counts.get("high", 0):,}</td></tr>
+<tr><td><a href="nftables.conf">nftables.conf</a></td>
+    <td>nftables sets &mdash; <code>blocklist4</code> and <code>blocklist6</code>.</td>
+    <td>both</td><td class="num">{counts.get("high", 0):,}</td></tr>
+<tr><td><a href="iptables.ipset">iptables.ipset</a></td>
+    <td>ipset restore format, set <code>xfeeds</code>.</td><td>IPv4</td>
+    <td class="num">{fam4.get("high", 0):,}</td></tr>
+<tr><td><a href="iptables6.ipset">iptables6.ipset</a></td>
+    <td>ipset restore format, set <code>xfeeds6</code>. An ipset holds one family.</td>
+    <td>IPv6</td><td class="num">{fam6.get("high", 0):,}</td></tr>
+<tr><td><a href="manifest.json">manifest.json</a></td>
+    <td>Run metadata, per-source status and licences.</td><td>&mdash;</td>
+    <td class="num">&mdash;</td></tr>
+<tr><td><a href="history.json">history.json</a></td><td>Per-run history.</td>
+    <td>&mdash;</td><td class="num">{len(history)}</td></tr>
+</table>
+
+<h2 id="setup">Set it up</h2>
 <div class="tabgroup">
 <div class="tabs" role="tablist">
   <button class="tab" role="tab" aria-selected="true" data-panel="p-lin">Linux</button>
@@ -1164,72 +1224,38 @@ custom lists, so the high-confidence tier is the right one to use.</p>
 </div>
 </div>
 
-<h2>All downloads</h2>
-<p class="note">The combined files carry both address families. If your firewall or
-tooling is single-stack, take the matching <code>-v4</code> or <code>-v6</code> file
-instead &mdash; a v4-only parser will choke on an IPv6 line.</p>
+<h2 id="health">Feed health</h2>
+{_history_panel(history)}
+<p class="note">{ok} of {
+        configured
+    } configured sources returned data on this run. A run that stops refreshing is caught by an automated heartbeat rather
+than by a reader noticing &mdash; see <a href="#sources">the source table</a>
+for per-source status.</p>
+
+<h2 id="sources">Sources and provenance</h2>
+<h3>Where the data comes from</h3>
+<div class="tscroll">
 <table>
-<tr><th>File</th><th>What it is</th><th>Family</th><th class="num">Entries</th></tr>
-<tr><td><a href="high-confidence.txt">high-confidence.txt</a></td>
-    <td>Safe to block. Corroborated across independent sources.</td>
-    <td>both</td>
-    <td class="num">{counts.get("high", 0):,}</td></tr>
-<tr><td><a href="high-confidence-v4.txt">high-confidence-v4.txt</a></td>
-    <td>Safe to block, IPv4 only.</td><td>IPv4</td>
-    <td class="num">{fam4.get("high", 0):,}</td></tr>
-<tr><td><a href="high-confidence-v6.txt">high-confidence-v6.txt</a></td>
-    <td>Safe to block, IPv6 only.</td><td>IPv6</td>
-    <td class="num">{fam6.get("high", 0):,}</td></tr>
-<tr><td><a href="medium-confidence.txt">medium-confidence.txt</a></td>
-    <td>Two independent sources. Challenge or rate-limit rather than drop.</td>
-    <td>both</td>
-    <td class="num">{counts.get("medium", 0):,}</td></tr>
-<tr><td><a href="medium-confidence-v4.txt">medium-confidence-v4.txt</a></td>
-    <td>Challenge or rate-limit, IPv4 only.</td><td>IPv4</td>
-    <td class="num">{fam4.get("medium", 0):,}</td></tr>
-<tr><td><a href="medium-confidence-v6.txt">medium-confidence-v6.txt</a></td>
-    <td>Challenge or rate-limit, IPv6 only.</td><td>IPv6</td>
-    <td class="num">{fam6.get("medium", 0):,}</td></tr>
-<tr><td><a href="all.csv">all.csv</a></td>
-    <td>Both tiers with scores, sources and dates.</td><td>both</td>
-    <td class="num">{published:,}</td></tr>
-<tr><td><a href="all.json">all.json</a></td><td>Full provenance per address.</td>
-    <td>both</td><td class="num">{published:,}</td></tr>
-<tr><td><a href="stix-bundle.json">stix-bundle.json</a></td><td>STIX 2.1 bundle.</td>
-    <td>both</td><td class="num">{counts.get("high", 0):,}</td></tr>
-<tr><td><a href="misp-manifest.json">misp-manifest.json</a></td><td>MISP feed.</td>
-    <td>both</td><td class="num">{counts.get("high", 0):,}</td></tr>
-<tr><td><a href="nftables.conf">nftables.conf</a></td>
-    <td>nftables sets &mdash; <code>blocklist4</code> and <code>blocklist6</code>.</td>
-    <td>both</td><td class="num">{counts.get("high", 0):,}</td></tr>
-<tr><td><a href="iptables.ipset">iptables.ipset</a></td>
-    <td>ipset restore format, set <code>xfeeds</code>.</td><td>IPv4</td>
-    <td class="num">{fam4.get("high", 0):,}</td></tr>
-<tr><td><a href="iptables6.ipset">iptables6.ipset</a></td>
-    <td>ipset restore format, set <code>xfeeds6</code>. An ipset holds one family.</td>
-    <td>IPv6</td><td class="num">{fam6.get("high", 0):,}</td></tr>
-<tr><td><a href="manifest.json">manifest.json</a></td>
-    <td>Run metadata, per-source status and licences.</td><td>&mdash;</td>
-    <td class="num">&mdash;</td></tr>
-<tr><td><a href="history.json">history.json</a></td><td>Per-run history.</td>
-    <td>&mdash;</td><td class="num">{len(history)}</td></tr>
+<tr><th>Source</th><th>Independence class</th><th class="num">Records</th>
+    <th>Status</th><th>Votes</th><th>Republished</th></tr>
+{_sources(manifest)}
 </table>
-
-<h2>Safe-to-block list over time</h2>
-{_sparkline([h.get("high", 0) for h in history], labels, "#f85149")}
-
-<h2>Added and removed each run</h2>
-{_bars(history)}
+</div>
+<p class="note"><strong>Why "independence class" matters.</strong> Many public
+blocklists copy from each other, so counting files as votes manufactures false
+confidence. Sources that share upstream data share a class, and each class votes
+at most once. Sources marked <em>scoring only</em> help decide what is malicious,
+but their data is never republished here because their licences do not allow it.</p>
 
 <div class="grid2">
 <div>
-<h2>How much agreement</h2>
+<h3>How much agreement</h3>
 <p class="note">How many <em>independent</em> source families reported each
 published address.</p>
 {_corroboration(manifest)}
 </div>
 <div>
-<h2>What got filtered out</h2>
+<h3>What got filtered out</h3>
 <table>
 <tr><th>Rule</th><th class="num">Dropped</th></tr>
 <tr><td>On the allowlist<div class="note">cloud, CDN, crawlers, public
@@ -1246,20 +1272,12 @@ published address.</p>
 </div>
 </div>
 
-<h2>Where the data comes from</h2>
-<div class="tscroll">
-<table>
-<tr><th>Source</th><th>Independence class</th><th class="num">Records</th>
-    <th>Status</th><th>Votes</th><th>Republished</th></tr>
-{_sources(manifest)}
-</table>
-</div>
-<p class="note"><strong>Why "independence class" matters.</strong> Many public
-blocklists copy from each other, so counting files as votes manufactures false
-confidence. Sources that share upstream data share a class, and each class votes
-at most once. Sources marked <em>scoring only</em> help decide what is malicious,
-but their data is never republished here because their licences do not allow it.</p>
-
+<h2 id="analysis">Threat landscape</h2>
+<p class="note">Aggregate structure of what the pipeline sees. Every figure
+below is a derived count, not an extract.</p>
+{_spectrum_svg(spectrum)}
+{_asn_windows(asn_win)}
+{_ipv6_panel(insights or {})}
 {_insights_section(insights or {})}
 
 <h2>Two tiers, and which one you want</h2>
@@ -1291,7 +1309,7 @@ out.</p>
     <td class="num">{nc_published:,}</td></tr>
 </table>
 
-<h2>Licensing and credit</h2>
+<h2 id="licensing">Licensing and credit</h2>
 <p class="note">xfeeds compiles publicly available feeds and is not sold. Where a
 source forbids redistribution outright it is used for scoring only, or excluded.
 Where it permits redistribution but forbids commercial use, it goes in the
