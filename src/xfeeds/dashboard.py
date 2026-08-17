@@ -41,13 +41,12 @@ STYLE += """
 .hero-chart-head{display:flex;flex-wrap:wrap;gap:12px;align-items:baseline;justify-content:space-between;margin-bottom:10px}
 .hero-chart-head h2{font-size:16px;letter-spacing:-.01em}.hero-chart-head .hero-chart-legend{display:flex;flex-wrap:wrap;gap:16px;color:var(--muted);font:12px var(--mono)}
 .hero-chart-legend i{display:inline-block;width:11px;height:11px;margin-right:6px;vertical-align:-1px;border-radius:2px}
-.hero-chart-legend .lg-high{background:var(--orange)}.hero-chart-legend .lg-medium{background:#7f7f88}.hero-chart-legend .lg-adds{background:var(--ok)}.hero-chart-legend .lg-removes{background:#D7846F}
+.hero-chart-legend .lg-high{background:var(--orange)}.hero-chart-legend .lg-medium{background:#7f7f88}
 .hero-svg{width:100%;height:auto;overflow:visible;display:block}
 .hero-svg .axis text{fill:#9B9BA3;font:11px var(--mono)}.hero-svg .grid-line{stroke:#26262C}
 .hero-svg .area-high{fill:var(--orange);opacity:.14}.hero-svg .area-med{fill:#7f7f88;opacity:.10}
 .hero-svg .line-high{fill:none;stroke:var(--orange);stroke-width:2.4;stroke-linejoin:round}
 .hero-svg .line-med{fill:none;stroke:#B0B0B8;stroke-width:1.8;stroke-linejoin:round;stroke-dasharray:5 4}
-.hero-svg .flow-add{stroke:var(--ok);stroke-width:0}.hero-svg .flow-remove{stroke:#D7846F;stroke-width:0}
 .hero-svg .hit-col{fill:transparent;cursor:pointer}.hero-svg .hit-col:hover,.hero-svg .hit-col:focus-visible{fill:#ffffff10;outline:none}
 .hero-chart-tip{display:flex;flex-wrap:wrap;gap:6px 16px;min-height:22px;margin-top:10px;color:var(--muted);font:12px var(--mono)}
 .hero-chart-tip strong{color:var(--text)}
@@ -428,9 +427,8 @@ def _hero_history_chart(history: list[dict[str, Any]]) -> str:
     A firewall operator arriving at xfeeds should read the value of the corpus
     before reading anything else, and "how large and how stable is this feed" is
     the specific question the chart answers. High/medium curves show growth and
-    steadiness; the add/remove bars underneath show that the feed is churning,
-    not just accumulating, which is the actual signal of an active source of
-    intelligence.
+    steadiness. Per-run details (adds, removes, source counts) are available
+    through hover/focus tooltips on each column.
     """
     runs = history[-40:]
     if len(runs) < 2:
@@ -446,8 +444,7 @@ def _hero_history_chart(history: list[dict[str, Any]]) -> str:
     pad_l, pad_r, pad_t, pad_b = 46, 14, 12, 36
     plot_w = width - pad_l - pad_r
     plot_h = height - pad_t - pad_b
-    flow_h = 46
-    top_h = plot_h - flow_h - 8
+    top_h = plot_h
 
     y_max = max(max(high_values), max(medium_values), 1)
     # Round the axis to a clean interval so the reader can read counts directly.
@@ -459,14 +456,6 @@ def _hero_history_chart(history: list[dict[str, Any]]) -> str:
 
     def y_count(value: int) -> float:
         return pad_t + top_h - (top_h * value / y_top)
-
-    flow_max = max(max(add_values), max(remove_values), 1)
-    flow_top = pad_t + top_h + 8
-
-    def y_flow(value: int) -> float:
-        # Flows are drawn from the midline of the flow band so adds and removes are visually paired.
-        midline = flow_top + flow_h / 2
-        return midline - (flow_h / 2) * value / flow_max
 
     def path(values: list[int]) -> str:
         points = [f"{x(i):.1f},{y_count(v):.1f}" for i, v in enumerate(values)]
@@ -504,23 +493,6 @@ def _hero_history_chart(history: list[dict[str, Any]]) -> str:
             f'<text x="{x(index):.1f}" y="{pad_t + plot_h + 20}" text-anchor="middle">{esc_html(ts)}</text>'
         )
 
-    # Adds above the midline, removes below it; each column is one refresh.
-    band_center = flow_top + flow_h / 2
-    bar_w = max(2.0, plot_w / (len(runs) * 1.5))
-    bars: list[str] = []
-    for index, (added, removed) in enumerate(zip(add_values, remove_values)):
-        cx = x(index) - bar_w / 2
-        if added:
-            bars.append(
-                f'<rect class="flow-add" x="{cx:.1f}" y="{y_flow(added):.1f}" width="{bar_w:.1f}" height="{band_center - y_flow(added):.1f}" fill="var(--ok)" opacity="0.9"/>'
-            )
-        if removed:
-            top = band_center
-            h = (band_center - y_flow(removed)) or 0.1
-            bars.append(
-                f'<rect class="flow-remove" x="{cx:.1f}" y="{top:.1f}" width="{bar_w:.1f}" height="{h:.1f}" fill="#D7846F" opacity="0.9"/>'
-            )
-
     # Hit rectangles carry per-run tooltips through a single event handler.
     hits: list[str] = []
     col_w = plot_w / (len(runs) - 1)
@@ -548,30 +520,23 @@ def _hero_history_chart(history: list[dict[str, Any]]) -> str:
             f'data-tip="{esc_html(summary)}"/>'
         )
 
-    zero_line = (
-        f'<line class="grid-line" x1="{pad_l}" x2="{width - pad_r}" '
-        f'y1="{band_center:.1f}" y2="{band_center:.1f}"/>'
-    )
     default_tip = f"<strong>Last {len(runs)} refreshes.</strong> Hover or focus a column for that refresh's numbers."
     return (
         '<div class="hero-chart-wrap">'
         '<div class="hero-chart-head">'
-        f"<h2>Corpus growth and turnover · last {len(runs)} refreshes</h2>"
+        f"<h2>Corpus growth · last {len(runs)} refreshes</h2>"
         '<div class="hero-chart-legend">'
         '<span><i class="lg-high"></i>Safe to block</span>'
         '<span><i class="lg-medium"></i>Worth challenging</span>'
-        '<span><i class="lg-adds"></i>Added</span>'
-        '<span><i class="lg-removes"></i>Removed</span>'
         "</div>"
         "</div>"
         f'<svg class="hero-svg" viewBox="0 0 {width} {height}" role="img" '
-        'aria-label="Feed size, additions, and removals across the last refreshes">'
-        f'<g class="axis">{"".join(grid)}{"".join(labels)}{zero_line}{"".join(time_ticks)}</g>'
+        'aria-label="Published high and medium confidence counts across the last refreshes">'
+        f'<g class="axis">{"".join(grid)}{"".join(labels)}{"".join(time_ticks)}</g>'
         f'<path class="area-med" d="{area(medium_values)}"/>'
         f'<path class="area-high" d="{area(high_values)}"/>'
         f'<path class="line-med" d="{path(medium_values)}"/>'
         f'<path class="line-high" d="{path(high_values)}"/>'
-        f"{''.join(bars)}"
         f"{''.join(hits)}"
         "</svg>"
         f'<p class="hero-chart-tip" id="hero-chart-tip" aria-live="polite">{default_tip}</p>'
