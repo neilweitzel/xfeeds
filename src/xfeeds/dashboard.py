@@ -26,6 +26,47 @@ BASE_URL = "https://neilweitzel.github.io/xfeeds"
 STYLE = '\n:root{--bg:#0C0C0D;--surface:#16161A;--surface2:#1D1D22;--line:#26262C;--line2:#34343B;--text:#EDEDEF;--muted:#9B9BA3;--faint:#6A6A72;--orange:#FF6A3D;--orange-d:#B84828;--high:#E5484D;--medium:#E0A82E;--ok:#B6D67A;--mono:ui-monospace,SFMono-Regular,Menlo,"Cascadia Mono",Consolas,monospace;--sans:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;--s1:.25rem;--s2:.5rem;--s3:.75rem;--s4:1rem;--s5:1.25rem;--s6:1.5rem;--s8:2rem;--s10:2.5rem;--s12:3rem;--s16:4rem;--s20:5rem;--r:8px}\n*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:84px}body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:16px;line-height:1.5}.mono,.file,code,.num,time,.stat b,.entry-count,.source-name,.asn{font-family:var(--mono);font-variant-numeric:tabular-nums lining-nums}a{color:var(--orange);text-decoration-thickness:1px;text-underline-offset:3px}a:hover{color:#FF8F6E}button,input{font:inherit;color:inherit}button{cursor:pointer}button:focus-visible,a:focus-visible,input:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--orange);outline-offset:3px}.skip,.sr-only{position:absolute;left:-999px;top:0}.skip{background:var(--orange);color:#160904;padding:10px 14px;z-index:100;font-weight:700}.skip:focus{left:10px;top:10px}.shell{max-width:1280px;margin:0 auto;padding:0 var(--s8)}.status-strip{border-bottom:1px solid var(--line);background:#111115}.status-inner{max-width:1280px;margin:auto;min-height:54px;padding:0 var(--s8);display:flex;align-items:center;gap:var(--s3);font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden}.status-inner strong{color:var(--text);font-weight:600}.pulse{color:var(--ok);font-size:18px;line-height:0}.divider{color:var(--faint)}.stale-link{color:#EABF4E}.brandbar{height:74px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text);font-weight:700;letter-spacing:-.02em}.brand:hover{color:var(--text)}.brand-mark{width:26px;height:26px;color:var(--orange)}.brand-meta{font-size:12px;color:var(--muted);font-family:var(--mono);letter-spacing:.03em}.topnav{display:flex;align-items:center;gap:20px;font-size:14px}.topnav a{color:var(--muted);text-decoration:none}.topnav a:hover{color:var(--text)}.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:650}.console-hero{padding:clamp(34px,5vw,68px) 0 34px;display:grid;grid-template-columns:5.2fr 6.8fr;gap:clamp(32px,3.4vw,48px);border-bottom:1px solid var(--line)}.console-hero>*,.lookup-grid>*{min-width:0}h1,h2,h3,p{margin:0}h1{font-size:clamp(32px,2.85vw,42px);line-height:1.03;letter-spacing:-.045em;font-weight:700;margin:13px 0 18px;max-width:none}h2{font-size:22px;letter-spacing:-.025em;line-height:1.15}h3{font-size:16px;letter-spacing:-.01em}.lede{color:var(--muted);max-width:32ch}.stat-rail{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;margin-top:28px}.stat{min-width:0;padding:0 10px;border-left:1px solid var(--line)}.stat:first-child{padding-left:0;border-left:0}.stat b{font-size:21px;display:block;line-height:1.1;letter-spacing:-.05em}.stat span{display:block;color:var(--muted);font-size:12px;line-height:1.3;margin-top:5px}.command-wrap{align-self:start}.platforms{display:flex;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--line)}.platforms::-webkit-scrollbar{display:none}.platform{border:0;background:transparent;color:var(--muted);padding:10px 13px 11px;white-space:nowrap;font-size:13px;border-bottom:2px solid transparent}.platform[aria-selected=true]{color:var(--text);border-bottom-color:var(--orange)}.terminal{position:relative;background:var(--surface);border:1px solid var(--line2);border-radius:var(--r);padding:25px 84px 18px 24px}.terminal::before{content:\'● ● ●\';color:#6A5353;letter-spacing:4px;font-size:10px;position:absolute;top:10px;left:15px}.terminal code{display:block;font-size:15px;line-height:1.75;white-space:pre-wrap;overflow-wrap:anywhere;color:#F4F0E7}.prompt{color:var(--orange);user-select:none}.copy{position:absolute;right:13px;top:14px;min-height:42px;border:1px solid var(--orange);background:var(--orange);color:#24110A;border-radius:6px;padding:0 14px;font-size:13px;font-weight:750}.copy:hover{background:#FF8F6E}.command-note{margin-top:12px;color:var(--muted);font-size:13px}.command-note code{color:var(--text);font-size:12px}.availability{margin-top:25px;display:flex;gap:12px;align-items:center;color:var(--muted);font-size:12px}.availability span{white-space:nowrap}.run-strip{height:34px;display:flex;gap:3px;align-items:end;flex:1}.run-tick{display:block;flex:1;min-width:2px;padding:0;border:0;background:#707079;border-radius:1px 1px 0 0}.run-tick.partial{box-shadow:inset 0 2px 0 #D48E35}.run-tick.severe{box-shadow:inset 0 2px 0 #EABF4E,inset 0 0 0 1px #EABF4E}.run-tick:hover,.run-tick:focus-visible{background:var(--orange);outline:none}.section{padding:36px 0;border-bottom:1px solid var(--line)}.section-head{display:flex;justify-content:space-between;gap:20px;align-items:baseline;margin-bottom:17px}.section-sub{font-size:13px;color:var(--muted);margin-top:5px}.lookup-grid{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:44px;align-items:start}.lookup-form{display:flex;gap:9px;margin-top:18px}.lookup-form input{min-width:0;flex:1;height:48px;padding:0 14px;border:1px solid var(--line2);border-radius:6px;background:var(--surface);font-family:var(--mono);font-size:15px}.lookup-form input::placeholder{color:var(--faint)}.action{height:48px;border:0;border-radius:6px;background:var(--orange);color:#23100A;padding:0 17px;font-weight:750}.action:hover{background:#FF8F6E}.privacy{display:block;margin-top:9px;color:var(--muted);font-size:12px}.verdict{border:1px solid var(--line2);border-radius:var(--r);background:var(--surface);padding:18px}.verdict-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.verdict-label{font-family:var(--mono);font-size:12px;letter-spacing:.09em;text-transform:uppercase}.tag{font-size:11px;font-family:var(--mono);border:1px solid currentColor;border-radius:999px;padding:3px 7px;white-space:nowrap}.tag.high{color:var(--high)}.tag.medium{color:var(--medium)}.tag.clear{color:var(--ok)}.verdict-address{font-family:var(--mono);font-size:22px;line-height:1.15;margin:12px 0 7px;overflow-wrap:anywhere}.verdict p{font-size:13px;color:var(--muted)}.verdict dl{display:grid;grid-template-columns:110px 1fr;gap:5px 12px;margin:15px 0 0;font-size:12px}.verdict dt{color:var(--faint)}.verdict dd{margin:0;font-family:var(--mono);overflow-wrap:anywhere}.feed-groups{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:32px}.feed-group+.feed-group{border-left:1px solid var(--line);padding-left:32px}.feed-group h3{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:11px}.feed-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}.file{font-size:13px;overflow-wrap:anywhere}.family{font:11px var(--mono);color:var(--muted);border:1px solid var(--line2);border-radius:99px;padding:2px 6px}.entry-count{font-size:12px;color:var(--muted);text-align:right;white-space:nowrap}.feeds-foot{margin-top:18px;font-size:12px;color:var(--muted)}.callout-link{margin-top:16px;border-top:1px solid var(--line);padding-top:16px;display:flex;justify-content:space-between;gap:22px;align-items:center;font-size:14px}.callout-link b{font-family:var(--mono);font-weight:600;color:var(--text)}footer{padding:26px 0 44px;color:var(--muted);font-size:12px}.foot-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px}.foot-grid p+p{margin-top:9px}.footer-note{margin-top:20px;border-top:1px solid var(--line);padding-top:14px;color:var(--faint)}\n/* analysis */.analysis-shell{display:grid;grid-template-columns:202px minmax(0,1fr);gap:50px;padding-top:34px}.analysis-nav{position:sticky;top:20px;align-self:start}.back{display:inline-flex;gap:7px;align-items:center;font-size:13px;text-decoration:none;color:var(--muted);margin-bottom:30px}.analysis-nav .nav-label{font:11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin-bottom:8px}.analysis-nav a{display:block;border-left:1px solid var(--line);padding:7px 0 7px 12px;color:var(--muted);font-size:13px;text-decoration:none}.analysis-nav a.active,.analysis-nav a:hover{border-color:var(--orange);color:var(--text)}.analysis-main{min-width:0;padding-bottom:54px}.analysis-heading{padding-bottom:35px;border-bottom:1px solid var(--line)}.analysis-heading h1{max-width:17ch;margin-bottom:14px}.analysis-heading .lede{max-width:58ch}.analysis-section{padding:45px 0;border-bottom:1px solid var(--line)}.analysis-section h2{font-size:26px}.wide-chart{margin-top:25px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px}.chart-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:9px}.chart-top strong{font-size:14px}.chart-top span{color:var(--muted);font:12px var(--mono)}.history-wrap{position:relative}.history-svg{width:100%;height:auto;overflow:visible}.history-svg .grid{stroke:#38383F;stroke-dasharray:3 5}.history-svg text{fill:#9B9BA3;font:11px var(--mono)}.history-svg .high-line{stroke:#FF6A3D;fill:none;stroke-width:2.2}.history-svg .medium-line{stroke:#9898A1;fill:none;stroke-width:1.5}.history-svg .area{fill:#FF6A3D;opacity:.1}.history-svg .add{stroke:#D8DDAD;stroke-width:3}.history-svg .remove{stroke:#D7846F;stroke-width:3}.history-svg .hit{fill:transparent;cursor:pointer}.history-svg .hit:focus{outline:none;fill:#ffffff10}.chart-tooltip{min-height:28px;margin-top:8px;color:var(--muted);font:12px var(--mono)}.chart-tooltip strong{color:var(--text)}.rank-grid{display:grid;grid-template-columns:1fr 1fr;gap:42px;margin-top:28px}.rank-grid>section{min-width:0;overflow:hidden}.rank-title{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:10px}.rank-title h3{font-size:15px}.rank-title span{min-width:0;font:12px var(--mono);color:var(--muted);text-align:right}.rank-row{padding:9px 0;border-top:1px solid var(--line)}.rank-line{display:flex;justify-content:space-between;gap:14px;font-size:13px}.rank-line b{font-family:var(--mono);font-weight:500;white-space:nowrap}.rank-line span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.track{height:4px;background:#29292F;margin-top:7px}.fill{height:100%;background:var(--orange)}.fill.dim{background:#85858F}.two-col{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:25px}.spectrum-wrap{margin-top:24px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px}.spectrum{width:100%;height:auto;overflow:visible}.spectrum text{fill:#9B9BA3;font:11px var(--mono)}.spectrum .rsv{fill:#2A2928;stroke:#5A514A;stroke-dasharray:4 4}.spectrum .bar{fill:#FF6A3D}.spectrum .bar.low{opacity:.3}.spectrum .bar.mid{opacity:.6}.spectrum .bar.high{opacity:1}.spectrum .leader{stroke:#FFB094;stroke-width:1}.chart-annotation{display:none}.note{color:var(--muted);font-size:13px;margin-top:12px}.source-table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);margin-top:20px}.source-table{border-collapse:collapse;width:100%;min-width:710px;font-size:13px}.source-table th,.source-table td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}.source-table tr:last-child td{border:0}.source-table th{font:11px var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--muted);background:#141418}.source-table .num{text-align:right}.status-ok{color:var(--ok)}.status-stale{color:#EABF4E}.status-text{font:12px var(--mono)}.license-row{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:22px}.tier{border-top:1px solid var(--line);padding-top:14px}.tier h3{font:13px var(--mono);letter-spacing:.08em;text-transform:uppercase}.tier p{font-size:13px;color:var(--muted);margin-top:7px}.mini-list{margin:12px 0 0;padding-left:18px;color:var(--muted);font-size:13px}.mini-list li+li{margin-top:5px}\n@media(max-width:820px){.shell{padding:0 var(--s5)}.status-inner{padding:0 var(--s5)}.status-inner .optional{display:none}.console-hero{grid-template-columns:1fr;gap:30px}.lookup-grid{grid-template-columns:1fr}.feed-groups{grid-template-columns:1fr;gap:20px}.feed-group+.feed-group{border-left:0;border-top:1px solid var(--line);padding-left:0;padding-top:20px}.analysis-shell{display:block;padding-top:22px}.analysis-nav{position:sticky;top:0;z-index:4;background:var(--bg);padding:10px 0 12px;border-bottom:1px solid var(--line);margin-bottom:28px;display:flex;gap:14px;overflow-x:auto}.analysis-nav .back,.analysis-nav .nav-label{display:none}.analysis-nav a{display:inline-block;border-left:0;border-bottom:1px solid var(--line);padding:5px 0;white-space:nowrap}.analysis-nav a.active{border-bottom-color:var(--orange)}.rank-grid,.two-col,.license-row{grid-template-columns:1fr;gap:28px}.foot-grid{grid-template-columns:1fr}.availability{align-items:flex-start}.run-strip{min-width:120px}.analysis-section{padding:36px 0}}\n@media(max-width:520px){.brandbar{height:62px}.brand-meta{display:none}.topnav{gap:13px;font-size:12px}.console-hero{padding-top:32px}h1{font-size:36px}.stat-rail{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:23px}.stat{padding:0 12px 16px}.stat:nth-child(odd){border-left:0;padding-left:0}.terminal{padding:25px 16px 18px}.terminal code{font-size:12px;line-height:1.7;padding-top:20px}.copy{right:10px;top:10px}.lookup-form{flex-direction:column}.lookup-form input,.action{width:100%}.verdict{margin-top:4px}.section{padding:30px 0}.section-head{display:block}.section-head h2{font-size:21px}.callout-link{display:block}.callout-link a{display:block;margin-top:8px}.feed-row{grid-template-columns:minmax(0,1fr) auto}.entry-count{grid-column:2}.family{grid-column:2;grid-row:1}.availability span{display:none}.availability .run-strip{display:flex}.analysis-heading h1{font-size:34px}.analysis-section h2{font-size:23px}.rank-title span{display:none}.wide-chart,.spectrum-wrap{margin-left:-4px;margin-right:-4px;padding:13px}.spectrum .annotation{display:none}.chart-annotation{display:block;margin:6px 0 9px;color:var(--muted);font-size:12px;line-height:1.4}.chart-annotation strong{color:var(--text)}.chart-top{display:block}.chart-top span{display:block;margin-top:4px}.verdict dl{grid-template-columns:96px 1fr}.status-inner{font-size:12px}.status-inner .cadence{display:none}}\n@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}\n\n\n/* Direction A additions kept inline so both published surfaces stay portable. */\n.hint{position:relative;border-bottom:1px dotted var(--muted);cursor:help;outline:none}\n.hint>.tip{display:none;position:absolute;z-index:20;left:0;bottom:calc(100% + 7px);width:max-content;max-width:300px;padding:8px 10px;border:1px solid var(--line2);border-radius:6px;background:var(--surface2);color:var(--text);font:12px/1.45 var(--sans);letter-spacing:normal;text-transform:none;box-shadow:0 8px 22px #0009}\n.hint:hover>.tip,.hint:focus>.tip,.hint:focus-visible>.tip{display:block}\n.filter-bar{display:flex;flex-wrap:wrap;gap:12px;align-items:end;margin-top:22px;padding:14px 16px;border:1px solid var(--line2);border-radius:var(--r);background:var(--surface)}\n.filter-bar label{display:grid;gap:4px;color:var(--muted);font:11px var(--mono);letter-spacing:.08em;text-transform:uppercase}\n.filter-bar select{min-width:150px;border:1px solid var(--line2);border-radius:5px;background:var(--bg);padding:7px 9px;color:var(--text);font:13px var(--mono)}\n.filter-status{color:var(--muted);font-size:12px;margin-left:auto}.filter-status b{color:var(--text);font-family:var(--mono)}\n.funnel{display:grid;gap:8px;margin-top:22px}.funnel-step{display:grid;grid-template-columns:minmax(116px,150px) minmax(0,1fr) minmax(78px,100px);gap:12px;align-items:center;font-size:13px}.funnel-bar{height:28px;display:flex;align-items:center;padding:0 10px;background:var(--surface2);border-left:3px solid var(--orange);font-family:var(--mono);font-variant-numeric:tabular-nums}.funnel-step.minus .funnel-bar{border-color:var(--medium);color:var(--muted)}.funnel-step.final .funnel-bar{border-color:var(--ok);color:var(--text)}.funnel-step strong{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}.funnel-rule{color:var(--muted);font-size:12px}\n.ipv4-grid{display:grid;gap:3px;margin-top:15px}.ipv4-grid-row{display:grid;grid-template-columns:repeat(16,minmax(0,1fr));gap:3px}.ip-grid-cell{position:relative;aspect-ratio:1;border:1px solid #3b332f;background:rgba(255,106,61,var(--level));padding:0;color:transparent;font:9px var(--mono)}.ip-grid-cell.edge{color:var(--muted);font-size:9px}.ip-grid-cell.reserved{background:#2a2928;border-style:dashed;border-color:#5a514a}.ip-grid-cell:focus-visible,.ip-grid-cell:hover{outline:2px solid var(--orange);z-index:1}.ip-grid-cell .tip{display:none;position:absolute;z-index:22;left:0;top:calc(100% + 5px);width:210px;padding:7px;background:var(--surface2);border:1px solid var(--line2);border-radius:5px;color:var(--text);font:12px/1.35 var(--sans);text-align:left}.ip-grid-cell:hover .tip,.ip-grid-cell:focus .tip{display:block}.grid-legend{display:flex;justify-content:space-between;gap:12px;color:var(--muted);font:12px var(--mono);margin-top:10px}.grid-key{display:flex;gap:6px;align-items:center}.grid-key i{width:12px;height:12px;background:rgba(255,106,61,.72);border:1px solid #4a312a}.grid-key i.reserved{background:#2a2928;border-style:dashed;border-color:#5a514a}.wide-prefix{margin-top:24px;padding:15px;border-left:3px solid var(--medium);background:var(--surface);color:var(--muted);font-size:13px}.wide-prefix strong{color:var(--text)}\n.prefix-table,.network-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:12px}.prefix-table th,.prefix-table td,.network-table th,.network-table td{padding:9px 8px;border-bottom:1px solid var(--line);text-align:left}.prefix-table th,.network-table th{font:11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}.prefix-table .num,.network-table .num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}.network-table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);margin-top:16px}.network-table{min-width:590px;margin:0}.empty-filter{padding:16px;border:1px dashed var(--line2);color:var(--muted);font-size:13px;margin-top:18px}\n@media print{html,body{background:#fff!important;color:#000!important;font-size:12pt}.status-strip,.brandbar,.analysis-nav,.skip,.platforms,.copy,.lookup-form,.filter-bar,.action{display:none!important}a{color:#000!important;text-decoration:underline}.shell{max-width:none;padding:0}.console-hero,.lookup-grid,.feed-groups,.analysis-shell,.rank-grid,.two-col,.license-row{display:block}.console-hero,.section,.analysis-section,.wide-chart,.spectrum-wrap,.feed-group,.source-table-wrap,table,svg{break-inside:avoid;page-break-inside:avoid}.platform-panel[hidden],.tabpanel[hidden]{display:block!important}.platform-panel{margin-top:12px}.terminal,.verdict,.wide-chart,.spectrum-wrap,.filter-bar{background:#fff!important;border-color:#555!important}.terminal code{color:#000!important}.analysis-shell{padding-top:0}.analysis-main{padding:0}.analysis-heading{padding-top:0}.hint>.tip{display:none!important}.ipv4-grid-row{display:grid!important}.ip-grid-cell{border-color:#777!important;background:#ddd!important}.ip-grid-cell.reserved{background:#eee!important}.footer-note{color:#333!important}}\n'
 
 STYLE += """
+/* Data-first console hero. Numbers rail sits at hero size above a 40-run history
+   chart, so the value of the corpus is the first thing an operator sees. */
+.data-hero{padding:clamp(38px,5vw,72px) 0 32px;border-bottom:1px solid var(--line)}
+.data-hero .eyebrow{margin-bottom:12px}
+.data-hero h1{font-size:clamp(30px,3.2vw,44px);line-height:1.02;letter-spacing:-.045em;font-weight:700;margin:6px 0 22px;max-width:22ch}
+.hero-numbers{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;margin-bottom:34px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.hero-num{padding:22px 20px;border-left:1px solid var(--line);min-width:0}.hero-num:first-child{border-left:0;padding-left:0}
+.hero-num b{display:block;font-family:var(--mono);font-variant-numeric:tabular-nums lining-nums;font-size:clamp(30px,4vw,52px);letter-spacing:-.05em;line-height:1;color:var(--text)}
+.hero-num .hero-num-label{display:block;font:11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:9px}
+.hero-num .hero-num-detail{display:block;color:var(--muted);font-size:12px;margin-top:5px}
+.hero-num.accent b{color:var(--orange)}
+.hero-chart-wrap{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px 22px 16px}
+.hero-chart-head{display:flex;flex-wrap:wrap;gap:12px;align-items:baseline;justify-content:space-between;margin-bottom:10px}
+.hero-chart-head h2{font-size:16px;letter-spacing:-.01em}.hero-chart-head .hero-chart-legend{display:flex;flex-wrap:wrap;gap:16px;color:var(--muted);font:12px var(--mono)}
+.hero-chart-legend i{display:inline-block;width:11px;height:11px;margin-right:6px;vertical-align:-1px;border-radius:2px}
+.hero-chart-legend .lg-high{background:var(--orange)}.hero-chart-legend .lg-medium{background:#7f7f88}.hero-chart-legend .lg-adds{background:var(--ok)}.hero-chart-legend .lg-removes{background:#D7846F}
+.hero-svg{width:100%;height:auto;overflow:visible;display:block}
+.hero-svg .axis text{fill:#9B9BA3;font:11px var(--mono)}.hero-svg .grid-line{stroke:#26262C}
+.hero-svg .area-high{fill:var(--orange);opacity:.14}.hero-svg .area-med{fill:#7f7f88;opacity:.10}
+.hero-svg .line-high{fill:none;stroke:var(--orange);stroke-width:2.4;stroke-linejoin:round}
+.hero-svg .line-med{fill:none;stroke:#B0B0B8;stroke-width:1.8;stroke-linejoin:round;stroke-dasharray:5 4}
+.hero-svg .flow-add{stroke:var(--ok);stroke-width:0}.hero-svg .flow-remove{stroke:#D7846F;stroke-width:0}
+.hero-svg .hit-col{fill:transparent;cursor:pointer}.hero-svg .hit-col:hover,.hero-svg .hit-col:focus-visible{fill:#ffffff10;outline:none}
+.hero-chart-tip{display:flex;flex-wrap:wrap;gap:6px 16px;min-height:22px;margin-top:10px;color:var(--muted);font:12px var(--mono)}
+.hero-chart-tip strong{color:var(--text)}
+.hero-runs-strip{display:flex;gap:3px;align-items:end;height:24px;margin-top:14px}
+.hero-runs-strip .run-tick{flex:1;min-width:3px;border-radius:1px 1px 0 0}
+.hero-followups{display:flex;flex-wrap:wrap;justify-content:space-between;gap:14px;margin-top:16px;font-size:13px;color:var(--muted)}
+.hero-followups a{color:var(--orange);text-decoration:none;border-bottom:1px dotted currentColor}
+.deploy-band{border-top:1px solid var(--line)}
+.deploy-band .section-head h2{font-size:20px}
+.deploy-band .command-wrap{margin-top:16px}
+.about-band{background:#0F0F13;border-top:1px solid var(--line)}
+.about-band .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:44px;padding:46px 0 20px}
+.about-band .about-grid h2{font-size:22px;letter-spacing:-.02em}
+.about-band .about-grid p{margin-top:12px;color:var(--muted);max-width:52ch}
+.about-band .about-grid p+p{margin-top:12px}
+.about-band .about-grid strong{color:var(--text)}
+@media(max-width:820px){.hero-numbers{grid-template-columns:repeat(2,minmax(0,1fr))}.hero-num{padding:18px 14px;border-left:0;border-top:1px solid var(--line)}.hero-num:nth-child(-n+2){border-top:0}.hero-num:nth-child(odd){padding-left:0}.hero-num:nth-child(even){border-left:1px solid var(--line)}.about-band .about-grid{grid-template-columns:1fr;padding:32px 0 12px;gap:22px}}
+@media(max-width:520px){.hero-num b{font-size:34px}.hero-chart-wrap{padding:15px}.hero-chart-head{gap:8px}.hero-chart-head .hero-chart-legend{gap:10px;font-size:11px}}
+@media print{.data-hero{padding:0 0 20px}.hero-chart-wrap{background:#fff!important;border-color:#777!important}.hero-svg .area-high,.hero-svg .area-med{opacity:.25!important}.about-band{background:#fff!important}}
 .funnel,.ip-grid-cell,.history-svg,.chart-tooltip,.asn-persistence,.corroboration,.class-overlap,.ipv6-coverage{font-variant-numeric:tabular-nums lining-nums}
 .asn-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0 10px}.asn-tab{border:1px solid var(--line2);border-radius:999px;background:transparent;color:var(--muted);padding:6px 10px;font:12px var(--mono)}.asn-tab[aria-selected=true]{border-color:var(--orange);background:#2d1913;color:var(--text)}.asn-window-panel{margin-top:0}.asn-window-panel .network-table-wrap{margin-top:12px}.network-table-wrap+.note{margin-top:10px}.corroboration-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:14px}.corroboration-cell{padding:10px;border:1px solid var(--line2);border-radius:6px;background:var(--bg)}.corroboration-cell b{display:block;font:600 19px var(--mono);letter-spacing:-.04em}.corroboration-cell span{display:block;color:var(--muted);font-size:11px;line-height:1.25;margin-top:4px}.evidence-table{margin-top:12px}.evidence-table h3{margin-bottom:2px}
 @media(max-width:520px){.corroboration-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.asn-tabs{gap:5px}.asn-tab{padding:5px 8px}}
@@ -83,6 +124,36 @@ CONSOLE_SCRIPT = r"""
       } catch (error) { report('Press Ctrl+C'); }
     });
   });
+
+  // Hero history chart tooltips. Each column has a data-tip; a single delegated
+  // listener on the SVG updates one live-region paragraph, so a screen reader
+  // hears the same run summary a sighted reader sees on hover.
+  const heroTip = document.getElementById('hero-chart-tip');
+  const heroSvg = document.querySelector('.hero-svg');
+  if (heroSvg) {
+    // Roving tabindex over the run columns. Without this the chart added one tab
+    // stop per refresh (40 today), which pushed everything after it out of reach.
+    const cols = Array.from(heroSvg.querySelectorAll('.hit-col'));
+    heroSvg.addEventListener('keydown', function (event) {
+      const current = cols.indexOf(document.activeElement);
+      if (current < 0) return;
+      const moves = {ArrowRight: current + 1, ArrowLeft: current - 1, Home: 0, End: cols.length - 1};
+      if (!(event.key in moves)) return;
+      const next = Math.max(0, Math.min(cols.length - 1, moves[event.key]));
+      event.preventDefault();
+      cols.forEach(function (col) { col.tabIndex = -1; });
+      cols[next].tabIndex = 0;
+      cols[next].focus();
+    });
+  }
+  if (heroTip && heroSvg) {
+    const defaultTip = heroTip.innerHTML;
+    function showTip(target) { heroTip.innerHTML = '<strong>' + target.dataset.tip.split('  ')[0] + '</strong> ' + target.dataset.tip.split('  ').slice(1).join(' '); }
+    heroSvg.addEventListener('mouseover', function (event) { if (event.target.classList.contains('hit-col')) showTip(event.target); });
+    heroSvg.addEventListener('focusin', function (event) { if (event.target.classList.contains('hit-col')) showTip(event.target); });
+    heroSvg.addEventListener('mouseleave', function () { heroTip.innerHTML = defaultTip; });
+    heroSvg.addEventListener('focusout', function () { heroTip.innerHTML = defaultTip; });
+  }
 
   let index = null;
   let loading = false;
@@ -325,9 +396,10 @@ def _status_strip(manifest: dict[str, Any]) -> str:
 
 
 def _availability(history: list[dict[str, Any]]) -> str:
+    """Compact per-run availability strip; kept as an inline sparkline in the hero chart."""
     points = history[-40:]
     if not points:
-        return '<div class="availability"><span>No run history yet.</span></div>'
+        return '<div class="hero-runs-strip" aria-label="No run history yet"></div>'
     peak = max((_int(item, "published") for item in points), default=1) or 1
     ticks: list[str] = []
     for number, item in enumerate(points, start=1):
@@ -336,17 +408,175 @@ def _availability(history: list[dict[str, Any]]) -> str:
         source_total = _int(item, "sources_total")
         missing = max(source_total - source_ok, 0)
         state = "severe" if missing >= 2 else "partial" if missing else ""
-        height = 18 + round(16 * published / peak)
+        height = 6 + round(18 * published / peak)
         label = (
             f"Run {number}: {published:,} published, {source_ok} of {source_total} sources healthy"
         )
         ticks.append(
-            f'<button class="run-tick {state}" style="height:{height}px" aria-label="{esc_html(label)}"></button>'
+            f'<button class="run-tick {state}" style="height:{height}px" aria-label="{esc_html(label)}" tabindex="-1"></button>'
         )
     return (
-        '<div class="availability"><span>40 recent runs</span><div class="run-strip" aria-label="Availability across recent feed runs">'
+        '<div class="hero-runs-strip" role="img" aria-label="Availability across the last 40 refreshes">'
         + "".join(ticks)
-        + "</div><span>height = published · outline = 2+ missing</span></div>"
+        + "</div>"
+    )
+
+
+def _hero_history_chart(history: list[dict[str, Any]]) -> str:
+    """Render the console's headline history chart.
+
+    A firewall operator arriving at xfeeds should read the value of the corpus
+    before reading anything else, and "how large and how stable is this feed" is
+    the specific question the chart answers. High/medium curves show growth and
+    steadiness; the add/remove bars underneath show that the feed is churning,
+    not just accumulating, which is the actual signal of an active source of
+    intelligence.
+    """
+    runs = history[-40:]
+    if len(runs) < 2:
+        return '<div class="hero-chart-wrap"><p class="section-sub">Not enough run history yet to draw a trend.</p></div>'
+
+    high_values = [_int(item, "high") for item in runs]
+    medium_values = [_int(item, "medium") for item in runs]
+    add_values = [_int(item, "added") for item in runs]
+    remove_values = [_int(item, "removed") for item in runs]
+    published_values = [_int(item, "published") for item in runs]
+
+    width, height = 900, 260
+    pad_l, pad_r, pad_t, pad_b = 46, 14, 12, 36
+    plot_w = width - pad_l - pad_r
+    plot_h = height - pad_t - pad_b
+    flow_h = 46
+    top_h = plot_h - flow_h - 8
+
+    y_max = max(max(high_values), max(medium_values), 1)
+    # Round the axis to a clean interval so the reader can read counts directly.
+    step = 1000 if y_max <= 5000 else 2000 if y_max <= 12000 else 5000
+    y_top = ((y_max + step) // step) * step
+
+    def x(index: int) -> float:
+        return pad_l + (plot_w * index / (len(runs) - 1))
+
+    def y_count(value: int) -> float:
+        return pad_t + top_h - (top_h * value / y_top)
+
+    flow_max = max(max(add_values), max(remove_values), 1)
+    flow_top = pad_t + top_h + 8
+
+    def y_flow(value: int) -> float:
+        # Flows are drawn from the midline of the flow band so adds and removes are visually paired.
+        midline = flow_top + flow_h / 2
+        return midline - (flow_h / 2) * value / flow_max
+
+    def path(values: list[int]) -> str:
+        points = [f"{x(i):.1f},{y_count(v):.1f}" for i, v in enumerate(values)]
+        return "M " + " L ".join(points)
+
+    def area(values: list[int]) -> str:
+        base = pad_t + top_h
+        parts = [f"M {x(0):.1f},{base:.1f}"]
+        parts += [f"L {x(i):.1f},{y_count(v):.1f}" for i, v in enumerate(values)]
+        parts.append(f"L {x(len(values) - 1):.1f},{base:.1f} Z")
+        return " ".join(parts)
+
+    # Y-axis gridlines and labels every `step`.
+    grid = []
+    labels = []
+    tick_value = 0
+    while tick_value <= y_top:
+        y_pos = y_count(tick_value)
+        grid.append(
+            f'<line class="grid-line" x1="{pad_l}" x2="{width - pad_r}" y1="{y_pos:.1f}" y2="{y_pos:.1f}"/>'
+        )
+        labels.append(
+            f'<text x="{pad_l - 8}" y="{y_pos + 3:.1f}" text-anchor="end">{tick_value:,}</text>'
+        )
+        tick_value += step
+
+    # Time axis: label first, middle, last runs so the reader knows the span.
+    def short_ts(ts: str) -> str:
+        return ts[5:10] if len(ts) >= 10 else ts
+
+    time_ticks = []
+    for index in (0, len(runs) // 2, len(runs) - 1):
+        ts = short_ts(str(runs[index].get("generated_at", "")))
+        time_ticks.append(
+            f'<text x="{x(index):.1f}" y="{pad_t + plot_h + 20}" text-anchor="middle">{esc_html(ts)}</text>'
+        )
+
+    # Adds above the midline, removes below it; each column is one refresh.
+    band_center = flow_top + flow_h / 2
+    bar_w = max(2.0, plot_w / (len(runs) * 1.5))
+    bars: list[str] = []
+    for index, (added, removed) in enumerate(zip(add_values, remove_values)):
+        cx = x(index) - bar_w / 2
+        if added:
+            bars.append(
+                f'<rect class="flow-add" x="{cx:.1f}" y="{y_flow(added):.1f}" width="{bar_w:.1f}" height="{band_center - y_flow(added):.1f}" fill="var(--ok)" opacity="0.9"/>'
+            )
+        if removed:
+            top = band_center
+            h = (band_center - y_flow(removed)) or 0.1
+            bars.append(
+                f'<rect class="flow-remove" x="{cx:.1f}" y="{top:.1f}" width="{bar_w:.1f}" height="{h:.1f}" fill="#D7846F" opacity="0.9"/>'
+            )
+
+    # Hit rectangles carry per-run tooltips through a single event handler.
+    hits: list[str] = []
+    col_w = plot_w / (len(runs) - 1)
+    for index, item in enumerate(runs):
+        cx = x(index) - col_w / 2
+        cw = col_w
+        if index == 0:
+            cx = pad_l
+            cw = col_w / 2
+        elif index == len(runs) - 1:
+            cw = col_w / 2
+        ts = str(item.get("generated_at", ""))
+        summary = (
+            f"{short_ts(ts)}  "
+            f"published {published_values[index]:,} "
+            f"({high_values[index]:,} high · {medium_values[index]:,} medium) "
+            f"+{add_values[index]:,} added · -{remove_values[index]:,} removed · "
+            f"{_int(item, 'sources_ok')}/{_int(item, 'sources_total')} sources"
+        )
+        # Only the first cell is initially tabbable; JS handles the roving pattern.
+        tabindex = "0" if index == 0 else "-1"
+        hits.append(
+            f'<rect class="hit-col" x="{cx:.1f}" y="{pad_t}" width="{cw:.1f}" height="{plot_h}" '
+            f'tabindex="{tabindex}" role="button" aria-label="{esc_html(summary)}" '
+            f'data-tip="{esc_html(summary)}"/>'
+        )
+
+    zero_line = (
+        f'<line class="grid-line" x1="{pad_l}" x2="{width - pad_r}" '
+        f'y1="{band_center:.1f}" y2="{band_center:.1f}"/>'
+    )
+    default_tip = f"<strong>Last {len(runs)} refreshes.</strong> Hover or focus a column for that refresh's numbers."
+    return (
+        '<div class="hero-chart-wrap">'
+        '<div class="hero-chart-head">'
+        f"<h2>Corpus growth and turnover · last {len(runs)} refreshes</h2>"
+        '<div class="hero-chart-legend">'
+        '<span><i class="lg-high"></i>Safe to block</span>'
+        '<span><i class="lg-medium"></i>Worth challenging</span>'
+        '<span><i class="lg-adds"></i>Added</span>'
+        '<span><i class="lg-removes"></i>Removed</span>'
+        "</div>"
+        "</div>"
+        f'<svg class="hero-svg" viewBox="0 0 {width} {height}" role="img" '
+        'aria-label="Feed size, additions, and removals across the last refreshes">'
+        f'<g class="axis">{"".join(grid)}{"".join(labels)}{zero_line}{"".join(time_ticks)}</g>'
+        f'<path class="area-med" d="{area(medium_values)}"/>'
+        f'<path class="area-high" d="{area(high_values)}"/>'
+        f'<path class="line-med" d="{path(medium_values)}"/>'
+        f'<path class="line-high" d="{path(high_values)}"/>'
+        f"{''.join(bars)}"
+        f"{''.join(hits)}"
+        "</svg>"
+        f'<p class="hero-chart-tip" id="hero-chart-tip" aria-live="polite">{default_tip}</p>'
+        f"{_availability(history)}"
+        "</div>"
     )
 
 
@@ -448,17 +678,153 @@ def _footer() -> str:
     return f"""<footer class="shell"><div class="foot-grid"><div><p><strong>Two licence tiers.</strong> The primary tier is for any use, including commercial work. The <a href="noncommercial/">non-commercial tier</a> is CC BY-NC-SA 4.0 and can carry more share-alike material.</p><p>Spamhaus attribution travels with the data. Threat data is also provided by <a href="https://ipthreat.net">IPThreat at ipthreat.net</a> and the Turris Sentinel project at CZ.NIC (CC BY-NC-SA 4.0, non-commercial tier only).</p></div><div><p>Network attribution in analysis: <a href="https://iptoasn.com/">IPtoASN by Frank Denis</a> (Public Domain, PDDL v1.0). It maps networks; it contributes no threat data.</p><p>Think an address is wrong? <a href="{PROJECT_URL}/issues">Report a false positive</a>. Confirmed mistakes are permanently allowlisted.</p></div></div><p class="footer-note">Provided as-is with no warranty. Test against your own traffic before blocking in production.</p></footer>"""
 
 
-def render_console(
-    manifest: dict[str, Any], history: list[dict[str, Any]], base_url: str = BASE_URL
-) -> str:
-    """Lead operators to a safe install path while keeping supporting detail out of their way."""
+def _hero(manifest: dict[str, Any], history: list[dict[str, Any]]) -> str:
+    """Data-first hero: the numbers rail sits above a real chart of the last 40 refreshes.
+
+    Operators arriving at the page shouldn't have to scroll past a marketing block to
+    see the corpus they came for. Four counts read at a glance; the chart underneath
+    shows growth and turnover, so the value of the feed is legible before anything else.
+    """
     counts = manifest.get("counts", {})
     high = _int(counts, "high")
     medium = _int(counts, "medium")
     published = _int(counts, "published")
     withheld = _int(counts, "withheld")
     rejected = round(100 * withheld / (published + withheld)) if published + withheld else 0
-    return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Copy-ready threat intelligence feeds for firewall operators"><title>xfeeds · Operator Console</title><style>{STYLE}</style></head><body><a class="skip" href="#main">Skip to content</a>{_status_strip(manifest)}<header class="shell brandbar">{_brand()}<nav class="topnav" aria-label="Primary"><a href="analysis.html">Analysis</a><a href="{PROJECT_URL}">Source</a></nav></header><main id="main" class="shell"><section class="console-hero" aria-labelledby="console-title"><div><div class="eyebrow">Operator console · primary tier</div><h1 id="console-title">Put a working blocklist in your firewall.</h1><p class="lede">Corroborated malicious-IP feeds, rebuilt on a six-hour cadence. Start with the command; inspect the corpus when you need to.</p><div class="stat-rail" aria-label="Feed summary"><div class="stat"><b>{high:,}</b><span>safe to block</span></div><div class="stat"><b>{medium:,}</b><span>worth challenging</span></div><div class="stat"><b>{rejected}%</b><span>rejected before publish</span></div><div class="stat"><b>{published:,}</b><span>published</span></div></div></div>{_platforms(base_url)}{_availability(history)}</section><section class="section" aria-labelledby="lookup-title"><div class="lookup-grid"><div><div class="eyebrow">Local check</div><h2 id="lookup-title">Check an address</h2><p class="section-sub">Does it appear in this feed right now?</p><form class="lookup-form" id="lookup-form"><label class="sr-only" for="ip">IP address or prefix</label><input id="ip" name="ip" type="text" placeholder="Try 1.10.16.7 or 2001:db8::7" autocomplete="off" spellcheck="false"><button class="action" type="submit">Check address</button></form><small class="privacy">Runs entirely in your browser. The production page loads <code>lookup.json</code> only when you check; no query is logged.</small></div><div class="verdict" id="verdict" aria-live="polite"><div class="verdict-label">Local lookup</div><div class="verdict-address">Ready when you are</div><p>Enter an address to compare it with the current published feed.</p></div></div></section>{_downloads(manifest, history)}</main>{_footer()}<script>{CONSOLE_SCRIPT}</script></body></html>"""
+    families = manifest.get("families", {}) if isinstance(manifest.get("families"), dict) else {}
+    v4_published = _int(
+        families.get("v4", {}) if isinstance(families.get("v4"), dict) else {}, "published"
+    )
+    v6_published = _int(
+        families.get("v6", {}) if isinstance(families.get("v6"), dict) else {}, "published"
+    )
+    numbers = (
+        '<div class="hero-numbers" role="list" aria-label="Feed at a glance">'
+        f'<div class="hero-num accent" role="listitem"><b>{high:,}</b>'
+        '<span class="hero-num-label">Safe to block</span>'
+        '<span class="hero-num-detail">High-confidence, corroborated evidence</span></div>'
+        f'<div class="hero-num" role="listitem"><b>{medium:,}</b>'
+        '<span class="hero-num-label">Worth challenging</span>'
+        '<span class="hero-num-detail">Rate-limit, tarpit, or elevate for review</span></div>'
+        f'<div class="hero-num" role="listitem"><b>{published:,}</b>'
+        '<span class="hero-num-label">Published today</span>'
+        f'<span class="hero-num-detail">{v4_published:,} IPv4 · {v6_published:,} IPv6</span></div>'
+        f'<div class="hero-num" role="listitem"><b>{rejected}%</b>'
+        '<span class="hero-num-label">Rejected before publish</span>'
+        f'<span class="hero-num-detail">{withheld:,} observations held back this run</span></div>'
+        "</div>"
+    )
+    return (
+        '<section class="data-hero" aria-labelledby="console-title">'
+        '<div class="eyebrow">Operator console · primary tier</div>'
+        '<h1 id="console-title">Corroborated threat intelligence, refreshed every six hours.</h1>'
+        f"{numbers}"
+        f"{_hero_history_chart(history)}"
+        '<p class="hero-followups">'
+        "<span>Look up a specific address below, grab a file, then wire up your platform. "
+        'Full aggregate evidence in <a href="analysis.html">analysis</a>.</span>'
+        "</p>"
+        "</section>"
+    )
+
+
+def _lookup_section() -> str:
+    return (
+        '<section class="section" aria-labelledby="lookup-title">'
+        '<div class="lookup-grid">'
+        '<div><div class="eyebrow">Local check</div>'
+        '<h2 id="lookup-title">Check an address</h2>'
+        '<p class="section-sub">Does it appear in this feed right now?</p>'
+        '<form class="lookup-form" id="lookup-form">'
+        '<label class="sr-only" for="ip">IP address or prefix</label>'
+        '<input id="ip" name="ip" type="text" placeholder="Try 1.10.16.7 or 2001:db8::7" '
+        'autocomplete="off" spellcheck="false">'
+        '<button class="action" type="submit">Check address</button></form>'
+        '<small class="privacy">Runs entirely in your browser. The production page loads '
+        "<code>lookup.json</code> only when you check; no query is logged.</small></div>"
+        '<div class="verdict" id="verdict" aria-live="polite">'
+        '<div class="verdict-label">Local lookup</div>'
+        '<div class="verdict-address">Ready when you are</div>'
+        "<p>Enter an address to compare it with the current published feed.</p>"
+        "</div></div></section>"
+    )
+
+
+def _deploy_section(base_url: str) -> str:
+    return (
+        '<section class="section deploy-band" aria-labelledby="deploy-title">'
+        '<div class="section-head">'
+        '<div><div class="eyebrow">Deploy</div>'
+        '<h2 id="deploy-title">Wire the feed into your platform.</h2>'
+        '<p class="section-sub">Six copy-ready setups. The command runs against the files above; '
+        "add it to cron on the same six-hour cadence.</p></div>"
+        "</div>"
+        f"{_platforms(base_url)}"
+        "</section>"
+    )
+
+
+def _about_section(manifest: dict[str, Any]) -> str:
+    sources = manifest.get("sources", {})
+    source_count = len(sources) if isinstance(sources, dict) else 0
+    # active_voting_classes ships as either the list of class names or the count,
+    # depending on manifest version; accept both so a schema tweak upstream doesn't
+    # break the render.
+    voting = manifest.get("active_voting_classes")
+    classes = len(voting) if isinstance(voting, list) else _int(manifest, "active_voting_classes")
+    return (
+        '<section class="about-band" aria-labelledby="about-title">'
+        '<div class="shell about-grid">'
+        '<div><div class="eyebrow">About the project</div>'
+        '<h2 id="about-title">What xfeeds is, and why it exists.</h2>'
+        "<p><strong>xfeeds is a public, corroborated malicious-IP feed.</strong> Every published "
+        "record is backed by at least one high-precision source or by two independent classes of "
+        "evidence — not by the number of source files that happen to repeat it. Widely-scoped "
+        "prefixes and known cloud, CDN, and resolver space are held back rather than published "
+        "as blocks.</p>"
+        f"<p>The corpus draws on <strong>{source_count} sources across {classes} independent "
+        "evidence classes</strong>, refreshed every six hours. Two licence tiers keep "
+        "commercial-safe records separate from share-alike, non-commercial ones.</p>"
+        "</div>"
+        '<div><div class="eyebrow">Why it matters</div>'
+        "<h2>An open, auditable alternative to opaque blocklists.</h2>"
+        "<p>Commercial blocklists rarely publish the evidence behind a record. xfeeds does: the "
+        '<a href="analysis.html">analysis surface</a> shows the publication funnel, the '
+        "corroboration histogram, per-source health, and the IPv4 address-space distribution, "
+        "so a security team can decide for themselves what to trust.</p>"
+        "<p>Everything is generated from committed artifacts, hosted on GitHub Pages, and "
+        "reproducible from source. Think an address is wrong? "
+        f'<a href="{PROJECT_URL}/issues">Report a false positive</a> — confirmed mistakes are '
+        "permanently allowlisted.</p>"
+        "</div></div></section>"
+    )
+
+
+def render_console(
+    manifest: dict[str, Any], history: list[dict[str, Any]], base_url: str = BASE_URL
+) -> str:
+    """Data first, then the files that represent it, then how to deploy, then the story."""
+    return (
+        '<!doctype html><html lang="en"><head><meta charset="utf-8">'
+        '<meta name="viewport" content="width=device-width,initial-scale=1">'
+        '<meta name="description" content="Corroborated threat intelligence feeds — published, refreshed every six hours, with the evidence behind every record.">'
+        f"<title>xfeeds · Operator Console</title><style>{STYLE}</style></head>"
+        '<body><a class="skip" href="#main">Skip to content</a>'
+        f"{_status_strip(manifest)}"
+        f'<header class="shell brandbar">{_brand()}'
+        '<nav class="topnav" aria-label="Primary"><a href="analysis.html">Analysis</a>'
+        f'<a href="{PROJECT_URL}">Source</a></nav></header>'
+        '<main id="main" class="shell">'
+        f"{_hero(manifest, history)}"
+        f"{_lookup_section()}"
+        f"{_downloads(manifest, history)}"
+        f"{_deploy_section(base_url)}"
+        "</main>"
+        f"{_about_section(manifest)}"
+        f"{_footer()}"
+        f"<script>{CONSOLE_SCRIPT}</script>"
+        "</body></html>"
+    )
 
 
 def _history_chart(history: list[dict[str, Any]]) -> str:
