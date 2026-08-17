@@ -25,6 +25,8 @@ logger = structlog.get_logger(__name__)
 
 PROJECT_URL = "https://github.com/neilweitzel/xfeeds"
 BASE_URL = "https://neilweitzel.github.io/xfeeds"
+DOCS_URL = f"{PROJECT_URL}/blob/main/docs/DASHBOARD.md"
+DECISIONS_URL = f"{PROJECT_URL}/blob/main/docs/DECISIONS.md"
 
 STYLE = """
 :root{--bg:#0d1117;--panel:#161b22;--panel2:#1c2129;--line:#30363d;--text:#e6edf3;
@@ -77,6 +79,22 @@ pre code{background:none;border:none;padding:0}
 .bar{display:flex;height:9px;border-radius:5px;overflow:hidden;background:var(--panel2)}
 .bar span{display:block;height:100%}
 .note{color:var(--muted);font-size:13px}
+/* Tooltips carry the one-sentence "why this metric is built this way" that used to
+   sit on the page as a paragraph. Hover alone would strand touch and keyboard
+   users, so .hint carries tabindex and the :focus rule below does the real work;
+   aria-label repeats the text for screen readers. Anything longer than two
+   sentences belongs in docs/DASHBOARD.md, not here. */
+.hint{position:relative;border-bottom:1px dotted var(--muted);cursor:help;
+outline:none}
+.hint>.tip{position:absolute;left:0;bottom:calc(100% + 7px);z-index:30;
+display:none;width:max-content;max-width:280px;padding:8px 11px;
+background:var(--panel2);border:1px solid var(--line);border-radius:7px;
+color:var(--text);font-size:12.5px;font-weight:400;line-height:1.5;
+text-transform:none;letter-spacing:normal;
+box-shadow:0 6px 18px #0009}
+.hint:hover>.tip,.hint:focus>.tip,.hint:focus-visible>.tip{display:block}
+.hint:focus{border-bottom-color:var(--accent)}
+th .hint{color:var(--muted)}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:30px}
 svg text{fill:var(--muted);font-size:10px}
 .tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:-1px}
@@ -363,10 +381,14 @@ def _corroboration(manifest: dict[str, Any]) -> str:
             f'<span style="width:{pct:.1f}%;background:{colour}"></span></div></td></tr>'
         )
     foot = (
-        f'<p class="note">{promoted:,} were promoted by a single high-precision source — '
-        "Spamhaus DROP hijacked netblocks and active abuse.ch command-and-control servers "
-        "do not need a second opinion. Everything else required agreement across "
-        "independent sources.</p>"
+        f'<p class="note">{promoted:,} '
+        + _hint(
+            "promoted by a single high-precision source",
+            "Spamhaus DROP hijacked netblocks and active abuse.ch "
+            "command-and-control servers do not need a second opinion. Everything "
+            "else required agreement across independent classes.",
+        )
+        + ".</p>"
         if promoted
         else ""
     )
@@ -555,12 +577,16 @@ def _ipv6_panel(insights: dict[str, Any]) -> str:
             for r in runs
         )
         runs_html = (
-            "<h4>Adjacent prefixes</h4>"
-            + '<p class="note">Listings that sit next to each other in address space. '
-            + "Contiguous allocations under common control are a stronger signal than the "
-            + "same number of unrelated listings. They are reported, not merged: merging "
-            + "would diverge from what the upstream published and lose the per-entry "
-            + 'listing reference.</p><ul class="runs">'
+            "<h4>"
+            + _hint(
+                "Adjacent prefixes",
+                "Contiguous allocations under common control are a stronger signal "
+                "than the same number of unrelated listings. They are reported, not "
+                "merged: merging would diverge from what the upstream published.",
+            )
+            + "</h4>"
+            + '<p class="note">Listings that sit next to each other in address '
+            + 'space.</p><ul class="runs">'
             + items
             + "</ul>"
         )
@@ -579,14 +605,16 @@ def _ipv6_panel(insights: dict[str, Any]) -> str:
     if classes < 2:
         named = ", ".join(esc_html(str(s)) for s in sources) or "a single source"
         concentration = (
-            '<p class="note warn">All IPv6 coverage here comes from one independence '
-            + "class ("
+            '<p class="note warn">All IPv6 coverage comes from one independence class ('
             + named
-            + "). These records are published on that source&#39;s "
-            + "precision alone &mdash; the same basis as a large share of the IPv4 feed "
-            + "&mdash; so the limitation is <strong>concentration, not quality</strong>: "
-            + "nothing corroborates them, and nothing covers for them if that source "
-            + "degrades.</p>"
+            + "), so the limitation is "
+            + _hint(
+                "concentration, not quality",
+                "These records rest on that source's precision alone, the same basis "
+                "as a large share of the IPv4 feed. Nothing corroborates them, and "
+                "nothing covers for them if that source degrades.",
+            )
+            + ".</p>"
         )
 
     return (
@@ -602,35 +630,43 @@ def _ipv6_panel(insights: dict[str, Any]) -> str:
         + concentration
         + '\n<div class="grid2">\n<div>\n'
         + "<h4>How wide each entry reaches</h4>\n"
-        + '<p class="note">Entry count is a poor measure for IPv6 &mdash; a /29 and a '
-        + "/48 are both one line and differ by a factor of half a million. The bar and "
-        + "the last two columns show reach instead, which is why the most numerous row "
-        + "is not the widest bar.</p>\n"
         + '<table>\n<tr><th>Prefix</th><th class="num">Entries</th><th></th>'
-        + '<th class="num">/64 subnets</th><th class="num">Reach</th></tr>\n'
+        + f'<th class="num">/64 subnets</th><th class="num">{_REACH_TH}</th></tr>\n'
         + "".join(bars)
         + "\n</table>\n"
-        + '<p class="note">The widest entry is a /'
+        + '<p class="note warn">Widest entry is a /'
         + str(widest)
-        + ". General IPv6 "
-        + "practice treats a /64 as one actor and a /32 as an entire ISP that should "
-        + "almost never be blocked outright. These are wider on purpose: Spamhaus DROP "
-        + "lists netblocks leased or stolen outright by criminal operations, published "
-        + "for firewall and backbone use, where the whole allocation is the finding. "
-        + "Review the widest entries before deploying them.</p>\n"
+        + ". "
+        + _hint(
+            "Wide on purpose, not recklessly aggregated",
+            "General IPv6 practice treats a /64 as one actor and a /32 as an entire "
+            "ISP that should almost never be blocked outright. Spamhaus DROP lists "
+            "netblocks leased or stolen outright by criminal operations, published "
+            "for firewall and backbone use, where the whole allocation is the "
+            "finding.",
+        )
+        + " &mdash; review the widest entries before deploying them.</p>\n"
         + "</div>\n<div>\n<h4>Where in global unicast space</h4>\n"
-        + '<p class="note">Which /12 of <code>2000::/3</code> the listings fall in, '
-        + "derived from the address itself. This is address-space structure, not "
-        + "geography &mdash; no registration country is published anywhere on this "
-        + "page.</p>\n"
+        + '<p class="note">Which /12 of <code>2000::/3</code> the listings fall in. '
+        + _hint(
+            "Address-space structure, not geography",
+            "No registration country is published anywhere on this page: an ASN's "
+            "registration location does not establish where its traffic originates.",
+        )
+        + ".</p>\n"
         + '<table><tr><th>Block</th><th class="num">Entries</th></tr>'
         + blocks
         + "</table>\n"
         + runs_html
         + "\n</div>\n</div>\n\n"
         + "<h4>Not shown for IPv6, and why</h4>\n"
-        + '<p class="note">Each of these would render a single bar. Listing them is '
-        + "more useful than leaving a reader to guess whether we looked.</p>\n"
+        + '<p class="note">Each would render a single bar. '
+        + _hint(
+            "Listed rather than silently omitted",
+            "Saying which analyses were considered and rejected is more useful "
+            "than leaving a reader to guess whether we looked at all.",
+        )
+        + ".</p>\n"
         + "<table><tr><th>Analysis</th><th>Reason</th></tr>"
         + suppressed
         + "</table>\n"
@@ -641,6 +677,78 @@ def esc_html(value: str) -> str:
     """Escape text destined for the page. Source names come from config, but ASN
     descriptions come from a third-party table and are not ours to trust."""
     return html.escape(value, quote=True)
+
+
+def _hint(label: str, tip: str) -> str:
+    """A metric label carrying its own one-sentence rationale.
+
+    These explanations used to sit on the page as paragraphs, which is most of why
+    it read as verbose. They are not decoration though: a ranking normalised per
+    million of announced space means nothing if you do not know why it is
+    normalised, and an analyst who does not know why IPv6 entries are /32 wide
+    reads the feed as recklessly aggregated. So the reasoning moves onto the label
+    it explains rather than being deleted, and the long form lives in
+    docs/DASHBOARD.md.
+
+    ``tabindex`` is what makes this work outside a mouse: the CSS shows the tip on
+    :focus as well as :hover, so touch and keyboard both reach it, and aria-label
+    repeats it for screen readers. Plain text in, escaped here - do not pass HTML
+    entities.
+    """
+    return (
+        f'<span class="hint" tabindex="0" role="note" aria-label="{esc_html(tip)}">'
+        f'{label}<span class="tip">{esc_html(tip)}</span></span>'
+    )
+
+
+# Terms whose meaning is not self-evident, hinted where the reader meets them.
+#
+# These live in the note directly above or below their table, never inside a `th`.
+# A `.tscroll` wrapper is `overflow:auto`, which clips any absolutely positioned
+# descendant that escapes its box - so a tip anchored to a table header computed as
+# visible and then painted nowhere at all, for mouse and keyboard alike. Tables
+# without a scroll wrapper may hint inline safely; test_dashboard.py enforces the
+# distinction rather than trusting this comment.
+_DAYS_SEEN_HINT = _hint(
+    "Days seen",
+    "Individual addresses churn out of most upstream feeds within about a week, so "
+    "a large one-day count is an incident while a network seen on eight separate "
+    "days is a standing pattern.",
+)
+_PER_MILLION_HINT = _hint(
+    "Per million",
+    "Divided by the size of the network's announced address space. Without that, a "
+    "ranking like this just rediscovers which hosting providers are biggest.",
+)
+_CLASS_HINT = _hint(
+    "Independence class",
+    "Many public blocklists copy or aggregate each other, so counting files as "
+    "votes manufactures false confidence. Sources sharing upstream data share a "
+    "class, and each class votes at most once.",
+)
+_REDIST_HINT = _hint(
+    "scoring only",
+    "Sources marked scoring only help decide what is malicious, but their licences "
+    "do not let us republish their addresses, so none of their data appears in any "
+    "download.",
+)
+_SOURCES_HINT = _hint(
+    "the Sources column",
+    "A network reported by nine or ten independent sources is not having a bad "
+    "week. That is a sustained pattern, worth examining at network level rather "
+    "than address by address.",
+)
+_ONLY_SOURCE_HINT = _hint(
+    "Only source",
+    "Addresses nobody else reported - evidence the feed would simply not have "
+    "without this source, even though its data never ships.",
+)
+_REACH_TH = _hint(
+    "Reach",
+    "Entry count is a poor measure for IPv6: a /29 and a /48 are both one line and "
+    "differ by a factor of half a million. Reach counts covered /64 networks "
+    "instead, which is why the most numerous row is not the widest bar.",
+)
 
 
 def _spectrum_svg(spectrum: dict[str, Any]) -> str:
@@ -720,11 +828,24 @@ def _spectrum_svg(spectrum: dict[str, Any]) -> str:
 {ticks}
 {ends}
 </svg>
-<p class="note">The horizontal axis is the address space itself, low to high, cut
-into {total} equal slices of {int(spectrum.get("addresses_per_bucket", 0)):,} addresses
-&mdash; so no bar can point at an individual address. Height is log-scaled. The gaps
-are as informative as the spikes: reserved ranges, and large allocations nobody has
-reported to us.</p>
+<p class="note">{total} equal slices of
+{int(spectrum.get("addresses_per_bucket", 0)):,} addresses, so
+{
+        _hint(
+            "no bar points at an individual address",
+            "The slicing is deliberate. A per-address chart would be the restricted "
+            "data itself in a thin disguise, so occupancy is only ever shown at "
+            "slice resolution.",
+        )
+    }.
+{
+        _hint(
+            "Gaps are as informative as spikes",
+            "A gap is either a reserved range or a large allocation nobody has "
+            "reported to us. Height is log-scaled, because linear scaling flattens "
+            "everything except the two or three busiest slices.",
+        )
+    }.</p>
 </div>
 """
 
@@ -877,9 +998,8 @@ def _asn_windows(windows: dict[str, Any]) -> str:
         partial = ""
         if size and span < size:
             partial = (
-                f'<p class="note warn">Only {span} days of history so far, so this is '
-                f"the same as all-time. It will diverge once there is more than {size} "
-                "days of record.</p>"
+                f'<p class="note warn">Only {span} days of history, so this matches '
+                f"all-time until the record passes {size} days.</p>"
             )
         body = "".join(
             "<tr>"
@@ -895,29 +1015,23 @@ def _asn_windows(windows: dict[str, Any]) -> str:
         panels.append(
             f'<div class="tabpanel" id="w-{key}"{"" if index == 0 else " hidden"}>{partial}'
             '<div class="tscroll">'
-            '<table><tr><th>ASN</th><th>Network</th><th class="num">Days seen</th>'
-            '<th class="num">Address-days</th><th class="num">Per million</th>'
+            "<table><tr><th>ASN</th><th>Network</th>"
+            '<th class="num">Days seen</th>'
+            '<th class="num">Address-days</th>'
+            '<th class="num">Per million</th>'
             '<th class="num">Announced</th></tr>'
             f"{body}</table></div></div>"
         )
 
     return f"""
 <h3 class="ptitle">Networks that keep coming back</h3>
-<p class="note">Sorted by <strong>days seen</strong>, not by volume. Individual
-addresses churn out within about a week, so a big one-day number is an incident and
-a network present on eight separate days is a standing pattern. <strong>Per
-million</strong> divides by the size of the network: without it a ranking like this
-just rediscovers which hosting providers are biggest, which needs no threat feed to
-work out.</p>
+<p class="note">Ranked by {_DAYS_SEEN_HINT}, not volume, so a standing pattern
+outranks a one-day incident. {_PER_MILLION_HINT} normalises for network size.
+<a href="{DOCS_URL}">Reading this panel</a>.</p>
 <div class="tabgroup">
 <div class="tabs" role="tablist">{"".join(buttons)}</div>
 <div class="panel">{"".join(panels)}</div>
 </div>
-<p class="note">Dates come from the upstream feed where it publishes them &mdash;
-bruteforceblocker carries about a month and ipthreat about ten days, which is why
-these windows have depth the project itself does not yet have. Days before we
-started running are covered by those two feeds alone and are thinner than recent
-days.</p>
 """
 
 
@@ -962,19 +1076,20 @@ def _insights_section(insights: dict[str, Any]) -> str:
 
     return f"""
 <h3 class="ptitle">What the whole corpus looks like</h3>
-<p class="note">The feeds above contain only what we are licensed to republish.
-These figures cover <strong>everything we look at</strong> —
-{int(corpus.get("addresses_observed", 0)):,} addresses from
+<p class="note">{int(corpus.get("addresses_observed", 0)):,} addresses from
 {int(corpus.get("sources_contributing", 0))} sources across
-{int(networks.get("distinct_asns_seen", 0)):,} networks — including sources whose licences
-forbid us republishing their addresses. A count is a derived fact, not an extract,
-so those sources can finally show their work here.</p>
-<p class="note"><strong>No individual address appears in this section</strong>, and
-named ASNs or countries with fewer than {int(suppressed.get("threshold", 5))} addresses are
-folded into an unnamed bucket ({int(suppressed.get("asns_below_threshold", 0)):,} networks) so
-no cell can identify a single address. That is a deliberate limit, not an
-oversight: a &ldquo;top offending addresses&rdquo; list would be the data itself
-wearing a hat.</p>
+{int(networks.get("distinct_asns_seen", 0)):,} networks &mdash; everything the pipeline
+looks at, not only what it may republish, because {
+        _hint(
+            "a count is a derived fact, not an extract",
+            "That is why restricted sources can be credited with figures here even "
+            "though their addresses never appear in any feed file.",
+        )
+    }.</p>
+<p class="note"><strong>No individual address appears in this section.</strong> ASNs
+under {int(suppressed.get("threshold", 5))} addresses fold into an unnamed bucket
+({int(suppressed.get("asns_below_threshold", 0)):,} networks). There is no
+top-offending-addresses list, by design.</p>
 
 <h4>Networks with the most listed addresses in this run</h4>
 <div class="tscroll">
@@ -984,11 +1099,11 @@ wearing a hat.</p>
 {asn_rows}
 </table>
 </div>
-<p class="note">The <em>Sources</em> column is the interesting one. A network
-reported by nine or ten independent sources is not having a bad week — that is a
-sustained pattern, and worth a look at the whole network rather than one address.</p>
+<p class="note">{_SOURCES_HINT} is the one to read first.</p>
 
 <h4>Sources credited here that appear in no feed file</h4>
+<p class="note">Their licences forbid republishing their addresses, so none of their
+data ships. They still shape every confidence score.</p>
 <div class="tscroll">
 <table>
 <tr><th>Source</th><th>Credit</th><th class="num">Addresses seen</th>
@@ -996,10 +1111,7 @@ sustained pattern, and worth a look at the whole network rather than one address
 {scoring_rows}
 </table>
 </div>
-<p class="note">Their licences do not let us republish their addresses, so none of
-their data is in any download. They still shape every confidence score, and the
-numbers above are the work they contributed. The <em>Only source</em> column counts
-addresses nobody else reported — evidence we would simply not have without them.</p>
+<p class="note">{_ONLY_SOURCE_HINT} counts what nobody else reported.</p>
 <p class="note">Network attribution in this section uses
 <a href="https://iptoasn.com/">IPtoASN</a> by Frank Denis (Public Domain, PDDL v1.0).
 It contributes no threat data; it only turns an address into an AS number and a
@@ -1049,13 +1161,13 @@ independent sources.">
 <header>
 <h1>xfeeds</h1>
 <p class="sub">A free list of known-bad IP addresses you can drop straight into a
-firewall. Compiled from public threat intelligence, rebuilt every 6 hours, and
-filtered so only addresses that <strong>independent sources agree on</strong> get
-published.</p>
+firewall. Rebuilt every 6 hours from public threat intelligence, and filtered so only
+addresses that <strong>independent sources agree on</strong> get published.</p>
 <p class="sub" style="margin-top:8px">Updated {
         manifest.get("generated_at", "")[:16].replace("T", " ")
     } UTC
-· <a href="{PROJECT_URL}">source and docs</a></p>
+· <a href="{PROJECT_URL}">source</a>
+· <a href="{DOCS_URL}">how to read this page</a></p>
 </header>
 
 <nav class="toc" aria-label="Sections">
@@ -1093,9 +1205,9 @@ published.</p>
 sent anywhere, and no query is logged.</p>
 
 <h2 id="downloads">Downloads</h2>
-<p class="note">The combined files carry both address families. If your firewall or
-tooling is single-stack, take the matching <code>-v4</code> or <code>-v6</code> file
-instead &mdash; a v4-only parser will choke on an IPv6 line.</p>
+<p class="note">Combined files carry both address families. Single-stack tooling
+wants the matching <code>-v4</code> or <code>-v6</code> file instead &mdash; a v4-only
+parser will choke on an IPv6 line.</p>
 <table>
 <tr><th>File</th><th>What it is</th><th>Family</th><th class="num">Entries</th></tr>
 <tr><td><a href="high-confidence.txt">high-confidence.txt</a></td>
@@ -1226,11 +1338,14 @@ custom lists, so the high-confidence tier is the right one to use.</p>
 
 <h2 id="health">Feed health</h2>
 {_history_panel(history)}
-<p class="note">{ok} of {
-        configured
-    } configured sources returned data on this run. A run that stops refreshing is caught by an automated heartbeat rather
-than by a reader noticing &mdash; see <a href="#sources">the source table</a>
-for per-source status.</p>
+<p class="note">{ok} of {configured} sources returned data this run. {
+        _hint(
+            "A stalled refresh alerts automatically",
+            "A heartbeat compares the committed manifest against the one published "
+            "to Pages and alerts after four missed refreshes, so a stalled pipeline "
+            "is not left for a reader to notice.",
+        )
+    } &mdash; <a href="#sources">per-source status</a> below.</p>
 
 <h2 id="sources">Sources and provenance</h2>
 <h3>Where the data comes from</h3>
@@ -1241,16 +1356,14 @@ for per-source status.</p>
 {_sources(manifest)}
 </table>
 </div>
-<p class="note"><strong>Why "independence class" matters.</strong> Many public
-blocklists copy from each other, so counting files as votes manufactures false
-confidence. Sources that share upstream data share a class, and each class votes
-at most once. Sources marked <em>scoring only</em> help decide what is malicious,
-but their data is never republished here because their licences do not allow it.</p>
+<p class="note">{_CLASS_HINT} groups sources that share upstream data, and a source
+marked {_REDIST_HINT} never appears in a download. Per-source admit and reject
+reasoning is in <a href="{DECISIONS_URL}">DECISIONS.md</a>.</p>
 
 <div class="grid2">
 <div>
 <h3>How much agreement</h3>
-<p class="note">How many <em>independent</em> source families reported each
+<p class="note">Independent source families &mdash; not files &mdash; reporting each
 published address.</p>
 {_corroboration(manifest)}
 </div>
@@ -1273,29 +1386,28 @@ published address.</p>
 </div>
 
 <h2 id="analysis">Threat landscape</h2>
-<p class="note">Aggregate structure of what the pipeline sees. Every figure
-below is a derived count, not an extract.</p>
+<p class="note">Aggregate structure of the whole corpus, including sources whose
+data is never republished. <a href="{DOCS_URL}">Reader's guide to these panels</a>.</p>
 {_spectrum_svg(spectrum)}
 {_asn_windows(asn_win)}
 {_ipv6_panel(insights or {})}
 {_insights_section(insights or {})}
 
-<h2>Two tiers, and which one you want</h2>
-<p class="note">Everything above is the <strong>primary feed</strong>. Use it for
-anything, including commercial work. No source in it restricts commercial use.</p>
-<p class="note">Some good public feeds allow redistribution but forbid commercial
-use. We cannot put those in a file that anyone might use at work, so they are
-republished separately in
-<a href="noncommercial/">the non-commercial tier</a> under CC BY-NC-SA 4.0. It is
-larger — <strong>{nc_published:,}</strong> addresses versus {published:,} — because it can
-include the Turris Sentinel router-sensor data and StopForumSpam's toxic ranges in
-full rather than just counting them as corroboration.</p>
-<p class="note"><strong>Home lab, personal server, school, charity, or research?</strong>
-Take the non-commercial tier — it sees more. <strong>At a company, or building
-anything anyone pays for?</strong> Take the primary feed. That is not a nag; the
-licences genuinely differ, and
-<a href="noncommercial/LICENSE.txt">LICENSE.txt</a> in that directory spells it
-out.</p>
+<h2 id="licensing">Tiers and licensing</h2>
+<p class="note">Everything above is the <strong>primary feed</strong>:
+{published:,} addresses, no commercial restriction. The
+<a href="noncommercial/">non-commercial tier</a> holds
+<strong>{nc_published:,}</strong> under CC BY-NC-SA 4.0 and {
+        _hint(
+            "sees more",
+            "It can carry share-alike material in full rather than only counting it "
+            "as corroboration, so it covers addresses the primary feed must "
+            "withhold.",
+        )
+    }.</p>
+<p class="note">At a company, or building anything anyone pays for: primary. Home
+lab, school, charity, or research: non-commercial. Terms in
+<a href="noncommercial/LICENSE.txt">LICENSE.txt</a>.</p>
 <table>
 <tr><th>File</th><th>What it is</th><th class="num">Entries</th></tr>
 <tr><td><a href="noncommercial/high-confidence.txt">noncommercial/high-confidence.txt</a></td>
@@ -1309,14 +1421,9 @@ out.</p>
     <td class="num">{nc_published:,}</td></tr>
 </table>
 
-<h2 id="licensing">Licensing and credit</h2>
-<p class="note">xfeeds compiles publicly available feeds and is not sold. Where a
-source forbids redistribution outright it is used for scoring only, or excluded.
-Where it permits redistribution but forbids commercial use, it goes in the
-non-commercial tier. Every published file names its contributing sources and
-carries their terms. Full per-source reasoning, including the sources we rejected
-and why, is in
-<a href="{PROJECT_URL}/blob/main/docs/DECISIONS.md">DECISIONS.md</a>.</p>
+<h3>Credit</h3>
+<p class="note">xfeeds compiles publicly available feeds and is not sold. Every
+published file names its contributing sources and carries their terms.</p>
 <p class="note">Spamhaus attribution travels with the data as their terms require.
 Threat data also provided by
 <a href="https://ipthreat.net">IPThreat at https://ipthreat.net</a>, and by the
@@ -1325,9 +1432,8 @@ Threat data also provided by
 
 <h2>False positives</h2>
 <p class="note">No block list is perfect. If an address here is legitimate,
-<a href="{PROJECT_URL}/issues">open an issue</a> — those are triaged ahead of
-everything else, and confirmed mistakes are added to a permanent allowlist so
-they cannot come back.</p>
+<a href="{PROJECT_URL}/issues">open an issue</a> &mdash; those are triaged first, and
+confirmed mistakes go on a permanent allowlist so they cannot come back.</p>
 
 <p class="note" style="margin-top:34px;border-top:1px solid var(--line);padding-top:18px">
 Provided as-is with no warranty. Test against your own traffic before blocking in
