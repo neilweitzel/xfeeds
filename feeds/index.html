@@ -1,716 +1,169 @@
-<!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>xfeeds — free, corroborated IP block lists</title>
-<meta name="description" content="A free, automatically updated list of known-bad
-IP addresses, compiled from public threat intelligence and corroborated across
-independent sources.">
-<style>
-:root{--bg:#0d1117;--panel:#161b22;--panel2:#1c2129;--line:#30363d;--text:#e6edf3;
---muted:#8b949e;--high:#f85149;--med:#d29922;--ok:#3fb950;--accent:#58a6ff}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);
-font:15px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
-.wrap{max-width:1080px;margin:0 auto;padding:34px 20px 72px}
-a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
-header{border-bottom:1px solid var(--line);padding-bottom:22px;margin-bottom:24px}
-/* Sticky nav rather than collapsing panels. The page is long because the data is
-   worth showing; the fix for length is wayfinding, not concealment. */
-nav.toc{position:sticky;top:0;z-index:20;display:flex;gap:2px;flex-wrap:wrap;
-background:#0d1117f2;backdrop-filter:blur(8px);border-bottom:1px solid var(--line);
-margin:0 -20px 26px;padding:9px 20px}
-nav.toc a{color:var(--muted);font-size:12.5px;padding:5px 10px;border-radius:6px;
-white-space:nowrap}
-nav.toc a:hover{color:var(--text);background:var(--panel);text-decoration:none}
-h2[id],section[id]{scroll-margin-top:64px}
-h1{margin:0 0 6px;font-size:28px;letter-spacing:-.02em}
-h2{font-size:13px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);
-margin:40px 0 14px;font-weight:600}
-h3{font-size:15px;margin:20px 0 8px}
-/* Analysis panels sit under one "Threat landscape" h2, so their own titles are a
-   level down and their internal subheadings a level below that. */
-h3.ptitle{font-size:17px;margin:32px 0 10px;letter-spacing:-.01em}
-h4{font-size:14px;margin:18px 0 7px;color:var(--text)}
-.sub{color:var(--muted);margin:0}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:15px}
-.card .n{font-size:29px;font-weight:650;line-height:1.1;font-variant-numeric:tabular-nums}
-.card .l{color:var(--muted);font-size:12.5px;margin-top:3px}
-.high{color:var(--high)}.med{color:var(--med)}.ok{color:var(--ok)}
-table{width:100%;border-collapse:collapse;font-size:14px}
-th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
-th{color:var(--muted);font-weight:600;font-size:11.5px;text-transform:uppercase;
-letter-spacing:.05em}
-td.num{text-align:right;font-variant-numeric:tabular-nums}
-.pill{display:inline-block;padding:1px 8px;border-radius:999px;font-size:11.5px;
-border:1px solid var(--line);white-space:nowrap}
-.pill.ok{color:var(--ok);border-color:#1f6f3d}
-.pill.warn{color:var(--med);border-color:#6b5117}
-.pill.bad{color:var(--high);border-color:#7d2b28}
-.pill.no{color:var(--muted)}
-code{background:var(--panel);border:1px solid var(--line);padding:2px 6px;
-border-radius:5px;font-size:13px}
-pre{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:13px;
-overflow-x:auto;font-size:12.5px;margin:0;position:relative}
-pre code{background:none;border:none;padding:0}
-.bar{display:flex;height:9px;border-radius:5px;overflow:hidden;background:var(--panel2)}
-.bar span{display:block;height:100%}
-.note{color:var(--muted);font-size:13px}
-/* Tooltips carry the one-sentence "why this metric is built this way" that used to
-   sit on the page as a paragraph. Hover alone would strand touch and keyboard
-   users, so .hint carries tabindex and the :focus rule below does the real work;
-   aria-label repeats the text for screen readers. Anything longer than two
-   sentences belongs in docs/DASHBOARD.md, not here. */
-.hint{position:relative;border-bottom:1px dotted var(--muted);cursor:help;
-outline:none}
-.hint>.tip{position:absolute;left:0;bottom:calc(100% + 7px);z-index:30;
-display:none;width:max-content;max-width:280px;padding:8px 11px;
-background:var(--panel2);border:1px solid var(--line);border-radius:7px;
-color:var(--text);font-size:12.5px;font-weight:400;line-height:1.5;
-text-transform:none;letter-spacing:normal;
-box-shadow:0 6px 18px #0009}
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Copy-ready threat intelligence feeds for firewall operators"><title>xfeeds · Operator Console</title><style>
+:root{--bg:#0C0C0D;--surface:#16161A;--surface2:#1D1D22;--line:#26262C;--line2:#34343B;--text:#EDEDEF;--muted:#9B9BA3;--faint:#6A6A72;--orange:#FF6A3D;--orange-d:#B84828;--high:#E5484D;--medium:#E0A82E;--ok:#B6D67A;--mono:ui-monospace,SFMono-Regular,Menlo,"Cascadia Mono",Consolas,monospace;--sans:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;--s1:.25rem;--s2:.5rem;--s3:.75rem;--s4:1rem;--s5:1.25rem;--s6:1.5rem;--s8:2rem;--s10:2.5rem;--s12:3rem;--s16:4rem;--s20:5rem;--r:8px}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:84px}body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:16px;line-height:1.5}.mono,.file,code,.num,time,.stat b,.entry-count,.source-name,.asn{font-family:var(--mono);font-variant-numeric:tabular-nums lining-nums}a{color:var(--orange);text-decoration-thickness:1px;text-underline-offset:3px}a:hover{color:#FF8F6E}button,input{font:inherit;color:inherit}button{cursor:pointer}button:focus-visible,a:focus-visible,input:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--orange);outline-offset:3px}.skip,.sr-only{position:absolute;left:-999px;top:0}.skip{background:var(--orange);color:#160904;padding:10px 14px;z-index:100;font-weight:700}.skip:focus{left:10px;top:10px}.shell{max-width:1280px;margin:0 auto;padding:0 var(--s8)}.status-strip{border-bottom:1px solid var(--line);background:#111115}.status-inner{max-width:1280px;margin:auto;min-height:54px;padding:0 var(--s8);display:flex;align-items:center;gap:var(--s3);font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden}.status-inner strong{color:var(--text);font-weight:600}.pulse{color:var(--ok);font-size:18px;line-height:0}.divider{color:var(--faint)}.stale-link{color:#EABF4E}.brandbar{height:74px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text);font-weight:700;letter-spacing:-.02em}.brand:hover{color:var(--text)}.brand-mark{width:26px;height:26px;color:var(--orange)}.brand-meta{font-size:12px;color:var(--muted);font-family:var(--mono);letter-spacing:.03em}.topnav{display:flex;align-items:center;gap:20px;font-size:14px}.topnav a{color:var(--muted);text-decoration:none}.topnav a:hover{color:var(--text)}.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:650}.console-hero{padding:clamp(34px,5vw,68px) 0 34px;display:grid;grid-template-columns:5.2fr 6.8fr;gap:clamp(32px,3.4vw,48px);border-bottom:1px solid var(--line)}.console-hero>*,.lookup-grid>*{min-width:0}h1,h2,h3,p{margin:0}h1{font-size:clamp(32px,2.85vw,42px);line-height:1.03;letter-spacing:-.045em;font-weight:700;margin:13px 0 18px;max-width:none}h2{font-size:22px;letter-spacing:-.025em;line-height:1.15}h3{font-size:16px;letter-spacing:-.01em}.lede{color:var(--muted);max-width:32ch}.stat-rail{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;margin-top:28px}.stat{min-width:0;padding:0 10px;border-left:1px solid var(--line)}.stat:first-child{padding-left:0;border-left:0}.stat b{font-size:21px;display:block;line-height:1.1;letter-spacing:-.05em}.stat span{display:block;color:var(--muted);font-size:12px;line-height:1.3;margin-top:5px}.command-wrap{align-self:start}.platforms{display:flex;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--line)}.platforms::-webkit-scrollbar{display:none}.platform{border:0;background:transparent;color:var(--muted);padding:10px 13px 11px;white-space:nowrap;font-size:13px;border-bottom:2px solid transparent}.platform[aria-selected=true]{color:var(--text);border-bottom-color:var(--orange)}.terminal{position:relative;background:var(--surface);border:1px solid var(--line2);border-radius:var(--r);padding:25px 84px 18px 24px}.terminal::before{content:'● ● ●';color:#6A5353;letter-spacing:4px;font-size:10px;position:absolute;top:10px;left:15px}.terminal code{display:block;font-size:15px;line-height:1.75;white-space:pre-wrap;overflow-wrap:anywhere;color:#F4F0E7}.prompt{color:var(--orange);user-select:none}.copy{position:absolute;right:13px;top:14px;min-height:42px;border:1px solid var(--orange);background:var(--orange);color:#24110A;border-radius:6px;padding:0 14px;font-size:13px;font-weight:750}.copy:hover{background:#FF8F6E}.command-note{margin-top:12px;color:var(--muted);font-size:13px}.command-note code{color:var(--text);font-size:12px}.availability{margin-top:25px;display:flex;gap:12px;align-items:center;color:var(--muted);font-size:12px}.availability span{white-space:nowrap}.run-strip{height:34px;display:flex;gap:3px;align-items:end;flex:1}.run-tick{display:block;flex:1;min-width:2px;padding:0;border:0;background:#707079;border-radius:1px 1px 0 0}.run-tick.partial{box-shadow:inset 0 2px 0 #D48E35}.run-tick.severe{box-shadow:inset 0 2px 0 #EABF4E,inset 0 0 0 1px #EABF4E}.run-tick:hover,.run-tick:focus-visible{background:var(--orange);outline:none}.section{padding:36px 0;border-bottom:1px solid var(--line)}.section-head{display:flex;justify-content:space-between;gap:20px;align-items:baseline;margin-bottom:17px}.section-sub{font-size:13px;color:var(--muted);margin-top:5px}.lookup-grid{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:44px;align-items:start}.lookup-form{display:flex;gap:9px;margin-top:18px}.lookup-form input{min-width:0;flex:1;height:48px;padding:0 14px;border:1px solid var(--line2);border-radius:6px;background:var(--surface);font-family:var(--mono);font-size:15px}.lookup-form input::placeholder{color:var(--faint)}.action{height:48px;border:0;border-radius:6px;background:var(--orange);color:#23100A;padding:0 17px;font-weight:750}.action:hover{background:#FF8F6E}.privacy{display:block;margin-top:9px;color:var(--muted);font-size:12px}.verdict{border:1px solid var(--line2);border-radius:var(--r);background:var(--surface);padding:18px}.verdict-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.verdict-label{font-family:var(--mono);font-size:12px;letter-spacing:.09em;text-transform:uppercase}.tag{font-size:11px;font-family:var(--mono);border:1px solid currentColor;border-radius:999px;padding:3px 7px;white-space:nowrap}.tag.high{color:var(--high)}.tag.medium{color:var(--medium)}.tag.clear{color:var(--ok)}.verdict-address{font-family:var(--mono);font-size:22px;line-height:1.15;margin:12px 0 7px;overflow-wrap:anywhere}.verdict p{font-size:13px;color:var(--muted)}.verdict dl{display:grid;grid-template-columns:110px 1fr;gap:5px 12px;margin:15px 0 0;font-size:12px}.verdict dt{color:var(--faint)}.verdict dd{margin:0;font-family:var(--mono);overflow-wrap:anywhere}.feed-groups{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:32px}.feed-group+.feed-group{border-left:1px solid var(--line);padding-left:32px}.feed-group h3{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:11px}.feed-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}.file{font-size:13px;overflow-wrap:anywhere}.family{font:11px var(--mono);color:var(--muted);border:1px solid var(--line2);border-radius:99px;padding:2px 6px}.entry-count{font-size:12px;color:var(--muted);text-align:right;white-space:nowrap}.feeds-foot{margin-top:18px;font-size:12px;color:var(--muted)}.callout-link{margin-top:16px;border-top:1px solid var(--line);padding-top:16px;display:flex;justify-content:space-between;gap:22px;align-items:center;font-size:14px}.callout-link b{font-family:var(--mono);font-weight:600;color:var(--text)}footer{padding:26px 0 44px;color:var(--muted);font-size:12px}.foot-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px}.foot-grid p+p{margin-top:9px}.footer-note{margin-top:20px;border-top:1px solid var(--line);padding-top:14px;color:var(--faint)}
+/* analysis */.analysis-shell{display:grid;grid-template-columns:202px minmax(0,1fr);gap:50px;padding-top:34px}.analysis-nav{position:sticky;top:20px;align-self:start}.back{display:inline-flex;gap:7px;align-items:center;font-size:13px;text-decoration:none;color:var(--muted);margin-bottom:30px}.analysis-nav .nav-label{font:11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin-bottom:8px}.analysis-nav a{display:block;border-left:1px solid var(--line);padding:7px 0 7px 12px;color:var(--muted);font-size:13px;text-decoration:none}.analysis-nav a.active,.analysis-nav a:hover{border-color:var(--orange);color:var(--text)}.analysis-main{min-width:0;padding-bottom:54px}.analysis-heading{padding-bottom:35px;border-bottom:1px solid var(--line)}.analysis-heading h1{max-width:17ch;margin-bottom:14px}.analysis-heading .lede{max-width:58ch}.analysis-section{padding:45px 0;border-bottom:1px solid var(--line)}.analysis-section h2{font-size:26px}.wide-chart{margin-top:25px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px}.chart-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:9px}.chart-top strong{font-size:14px}.chart-top span{color:var(--muted);font:12px var(--mono)}.history-wrap{position:relative}.history-svg{width:100%;height:auto;overflow:visible}.history-svg .grid{stroke:#38383F;stroke-dasharray:3 5}.history-svg text{fill:#9B9BA3;font:11px var(--mono)}.history-svg .high-line{stroke:#FF6A3D;fill:none;stroke-width:2.2}.history-svg .medium-line{stroke:#9898A1;fill:none;stroke-width:1.5}.history-svg .area{fill:#FF6A3D;opacity:.1}.history-svg .add{stroke:#D8DDAD;stroke-width:3}.history-svg .remove{stroke:#D7846F;stroke-width:3}.history-svg .hit{fill:transparent;cursor:pointer}.history-svg .hit:focus{outline:none;fill:#ffffff10}.chart-tooltip{min-height:28px;margin-top:8px;color:var(--muted);font:12px var(--mono)}.chart-tooltip strong{color:var(--text)}.rank-grid{display:grid;grid-template-columns:1fr 1fr;gap:42px;margin-top:28px}.rank-grid>section{min-width:0;overflow:hidden}.rank-title{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:10px}.rank-title h3{font-size:15px}.rank-title span{min-width:0;font:12px var(--mono);color:var(--muted);text-align:right}.rank-row{padding:9px 0;border-top:1px solid var(--line)}.rank-line{display:flex;justify-content:space-between;gap:14px;font-size:13px}.rank-line b{font-family:var(--mono);font-weight:500;white-space:nowrap}.rank-line span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.track{height:4px;background:#29292F;margin-top:7px}.fill{height:100%;background:var(--orange)}.fill.dim{background:#85858F}.two-col{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:25px}.spectrum-wrap{margin-top:24px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px}.spectrum{width:100%;height:auto;overflow:visible}.spectrum text{fill:#9B9BA3;font:11px var(--mono)}.spectrum .rsv{fill:#2A2928;stroke:#5A514A;stroke-dasharray:4 4}.spectrum .bar{fill:#FF6A3D}.spectrum .bar.low{opacity:.3}.spectrum .bar.mid{opacity:.6}.spectrum .bar.high{opacity:1}.spectrum .leader{stroke:#FFB094;stroke-width:1}.chart-annotation{display:none}.note{color:var(--muted);font-size:13px;margin-top:12px}.source-table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);margin-top:20px}.source-table{border-collapse:collapse;width:100%;min-width:710px;font-size:13px}.source-table th,.source-table td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}.source-table tr:last-child td{border:0}.source-table th{font:11px var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--muted);background:#141418}.source-table .num{text-align:right}.status-ok{color:var(--ok)}.status-stale{color:#EABF4E}.status-text{font:12px var(--mono)}.license-row{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:22px}.tier{border-top:1px solid var(--line);padding-top:14px}.tier h3{font:13px var(--mono);letter-spacing:.08em;text-transform:uppercase}.tier p{font-size:13px;color:var(--muted);margin-top:7px}.mini-list{margin:12px 0 0;padding-left:18px;color:var(--muted);font-size:13px}.mini-list li+li{margin-top:5px}
+@media(max-width:820px){.shell{padding:0 var(--s5)}.status-inner{padding:0 var(--s5)}.status-inner .optional{display:none}.console-hero{grid-template-columns:1fr;gap:30px}.lookup-grid{grid-template-columns:1fr}.feed-groups{grid-template-columns:1fr;gap:20px}.feed-group+.feed-group{border-left:0;border-top:1px solid var(--line);padding-left:0;padding-top:20px}.analysis-shell{display:block;padding-top:22px}.analysis-nav{position:sticky;top:0;z-index:4;background:var(--bg);padding:10px 0 12px;border-bottom:1px solid var(--line);margin-bottom:28px;display:flex;gap:14px;overflow-x:auto}.analysis-nav .back,.analysis-nav .nav-label{display:none}.analysis-nav a{display:inline-block;border-left:0;border-bottom:1px solid var(--line);padding:5px 0;white-space:nowrap}.analysis-nav a.active{border-bottom-color:var(--orange)}.rank-grid,.two-col,.license-row{grid-template-columns:1fr;gap:28px}.foot-grid{grid-template-columns:1fr}.availability{align-items:flex-start}.run-strip{min-width:120px}.analysis-section{padding:36px 0}}
+@media(max-width:520px){.brandbar{height:62px}.brand-meta{display:none}.topnav{gap:13px;font-size:12px}.console-hero{padding-top:32px}h1{font-size:36px}.stat-rail{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:23px}.stat{padding:0 12px 16px}.stat:nth-child(odd){border-left:0;padding-left:0}.terminal{padding:25px 16px 18px}.terminal code{font-size:12px;line-height:1.7;padding-top:20px}.copy{right:10px;top:10px}.lookup-form{flex-direction:column}.lookup-form input,.action{width:100%}.verdict{margin-top:4px}.section{padding:30px 0}.section-head{display:block}.section-head h2{font-size:21px}.callout-link{display:block}.callout-link a{display:block;margin-top:8px}.feed-row{grid-template-columns:minmax(0,1fr) auto}.entry-count{grid-column:2}.family{grid-column:2;grid-row:1}.availability span{display:none}.availability .run-strip{display:flex}.analysis-heading h1{font-size:34px}.analysis-section h2{font-size:23px}.rank-title span{display:none}.wide-chart,.spectrum-wrap{margin-left:-4px;margin-right:-4px;padding:13px}.spectrum .annotation{display:none}.chart-annotation{display:block;margin:6px 0 9px;color:var(--muted);font-size:12px;line-height:1.4}.chart-annotation strong{color:var(--text)}.chart-top{display:block}.chart-top span{display:block;margin-top:4px}.verdict dl{grid-template-columns:96px 1fr}.status-inner{font-size:12px}.status-inner .cadence{display:none}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+
+
+/* Direction A additions kept inline so both published surfaces stay portable. */
+.hint{position:relative;border-bottom:1px dotted var(--muted);cursor:help;outline:none}
+.hint>.tip{display:none;position:absolute;z-index:20;left:0;bottom:calc(100% + 7px);width:max-content;max-width:300px;padding:8px 10px;border:1px solid var(--line2);border-radius:6px;background:var(--surface2);color:var(--text);font:12px/1.45 var(--sans);letter-spacing:normal;text-transform:none;box-shadow:0 8px 22px #0009}
 .hint:hover>.tip,.hint:focus>.tip,.hint:focus-visible>.tip{display:block}
-.hint:focus{border-bottom-color:var(--accent)}
-th .hint{color:var(--muted)}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:30px}
-svg text{fill:var(--muted);font-size:10px}
-.tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:-1px}
-.tab{padding:7px 13px;border:1px solid var(--line);border-bottom:none;
-border-radius:7px 7px 0 0;background:var(--panel2);color:var(--muted);cursor:pointer;
-font-size:13.5px}
-.tab[aria-selected=true]{background:var(--panel);color:var(--text);
-box-shadow:inset 0 2px 0 var(--accent)}
-.panel{border:1px solid var(--line);border-radius:0 8px 8px 8px;padding:16px;
-background:var(--panel)}
-.panel pre{background:var(--panel2)}
-#look{display:flex;gap:8px;flex-wrap:wrap}
-#ip{flex:1;min-width:220px;background:var(--panel);border:1px solid var(--line);
-color:var(--text);padding:11px 13px;border-radius:8px;font-size:15px;
-font-family:ui-monospace,monospace}
-#ip:focus{outline:none;border-color:var(--accent)}
-#go{background:var(--accent);color:#06121f;border:0;padding:11px 22px;border-radius:8px;
-font-weight:650;cursor:pointer;font-size:14.5px}
-#go:hover{filter:brightness(1.1)}
-#res{margin-top:14px}
-.verdict{border:1px solid var(--line);border-radius:9px;padding:15px;background:var(--panel)}
-.verdict.hit-high{border-color:#7d2b28;background:#1b1113}
-.verdict.hit-med{border-color:#6b5117;background:#1b1710}
-.verdict.miss{border-color:#1f6f3d;background:#101a13}
-.vt{font-size:17px;font-weight:650;margin-bottom:6px}
-.kv{display:grid;grid-template-columns:130px 1fr;gap:3px 12px;font-size:13.5px;margin-top:10px}
-.kv dt{color:var(--muted)}.kv dd{margin:0}
-.copy{position:absolute;top:7px;right:7px;background:var(--panel2);border:1px solid var(--line);
-color:var(--muted);border-radius:6px;padding:3px 9px;font-size:11.5px;cursor:pointer}
-.copy:hover{color:var(--text);border-color:var(--accent)}
-.stale{color:var(--med)}
-@media(max-width:760px){.grid2{grid-template-columns:1fr}.kv{grid-template-columns:1fr}}
+.filter-bar{display:flex;flex-wrap:wrap;gap:12px;align-items:end;margin-top:22px;padding:14px 16px;border:1px solid var(--line2);border-radius:var(--r);background:var(--surface)}
+.filter-bar label{display:grid;gap:4px;color:var(--muted);font:11px var(--mono);letter-spacing:.08em;text-transform:uppercase}
+.filter-bar select{min-width:150px;border:1px solid var(--line2);border-radius:5px;background:var(--bg);padding:7px 9px;color:var(--text);font:13px var(--mono)}
+.filter-status{color:var(--muted);font-size:12px;margin-left:auto}.filter-status b{color:var(--text);font-family:var(--mono)}
+.funnel{display:grid;gap:8px;margin-top:22px}.funnel-step{display:grid;grid-template-columns:minmax(116px,150px) minmax(0,1fr) minmax(78px,100px);gap:12px;align-items:center;font-size:13px}.funnel-bar{height:28px;display:flex;align-items:center;padding:0 10px;background:var(--surface2);border-left:3px solid var(--orange);font-family:var(--mono);font-variant-numeric:tabular-nums}.funnel-step.minus .funnel-bar{border-color:var(--medium);color:var(--muted)}.funnel-step.final .funnel-bar{border-color:var(--ok);color:var(--text)}.funnel-step strong{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}.funnel-rule{color:var(--muted);font-size:12px}
+.ipv4-grid{display:grid;gap:3px;margin-top:15px}.ipv4-grid-row{display:grid;grid-template-columns:repeat(16,minmax(0,1fr));gap:3px}.ip-grid-cell{position:relative;aspect-ratio:1;border:1px solid #3b332f;background:rgba(255,106,61,var(--level));padding:0;color:transparent;font:9px var(--mono)}.ip-grid-cell.edge{color:var(--muted);font-size:9px}.ip-grid-cell.reserved{background:#2a2928;border-style:dashed;border-color:#5a514a}.ip-grid-cell:focus-visible,.ip-grid-cell:hover{outline:2px solid var(--orange);z-index:1}.ip-grid-cell .tip{display:none;position:absolute;z-index:22;left:0;top:calc(100% + 5px);width:210px;padding:7px;background:var(--surface2);border:1px solid var(--line2);border-radius:5px;color:var(--text);font:12px/1.35 var(--sans);text-align:left}.ip-grid-cell:hover .tip,.ip-grid-cell:focus .tip{display:block}.grid-legend{display:flex;justify-content:space-between;gap:12px;color:var(--muted);font:12px var(--mono);margin-top:10px}.grid-key{display:flex;gap:6px;align-items:center}.grid-key i{width:12px;height:12px;background:rgba(255,106,61,.72);border:1px solid #4a312a}.grid-key i.reserved{background:#2a2928;border-style:dashed;border-color:#5a514a}.wide-prefix{margin-top:24px;padding:15px;border-left:3px solid var(--medium);background:var(--surface);color:var(--muted);font-size:13px}.wide-prefix strong{color:var(--text)}
+.prefix-table,.network-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:12px}.prefix-table th,.prefix-table td,.network-table th,.network-table td{padding:9px 8px;border-bottom:1px solid var(--line);text-align:left}.prefix-table th,.network-table th{font:11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}.prefix-table .num,.network-table .num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}.network-table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);margin-top:16px}.network-table{min-width:590px;margin:0}.empty-filter{padding:16px;border:1px dashed var(--line2);color:var(--muted);font-size:13px;margin-top:18px}
+@media print{html,body{background:#fff!important;color:#000!important;font-size:12pt}.status-strip,.brandbar,.analysis-nav,.skip,.platforms,.copy,.lookup-form,.filter-bar,.action{display:none!important}a{color:#000!important;text-decoration:underline}.shell{max-width:none;padding:0}.console-hero,.lookup-grid,.feed-groups,.analysis-shell,.rank-grid,.two-col,.license-row{display:block}.console-hero,.section,.analysis-section,.wide-chart,.spectrum-wrap,.feed-group,.source-table-wrap,table,svg{break-inside:avoid;page-break-inside:avoid}.platform-panel[hidden],.tabpanel[hidden]{display:block!important}.platform-panel{margin-top:12px}.terminal,.verdict,.wide-chart,.spectrum-wrap,.filter-bar{background:#fff!important;border-color:#555!important}.terminal code{color:#000!important}.analysis-shell{padding-top:0}.analysis-main{padding:0}.analysis-heading{padding-top:0}.hint>.tip{display:none!important}.ipv4-grid-row{display:grid!important}.ip-grid-cell{border-color:#777!important;background:#ddd!important}.ip-grid-cell.reserved{background:#eee!important}.footer-note{color:#333!important}}
 
-
-.chart{border:1px solid var(--line);border-radius:10px;padding:14px 15px 10px;margin:20px 0;
-background:var(--panel)}
-.chead{display:flex;justify-content:space-between;align-items:baseline;gap:12px;
-margin-bottom:10px;font-weight:600;font-size:14px}
-.chead .note{font-weight:400}
-.spectrum,.tl{width:100%;height:auto;display:block;overflow:visible}
-.spectrum .bars rect{fill:#58a6ff}
-.spectrum .bars rect:hover{fill:#79c0ff}
-.spectrum text.ax{fill:var(--muted);font-size:11px;text-anchor:middle}
-.tl .a-high{fill:#3fb95055;stroke:#3fb950;stroke-width:1.5}
-.tl .a-med{fill:#d2992233;stroke:#d29922;stroke-width:1.2}
-.tl .hit{fill:transparent}
-.tl .hit:hover{fill:#ffffff18}
-.tl .c-add{fill:#3fb950;opacity:.85}
-.tl .c-rem{fill:#f85149;opacity:.85}
-.tl .cax{stroke:var(--line);stroke-width:1}
-.k{display:inline-block;width:9px;height:9px;border-radius:2px;margin:0 4px 0 9px}
-.k-high{background:#3fb950}
-.k-med{background:#d29922}
-.note.warn{color:#d29922}
-/* Prefix-width bars. Sized relative to the largest cell rather than to an axis:
-   the number beside each bar is the fact, the bar only ranks them at a glance. */
-.pbar{height:9px;border-radius:5px;background:#58a6ff;min-width:2px}
-td:has(>.pbar){width:34%;padding-right:14px}
-.runs{margin:8px 0 0;padding-left:18px;font-size:13px;color:var(--muted);
-  line-height:1.85}
-.runs code{font-size:12px}
-@media (max-width:640px){
-/* SVG text scales with the viewBox, so on a phone the axis labels render at about
-   four pixels whatever size they are set to. Hide them and let the HTML hint line
-   above the chart carry the range, where it is real text at a real size. */
-.spectrum text.ax,.spectrum text.rsvl{display:none}
-.axhint{flex-direction:column;gap:1px;margin-bottom:8px}
-.axhint .axarrow{font-size:12px}
-}
-.spectrum .rsv{fill:#ffffff07;stroke:var(--line);stroke-width:1;stroke-dasharray:3 3}
-.spectrum text.rsvl{fill:var(--muted);font-size:10px;text-anchor:middle;opacity:.75}
-.tl .yax{stroke:var(--line);stroke-width:1;stroke-dasharray:2 3}
-.tl text.ylab{fill:var(--muted);font-size:10px}
-.tscroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
-.tscroll table{min-width:520px}
-.axhint{display:flex;justify-content:space-between;align-items:baseline;
-font-size:11px;color:var(--muted);margin:-4px 0 6px;letter-spacing:.02em}
-.axhint .axarrow{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--text);
-opacity:.75}
-.spectrum text.ax{fill:var(--muted);font-size:11px;text-anchor:middle;
-font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
-.spectrum text.ax.end{fill:var(--text);opacity:.85}
-.spectrum .axline{stroke:var(--line);stroke-width:1}
-</style></head><body><div class="wrap">
-
-<header>
-<h1>xfeeds</h1>
-<p class="sub">A free list of known-bad IP addresses you can drop straight into a
-firewall. Rebuilt every 6 hours from public threat intelligence, and filtered so only
-addresses that <strong>independent sources agree on</strong> get published.</p>
-<p class="sub" style="margin-top:8px">Updated 2026-08-17 15:53 UTC
-· <a href="https://github.com/neilweitzel/xfeeds">source</a>
-· <a href="https://github.com/neilweitzel/xfeeds/blob/main/docs/DASHBOARD.md">how to read this page</a></p>
-</header>
-
-<nav class="toc" aria-label="Sections">
-<a href="#lookup">Check an address</a>
-<a href="#downloads">Downloads</a>
-<a href="#setup">Set it up</a>
-<a href="#health">Feed health</a>
-<a href="#sources">Sources</a>
-<a href="#analysis">Threat landscape</a>
-<a href="#licensing">Licensing</a>
-</nav>
-
-<div class="cards">
-<div class="card"><div class="n high">4,224</div>
-  <div class="l">safe to block</div></div>
-<div class="card"><div class="n med">805</div>
-  <div class="l">worth challenging</div></div>
-<div class="card"><div class="n">90%</div>
-  <div class="l">rejected as uncorroborated</div></div>
-<div class="card"><div class="n ok">23/24</div>
-  <div class="l">sources healthy</div></div>
-<div class="card"><div class="n">+326 /
-  &minus;408</div>
-  <div class="l">changed this run</div></div>
-</div>
-
-<h2 id="lookup">Check an address</h2>
-<div id="look">
-  <input id="ip" type="text" placeholder="e.g. 45.33.32.156" spellcheck="false"
-         autocomplete="off" aria-label="IP address to check">
-  <button id="go">Check</button>
-</div>
-<div id="res"></div>
-<p class="note" style="margin-top:10px">Runs entirely in your browser. Nothing is
-sent anywhere, and no query is logged.</p>
-
-<h2 id="downloads">Downloads</h2>
-<p class="note">Combined files carry both address families. Single-stack tooling
-wants the matching <code>-v4</code> or <code>-v6</code> file instead &mdash; a v4-only
-parser will choke on an IPv6 line.</p>
-<table>
-<tr><th>File</th><th>What it is</th><th>Family</th><th class="num">Entries</th></tr>
-<tr><td><a href="high-confidence.txt">high-confidence.txt</a></td>
-    <td>Safe to block. Corroborated across independent sources.</td>
-    <td>both</td>
-    <td class="num">4,224</td></tr>
-<tr><td><a href="high-confidence-v4.txt">high-confidence-v4.txt</a></td>
-    <td>Safe to block, IPv4 only.</td><td>IPv4</td>
-    <td class="num">4,133</td></tr>
-<tr><td><a href="high-confidence-v6.txt">high-confidence-v6.txt</a></td>
-    <td>Safe to block, IPv6 only.</td><td>IPv6</td>
-    <td class="num">91</td></tr>
-<tr><td><a href="medium-confidence.txt">medium-confidence.txt</a></td>
-    <td>Two independent sources. Challenge or rate-limit rather than drop.</td>
-    <td>both</td>
-    <td class="num">805</td></tr>
-<tr><td><a href="medium-confidence-v4.txt">medium-confidence-v4.txt</a></td>
-    <td>Challenge or rate-limit, IPv4 only.</td><td>IPv4</td>
-    <td class="num">805</td></tr>
-<tr><td><a href="medium-confidence-v6.txt">medium-confidence-v6.txt</a></td>
-    <td>Challenge or rate-limit, IPv6 only.</td><td>IPv6</td>
-    <td class="num">0</td></tr>
-<tr><td><a href="all.csv">all.csv</a></td>
-    <td>Both tiers with scores, sources and dates.</td><td>both</td>
-    <td class="num">5,029</td></tr>
-<tr><td><a href="all.json">all.json</a></td><td>Full provenance per address.</td>
-    <td>both</td><td class="num">5,029</td></tr>
-<tr><td><a href="stix-bundle.json">stix-bundle.json</a></td><td>STIX 2.1 bundle.</td>
-    <td>both</td><td class="num">4,224</td></tr>
-<tr><td><a href="misp-manifest.json">misp-manifest.json</a></td><td>MISP feed.</td>
-    <td>both</td><td class="num">4,224</td></tr>
-<tr><td><a href="nftables.conf">nftables.conf</a></td>
-    <td>nftables sets &mdash; <code>blocklist4</code> and <code>blocklist6</code>.</td>
-    <td>both</td><td class="num">4,224</td></tr>
-<tr><td><a href="iptables.ipset">iptables.ipset</a></td>
-    <td>ipset restore format, set <code>xfeeds</code>.</td><td>IPv4</td>
-    <td class="num">4,133</td></tr>
-<tr><td><a href="iptables6.ipset">iptables6.ipset</a></td>
-    <td>ipset restore format, set <code>xfeeds6</code>. An ipset holds one family.</td>
-    <td>IPv6</td><td class="num">91</td></tr>
-<tr><td><a href="manifest.json">manifest.json</a></td>
-    <td>Run metadata, per-source status and licences.</td><td>&mdash;</td>
-    <td class="num">&mdash;</td></tr>
-<tr><td><a href="history.json">history.json</a></td><td>Per-run history.</td>
-    <td>&mdash;</td><td class="num">40</td></tr>
-</table>
-
-<h2 id="setup">Set it up</h2>
-<div class="tabgroup">
-<div class="tabs" role="tablist">
-  <button class="tab" role="tab" aria-selected="true" data-panel="p-lin">Linux</button>
-  <button class="tab" role="tab" aria-selected="false" data-panel="p-nft">nftables</button>
-  <button class="tab" role="tab" aria-selected="false" data-panel="p-pf">pfSense / OPNsense</button>
-  <button class="tab" role="tab" aria-selected="false" data-panel="p-mt">MikroTik</button>
-  <button class="tab" role="tab" aria-selected="false" data-panel="p-cf">Cloudflare</button>
-  <button class="tab" role="tab" aria-selected="false" data-panel="p-tip">SIEM / TIP</button>
-</div>
-
-<div class="panel">
-<div class="tabpanel" id="p-lin">
-<h3>iptables with ipset</h3>
-<p class="note">Loads the list into an ipset and drops matching traffic. Re-run the
-first command from cron every 6 hours to stay current.</p>
-<pre><code>curl -sS https://neilweitzel.github.io/xfeeds/iptables.ipset | sudo ipset restore -!
-sudo iptables -I INPUT -m set --match-set xfeeds src -j DROP</code></pre>
-<h3>IPv6</h3>
-<p class="note">An ipset holds one address family, so IPv6 needs its own set and its
-own rule. Skip this if you are single-stack IPv4.</p>
-<pre><code>curl -sS https://neilweitzel.github.io/xfeeds/iptables6.ipset | sudo ipset restore -!
-sudo ip6tables -I INPUT -m set --match-set xfeeds6 src -j DROP</code></pre>
-<h3>Keep it updated</h3>
-<pre><code># /etc/cron.d/xfeeds
-17 */6 * * * root curl -sS https://neilweitzel.github.io/xfeeds/iptables.ipset | ipset restore -!
-17 */6 * * * root curl -sS https://neilweitzel.github.io/xfeeds/iptables6.ipset | ipset restore -!</code></pre>
-</div>
-
-<div class="tabpanel" id="p-nft" hidden>
-<h3>nftables</h3>
-<pre><code>curl -sSO https://neilweitzel.github.io/xfeeds/nftables.conf
-sudo nft -f nftables.conf</code></pre>
-<p class="note">Then reference the set in your ruleset:</p>
-<pre><code>nft add rule inet filter input ip saddr @blocklist4 drop</code></pre>
-</div>
-
-<div class="tabpanel" id="p-pf" hidden>
-<h3>pfSense or OPNsense</h3>
-<p class="note">Both can fetch a URL table on a schedule — no scripting needed.</p>
-<pre><code>Firewall &rarr; Aliases &rarr; Add
+.funnel,.ip-grid-cell,.history-svg,.chart-tooltip,.asn-persistence,.corroboration,.class-overlap,.ipv6-coverage{font-variant-numeric:tabular-nums lining-nums}
+.asn-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0 10px}.asn-tab{border:1px solid var(--line2);border-radius:999px;background:transparent;color:var(--muted);padding:6px 10px;font:12px var(--mono)}.asn-tab[aria-selected=true]{border-color:var(--orange);background:#2d1913;color:var(--text)}.asn-window-panel{margin-top:0}.asn-window-panel .network-table-wrap{margin-top:12px}.network-table-wrap+.note{margin-top:10px}.corroboration-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:14px}.corroboration-cell{padding:10px;border:1px solid var(--line2);border-radius:6px;background:var(--bg)}.corroboration-cell b{display:block;font:600 19px var(--mono);letter-spacing:-.04em}.corroboration-cell span{display:block;color:var(--muted);font-size:11px;line-height:1.25;margin-top:4px}.evidence-table{margin-top:12px}.evidence-table h3{margin-bottom:2px}
+@media(max-width:520px){.corroboration-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.asn-tabs{gap:5px}.asn-tab{padding:5px 8px}}
+</style></head><body><a class="skip" href="#main">Skip to content</a><div class="status-strip"><div class="status-inner"><span class="pulse" aria-hidden="true">●</span><strong>Feed live</strong><span class="divider">·</span><span>rebuilt <time datetime="2026-08-17T15:53:00.827233Z">15:53 UTC</time></span><span class="divider cadence">·</span><span class="cadence">every 6 hours</span><span class="divider optional">·</span><span class="optional"><strong>23/24</strong> sources OK</span><span class="divider optional">·</span><a class="stale-link optional" href="analysis.html#sources">1 needs review: feodo_tracker</a></div></div><header class="shell brandbar"><a class="brand" href="index.html" aria-label="xfeeds home"><svg class="brand-mark" viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M4 8h9v7h7v9h8" stroke="currentColor" stroke-width="3" stroke-linecap="square"/><path d="M23 5v5m-2.5-2.5h5" stroke="currentColor" stroke-width="2"/><rect x="3" y="21" width="5" height="5" fill="currentColor"/></svg><span>xfeeds</span><span class="brand-meta">public threat intelligence</span></a><nav class="topnav" aria-label="Primary"><a href="analysis.html">Analysis</a><a href="https://github.com/neilweitzel/xfeeds">Source</a></nav></header><main id="main" class="shell"><section class="console-hero" aria-labelledby="console-title"><div><div class="eyebrow">Operator console · primary tier</div><h1 id="console-title">Put a working blocklist in your firewall.</h1><p class="lede">Corroborated malicious-IP feeds, rebuilt on a six-hour cadence. Start with the command; inspect the corpus when you need to.</p><div class="stat-rail" aria-label="Feed summary"><div class="stat"><b>4,224</b><span>safe to block</span></div><div class="stat"><b>805</b><span>worth challenging</span></div><div class="stat"><b>90%</b><span>rejected before publish</span></div><div class="stat"><b>5,029</b><span>published</span></div></div></div><div class="command-wrap"><div class="platforms" role="tablist" aria-label="Deployment platforms"><button class="platform" role="tab" id="tab-linux" aria-controls="linux" aria-selected="true" type="button">Linux</button><button class="platform" role="tab" id="tab-nft" aria-controls="nft" aria-selected="false" type="button">nftables</button><button class="platform" role="tab" id="tab-pf" aria-controls="pf" aria-selected="false" type="button">pfSense / OPNsense</button><button class="platform" role="tab" id="tab-mikro" aria-controls="mikro" aria-selected="false" type="button">MikroTik</button><button class="platform" role="tab" id="tab-cloudflare" aria-controls="cloudflare" aria-selected="false" type="button">Cloudflare</button><button class="platform" role="tab" id="tab-siem" aria-controls="siem" aria-selected="false" type="button">SIEM / TIP</button></div><section class="platform-panel" id="linux" role="tabpanel"><div class="terminal"><button class="copy" type="button" data-copy="linux" aria-label="Copy Linux setup">Copy</button><span class="sr-only copy-status" role="status" aria-live="polite"></span><code>$ curl -sS https://neilweitzel.github.io/xfeeds/iptables.ipset | sudo ipset restore -!
+$ sudo iptables -I INPUT -m set --match-set xfeeds src -j DROP</code></div><p class="command-note">Loads the IPv4 high-confidence feed, then drops matches. Add the first line to cron every six hours.</p></section><section class="platform-panel" id="nft" role="tabpanel" hidden><div class="terminal"><button class="copy" type="button" data-copy="nft" aria-label="Copy nftables setup">Copy</button><span class="sr-only copy-status" role="status" aria-live="polite"></span><code>$ curl -sS -o xfeeds.nft https://neilweitzel.github.io/xfeeds/nftables.conf
+$ sudo nft -f xfeeds.nft</code></div><p class="command-note">Creates IPv4 and IPv6 sets. Reference @blocklist4 or @blocklist6 in your ruleset.</p></section><section class="platform-panel" id="pf" role="tabpanel" hidden><div class="terminal"><button class="copy" type="button" data-copy="pf" aria-label="Copy pfSense / OPNsense setup">Copy</button><span class="sr-only copy-status" role="status" aria-live="polite"></span><code>Firewall → Aliases → Add
   Type: URL Table (IPs)
-  URL:  https://neilweitzel.github.io/xfeeds/high-confidence.txt
-  Update frequency: 1 day
-
-Then Firewall &rarr; Rules &rarr; WAN &rarr; Add
-  Action: Block
-  Source: the alias you just created</code></pre>
-</div>
-
-<div class="tabpanel" id="p-mt" hidden>
-<h3>MikroTik RouterOS</h3>
-<pre><code>/tool fetch url="https://neilweitzel.github.io/xfeeds/high-confidence.txt" dst-path=xfeeds.txt
-/import file-name=xfeeds.txt</code></pre>
-<p class="note">Or use an address list with a scheduled script. Note that RouterOS
-does not skip <code>#</code> comment lines automatically — strip them first.</p>
-</div>
-
-<div class="tabpanel" id="p-cf" hidden>
-<h3>Cloudflare</h3>
-<p class="note">Create an IP Access Rule list from the feed. The free plan caps
-custom lists, so the high-confidence tier is the right one to use.</p>
-<pre><code>curl -sS https://neilweitzel.github.io/xfeeds/high-confidence.txt | grep -v '^#' &gt; xfeeds.txt
-# Then: Cloudflare dashboard &rarr; Manage Account &rarr; Configurations
-#       &rarr; Lists &rarr; Create new list &rarr; upload xfeeds.txt</code></pre>
-</div>
-
-<div class="tabpanel" id="p-tip" hidden>
-<h3>MISP</h3>
-<pre><code>Sync Actions &rarr; Feeds &rarr; Add Feed
-  Input Source: Network
-  Format: MISP
-  URL: https://neilweitzel.github.io/xfeeds/misp-manifest.json</code></pre>
-<h3>OpenCTI, Elastic and other STIX consumers</h3>
-<pre><code>https://neilweitzel.github.io/xfeeds/stix-bundle.json</code></pre>
-<h3>Splunk, Sentinel, or a spreadsheet</h3>
-<pre><code>https://neilweitzel.github.io/xfeeds/all.csv</code></pre>
-</div>
-</div>
-</div>
-
-<h2 id="health">Feed health</h2>
-
-<div class="chart">
-<div class="chead"><span>Feed size and churn per run</span>
-<span class="note">40 runs &middot; 2026-08-12 14:42 to 2026-08-17 15:53</span></div>
-<svg viewBox="0 0 1000 202" class="tl" role="img"
-     aria-label="Published high and medium confidence counts over time, with
-     addresses added and removed each run">
-<path d="M0.00,39.29 L25.64,39.29 L51.28,39.22 L76.92,39.94 L102.56,39.94 L128.21,28.12 L153.85,27.74 L179.49,44.98 L205.13,21.95 L230.77,23.25 L256.41,23.25 L282.05,23.30 L307.69,29.74 L333.33,33.26 L358.97,33.84 L384.62,34.47 L410.26,37.89 L435.90,22.77 L461.54,34.78 L487.18,39.05 L512.82,38.47 L538.46,38.47 L564.10,38.57 L589.74,38.54 L615.38,22.89 L641.03,22.62 L666.67,7.36 L692.31,10.32 L717.95,12.45 L743.59,13.72 L769.23,16.71 L794.87,17.65 L820.51,3.62 L846.15,9.14 L871.79,14.11 L897.44,16.33 L923.08,0.00 L948.72,4.82 L974.36,6.73 L1000.00,8.71 L1000.00,28.12 L974.36,27.01 L948.72,26.60 L923.08,24.22 L897.44,34.20 L871.79,33.53 L846.15,30.34 L820.51,27.54 L794.87,36.13 L769.23,35.94 L743.59,35.89 L717.95,35.12 L692.31,34.03 L666.67,32.73 L641.03,43.70 L615.38,43.46 L589.74,61.02 L564.10,61.07 L538.46,51.93 L512.82,55.55 L487.18,65.14 L461.54,63.12 L435.90,57.28 L410.26,69.99 L384.62,68.57 L358.97,68.35 L333.33,68.38 L307.69,67.34 L282.05,64.73 L256.41,64.71 L230.77,64.71 L205.13,64.18 L179.49,65.89 L153.85,72.04 L128.21,72.38 L102.56,84.27 L76.92,84.27 L51.28,84.01 L25.64,84.01 L0.00,84.01 Z" class="a-med"/>
-<path d="M0.00,84.01 L25.64,84.01 L51.28,84.01 L76.92,84.27 L102.56,84.27 L128.21,72.38 L153.85,72.04 L179.49,65.89 L205.13,64.18 L230.77,64.71 L256.41,64.71 L282.05,64.73 L307.69,67.34 L333.33,68.38 L358.97,68.35 L384.62,68.57 L410.26,69.99 L435.90,57.28 L461.54,63.12 L487.18,65.14 L512.82,55.55 L538.46,51.93 L564.10,61.07 L589.74,61.02 L615.38,43.46 L641.03,43.70 L666.67,32.73 L692.31,34.03 L717.95,35.12 L743.59,35.89 L769.23,35.94 L794.87,36.13 L820.51,27.54 L846.15,30.34 L871.79,33.53 L897.44,34.20 L923.08,24.22 L948.72,26.60 L974.36,27.01 L1000.00,28.12 L1000.00,130.00 L974.36,130.00 L948.72,130.00 L923.08,130.00 L897.44,130.00 L871.79,130.00 L846.15,130.00 L820.51,130.00 L794.87,130.00 L769.23,130.00 L743.59,130.00 L717.95,130.00 L692.31,130.00 L666.67,130.00 L641.03,130.00 L615.38,130.00 L589.74,130.00 L564.10,130.00 L538.46,130.00 L512.82,130.00 L487.18,130.00 L461.54,130.00 L435.90,130.00 L410.26,130.00 L384.62,130.00 L358.97,130.00 L333.33,130.00 L307.69,130.00 L282.05,130.00 L256.41,130.00 L230.77,130.00 L205.13,130.00 L179.49,130.00 L153.85,130.00 L128.21,130.00 L102.56,130.00 L76.92,130.00 L51.28,130.00 L25.64,130.00 L0.00,130.00 Z" class="a-high"/>
-<line x1="0" y1="1" x2="1000" y2="1" class="yax"/>
-<text x="4" y="12" class="ylab">5,390 published</text>
-<rect x="0.00" y="146.00" width="12.82" height="28.00" class="c-add"/><rect x="19.23" y="173.99" width="12.82" height="0.01" class="c-add"/><rect x="19.23" y="174.00" width="12.82" height="0.01" class="c-rem"/><rect x="44.87" y="173.95" width="12.82" height="0.05" class="c-add"/><rect x="44.87" y="174.00" width="12.82" height="0.03" class="c-rem"/><rect x="70.51" y="171.48" width="12.82" height="2.52" class="c-add"/><rect x="70.51" y="174.00" width="12.82" height="2.75" class="c-rem"/><rect x="96.15" y="173.99" width="12.82" height="0.01" class="c-add"/><rect x="96.15" y="174.00" width="12.82" height="0.01" class="c-rem"/><rect x="121.79" y="170.34" width="12.82" height="3.66" class="c-add"/><rect x="121.79" y="174.00" width="12.82" height="0.01" class="c-rem"/><rect x="147.44" y="173.72" width="12.82" height="0.28" class="c-add"/><rect x="147.44" y="174.00" width="12.82" height="0.16" class="c-rem"/><rect x="173.08" y="173.03" width="12.82" height="0.97" class="c-add"/><rect x="173.08" y="174.00" width="12.82" height="6.29" class="c-rem"/><rect x="198.72" y="158.05" width="12.82" height="15.95" class="c-add"/><rect x="198.72" y="174.00" width="12.82" height="8.84" class="c-rem"/><rect x="224.36" y="173.53" width="12.82" height="0.47" class="c-add"/><rect x="224.36" y="174.00" width="12.82" height="0.87" class="c-rem"/><rect x="275.64" y="174.00" width="12.82" height="0.01" class="c-rem"/><rect x="301.28" y="172.19" width="12.82" height="1.81" class="c-add"/><rect x="301.28" y="174.00" width="12.82" height="3.80" class="c-rem"/><rect x="326.92" y="171.83" width="12.82" height="2.17" class="c-add"/><rect x="326.92" y="174.00" width="12.82" height="3.25" class="c-rem"/><rect x="352.56" y="172.12" width="12.82" height="1.88" class="c-add"/><rect x="352.56" y="174.00" width="12.82" height="2.06" class="c-rem"/><rect x="378.21" y="173.87" width="12.82" height="0.13" class="c-add"/><rect x="378.21" y="174.00" width="12.82" height="0.32" class="c-rem"/><rect x="403.85" y="171.61" width="12.82" height="2.39" class="c-add"/><rect x="403.85" y="174.00" width="12.82" height="3.45" class="c-rem"/><rect x="429.49" y="169.22" width="12.82" height="4.78" class="c-add"/><rect x="429.49" y="174.00" width="12.82" height="0.11" class="c-rem"/><rect x="455.13" y="172.70" width="12.82" height="1.30" class="c-add"/><rect x="455.13" y="174.00" width="12.82" height="5.00" class="c-rem"/><rect x="480.77" y="171.98" width="12.82" height="2.02" class="c-add"/><rect x="480.77" y="174.00" width="12.82" height="3.34" class="c-rem"/><rect x="506.41" y="171.86" width="12.82" height="2.14" class="c-add"/><rect x="506.41" y="174.00" width="12.82" height="1.96" class="c-rem"/><rect x="532.05" y="173.77" width="12.82" height="0.23" class="c-add"/><rect x="532.05" y="174.00" width="12.82" height="0.23" class="c-rem"/><rect x="557.69" y="172.03" width="12.82" height="1.97" class="c-add"/><rect x="557.69" y="174.00" width="12.82" height="2.00" class="c-rem"/><rect x="583.33" y="173.98" width="12.82" height="0.02" class="c-add"/><rect x="583.33" y="174.00" width="12.82" height="0.01" class="c-rem"/><rect x="608.97" y="166.85" width="12.82" height="7.15" class="c-add"/><rect x="608.97" y="174.00" width="12.82" height="2.32" class="c-rem"/><rect x="634.62" y="171.87" width="12.82" height="2.13" class="c-add"/><rect x="634.62" y="174.00" width="12.82" height="2.05" class="c-rem"/><rect x="660.26" y="168.64" width="12.82" height="5.36" class="c-add"/><rect x="660.26" y="174.00" width="12.82" height="0.65" class="c-rem"/><rect x="685.90" y="173.26" width="12.82" height="0.74" class="c-add"/><rect x="685.90" y="174.00" width="12.82" height="1.65" class="c-rem"/><rect x="711.54" y="173.84" width="12.82" height="0.16" class="c-add"/><rect x="711.54" y="174.00" width="12.82" height="0.82" class="c-rem"/><rect x="737.18" y="173.20" width="12.82" height="0.80" class="c-add"/><rect x="737.18" y="174.00" width="12.82" height="1.19" class="c-rem"/><rect x="762.82" y="171.90" width="12.82" height="2.10" class="c-add"/><rect x="762.82" y="174.00" width="12.82" height="3.02" class="c-rem"/><rect x="788.46" y="171.22" width="12.82" height="2.78" class="c-add"/><rect x="788.46" y="174.00" width="12.82" height="3.07" class="c-rem"/><rect x="814.10" y="169.50" width="12.82" height="4.50" class="c-add"/><rect x="814.10" y="174.00" width="12.82" height="0.16" class="c-rem"/><rect x="839.74" y="172.03" width="12.82" height="1.97" class="c-add"/><rect x="839.74" y="174.00" width="12.82" height="3.67" class="c-rem"/><rect x="865.38" y="171.74" width="12.82" height="2.26" class="c-add"/><rect x="865.38" y="174.00" width="12.82" height="3.79" class="c-rem"/><rect x="891.03" y="171.46" width="12.82" height="2.54" class="c-add"/><rect x="891.03" y="174.00" width="12.82" height="3.22" class="c-rem"/><rect x="916.67" y="168.85" width="12.82" height="5.15" class="c-add"/><rect x="916.67" y="174.00" width="12.82" height="0.11" class="c-rem"/><rect x="942.31" y="171.79" width="12.82" height="2.21" class="c-add"/><rect x="942.31" y="174.00" width="12.82" height="3.70" class="c-rem"/><rect x="967.95" y="171.26" width="12.82" height="2.74" class="c-add"/><rect x="967.95" y="174.00" width="12.82" height="3.33" class="c-rem"/><rect x="987.18" y="171.57" width="12.82" height="2.43" class="c-add"/><rect x="987.18" y="174.00" width="12.82" height="3.04" class="c-rem"/>
-<line x1="0" y1="174.00" x2="1000" y2="174.00" class="cax"/>
-<rect x="0.00" y="0" width="25.64" height="202" class="hit"><title>2026-08-12 14:42: 1,907 high, 1,854 medium &#183; +3,761 / &#8722;0 this run</title></rect><rect x="12.82" y="0" width="25.64" height="202" class="hit"><title>2026-08-12 14:47: 1,907 high, 1,854 medium &#183; +2 / &#8722;2 this run</title></rect><rect x="38.46" y="0" width="25.64" height="202" class="hit"><title>2026-08-12 14:50: 1,907 high, 1,857 medium &#183; +7 / &#8722;4 this run</title></rect><rect x="64.10" y="0" width="25.64" height="202" class="hit"><title>2026-08-12 19:27: 1,896 high, 1,838 medium &#183; +339 / &#8722;369 this run</title></rect><rect x="89.74" y="0" width="25.64" height="202" class="hit"><title>2026-08-12 19:29: 1,896 high, 1,838 medium &#183; +2 / &#8722;2 this run</title></rect><rect x="115.38" y="0" width="25.64" height="202" class="hit"><title>2026-08-12 19:34: 2,389 high, 1,835 medium &#183; +492 / &#8722;2 this run</title></rect><rect x="141.03" y="0" width="25.64" height="202" class="hit"><title>2026-08-12 20:03: 2,403 high, 1,837 medium &#183; +37 / &#8722;21 this run</title></rect><rect x="166.67" y="0" width="25.64" height="202" class="hit"><title>2026-08-12 22:24: 2,658 high, 867 medium &#183; +130 / &#8722;845 this run</title></rect><rect x="192.31" y="0" width="25.64" height="202" class="hit"><title>2026-08-13 01:44: 2,729 high, 1,751 medium &#183; +2,142 / &#8722;1,187 this run</title></rect><rect x="217.95" y="0" width="25.64" height="202" class="hit"><title>2026-08-13 02:43: 2,707 high, 1,719 medium &#183; +63 / &#8722;117 this run</title></rect><rect x="243.59" y="0" width="25.64" height="202" class="hit"><title>2026-08-13 02:48: 2,707 high, 1,719 medium &#183; +0 / &#8722;0 this run</title></rect><rect x="269.23" y="0" width="25.64" height="202" class="hit"><title>2026-08-13 02:51: 2,706 high, 1,718 medium &#183; +0 / &#8722;2 this run</title></rect><rect x="294.87" y="0" width="25.64" height="202" class="hit"><title>2026-08-13 07:54: 2,598 high, 1,559 medium &#183; +243 / &#8722;510 this run</title></rect><rect x="320.51" y="0" width="25.64" height="202" class="hit"><title>2026-08-13 13:49: 2,555 high, 1,456 medium &#183; +291 / &#8722;437 this run</title></rect><rect x="346.15" y="0" width="25.64" height="202" class="hit"><title>2026-08-13 14:31: 2,556 high, 1,431 medium &#183; +253 / &#8722;277 this run</title></rect><rect x="371.79" y="0" width="25.64" height="202" class="hit"><title>2026-08-13 14:55: 2,547 high, 1,414 medium &#183; +17 / &#8722;43 this run</title></rect><rect x="397.44" y="0" width="25.64" height="202" class="hit"><title>2026-08-13 19:27: 2,488 high, 1,331 medium &#183; +321 / &#8722;463 this run</title></rect><rect x="423.08" y="0" width="25.64" height="202" class="hit"><title>2026-08-14 02:46: 3,015 high, 1,431 medium &#183; +642 / &#8722;15 this run</title></rect><rect x="448.72" y="0" width="25.64" height="202" class="hit"><title>2026-08-14 07:52: 2,773 high, 1,175 medium &#183; +174 / &#8722;672 this run</title></rect><rect x="474.36" y="0" width="25.64" height="202" class="hit"><title>2026-08-14 13:44: 2,689 high, 1,082 medium &#183; +271 / &#8722;448 this run</title></rect><rect x="500.00" y="0" width="25.64" height="202" class="hit"><title>2026-08-14 16:10: 3,087 high, 708 medium &#183; +287 / &#8722;263 this run</title></rect><rect x="525.64" y="0" width="25.64" height="202" class="hit"><title>2026-08-14 16:55: 3,237 high, 558 medium &#183; +31 / &#8722;31 this run</title></rect><rect x="551.28" y="0" width="25.64" height="202" class="hit"><title>2026-08-14 17:20: 2,858 high, 933 medium &#183; +265 / &#8722;269 this run</title></rect><rect x="576.92" y="0" width="25.64" height="202" class="hit"><title>2026-08-14 17:26: 2,860 high, 932 medium &#183; +3 / &#8722;2 this run</title></rect><rect x="602.56" y="0" width="25.64" height="202" class="hit"><title>2026-08-14 18:48: 3,588 high, 853 medium &#183; +961 / &#8722;312 this run</title></rect><rect x="628.21" y="0" width="25.64" height="202" class="hit"><title>2026-08-14 19:15: 3,578 high, 874 medium &#183; +286 / &#8722;275 this run</title></rect><rect x="653.85" y="0" width="25.64" height="202" class="hit"><title>2026-08-15 01:50: 4,033 high, 1,052 medium &#183; +720 / &#8722;87 this run</title></rect><rect x="679.49" y="0" width="25.64" height="202" class="hit"><title>2026-08-15 04:15: 3,979 high, 983 medium &#183; +99 / &#8722;222 this run</title></rect><rect x="705.13" y="0" width="25.64" height="202" class="hit"><title>2026-08-15 05:08: 3,934 high, 940 medium &#183; +22 / &#8722;110 this run</title></rect><rect x="730.77" y="0" width="25.64" height="202" class="hit"><title>2026-08-15 06:58: 3,902 high, 919 medium &#183; +107 / &#8722;160 this run</title></rect><rect x="756.41" y="0" width="25.64" height="202" class="hit"><title>2026-08-15 12:59: 3,900 high, 797 medium &#183; +282 / &#8722;406 this run</title></rect><rect x="782.05" y="0" width="25.64" height="202" class="hit"><title>2026-08-15 18:48: 3,892 high, 766 medium &#183; +373 / &#8722;412 this run</title></rect><rect x="807.69" y="0" width="25.64" height="202" class="hit"><title>2026-08-16 01:58: 4,248 high, 992 medium &#183; +604 / &#8722;22 this run</title></rect><rect x="833.33" y="0" width="25.64" height="202" class="hit"><title>2026-08-16 07:00: 4,132 high, 879 medium &#183; +264 / &#8722;493 this run</title></rect><rect x="858.97" y="0" width="25.64" height="202" class="hit"><title>2026-08-16 13:02: 4,000 high, 805 medium &#183; +303 / &#8722;509 this run</title></rect><rect x="884.62" y="0" width="25.64" height="202" class="hit"><title>2026-08-16 18:48: 3,972 high, 741 medium &#183; +341 / &#8722;433 this run</title></rect><rect x="910.26" y="0" width="25.64" height="202" class="hit"><title>2026-08-17 01:56: 4,386 high, 1,004 medium &#183; +692 / &#8722;15 this run</title></rect><rect x="935.90" y="0" width="25.64" height="202" class="hit"><title>2026-08-17 07:17: 4,287 high, 903 medium &#183; +297 / &#8722;497 this run</title></rect><rect x="961.54" y="0" width="25.64" height="202" class="hit"><title>2026-08-17 13:07: 4,270 high, 841 medium &#183; +368 / &#8722;447 this run</title></rect><rect x="974.36" y="0" width="25.64" height="202" class="hit"><title>2026-08-17 15:53: 4,224 high, 805 medium &#183; +326 / &#8722;408 this run</title></rect>
-</svg>
-<p class="note"><span class="k k-high"></span>high confidence
-<span class="k k-med"></span>medium, with additions above and removals below the
-centre line, on the same time axis. Bars scale to &plusmn;3,761, the largest
-single-run change. Hover any run for its figures.</p>
-</div>
-
-<p class="note">23 of 24 sources returned data this run. <span class="hint" tabindex="0" role="note" aria-label="A heartbeat compares the committed manifest against the one published to Pages and alerts after four missed refreshes, so a stalled pipeline is not left for a reader to notice.">A stalled refresh alerts automatically<span class="tip">A heartbeat compares the committed manifest against the one published to Pages and alerts after four missed refreshes, so a stalled pipeline is not left for a reader to notice.</span></span> &mdash; <a href="#sources">per-source status</a> below.</p>
-
-<h2 id="sources">Sources and provenance</h2>
-<h3>Where the data comes from</h3>
-<div class="tscroll">
-<table>
-<tr><th>Source</th><th>Independence class</th><th class="num">Records</th>
-    <th>Status</th><th>Votes</th><th>Republished</th></tr>
-<tr><td>abuseipdb_blacklist</td><td>abuseipdb</td><td class="num">10,000</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill no">scoring only</span></td></tr><tr><td>binary_defense</td><td>binary_defense</td><td class="num">1,162</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>blocklist_de</td><td>blocklist_de</td><td class="num">25,291</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>blocklist_de_strongips</td><td>blocklist_de</td><td class="num">351</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>bruteforceblocker</td><td>bruteforceblocker</td><td class="num">563</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>cins_army</td><td>cins</td><td class="num">15,000</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>dataplane_proto41</td><td>dataplane</td><td class="num">55,815</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill no">scoring only</span></td></tr><tr><td>dataplane_smtpgreet</td><td>dataplane</td><td class="num">8,879</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill no">scoring only</span></td></tr><tr><td>dataplane_sshclient</td><td>dataplane</td><td class="num">18,843</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill no">scoring only</span></td></tr><tr><td>dataplane_sshpwauth</td><td>dataplane</td><td class="num">9,417</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill no">scoring only</span></td></tr><tr><td>dataplane_telnetlogin</td><td>dataplane</td><td class="num">83,224</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill no">scoring only</span></td></tr><tr><td>dataplane_vncrfb</td><td>dataplane</td><td class="num">5,211</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill no">scoring only</span></td></tr><tr><td>dshield_block</td><td>dshield</td><td class="num">20</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill no">scoring only</span></td></tr><tr><td>et_compromised</td><td>bruteforceblocker</td><td class="num">551</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>feodo_tracker<div class="note stale">upstream has not updated recently</div></td><td>abusech</td><td class="num">5</td><td><span class="pill warn">stale</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>greensnow</td><td>greensnow</td><td class="num">2,732</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill no">scoring only</span></td></tr><tr><td>ipsum_levels</td><td>META_aggregate</td><td class="num">16,397</td><td><span class="pill ok">ok</span></td><td><span class="pill no">no</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>ipthreat</td><td>ipthreat</td><td class="num">5,040</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>spamhaus_drop_v4</td><td>spamhaus</td><td class="num">1,688</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>spamhaus_drop_v6</td><td>spamhaus</td><td class="num">91</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>stopforumspam_listed</td><td>stopforumspam</td><td class="num">52,353</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill no">scoring only</span></td></tr><tr><td>threatfox</td><td>abusech</td><td class="num">1,155</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill no">scoring only</span></td></tr><tr><td>tor_exits</td><td>tor</td><td class="num">1,502</td><td><span class="pill ok">ok</span></td><td><span class="pill no">no</span></td><td><span class="pill ok">yes</span></td></tr><tr><td>turris_greylist</td><td>turris</td><td class="num">10,082</td><td><span class="pill ok">ok</span></td><td><span class="pill ok">yes</span></td><td><span class="pill no">scoring only</span></td></tr>
-</table>
-</div>
-<p class="note"><span class="hint" tabindex="0" role="note" aria-label="Many public blocklists copy or aggregate each other, so counting files as votes manufactures false confidence. Sources sharing upstream data share a class, and each class votes at most once.">Independence class<span class="tip">Many public blocklists copy or aggregate each other, so counting files as votes manufactures false confidence. Sources sharing upstream data share a class, and each class votes at most once.</span></span> groups sources that share upstream data, and a source
-marked <span class="hint" tabindex="0" role="note" aria-label="Sources marked scoring only help decide what is malicious, but their licences do not let us republish their addresses, so none of their data appears in any download.">scoring only<span class="tip">Sources marked scoring only help decide what is malicious, but their licences do not let us republish their addresses, so none of their data appears in any download.</span></span> never appears in a download. Per-source admit and reject
-reasoning is in <a href="https://github.com/neilweitzel/xfeeds/blob/main/docs/DECISIONS.md">DECISIONS.md</a>.</p>
-
-<div class="grid2">
-<div>
-<h3>How much agreement</h3>
-<p class="note">Independent source families &mdash; not files &mdash; reporting each
-published address.</p>
-<table><tr><th>Independent sources</th><th class="num">Addresses</th><th></th></tr><tr><td>1 source <span class="note">— promoted, high precision</span></td><td class="num">1,781</td><td style="width:42%"><div class="bar"><span style="width:35.4%;background:#d29922"></span></div></td></tr><tr><td>2 sources</td><td class="num">3,045</td><td style="width:42%"><div class="bar"><span style="width:60.5%;background:#d29922"></span></div></td></tr><tr><td>3 sources</td><td class="num">179</td><td style="width:42%"><div class="bar"><span style="width:3.6%;background:#3fb950"></span></div></td></tr><tr><td>4 sources</td><td class="num">23</td><td style="width:42%"><div class="bar"><span style="width:0.5%;background:#3fb950"></span></div></td></tr><tr><td>5 sources</td><td class="num">1</td><td style="width:42%"><div class="bar"><span style="width:0.0%;background:#3fb950"></span></div></td></tr></table><p class="note">1,781 <span class="hint" tabindex="0" role="note" aria-label="Spamhaus DROP hijacked netblocks and active abuse.ch command-and-control servers do not need a second opinion. Everything else required agreement across independent classes.">promoted by a single high-precision source<span class="tip">Spamhaus DROP hijacked netblocks and active abuse.ch command-and-control servers do not need a second opinion. Everything else required agreement across independent classes.</span></span>.</p>
-</div>
-<div>
-<h3>What got filtered out</h3>
-<table>
-<tr><th>Rule</th><th class="num">Dropped</th></tr>
-<tr><td>On the allowlist<div class="note">cloud, CDN, crawlers, public
-    resolvers</div></td><td class="num">4,490</td></tr>
-<tr><td>Prefix too wide<div class="note">one bad /8 can black-hole an
-    ISP</div></td><td class="num">0</td></tr>
-<tr><td>Private or reserved</td>
-    <td class="num">0</td></tr>
-<tr><td>Licence<div class="note">evidence came only from sources we may not
-    republish</div></td><td class="num">205,546</td></tr>
-<tr><td>Tor exits<div class="note">tagged, never blocked — that is your
-    call</div></td><td class="num">1,255</td></tr>
-</table>
-</div>
-</div>
-
-<h2 id="analysis">Threat landscape</h2>
-<p class="note">Aggregate structure of the whole corpus, including sources whose
-data is never republished. <a href="https://github.com/neilweitzel/xfeeds/blob/main/docs/DASHBOARD.md">Reader's guide to these panels</a>.</p>
-
-<h3 class="ptitle">Where in the IPv4 space we see activity</h3>
-<div class="chart">
-<div class="chead"><span>One bar per /9 slice, log-scaled</span>
-<span class="note">409 of 512 slices touched</span></div>
-<div class="axhint"><span>horizontal axis: every IPv4 address, in order</span>
-<span class="axarrow">0.0.0.0 &rarr; 255.255.255.255</span></div>
-<svg viewBox="-58 0 1116 176" class="spectrum" role="img"
-     aria-label="Observations across the IPv4 address space from 0.0.0.0 to
-255.255.255.255, log scaled">
-<rect x="875.0" y="0" width="125.0" height="150.0" class="rsv"/><text x="938" y="75" class="rsvl">multicast / reserved</text>
-<g class="bars"><rect x="3.91" y="32.73" width="1.60" height="117.27"><title>1.0.0.0/8 area: 832 observations</title></rect><rect x="5.86" y="33.05" width="1.60" height="116.95"><title>1.0.0.0/8 area: 817 observations</title></rect><rect x="7.81" y="37.60" width="1.60" height="112.40"><title>2.0.0.0/8 area: 629 observations</title></rect><rect x="9.77" y="47.12" width="1.60" height="102.88"><title>2.0.0.0/8 area: 364 observations</title></rect><rect x="11.72" y="53.51" width="1.60" height="96.49"><title>3.0.0.0/8 area: 252 observations</title></rect><rect x="13.67" y="67.56" width="1.60" height="82.44"><title>3.0.0.0/8 area: 112 observations</title></rect><rect x="15.62" y="101.65" width="1.60" height="48.35"><title>4.0.0.0/8 area: 15 observations</title></rect><rect x="17.58" y="57.01" width="1.60" height="92.99"><title>4.0.0.0/8 area: 206 observations</title></rect><rect x="19.53" y="38.77" width="1.60" height="111.23"><title>5.0.0.0/8 area: 588 observations</title></rect><rect x="21.48" y="5.77" width="1.60" height="144.23"><title>5.0.0.0/8 area: 3,909 observations</title></rect><rect x="31.25" y="98.65" width="1.60" height="51.35"><title>8.0.0.0/8 area: 18 observations</title></rect><rect x="33.20" y="20.75" width="1.60" height="129.25"><title>8.0.0.0/8 area: 1,655 observations</title></rect><rect x="37.11" y="80.44" width="1.60" height="69.56"><title>9.0.0.0/8 area: 53 observations</title></rect><rect x="42.97" y="137.91" width="1.60" height="12.09"><title>11.0.0.0/8 area: 1 observations</title></rect><rect x="46.88" y="97.76" width="1.60" height="52.24"><title>12.0.0.0/8 area: 19 observations</title></rect><rect x="48.83" y="81.78" width="1.60" height="68.22"><title>12.0.0.0/8 area: 49 observations</title></rect><rect x="50.78" y="60.24" width="1.60" height="89.76"><title>13.0.0.0/8 area: 171 observations</title></rect><rect x="52.73" y="55.48" width="1.60" height="94.52"><title>13.0.0.0/8 area: 225 observations</title></rect><rect x="54.69" y="20.59" width="1.60" height="129.41"><title>14.0.0.0/8 area: 1,670 observations</title></rect><rect x="56.64" y="25.40" width="1.60" height="124.60"><title>14.0.0.0/8 area: 1,267 observations</title></rect><rect x="58.59" y="137.91" width="1.60" height="12.09"><title>15.0.0.0/8 area: 1 observations</title></rect><rect x="60.55" y="45.52" width="1.60" height="104.48"><title>15.0.0.0/8 area: 399 observations</title></rect><rect x="62.50" y="96.10" width="1.60" height="53.90"><title>16.0.0.0/8 area: 21 observations</title></rect><rect x="64.45" y="99.60" width="1.60" height="50.40"><title>16.0.0.0/8 area: 17 observations</title></rect><rect x="68.36" y="130.84" width="1.60" height="19.16"><title>17.0.0.0/8 area: 2 observations</title></rect><rect x="70.31" y="44.55" width="1.60" height="105.45"><title>18.0.0.0/8 area: 422 observations</title></rect><rect x="72.27" y="58.59" width="1.60" height="91.41"><title>18.0.0.0/8 area: 188 observations</title></rect><rect x="76.17" y="137.91" width="1.60" height="12.09"><title>19.0.0.0/8 area: 1 observations</title></rect><rect x="78.12" y="13.28" width="1.60" height="136.72"><title>20.0.0.0/8 area: 2,540 observations</title></rect><rect x="80.08" y="32.44" width="1.60" height="117.56"><title>20.0.0.0/8 area: 846 observations</title></rect><rect x="82.03" y="137.91" width="1.60" height="12.09"><title>21.0.0.0/8 area: 1 observations</title></rect><rect x="83.98" y="137.91" width="1.60" height="12.09"><title>21.0.0.0/8 area: 1 observations</title></rect><rect x="89.84" y="40.00" width="1.60" height="110.00"><title>23.0.0.0/8 area: 548 observations</title></rect><rect x="91.80" y="34.54" width="1.60" height="115.46"><title>23.0.0.0/8 area: 750 observations</title></rect><rect x="93.75" y="42.67" width="1.60" height="107.33"><title>24.0.0.0/8 area: 470 observations</title></rect><rect x="95.70" y="41.59" width="1.60" height="108.41"><title>24.0.0.0/8 area: 500 observations</title></rect><rect x="105.47" y="19.92" width="1.60" height="130.08"><title>27.0.0.0/8 area: 1,735 observations</title></rect><rect x="107.42" y="25.37" width="1.60" height="124.63"><title>27.0.0.0/8 area: 1,269 observations</title></rect><rect x="113.28" y="137.91" width="1.60" height="12.09"><title>29.0.0.0/8 area: 1 observations</title></rect><rect x="121.09" y="19.62" width="1.60" height="130.38"><title>31.0.0.0/8 area: 1,766 observations</title></rect><rect x="123.05" y="21.80" width="1.60" height="128.20"><title>31.0.0.0/8 area: 1,558 observations</title></rect><rect x="126.95" y="81.44" width="1.60" height="68.56"><title>32.0.0.0/8 area: 50 observations</title></rect><rect x="132.81" y="26.02" width="1.60" height="123.98"><title>34.0.0.0/8 area: 1,223 observations</title></rect><rect x="134.77" y="38.25" width="1.60" height="111.75"><title>34.0.0.0/8 area: 606 observations</title></rect><rect x="136.72" y="96.91" width="1.60" height="53.09"><title>35.0.0.0/8 area: 20 observations</title></rect><rect x="138.67" y="21.18" width="1.60" height="128.82"><title>35.0.0.0/8 area: 1,614 observations</title></rect><rect x="140.62" y="8.63" width="1.60" height="141.37"><title>36.0.0.0/8 area: 3,317 observations</title></rect><rect x="142.58" y="25.22" width="1.60" height="124.78"><title>36.0.0.0/8 area: 1,280 observations</title></rect><rect x="144.53" y="24.04" width="1.60" height="125.96"><title>37.0.0.0/8 area: 1,370 observations</title></rect><rect x="146.48" y="36.97" width="1.60" height="113.03"><title>37.0.0.0/8 area: 652 observations</title></rect><rect x="148.44" y="39.53" width="1.60" height="110.47"><title>38.0.0.0/8 area: 563 observations</title></rect><rect x="150.39" y="30.57" width="1.60" height="119.43"><title>38.0.0.0/8 area: 942 observations</title></rect><rect x="152.34" y="23.64" width="1.60" height="126.36"><title>39.0.0.0/8 area: 1,402 observations</title></rect><rect x="154.30" y="35.89" width="1.60" height="114.11"><title>39.0.0.0/8 area: 694 observations</title></rect><rect x="156.25" y="37.35" width="1.60" height="112.65"><title>40.0.0.0/8 area: 638 observations</title></rect><rect x="158.20" y="90.69" width="1.60" height="59.31"><title>40.0.0.0/8 area: 29 observations</title></rect><rect x="160.16" y="39.25" width="1.60" height="110.75"><title>41.0.0.0/8 area: 572 observations</title></rect><rect x="162.11" y="35.22" width="1.60" height="114.78"><title>41.0.0.0/8 area: 721 observations</title></rect><rect x="164.06" y="35.05" width="1.60" height="114.95"><title>42.0.0.0/8 area: 728 observations</title></rect><rect x="166.02" y="37.19" width="1.60" height="112.81"><title>42.0.0.0/8 area: 644 observations</title></rect><rect x="167.97" y="65.80" width="1.60" height="84.20"><title>43.0.0.0/8 area: 124 observations</title></rect><rect x="169.92" y="19.74" width="1.60" height="130.26"><title>43.0.0.0/8 area: 1,753 observations</title></rect><rect x="171.88" y="137.91" width="1.60" height="12.09"><title>44.0.0.0/8 area: 1 observations</title></rect><rect x="173.83" y="36.58" width="1.60" height="113.42"><title>44.0.0.0/8 area: 667 observations</title></rect><rect x="175.78" y="10.27" width="1.60" height="139.73"><title>45.0.0.0/8 area: 3,018 observations</title></rect><rect x="177.73" y="0.00" width="1.60" height="150.00"><title>45.0.0.0/8 area: 5,441 observations</title></rect><rect x="179.69" y="29.88" width="1.60" height="120.12"><title>46.0.0.0/8 area: 980 observations</title></rect><rect x="181.64" y="23.02" width="1.60" height="126.98"><title>46.0.0.0/8 area: 1,453 observations</title></rect><rect x="183.59" y="19.39" width="1.60" height="130.61"><title>47.0.0.0/8 area: 1,789 observations</title></rect><rect x="185.55" y="15.91" width="1.60" height="134.09"><title>47.0.0.0/8 area: 2,184 observations</title></rect><rect x="187.50" y="80.12" width="1.60" height="69.88"><title>48.0.0.0/8 area: 54 observations</title></rect><rect x="189.45" y="78.31" width="1.60" height="71.69"><title>48.0.0.0/8 area: 60 observations</title></rect><rect x="191.41" y="18.94" width="1.60" height="131.06"><title>49.0.0.0/8 area: 1,836 observations</title></rect><rect x="193.36" y="12.54" width="1.60" height="137.46"><title>49.0.0.0/8 area: 2,651 observations</title></rect><rect x="195.31" y="47.26" width="1.60" height="102.74"><title>50.0.0.0/8 area: 361 observations</title></rect><rect x="197.27" y="70.05" width="1.60" height="79.95"><title>50.0.0.0/8 area: 97 observations</title></rect><rect x="199.22" y="36.58" width="1.60" height="113.42"><title>51.0.0.0/8 area: 667 observations</title></rect><rect x="201.17" y="27.58" width="1.60" height="122.42"><title>51.0.0.0/8 area: 1,118 observations</title></rect><rect x="203.12" y="66.09" width="1.60" height="83.91"><title>52.0.0.0/8 area: 122 observations</title></rect><rect x="205.08" y="48.61" width="1.60" height="101.39"><title>52.0.0.0/8 area: 334 observations</title></rect><rect x="210.94" y="28.71" width="1.60" height="121.29"><title>54.0.0.0/8 area: 1,048 observations</title></rect><rect x="212.89" y="45.92" width="1.60" height="104.08"><title>54.0.0.0/8 area: 390 observations</title></rect><rect x="218.75" y="130.84" width="1.60" height="19.16"><title>56.0.0.0/8 area: 2 observations</title></rect><rect x="220.70" y="125.83" width="1.60" height="24.17"><title>56.0.0.0/8 area: 3 observations</title></rect><rect x="222.66" y="130.84" width="1.60" height="19.16"><title>57.0.0.0/8 area: 2 observations</title></rect><rect x="224.61" y="61.18" width="1.60" height="88.82"><title>57.0.0.0/8 area: 162 observations</title></rect><rect x="226.56" y="29.70" width="1.60" height="120.30"><title>58.0.0.0/8 area: 990 observations</title></rect><rect x="228.52" y="0.23" width="1.60" height="149.77"><title>58.0.0.0/8 area: 5,370 observations</title></rect><rect x="230.47" y="23.46" width="1.60" height="126.54"><title>59.0.0.0/8 area: 1,416 observations</title></rect><rect x="232.42" y="55.63" width="1.60" height="94.37"><title>59.0.0.0/8 area: 223 observations</title></rect><rect x="234.38" y="32.17" width="1.60" height="117.83"><title>60.0.0.0/8 area: 859 observations</title></rect><rect x="236.33" y="28.44" width="1.60" height="121.56"><title>60.0.0.0/8 area: 1,064 observations</title></rect><rect x="238.28" y="40.45" width="1.60" height="109.55"><title>61.0.0.0/8 area: 534 observations</title></rect><rect x="240.23" y="11.27" width="1.60" height="138.73"><title>61.0.0.0/8 area: 2,851 observations</title></rect><rect x="242.19" y="45.48" width="1.60" height="104.52"><title>62.0.0.0/8 area: 400 observations</title></rect><rect x="244.14" y="40.88" width="1.60" height="109.12"><title>62.0.0.0/8 area: 521 observations</title></rect><rect x="246.09" y="100.59" width="1.60" height="49.41"><title>63.0.0.0/8 area: 16 observations</title></rect><rect x="248.05" y="82.86" width="1.60" height="67.14"><title>63.0.0.0/8 area: 46 observations</title></rect><rect x="250.00" y="22.68" width="1.60" height="127.32"><title>64.0.0.0/8 area: 1,481 observations</title></rect><rect x="251.95" y="35.20" width="1.60" height="114.80"><title>64.0.0.0/8 area: 722 observations</title></rect><rect x="253.91" y="30.18" width="1.60" height="119.82"><title>65.0.0.0/8 area: 963 observations</title></rect><rect x="255.86" y="76.42" width="1.60" height="73.58"><title>65.0.0.0/8 area: 67 observations</title></rect><rect x="257.81" y="47.02" width="1.60" height="102.98"><title>66.0.0.0/8 area: 366 observations</title></rect><rect x="259.77" y="10.78" width="1.60" height="139.22"><title>66.0.0.0/8 area: 2,931 observations</title></rect><rect x="261.72" y="73.81" width="1.60" height="76.19"><title>67.0.0.0/8 area: 78 observations</title></rect><rect x="263.67" y="52.05" width="1.60" height="97.95"><title>67.0.0.0/8 area: 274 observations</title></rect><rect x="265.62" y="59.45" width="1.60" height="90.55"><title>68.0.0.0/8 area: 179 observations</title></rect><rect x="267.58" y="46.88" width="1.60" height="103.12"><title>68.0.0.0/8 area: 369 observations</title></rect><rect x="269.53" y="19.40" width="1.60" height="130.60"><title>69.0.0.0/8 area: 1,788 observations</title></rect><rect x="271.48" y="60.54" width="1.60" height="89.46"><title>69.0.0.0/8 area: 168 observations</title></rect><rect x="273.44" y="58.59" width="1.60" height="91.41"><title>70.0.0.0/8 area: 188 observations</title></rect><rect x="275.39" y="63.58" width="1.60" height="86.42"><title>70.0.0.0/8 area: 141 observations</title></rect><rect x="277.34" y="42.75" width="1.60" height="107.25"><title>71.0.0.0/8 area: 468 observations</title></rect><rect x="279.30" y="68.35" width="1.60" height="81.65"><title>71.0.0.0/8 area: 107 observations</title></rect><rect x="281.25" y="44.46" width="1.60" height="105.54"><title>72.0.0.0/8 area: 424 observations</title></rect><rect x="283.20" y="32.27" width="1.60" height="117.73"><title>72.0.0.0/8 area: 854 observations</title></rect><rect x="285.16" y="61.50" width="1.60" height="88.50"><title>73.0.0.0/8 area: 159 observations</title></rect><rect x="287.11" y="59.45" width="1.60" height="90.55"><title>73.0.0.0/8 area: 179 observations</title></rect><rect x="289.06" y="50.89" width="1.60" height="99.11"><title>74.0.0.0/8 area: 293 observations</title></rect><rect x="291.02" y="49.85" width="1.60" height="100.15"><title>74.0.0.0/8 area: 311 observations</title></rect><rect x="292.97" y="71.34" width="1.60" height="78.66"><title>75.0.0.0/8 area: 90 observations</title></rect><rect x="294.92" y="77.21" width="1.60" height="72.79"><title>75.0.0.0/8 area: 64 observations</title></rect><rect x="296.88" y="54.14" width="1.60" height="95.86"><title>76.0.0.0/8 area: 243 observations</title></rect><rect x="298.83" y="70.59" width="1.60" height="79.41"><title>76.0.0.0/8 area: 94 observations</title></rect><rect x="300.78" y="35.13" width="1.60" height="114.87"><title>77.0.0.0/8 area: 725 observations</title></rect><rect x="302.73" y="41.63" width="1.60" height="108.37"><title>77.0.0.0/8 area: 499 observations</title></rect><rect x="304.69" y="37.03" width="1.60" height="112.97"><title>78.0.0.0/8 area: 650 observations</title></rect><rect x="306.64" y="46.32" width="1.60" height="103.68"><title>78.0.0.0/8 area: 381 observations</title></rect><rect x="308.59" y="36.84" width="1.60" height="113.16"><title>79.0.0.0/8 area: 657 observations</title></rect><rect x="310.55" y="53.79" width="1.60" height="96.21"><title>79.0.0.0/8 area: 248 observations</title></rect><rect x="312.50" y="36.60" width="1.60" height="113.40"><title>80.0.0.0/8 area: 666 observations</title></rect><rect x="314.45" y="47.50" width="1.60" height="102.50"><title>80.0.0.0/8 area: 356 observations</title></rect><rect x="316.41" y="29.68" width="1.60" height="120.32"><title>81.0.0.0/8 area: 991 observations</title></rect><rect x="318.36" y="43.12" width="1.60" height="106.88"><title>81.0.0.0/8 area: 458 observations</title></rect><rect x="320.31" y="40.26" width="1.60" height="109.74"><title>82.0.0.0/8 area: 540 observations</title></rect><rect x="322.27" y="40.75" width="1.60" height="109.25"><title>82.0.0.0/8 area: 525 observations</title></rect><rect x="324.22" y="56.03" width="1.60" height="93.97"><title>83.0.0.0/8 area: 218 observations</title></rect><rect x="326.17" y="38.74" width="1.60" height="111.26"><title>83.0.0.0/8 area: 589 observations</title></rect><rect x="328.12" y="33.94" width="1.60" height="116.06"><title>84.0.0.0/8 area: 776 observations</title></rect><rect x="330.08" y="59.25" width="1.60" height="90.75"><title>84.0.0.0/8 area: 181 observations</title></rect><rect x="332.03" y="42.12" width="1.60" height="107.88"><title>85.0.0.0/8 area: 485 observations</title></rect><rect x="333.98" y="22.22" width="1.60" height="127.78"><title>85.0.0.0/8 area: 1,521 observations</title></rect><rect x="335.94" y="44.59" width="1.60" height="105.41"><title>86.0.0.0/8 area: 421 observations</title></rect><rect x="337.89" y="61.83" width="1.60" height="88.17"><title>86.0.0.0/8 area: 156 observations</title></rect><rect x="339.84" y="44.06" width="1.60" height="105.94"><title>87.0.0.0/8 area: 434 observations</title></rect><rect x="341.80" y="28.23" width="1.60" height="121.77"><title>87.0.0.0/8 area: 1,077 observations</title></rect><rect x="343.75" y="65.53" width="1.60" height="84.47"><title>88.0.0.0/8 area: 126 observations</title></rect><rect x="345.70" y="38.83" width="1.60" height="111.17"><title>88.0.0.0/8 area: 586 observations</title></rect><rect x="347.66" y="27.68" width="1.60" height="122.32"><title>89.0.0.0/8 area: 1,112 observations</title></rect><rect x="349.61" y="38.33" width="1.60" height="111.67"><title>89.0.0.0/8 area: 603 observations</title></rect><rect x="351.56" y="65.94" width="1.60" height="84.06"><title>90.0.0.0/8 area: 123 observations</title></rect><rect x="353.52" y="52.83" width="1.60" height="97.17"><title>90.0.0.0/8 area: 262 observations</title></rect><rect x="355.47" y="30.20" width="1.60" height="119.80"><title>91.0.0.0/8 area: 962 observations</title></rect><rect x="357.42" y="4.34" width="1.60" height="145.66"><title>91.0.0.0/8 area: 4,241 observations</title></rect><rect x="359.38" y="32.01" width="1.60" height="117.99"><title>92.0.0.0/8 area: 867 observations</title></rect><rect x="361.33" y="47.31" width="1.60" height="102.69"><title>92.0.0.0/8 area: 360 observations</title></rect><rect x="363.28" y="34.91" width="1.60" height="115.09"><title>93.0.0.0/8 area: 734 observations</title></rect><rect x="365.23" y="34.82" width="1.60" height="115.18"><title>93.0.0.0/8 area: 738 observations</title></rect><rect x="367.19" y="39.50" width="1.60" height="110.50"><title>94.0.0.0/8 area: 564 observations</title></rect><rect x="369.14" y="24.00" width="1.60" height="126.00"><title>94.0.0.0/8 area: 1,373 observations</title></rect><rect x="371.09" y="28.61" width="1.60" height="121.39"><title>95.0.0.0/8 area: 1,054 observations</title></rect><rect x="373.05" y="30.24" width="1.60" height="119.76"><title>95.0.0.0/8 area: 960 observations</title></rect><rect x="375.00" y="48.56" width="1.60" height="101.44"><title>96.0.0.0/8 area: 335 observations</title></rect><rect x="376.95" y="84.82" width="1.60" height="65.18"><title>96.0.0.0/8 area: 41 observations</title></rect><rect x="378.91" y="68.84" width="1.60" height="81.16"><title>97.0.0.0/8 area: 104 observations</title></rect><rect x="380.86" y="95.32" width="1.60" height="54.68"><title>97.0.0.0/8 area: 22 observations</title></rect><rect x="382.81" y="46.01" width="1.60" height="103.99"><title>98.0.0.0/8 area: 388 observations</title></rect><rect x="384.77" y="55.71" width="1.60" height="94.29"><title>98.0.0.0/8 area: 222 observations</title></rect><rect x="386.72" y="79.50" width="1.60" height="70.50"><title>99.0.0.0/8 area: 56 observations</title></rect><rect x="388.67" y="64.85" width="1.60" height="85.15"><title>99.0.0.0/8 area: 131 observations</title></rect><rect x="390.62" y="48.67" width="1.60" height="101.33"><title>100.0.0.0/8 area: 333 observations</title></rect><rect x="394.53" y="23.59" width="1.60" height="126.41"><title>101.0.0.0/8 area: 1,406 observations</title></rect><rect x="396.48" y="56.92" width="1.60" height="93.08"><title>101.0.0.0/8 area: 207 observations</title></rect><rect x="398.44" y="31.77" width="1.60" height="118.23"><title>102.0.0.0/8 area: 879 observations</title></rect><rect x="400.39" y="28.83" width="1.60" height="121.17"><title>102.0.0.0/8 area: 1,041 observations</title></rect><rect x="402.34" y="6.81" width="1.60" height="143.19"><title>103.0.0.0/8 area: 3,681 observations</title></rect><rect x="404.30" y="3.43" width="1.60" height="146.57"><title>103.0.0.0/8 area: 4,469 observations</title></rect><rect x="406.25" y="40.48" width="1.60" height="109.52"><title>104.0.0.0/8 area: 533 observations</title></rect><rect x="408.20" y="18.35" width="1.60" height="131.65"><title>104.0.0.0/8 area: 1,899 observations</title></rect><rect x="410.16" y="47.21" width="1.60" height="102.79"><title>105.0.0.0/8 area: 362 observations</title></rect><rect x="412.11" y="48.93" width="1.60" height="101.07"><title>105.0.0.0/8 area: 328 observations</title></rect><rect x="414.06" y="16.86" width="1.60" height="133.14"><title>106.0.0.0/8 area: 2,069 observations</title></rect><rect x="416.02" y="35.27" width="1.60" height="114.73"><title>106.0.0.0/8 area: 719 observations</title></rect><rect x="417.97" y="73.16" width="1.60" height="76.84"><title>107.0.0.0/8 area: 81 observations</title></rect><rect x="419.92" y="31.11" width="1.60" height="118.89"><title>107.0.0.0/8 area: 913 observations</title></rect><rect x="421.88" y="16.33" width="1.60" height="133.67"><title>108.0.0.0/8 area: 2,132 observations</title></rect><rect x="423.83" y="52.31" width="1.60" height="97.69"><title>108.0.0.0/8 area: 270 observations</title></rect><rect x="425.78" y="33.20" width="1.60" height="116.80"><title>109.0.0.0/8 area: 810 observations</title></rect><rect x="427.73" y="31.95" width="1.60" height="118.05"><title>109.0.0.0/8 area: 870 observations</title></rect><rect x="429.69" y="23.49" width="1.60" height="126.51"><title>110.0.0.0/8 area: 1,414 observations</title></rect><rect x="431.64" y="39.31" width="1.60" height="110.69"><title>110.0.0.0/8 area: 570 observations</title></rect><rect x="433.59" y="12.80" width="1.60" height="137.20"><title>111.0.0.0/8 area: 2,611 observations</title></rect><rect x="435.55" y="17.54" width="1.60" height="132.46"><title>111.0.0.0/8 area: 1,989 observations</title></rect><rect x="437.50" y="3.44" width="1.60" height="146.56"><title>112.0.0.0/8 area: 4,466 observations</title></rect><rect x="439.45" y="27.63" width="1.60" height="122.37"><title>112.0.0.0/8 area: 1,115 observations</title></rect><rect x="441.41" y="34.61" width="1.60" height="115.39"><title>113.0.0.0/8 area: 747 observations</title></rect><rect x="443.36" y="19.75" width="1.60" height="130.25"><title>113.0.0.0/8 area: 1,752 observations</title></rect><rect x="445.31" y="38.65" width="1.60" height="111.35"><title>114.0.0.0/8 area: 592 observations</title></rect><rect x="447.27" y="34.03" width="1.60" height="115.97"><title>114.0.0.0/8 area: 772 observations</title></rect><rect x="449.22" y="29.67" width="1.60" height="120.33"><title>115.0.0.0/8 area: 992 observations</title></rect><rect x="451.17" y="21.30" width="1.60" height="128.70"><title>115.0.0.0/8 area: 1,603 observations</title></rect><rect x="453.12" y="24.98" width="1.60" height="125.02"><title>116.0.0.0/8 area: 1,298 observations</title></rect><rect x="455.08" y="31.81" width="1.60" height="118.19"><title>116.0.0.0/8 area: 877 observations</title></rect><rect x="457.03" y="24.94" width="1.60" height="125.06"><title>117.0.0.0/8 area: 1,301 observations</title></rect><rect x="458.98" y="18.21" width="1.60" height="131.79"><title>117.0.0.0/8 area: 1,914 observations</title></rect><rect x="460.94" y="37.82" width="1.60" height="112.18"><title>118.0.0.0/8 area: 621 observations</title></rect><rect x="462.89" y="26.23" width="1.60" height="123.77"><title>118.0.0.0/8 area: 1,208 observations</title></rect><rect x="464.84" y="33.52" width="1.60" height="116.48"><title>119.0.0.0/8 area: 795 observations</title></rect><rect x="466.80" y="24.69" width="1.60" height="125.31"><title>119.0.0.0/8 area: 1,320 observations</title></rect><rect x="468.75" y="22.53" width="1.60" height="127.47"><title>120.0.0.0/8 area: 1,494 observations</title></rect><rect x="470.70" y="25.44" width="1.60" height="124.56"><title>120.0.0.0/8 area: 1,264 observations</title></rect><rect x="472.66" y="32.65" width="1.60" height="117.35"><title>121.0.0.0/8 area: 836 observations</title></rect><rect x="474.61" y="35.49" width="1.60" height="114.51"><title>121.0.0.0/8 area: 710 observations</title></rect><rect x="476.56" y="38.16" width="1.60" height="111.84"><title>122.0.0.0/8 area: 609 observations</title></rect><rect x="478.52" y="18.66" width="1.60" height="131.34"><title>122.0.0.0/8 area: 1,866 observations</title></rect><rect x="480.47" y="29.67" width="1.60" height="120.33"><title>123.0.0.0/8 area: 992 observations</title></rect><rect x="482.42" y="18.67" width="1.60" height="131.33"><title>123.0.0.0/8 area: 1,864 observations</title></rect><rect x="484.38" y="28.84" width="1.60" height="121.16"><title>124.0.0.0/8 area: 1,040 observations</title></rect><rect x="486.33" y="31.32" width="1.60" height="118.68"><title>124.0.0.0/8 area: 902 observations</title></rect><rect x="488.28" y="28.89" width="1.60" height="121.11"><title>125.0.0.0/8 area: 1,037 observations</title></rect><rect x="490.23" y="42.75" width="1.60" height="107.25"><title>125.0.0.0/8 area: 468 observations</title></rect><rect x="492.19" y="105.27" width="1.60" height="44.73"><title>126.0.0.0/8 area: 12 observations</title></rect><rect x="494.14" y="58.69" width="1.60" height="91.31"><title>126.0.0.0/8 area: 187 observations</title></rect><rect x="500.00" y="51.13" width="1.60" height="98.87"><title>128.0.0.0/8 area: 289 observations</title></rect><rect x="501.95" y="55.17" width="1.60" height="94.83"><title>128.0.0.0/8 area: 229 observations</title></rect><rect x="503.91" y="65.94" width="1.60" height="84.06"><title>129.0.0.0/8 area: 123 observations</title></rect><rect x="505.86" y="55.63" width="1.60" height="94.37"><title>129.0.0.0/8 area: 223 observations</title></rect><rect x="507.81" y="51.55" width="1.60" height="98.45"><title>130.0.0.0/8 area: 282 observations</title></rect><rect x="509.77" y="59.35" width="1.60" height="90.65"><title>130.0.0.0/8 area: 180 observations</title></rect><rect x="511.72" y="57.18" width="1.60" height="92.82"><title>131.0.0.0/8 area: 204 observations</title></rect><rect x="513.67" y="56.11" width="1.60" height="93.89"><title>131.0.0.0/8 area: 217 observations</title></rect><rect x="517.58" y="67.41" width="1.60" height="82.59"><title>132.0.0.0/8 area: 113 observations</title></rect><rect x="519.53" y="106.67" width="1.60" height="43.33"><title>133.0.0.0/8 area: 11 observations</title></rect><rect x="521.48" y="106.67" width="1.60" height="43.33"><title>133.0.0.0/8 area: 11 observations</title></rect><rect x="523.44" y="63.58" width="1.60" height="86.42"><title>134.0.0.0/8 area: 141 observations</title></rect><rect x="525.39" y="51.37" width="1.60" height="98.63"><title>134.0.0.0/8 area: 285 observations</title></rect><rect x="527.34" y="72.94" width="1.60" height="77.06"><title>135.0.0.0/8 area: 82 observations</title></rect><rect x="529.30" y="38.13" width="1.60" height="111.87"><title>135.0.0.0/8 area: 610 observations</title></rect><rect x="531.25" y="55.02" width="1.60" height="94.98"><title>136.0.0.0/8 area: 231 observations</title></rect><rect x="533.20" y="51.55" width="1.60" height="98.45"><title>136.0.0.0/8 area: 282 observations</title></rect><rect x="535.16" y="67.41" width="1.60" height="82.59"><title>137.0.0.0/8 area: 113 observations</title></rect><rect x="537.11" y="54.43" width="1.60" height="95.57"><title>137.0.0.0/8 area: 239 observations</title></rect><rect x="539.06" y="33.83" width="1.60" height="116.17"><title>138.0.0.0/8 area: 781 observations</title></rect><rect x="541.02" y="41.98" width="1.60" height="108.02"><title>138.0.0.0/8 area: 489 observations</title></rect><rect x="542.97" y="52.18" width="1.60" height="97.82"><title>139.0.0.0/8 area: 272 observations</title></rect><rect x="544.92" y="28.86" width="1.60" height="121.14"><title>139.0.0.0/8 area: 1,039 observations</title></rect><rect x="546.88" y="77.75" width="1.60" height="72.25"><title>140.0.0.0/8 area: 62 observations</title></rect><rect x="548.83" y="45.30" width="1.60" height="104.70"><title>140.0.0.0/8 area: 404 observations</title></rect><rect x="550.78" y="52.12" width="1.60" height="97.88"><title>141.0.0.0/8 area: 273 observations</title></rect><rect x="552.73" y="67.56" width="1.60" height="82.44"><title>141.0.0.0/8 area: 112 observations</title></rect><rect x="554.69" y="33.76" width="1.60" height="116.24"><title>142.0.0.0/8 area: 784 observations</title></rect><rect x="556.64" y="62.98" width="1.60" height="87.02"><title>142.0.0.0/8 area: 146 observations</title></rect><rect x="558.59" y="36.87" width="1.60" height="113.13"><title>143.0.0.0/8 area: 656 observations</title></rect><rect x="560.55" y="43.43" width="1.60" height="106.57"><title>143.0.0.0/8 area: 450 observations</title></rect><rect x="562.50" y="31.15" width="1.60" height="118.85"><title>144.0.0.0/8 area: 911 observations</title></rect><rect x="564.45" y="65.94" width="1.60" height="84.06"><title>144.0.0.0/8 area: 123 observations</title></rect><rect x="566.41" y="89.56" width="1.60" height="60.44"><title>145.0.0.0/8 area: 31 observations</title></rect><rect x="568.36" y="64.72" width="1.60" height="85.28"><title>145.0.0.0/8 area: 132 observations</title></rect><rect x="570.31" y="36.17" width="1.60" height="113.83"><title>146.0.0.0/8 area: 683 observations</title></rect><rect x="572.27" y="51.13" width="1.60" height="98.87"><title>146.0.0.0/8 area: 289 observations</title></rect><rect x="574.22" y="46.69" width="1.60" height="103.31"><title>147.0.0.0/8 area: 373 observations</title></rect><rect x="576.17" y="22.59" width="1.60" height="127.41"><title>147.0.0.0/8 area: 1,489 observations</title></rect><rect x="578.12" y="49.30" width="1.60" height="100.70"><title>148.0.0.0/8 area: 321 observations</title></rect><rect x="580.08" y="52.57" width="1.60" height="97.43"><title>148.0.0.0/8 area: 266 observations</title></rect><rect x="582.03" y="35.76" width="1.60" height="114.24"><title>149.0.0.0/8 area: 699 observations</title></rect><rect x="583.98" y="74.95" width="1.60" height="75.05"><title>149.0.0.0/8 area: 73 observations</title></rect><rect x="585.94" y="51.93" width="1.60" height="98.07"><title>150.0.0.0/8 area: 276 observations</title></rect><rect x="587.89" y="57.43" width="1.60" height="92.57"><title>150.0.0.0/8 area: 201 observations</title></rect><rect x="589.84" y="53.58" width="1.60" height="96.42"><title>151.0.0.0/8 area: 251 observations</title></rect><rect x="591.80" y="42.38" width="1.60" height="107.62"><title>151.0.0.0/8 area: 478 observations</title></rect><rect x="593.75" y="21.42" width="1.60" height="128.58"><title>152.0.0.0/8 area: 1,592 observations</title></rect><rect x="595.70" y="30.35" width="1.60" height="119.65"><title>152.0.0.0/8 area: 954 observations</title></rect><rect x="597.66" y="24.39" width="1.60" height="125.61"><title>153.0.0.0/8 area: 1,343 observations</title></rect><rect x="599.61" y="91.28" width="1.60" height="58.72"><title>153.0.0.0/8 area: 28 observations</title></rect><rect x="601.56" y="26.44" width="1.60" height="123.56"><title>154.0.0.0/8 area: 1,194 observations</title></rect><rect x="603.52" y="38.80" width="1.60" height="111.20"><title>154.0.0.0/8 area: 587 observations</title></rect><rect x="605.47" y="66.09" width="1.60" height="83.91"><title>155.0.0.0/8 area: 122 observations</title></rect><rect x="607.42" y="66.52" width="1.60" height="83.48"><title>155.0.0.0/8 area: 119 observations</title></rect><rect x="609.38" y="84.01" width="1.60" height="65.99"><title>156.0.0.0/8 area: 43 observations</title></rect><rect x="611.33" y="35.61" width="1.60" height="114.39"><title>156.0.0.0/8 area: 705 observations</title></rect><rect x="613.28" y="40.58" width="1.60" height="109.42"><title>157.0.0.0/8 area: 530 observations</title></rect><rect x="615.23" y="43.98" width="1.60" height="106.02"><title>157.0.0.0/8 area: 436 observations</title></rect><rect x="617.19" y="57.35" width="1.60" height="92.65"><title>158.0.0.0/8 area: 202 observations</title></rect><rect x="619.14" y="44.22" width="1.60" height="105.78"><title>158.0.0.0/8 area: 430 observations</title></rect><rect x="621.09" y="43.62" width="1.60" height="106.38"><title>159.0.0.0/8 area: 445 observations</title></rect><rect x="623.05" y="37.00" width="1.60" height="113.00"><title>159.0.0.0/8 area: 651 observations</title></rect><rect x="625.00" y="56.11" width="1.60" height="93.89"><title>160.0.0.0/8 area: 217 observations</title></rect><rect x="626.95" y="44.06" width="1.60" height="105.94"><title>160.0.0.0/8 area: 434 observations</title></rect><rect x="628.91" y="44.26" width="1.60" height="105.74"><title>161.0.0.0/8 area: 429 observations</title></rect><rect x="630.86" y="60.65" width="1.60" height="89.35"><title>161.0.0.0/8 area: 167 observations</title></rect><rect x="632.81" y="73.59" width="1.60" height="76.41"><title>162.0.0.0/8 area: 79 observations</title></rect><rect x="634.77" y="22.77" width="1.60" height="127.23"><title>162.0.0.0/8 area: 1,474 observations</title></rect><rect x="636.72" y="57.01" width="1.60" height="92.99"><title>163.0.0.0/8 area: 206 observations</title></rect><rect x="638.67" y="57.87" width="1.60" height="92.13"><title>163.0.0.0/8 area: 196 observations</title></rect><rect x="640.62" y="53.72" width="1.60" height="96.28"><title>164.0.0.0/8 area: 249 observations</title></rect><rect x="642.58" y="78.90" width="1.60" height="71.10"><title>164.0.0.0/8 area: 58 observations</title></rect><rect x="644.53" y="45.56" width="1.60" height="104.44"><title>165.0.0.0/8 area: 398 observations</title></rect><rect x="646.48" y="20.06" width="1.60" height="129.94"><title>165.0.0.0/8 area: 1,722 observations</title></rect><rect x="648.44" y="66.52" width="1.60" height="83.48"><title>166.0.0.0/8 area: 119 observations</title></rect><rect x="650.39" y="86.57" width="1.60" height="63.43"><title>166.0.0.0/8 area: 37 observations</title></rect><rect x="652.34" y="33.99" width="1.60" height="116.01"><title>167.0.0.0/8 area: 774 observations</title></rect><rect x="654.30" y="44.84" width="1.60" height="105.16"><title>167.0.0.0/8 area: 415 observations</title></rect><rect x="656.25" y="56.59" width="1.60" height="93.41"><title>168.0.0.0/8 area: 211 observations</title></rect><rect x="658.20" y="38.39" width="1.60" height="111.61"><title>168.0.0.0/8 area: 601 observations</title></rect><rect x="660.16" y="63.46" width="1.60" height="86.54"><title>169.0.0.0/8 area: 142 observations</title></rect><rect x="662.11" y="60.24" width="1.60" height="89.76"><title>169.0.0.0/8 area: 171 observations</title></rect><rect x="664.06" y="41.01" width="1.60" height="108.99"><title>170.0.0.0/8 area: 517 observations</title></rect><rect x="666.02" y="36.40" width="1.60" height="113.60"><title>170.0.0.0/8 area: 674 observations</title></rect><rect x="667.97" y="32.58" width="1.60" height="117.42"><title>171.0.0.0/8 area: 839 observations</title></rect><rect x="669.92" y="37.30" width="1.60" height="112.70"><title>171.0.0.0/8 area: 640 observations</title></rect><rect x="671.88" y="32.44" width="1.60" height="117.56"><title>172.0.0.0/8 area: 846 observations</title></rect><rect x="673.83" y="26.57" width="1.60" height="123.43"><title>172.0.0.0/8 area: 1,185 observations</title></rect><rect x="675.78" y="63.34" width="1.60" height="86.66"><title>173.0.0.0/8 area: 143 observations</title></rect><rect x="677.73" y="24.74" width="1.60" height="125.26"><title>173.0.0.0/8 area: 1,316 observations</title></rect><rect x="679.69" y="62.28" width="1.60" height="87.72"><title>174.0.0.0/8 area: 152 observations</title></rect><rect x="681.64" y="56.27" width="1.60" height="93.73"><title>174.0.0.0/8 area: 215 observations</title></rect><rect x="683.59" y="24.26" width="1.60" height="125.74"><title>175.0.0.0/8 area: 1,353 observations</title></rect><rect x="685.55" y="41.53" width="1.60" height="108.47"><title>175.0.0.0/8 area: 502 observations</title></rect><rect x="687.50" y="17.71" width="1.60" height="132.29"><title>176.0.0.0/8 area: 1,970 observations</title></rect><rect x="689.45" y="50.08" width="1.60" height="99.92"><title>176.0.0.0/8 area: 307 observations</title></rect><rect x="691.41" y="19.46" width="1.60" height="130.54"><title>177.0.0.0/8 area: 1,782 observations</title></rect><rect x="693.36" y="26.64" width="1.60" height="123.36"><title>177.0.0.0/8 area: 1,180 observations</title></rect><rect x="695.31" y="33.41" width="1.60" height="116.59"><title>178.0.0.0/8 area: 800 observations</title></rect><rect x="697.27" y="19.01" width="1.60" height="130.99"><title>178.0.0.0/8 area: 1,828 observations</title></rect><rect x="699.22" y="25.01" width="1.60" height="124.99"><title>179.0.0.0/8 area: 1,296 observations</title></rect><rect x="701.17" y="34.49" width="1.60" height="115.51"><title>179.0.0.0/8 area: 752 observations</title></rect><rect x="703.12" y="31.59" width="1.60" height="118.41"><title>180.0.0.0/8 area: 888 observations</title></rect><rect x="705.08" y="31.83" width="1.60" height="118.17"><title>180.0.0.0/8 area: 876 observations</title></rect><rect x="707.03" y="25.25" width="1.60" height="124.75"><title>181.0.0.0/8 area: 1,278 observations</title></rect><rect x="708.98" y="31.21" width="1.60" height="118.79"><title>181.0.0.0/8 area: 908 observations</title></rect><rect x="710.94" y="16.30" width="1.60" height="133.70"><title>182.0.0.0/8 area: 2,136 observations</title></rect><rect x="712.89" y="32.03" width="1.60" height="117.97"><title>182.0.0.0/8 area: 866 observations</title></rect><rect x="714.84" y="20.84" width="1.60" height="129.16"><title>183.0.0.0/8 area: 1,646 observations</title></rect><rect x="716.80" y="17.67" width="1.60" height="132.33"><title>183.0.0.0/8 area: 1,974 observations</title></rect><rect x="718.75" y="56.03" width="1.60" height="93.97"><title>184.0.0.0/8 area: 218 observations</title></rect><rect x="720.70" y="63.22" width="1.60" height="86.78"><title>184.0.0.0/8 area: 144 observations</title></rect><rect x="722.66" y="20.37" width="1.60" height="129.63"><title>185.0.0.0/8 area: 1,691 observations</title></rect><rect x="724.61" y="2.03" width="1.60" height="147.97"><title>185.0.0.0/8 area: 4,844 observations</title></rect><rect x="726.56" y="27.12" width="1.60" height="122.88"><title>186.0.0.0/8 area: 1,148 observations</title></rect><rect x="728.52" y="16.15" width="1.60" height="133.85"><title>186.0.0.0/8 area: 2,154 observations</title></rect><rect x="730.47" y="15.09" width="1.60" height="134.91"><title>187.0.0.0/8 area: 2,290 observations</title></rect><rect x="732.42" y="35.42" width="1.60" height="114.58"><title>187.0.0.0/8 area: 713 observations</title></rect><rect x="734.38" y="43.94" width="1.60" height="106.06"><title>188.0.0.0/8 area: 437 observations</title></rect><rect x="736.33" y="21.51" width="1.60" height="128.49"><title>188.0.0.0/8 area: 1,584 observations</title></rect><rect x="738.28" y="21.93" width="1.60" height="128.07"><title>189.0.0.0/8 area: 1,546 observations</title></rect><rect x="740.23" y="41.73" width="1.60" height="108.27"><title>189.0.0.0/8 area: 496 observations</title></rect><rect x="742.19" y="22.17" width="1.60" height="127.83"><title>190.0.0.0/8 area: 1,525 observations</title></rect><rect x="744.14" y="34.54" width="1.60" height="115.46"><title>190.0.0.0/8 area: 750 observations</title></rect><rect x="746.09" y="32.77" width="1.60" height="117.23"><title>191.0.0.0/8 area: 830 observations</title></rect><rect x="748.05" y="45.70" width="1.60" height="104.30"><title>191.0.0.0/8 area: 395 observations</title></rect><rect x="750.00" y="33.37" width="1.60" height="116.63"><title>192.0.0.0/8 area: 802 observations</title></rect><rect x="751.95" y="26.06" width="1.60" height="123.94"><title>192.0.0.0/8 area: 1,220 observations</title></rect><rect x="753.91" y="23.43" width="1.60" height="126.57"><title>193.0.0.0/8 area: 1,419 observations</title></rect><rect x="755.86" y="23.45" width="1.60" height="126.55"><title>193.0.0.0/8 area: 1,417 observations</title></rect><rect x="757.81" y="19.22" width="1.60" height="130.78"><title>194.0.0.0/8 area: 1,807 observations</title></rect><rect x="759.77" y="24.15" width="1.60" height="125.85"><title>194.0.0.0/8 area: 1,361 observations</title></rect><rect x="761.72" y="21.54" width="1.60" height="128.46"><title>195.0.0.0/8 area: 1,581 observations</title></rect><rect x="763.67" y="21.90" width="1.60" height="128.10"><title>195.0.0.0/8 area: 1,549 observations</title></rect><rect x="765.62" y="38.92" width="1.60" height="111.08"><title>196.0.0.0/8 area: 583 observations</title></rect><rect x="767.58" y="31.46" width="1.60" height="118.54"><title>196.0.0.0/8 area: 895 observations</title></rect><rect x="769.53" y="57.18" width="1.60" height="92.82"><title>197.0.0.0/8 area: 204 observations</title></rect><rect x="771.48" y="39.13" width="1.60" height="110.87"><title>197.0.0.0/8 area: 576 observations</title></rect><rect x="773.44" y="44.84" width="1.60" height="105.16"><title>198.0.0.0/8 area: 415 observations</title></rect><rect x="775.39" y="20.27" width="1.60" height="129.73"><title>198.0.0.0/8 area: 1,701 observations</title></rect><rect x="777.34" y="30.46" width="1.60" height="119.54"><title>199.0.0.0/8 area: 948 observations</title></rect><rect x="779.30" y="66.23" width="1.60" height="83.77"><title>199.0.0.0/8 area: 121 observations</title></rect><rect x="781.25" y="26.33" width="1.60" height="123.67"><title>200.0.0.0/8 area: 1,201 observations</title></rect><rect x="783.20" y="29.79" width="1.60" height="120.21"><title>200.0.0.0/8 area: 985 observations</title></rect><rect x="785.16" y="30.62" width="1.60" height="119.38"><title>201.0.0.0/8 area: 939 observations</title></rect><rect x="787.11" y="31.65" width="1.60" height="118.35"><title>201.0.0.0/8 area: 885 observations</title></rect><rect x="789.06" y="19.94" width="1.60" height="130.06"><title>202.0.0.0/8 area: 1,733 observations</title></rect><rect x="791.02" y="38.10" width="1.60" height="111.90"><title>202.0.0.0/8 area: 611 observations</title></rect><rect x="792.97" y="42.67" width="1.60" height="107.33"><title>203.0.0.0/8 area: 470 observations</title></rect><rect x="794.92" y="42.60" width="1.60" height="107.40"><title>203.0.0.0/8 area: 472 observations</title></rect><rect x="796.88" y="44.14" width="1.60" height="105.86"><title>204.0.0.0/8 area: 432 observations</title></rect><rect x="798.83" y="65.25" width="1.60" height="84.75"><title>204.0.0.0/8 area: 128 observations</title></rect><rect x="802.73" y="26.47" width="1.60" height="123.53"><title>205.0.0.0/8 area: 1,192 observations</title></rect><rect x="804.69" y="57.26" width="1.60" height="92.74"><title>206.0.0.0/8 area: 203 observations</title></rect><rect x="806.64" y="51.19" width="1.60" height="98.81"><title>206.0.0.0/8 area: 288 observations</title></rect><rect x="808.59" y="57.96" width="1.60" height="92.04"><title>207.0.0.0/8 area: 195 observations</title></rect><rect x="810.55" y="41.84" width="1.60" height="108.16"><title>207.0.0.0/8 area: 493 observations</title></rect><rect x="812.50" y="60.65" width="1.60" height="89.35"><title>208.0.0.0/8 area: 167 observations</title></rect><rect x="814.45" y="106.67" width="1.60" height="43.33"><title>208.0.0.0/8 area: 11 observations</title></rect><rect x="816.41" y="33.96" width="1.60" height="116.04"><title>209.0.0.0/8 area: 775 observations</title></rect><rect x="818.36" y="56.03" width="1.60" height="93.97"><title>209.0.0.0/8 area: 218 observations</title></rect><rect x="820.31" y="14.88" width="1.60" height="135.12"><title>210.0.0.0/8 area: 2,317 observations</title></rect><rect x="822.27" y="55.95" width="1.60" height="94.05"><title>210.0.0.0/8 area: 219 observations</title></rect><rect x="824.22" y="47.50" width="1.60" height="102.50"><title>211.0.0.0/8 area: 356 observations</title></rect><rect x="826.17" y="47.12" width="1.60" height="102.88"><title>211.0.0.0/8 area: 364 observations</title></rect><rect x="828.12" y="26.77" width="1.60" height="123.23"><title>212.0.0.0/8 area: 1,171 observations</title></rect><rect x="830.08" y="50.95" width="1.60" height="99.05"><title>212.0.0.0/8 area: 292 observations</title></rect><rect x="832.03" y="47.95" width="1.60" height="102.05"><title>213.0.0.0/8 area: 347 observations</title></rect><rect x="833.98" y="25.17" width="1.60" height="124.83"><title>213.0.0.0/8 area: 1,284 observations</title></rect><rect x="843.75" y="36.17" width="1.60" height="113.83"><title>216.0.0.0/8 area: 683 observations</title></rect><rect x="845.70" y="14.97" width="1.60" height="135.03"><title>216.0.0.0/8 area: 2,306 observations</title></rect><rect x="847.66" y="39.81" width="1.60" height="110.19"><title>217.0.0.0/8 area: 554 observations</title></rect><rect x="849.61" y="35.05" width="1.60" height="114.95"><title>217.0.0.0/8 area: 728 observations</title></rect><rect x="851.56" y="7.61" width="1.60" height="142.39"><title>218.0.0.0/8 area: 3,516 observations</title></rect><rect x="853.52" y="45.43" width="1.60" height="104.57"><title>218.0.0.0/8 area: 401 observations</title></rect><rect x="855.47" y="66.66" width="1.60" height="83.34"><title>219.0.0.0/8 area: 118 observations</title></rect><rect x="857.42" y="25.16" width="1.60" height="124.84"><title>219.0.0.0/8 area: 1,285 observations</title></rect><rect x="859.38" y="53.93" width="1.60" height="96.07"><title>220.0.0.0/8 area: 246 observations</title></rect><rect x="861.33" y="20.64" width="1.60" height="129.36"><title>220.0.0.0/8 area: 1,665 observations</title></rect><rect x="863.28" y="36.45" width="1.60" height="113.55"><title>221.0.0.0/8 area: 672 observations</title></rect><rect x="865.23" y="20.53" width="1.60" height="129.47"><title>221.0.0.0/8 area: 1,676 observations</title></rect><rect x="867.19" y="22.04" width="1.60" height="127.96"><title>222.0.0.0/8 area: 1,537 observations</title></rect><rect x="869.14" y="8.96" width="1.60" height="141.04"><title>222.0.0.0/8 area: 3,254 observations</title></rect><rect x="871.09" y="16.75" width="1.60" height="133.25"><title>223.0.0.0/8 area: 2,082 observations</title></rect><rect x="873.05" y="30.86" width="1.60" height="119.14"><title>223.0.0.0/8 area: 926 observations</title></rect></g>
-<line x1="0" y1="151" x2="1000" y2="151" class="axline"/>
-<text x="125.0" y="166" class="ax minor">32.0.0.0</text><text x="250.0" y="166" class="ax">64.0.0.0</text><text x="375.0" y="166" class="ax minor">96.0.0.0</text><text x="500.0" y="166" class="ax">128.0.0.0</text><text x="625.0" y="166" class="ax minor">160.0.0.0</text><text x="750.0" y="166" class="ax">192.0.0.0</text><text x="875.0" y="166" class="ax minor">224.0.0.0</text>
-<text x="0" y="166" class="ax end" text-anchor="start">0.0.0.0</text><text x="1000" y="166" class="ax end" text-anchor="end">255.255.255.255</text>
-</svg>
-<p class="note">512 equal slices of
-8,388,608 addresses, so
-<span class="hint" tabindex="0" role="note" aria-label="The slicing is deliberate. A per-address chart would be the restricted data itself in a thin disguise, so occupancy is only ever shown at slice resolution.">no bar points at an individual address<span class="tip">The slicing is deliberate. A per-address chart would be the restricted data itself in a thin disguise, so occupancy is only ever shown at slice resolution.</span></span>.
-<span class="hint" tabindex="0" role="note" aria-label="A gap is either a reserved range or a large allocation nobody has reported to us. Height is log-scaled, because linear scaling flattens everything except the two or three busiest slices.">Gaps are as informative as spikes<span class="tip">A gap is either a reserved range or a large allocation nobody has reported to us. Height is log-scaled, because linear scaling flattens everything except the two or three busiest slices.</span></span>.</p>
-</div>
-
-
-<h3 class="ptitle">Networks that keep coming back</h3>
-<p class="note">Ranked by <span class="hint" tabindex="0" role="note" aria-label="Individual addresses churn out of most upstream feeds within about a week, so a large one-day count is an incident while a network seen on eight separate days is a standing pattern.">Days seen<span class="tip">Individual addresses churn out of most upstream feeds within about a week, so a large one-day count is an incident while a network seen on eight separate days is a standing pattern.</span></span>, not volume, so a standing pattern
-outranks a one-day incident. <span class="hint" tabindex="0" role="note" aria-label="Divided by the size of the network&#x27;s announced address space. Without that, a ranking like this just rediscovers which hosting providers are biggest.">Per million<span class="tip">Divided by the size of the network&#x27;s announced address space. Without that, a ranking like this just rediscovers which hosting providers are biggest.</span></span> normalises for network size.
-<a href="https://github.com/neilweitzel/xfeeds/blob/main/docs/DASHBOARD.md">Reading this panel</a>.</p>
-<div class="tabgroup">
-<div class="tabs" role="tablist"><button class="tab" role="tab" aria-selected="true" data-panel="w-last_30_days">30 days</button><button class="tab" role="tab" aria-selected="false" data-panel="w-last_60_days">60 days</button><button class="tab" role="tab" aria-selected="false" data-panel="w-all_time">All time</button></div>
-<div class="panel"><div class="tabpanel" id="w-last_30_days"><p class="note warn">Only 15 days of history, so this matches all-time until the record passes 30 days.</p><div class="tscroll"><table><tr><th>ASN</th><th>Network</th><th class="num">Days seen</th><th class="num">Address-days</th><th class="num">Per million</th><th class="num">Announced</th></tr><tr><td><a href="https://bgp.tools/as/212238">AS212238</a></td><td>CDNEXT</td><td class="num">14</td><td class="num">7,963</td><td class="num">7,722.3</td><td class="num">1,031,168</td></tr><tr><td><a href="https://bgp.tools/as/4134">AS4134</a></td><td>CHINANET-BACKBONE No.31,Jin-rong Stree</td><td class="num">13</td><td class="num">42,920</td><td class="num">433.6</td><td class="num">98,993,920</td></tr><tr><td><a href="https://bgp.tools/as/4766">AS4766</a></td><td>KIXS-AS-KR Korea Telecom</td><td class="num">13</td><td class="num">4,564</td><td class="num">98.4</td><td class="num">46,376,160</td></tr><tr><td><a href="https://bgp.tools/as/137718">AS137718</a></td><td>VOLCANO-ENGINE Beijing Volcano Engine </td><td class="num">13</td><td class="num">1,914</td><td class="num">3,039.3</td><td class="num">629,760</td></tr><tr><td><a href="https://bgp.tools/as/8151">AS8151</a></td><td>UNINET</td><td class="num">13</td><td class="num">1,645</td><td class="num">121.9</td><td class="num">13,498,368</td></tr><tr><td><a href="https://bgp.tools/as/141995">AS141995</a></td><td>CAPL-AS-AP Contabo Asia Private Limite</td><td class="num">13</td><td class="num">271</td><td class="num">4,563.0</td><td class="num">59,391</td></tr><tr><td><a href="https://bgp.tools/as/14061">AS14061</a></td><td>DIGITALOCEAN-ASN</td><td class="num">12</td><td class="num">13,684</td><td class="num">4,374.2</td><td class="num">3,128,317</td></tr><tr><td><a href="https://bgp.tools/as/16276">AS16276</a></td><td>OVH</td><td class="num">12</td><td class="num">12,151</td><td class="num">2,644.3</td><td class="num">4,595,198</td></tr><tr><td><a href="https://bgp.tools/as/8075">AS8075</a></td><td>MICROSOFT-CORP-MSN-AS-BLOCK</td><td class="num">12</td><td class="num">11,680</td><td class="num">144.7</td><td class="num">80,735,744</td></tr><tr><td><a href="https://bgp.tools/as/132203">AS132203</a></td><td>TENCENT-NET-AP-CN Tencent Building, Ke</td><td class="num">12</td><td class="num">5,262</td><td class="num">2,516.8</td><td class="num">2,090,751</td></tr></table></div></div><div class="tabpanel" id="w-last_60_days" hidden><p class="note warn">Only 15 days of history, so this matches all-time until the record passes 60 days.</p><div class="tscroll"><table><tr><th>ASN</th><th>Network</th><th class="num">Days seen</th><th class="num">Address-days</th><th class="num">Per million</th><th class="num">Announced</th></tr><tr><td><a href="https://bgp.tools/as/212238">AS212238</a></td><td>CDNEXT</td><td class="num">14</td><td class="num">7,963</td><td class="num">7,722.3</td><td class="num">1,031,168</td></tr><tr><td><a href="https://bgp.tools/as/4134">AS4134</a></td><td>CHINANET-BACKBONE No.31,Jin-rong Stree</td><td class="num">13</td><td class="num">42,920</td><td class="num">433.6</td><td class="num">98,993,920</td></tr><tr><td><a href="https://bgp.tools/as/4766">AS4766</a></td><td>KIXS-AS-KR Korea Telecom</td><td class="num">13</td><td class="num">4,564</td><td class="num">98.4</td><td class="num">46,376,160</td></tr><tr><td><a href="https://bgp.tools/as/137718">AS137718</a></td><td>VOLCANO-ENGINE Beijing Volcano Engine </td><td class="num">13</td><td class="num">1,914</td><td class="num">3,039.3</td><td class="num">629,760</td></tr><tr><td><a href="https://bgp.tools/as/8151">AS8151</a></td><td>UNINET</td><td class="num">13</td><td class="num">1,645</td><td class="num">121.9</td><td class="num">13,498,368</td></tr><tr><td><a href="https://bgp.tools/as/141995">AS141995</a></td><td>CAPL-AS-AP Contabo Asia Private Limite</td><td class="num">13</td><td class="num">271</td><td class="num">4,563.0</td><td class="num">59,391</td></tr><tr><td><a href="https://bgp.tools/as/14061">AS14061</a></td><td>DIGITALOCEAN-ASN</td><td class="num">12</td><td class="num">13,684</td><td class="num">4,374.2</td><td class="num">3,128,317</td></tr><tr><td><a href="https://bgp.tools/as/16276">AS16276</a></td><td>OVH</td><td class="num">12</td><td class="num">12,151</td><td class="num">2,644.3</td><td class="num">4,595,198</td></tr><tr><td><a href="https://bgp.tools/as/8075">AS8075</a></td><td>MICROSOFT-CORP-MSN-AS-BLOCK</td><td class="num">12</td><td class="num">11,680</td><td class="num">144.7</td><td class="num">80,735,744</td></tr><tr><td><a href="https://bgp.tools/as/132203">AS132203</a></td><td>TENCENT-NET-AP-CN Tencent Building, Ke</td><td class="num">12</td><td class="num">5,262</td><td class="num">2,516.8</td><td class="num">2,090,751</td></tr></table></div></div><div class="tabpanel" id="w-all_time" hidden><div class="tscroll"><table><tr><th>ASN</th><th>Network</th><th class="num">Days seen</th><th class="num">Address-days</th><th class="num">Per million</th><th class="num">Announced</th></tr><tr><td><a href="https://bgp.tools/as/212238">AS212238</a></td><td>CDNEXT</td><td class="num">14</td><td class="num">7,963</td><td class="num">7,722.3</td><td class="num">1,031,168</td></tr><tr><td><a href="https://bgp.tools/as/4134">AS4134</a></td><td>CHINANET-BACKBONE No.31,Jin-rong Stree</td><td class="num">13</td><td class="num">42,920</td><td class="num">433.6</td><td class="num">98,993,920</td></tr><tr><td><a href="https://bgp.tools/as/4766">AS4766</a></td><td>KIXS-AS-KR Korea Telecom</td><td class="num">13</td><td class="num">4,564</td><td class="num">98.4</td><td class="num">46,376,160</td></tr><tr><td><a href="https://bgp.tools/as/137718">AS137718</a></td><td>VOLCANO-ENGINE Beijing Volcano Engine </td><td class="num">13</td><td class="num">1,914</td><td class="num">3,039.3</td><td class="num">629,760</td></tr><tr><td><a href="https://bgp.tools/as/8151">AS8151</a></td><td>UNINET</td><td class="num">13</td><td class="num">1,645</td><td class="num">121.9</td><td class="num">13,498,368</td></tr><tr><td><a href="https://bgp.tools/as/141995">AS141995</a></td><td>CAPL-AS-AP Contabo Asia Private Limite</td><td class="num">13</td><td class="num">271</td><td class="num">4,563.0</td><td class="num">59,391</td></tr><tr><td><a href="https://bgp.tools/as/14061">AS14061</a></td><td>DIGITALOCEAN-ASN</td><td class="num">12</td><td class="num">13,684</td><td class="num">4,374.2</td><td class="num">3,128,317</td></tr><tr><td><a href="https://bgp.tools/as/16276">AS16276</a></td><td>OVH</td><td class="num">12</td><td class="num">12,151</td><td class="num">2,644.3</td><td class="num">4,595,198</td></tr><tr><td><a href="https://bgp.tools/as/8075">AS8075</a></td><td>MICROSOFT-CORP-MSN-AS-BLOCK</td><td class="num">12</td><td class="num">11,680</td><td class="num">144.7</td><td class="num">80,735,744</td></tr><tr><td><a href="https://bgp.tools/as/132203">AS132203</a></td><td>TENCENT-NET-AP-CN Tencent Building, Ke</td><td class="num">12</td><td class="num">5,262</td><td class="num">2,516.8</td><td class="num">2,090,751</td></tr></table></div></div></div>
-</div>
-
-
-<h3 class="ptitle">IPv6 coverage</h3>
-<p class="note">91 prefixes across 70 distinct /32 allocations, reaching 11,488,576 /48 sites. No individual addresses: every entry is a prefix.</p>
-<p class="note warn">All IPv6 coverage comes from one independence class (spamhaus_drop_v6), so the limitation is <span class="hint" tabindex="0" role="note" aria-label="These records rest on that source&#x27;s precision alone, the same basis as a large share of the IPv4 feed. Nothing corroborates them, and nothing covers for them if that source degrades.">concentration, not quality<span class="tip">These records rest on that source&#x27;s precision alone, the same basis as a large share of the IPv4 feed. Nothing corroborates them, and nothing covers for them if that source degrades.</span></span>.</p>
-<div class="grid2">
-<div>
-<h4>How wide each entry reaches</h4>
-<table>
-<tr><th>Prefix</th><th class="num">Entries</th><th></th><th class="num">/64 subnets</th><th class="num"><span class="hint" tabindex="0" role="note" aria-label="Entry count is a poor measure for IPv6: a /29 and a /48 are both one line and differ by a factor of half a million. Reach counts covered /64 networks instead, which is why the most numerous row is not the widest bar.">Reach<span class="tip">Entry count is a poor measure for IPv6: a /29 and a /48 are both one line and differ by a factor of half a million. Reach counts covered /64 networks instead, which is why the most numerous row is not the widest bar.</span></span></th></tr>
-<tr><td><code>/29</code></td><td class="num">18</td><td><div class="pbar" style="width:82.14%"></div></td><td class="num">618,475,290,624</td><td class="num">82.1%</td></tr><tr><td><code>/32</code></td><td class="num">27</td><td><div class="pbar" style="width:15.40%"></div></td><td class="num">115,964,116,992</td><td class="num">15.4%</td></tr><tr><td><code>/48</code></td><td class="num">32</td><td><div class="pbar" style="width:0.60%"></div></td><td class="num">2,097,152</td><td class="num">&lt;0.1%</td></tr><tr><td class="note">6 other widths</td><td class="num">14</td><td></td><td class="num">&mdash;</td><td class="num">&mdash;</td></tr>
-</table>
-<p class="note warn">Widest entry is a /29. <span class="hint" tabindex="0" role="note" aria-label="General IPv6 practice treats a /64 as one actor and a /32 as an entire ISP that should almost never be blocked outright. Spamhaus DROP lists netblocks leased or stolen outright by criminal operations, published for firewall and backbone use, where the whole allocation is the finding.">Wide on purpose, not recklessly aggregated<span class="tip">General IPv6 practice treats a /64 as one actor and a /32 as an entire ISP that should almost never be blocked outright. Spamhaus DROP lists netblocks leased or stolen outright by criminal operations, published for firewall and backbone use, where the whole allocation is the finding.</span></span> &mdash; review the widest entries before deploying them.</p>
-</div>
-<div>
-<h4>Where in global unicast space</h4>
-<p class="note">Which /12 of <code>2000::/3</code> the listings fall in. <span class="hint" tabindex="0" role="note" aria-label="No registration country is published anywhere on this page: an ASN&#x27;s registration location does not establish where its traffic originates.">Address-space structure, not geography<span class="tip">No registration country is published anywhere on this page: an ASN&#x27;s registration location does not establish where its traffic originates.</span></span>.</p>
-<table><tr><th>Block</th><th class="num">Entries</th></tr><tr><td><code>2000::/12</code></td><td class="num">18</td></tr><tr><td><code>2400::/12</code></td><td class="num">6</td></tr><tr><td><code>2600::/12</code></td><td class="num">6</td></tr><tr><td><code>2a00::/12</code></td><td class="num">31</td></tr><tr><td><code>2a10::/12</code></td><td class="num">27</td></tr><tr><td class="note">1 other block(s)</td><td class="num">3</td></tr></table>
-<h4><span class="hint" tabindex="0" role="note" aria-label="Contiguous allocations under common control are a stronger signal than the same number of unrelated listings. They are reported, not merged: merging would diverge from what the upstream published.">Adjacent prefixes<span class="tip">Contiguous allocations under common control are a stronger signal than the same number of unrelated listings. They are reported, not merged: merging would diverge from what the upstream published.</span></span></h4><p class="note">Listings that sit next to each other in address space.</p><ul class="runs"><li><code>2a05:b0c6:a000::/38</code> &larr; <code>2a05:b0c6:a000::/39</code>, <code>2a05:b0c6:a200::/39</code></li><li><code>2a05:f680::/31</code> &larr; <code>2a05:f680::/32</code>, <code>2a05:f681::/32</code></li><li><code>2a11:f080::/30</code> &larr; <code>2a11:f080::/32</code>, <code>2a11:f081::/32</code>, <code>2a11:f082::/32</code>, <code>2a11:f083::/32</code></li><li><code>2a14:7c2::/31</code> &larr; <code>2a14:7c2::/32</code>, <code>2a14:7c3::/32</code></li></ul>
-</div>
-</div>
-
-<h4>Not shown for IPv6, and why</h4>
-<p class="note">Each would render a single bar. <span class="hint" tabindex="0" role="note" aria-label="Saying which analyses were considered and rejected is more useful than leaving a reader to guess whether we looked at all.">Listed rather than silently omitted<span class="tip">Saying which analyses were considered and rejected is more useful than leaving a reader to guess whether we looked at all.</span></span>.</p>
-<table><tr><th>Analysis</th><th>Reason</th></tr><tr><td>Corroboration histogram</td><td class="note">1 independence class - the chart would be one bar</td></tr><tr><td>Score distribution</td><td class="note">every record scores 90.0</td></tr><tr><td>Band split</td><td class="note">every record is in the high band</td></tr><tr><td>Added and removed each run</td><td class="note">a single source - the whole family moves as one block</td></tr><tr><td>Category breakdown</td><td class="note">every record carries the same categories</td></tr><tr><td>Network and ASN persistence</td><td class="note">the IP-to-ASN enrichment table published by iptoasn.com is IPv4-only</td></tr></table>
-
-
-<h3 class="ptitle">What the whole corpus looks like</h3>
-<p class="note">259,696 addresses from
-24 sources across
-10,844 networks &mdash; everything the pipeline
-looks at, not only what it may republish, because <span class="hint" tabindex="0" role="note" aria-label="That is why restricted sources can be credited with figures here even though their addresses never appear in any feed file.">a count is a derived fact, not an extract<span class="tip">That is why restricted sources can be credited with figures here even though their addresses never appear in any feed file.</span></span>.</p>
-<p class="note"><strong>No individual address appears in this section.</strong> ASNs
-under 5 addresses fold into an unnamed bucket
-(7,005 networks). There is no
-top-offending-addresses list, by design.</p>
-
-<h4>Networks with the most listed addresses in this run</h4>
-<div class="tscroll">
-<table>
-<tr><th>ASN</th><th>Network</th>
-    <th class="num">Addresses</th><th class="num">Sources</th></tr>
-<tr><td><a href="https://bgp.tools/as/4134">AS4134</a></td><td>CHINANET-BACKBONE No.31,Jin-rong Street</td><td class="num">33,993</td><td class="num">20</td></tr><tr><td><a href="https://bgp.tools/as/55933">AS55933</a></td><td>CLOUDIE-AS-AP Cloudie Limited</td><td class="num">31,814</td><td class="num">13</td></tr><tr><td><a href="https://bgp.tools/as/203346">AS203346</a></td><td>AS-232WEB</td><td class="num">27,654</td><td class="num">2</td></tr><tr><td><a href="https://bgp.tools/as/4837">AS4837</a></td><td>CHINA169-BACKBONE CHINA UNICOM China169 Back</td><td class="num">24,362</td><td class="num">20</td></tr><tr><td><a href="https://bgp.tools/as/152194">AS152194</a></td><td>CTGSERVERLIMITED-AS-AP CTG Server Limited</td><td class="num">20,796</td><td class="num">13</td></tr><tr><td><a href="https://bgp.tools/as/7018">AS7018</a></td><td>ATT-INTERNET4</td><td class="num">20,154</td><td class="num">16</td></tr><tr><td><a href="https://bgp.tools/as/9009">AS9009</a></td><td>M247</td><td class="num">20,072</td><td class="num">19</td></tr><tr><td><a href="https://bgp.tools/as/4686">AS4686</a></td><td>BEKKOAME BEKKOAME INTERNET INC.</td><td class="num">17,408</td><td class="num">1</td></tr><tr><td><a href="https://bgp.tools/as/396982">AS396982</a></td><td>GOOGLE-CLOUD-PLATFORM</td><td class="num">8,410</td><td class="num">19</td></tr><tr><td><a href="https://bgp.tools/as/701">AS701</a></td><td>UUNET</td><td class="num">7,472</td><td class="num">14</td></tr><tr><td><a href="https://bgp.tools/as/25369">AS25369</a></td><td>BANDWIDTH-AS</td><td class="num">7,330</td><td class="num">15</td></tr><tr><td><a href="https://bgp.tools/as/4538">AS4538</a></td><td>ERX-CERNET-BKB China Education and Research </td><td class="num">7,273</td><td class="num">11</td></tr>
-</table>
-</div>
-<p class="note"><span class="hint" tabindex="0" role="note" aria-label="A network reported by nine or ten independent sources is not having a bad week. That is a sustained pattern, worth examining at network level rather than address by address.">the Sources column<span class="tip">A network reported by nine or ten independent sources is not having a bad week. That is a sustained pattern, worth examining at network level rather than address by address.</span></span> is the one to read first.</p>
-
-<h4>Sources credited here that appear in no feed file</h4>
-<p class="note">Their licences forbid republishing their addresses, so none of their
-data ships. They still shape every confidence score.</p>
-<div class="tscroll">
-<table>
-<tr><th>Source</th><th>Credit</th><th class="num">Addresses seen</th>
-    <th class="num">Only source</th></tr>
-<tr><td>dataplane_telnetlogin</td><td>Non-commercial use only; redistribution expressly prohibited</td><td class="num">83,239</td><td class="num">77,279</td></tr><tr><td>dataplane_proto41</td><td>Non-commercial use only; redistribution expressly prohibited</td><td class="num">55,815</td><td class="num">55,815</td></tr><tr><td>stopforumspam_listed</td><td>Custom CC variant (NO CC version named): NonCommercial AND No Derivati</td><td class="num">52,356</td><td class="num">51,372</td></tr><tr><td>dataplane_sshclient</td><td>Non-commercial use only; redistribution expressly prohibited</td><td class="num">18,906</td><td class="num">2,245</td></tr><tr><td>abuseipdb_blacklist</td><td>AbuseIPDB free tier; redistribution of the blacklist is restricted</td><td class="num">12,399</td><td class="num">2,041</td></tr><tr><td>dataplane_sshpwauth</td><td>Non-commercial use only; redistribution expressly prohibited</td><td class="num">9,442</td><td class="num">5</td></tr><tr><td>dataplane_smtpgreet</td><td>Non-commercial use only; redistribution expressly prohibited</td><td class="num">8,964</td><td class="num">1,480</td></tr><tr><td>dataplane_vncrfb</td><td>Non-commercial use only; redistribution expressly prohibited</td><td class="num">5,238</td><td class="num">1,292</td></tr><tr><td>greensnow</td><td>GreenSnow.co - used for scoring only, not republished</td><td class="num">2,736</td><td class="num">1,551</td></tr><tr><td>threatfox</td><td>ThreatFox - abuse.ch / Spamhaus - used for scoring only, not republish</td><td class="num">738</td><td class="num">729</td></tr>
-</table>
-</div>
-<p class="note"><span class="hint" tabindex="0" role="note" aria-label="Addresses nobody else reported - evidence the feed would simply not have without this source, even though its data never ships.">Only source<span class="tip">Addresses nobody else reported - evidence the feed would simply not have without this source, even though its data never ships.</span></span> counts what nobody else reported.</p>
-<p class="note">Network attribution in this section uses
-<a href="https://iptoasn.com/">IPtoASN</a> by Frank Denis (Public Domain, PDDL v1.0).
-It contributes no threat data; it only turns an address into an AS number and a
-network name.</p>
-
-
-<h2 id="licensing">Tiers and licensing</h2>
-<p class="note">Everything above is the <strong>primary feed</strong>:
-5,029 addresses, no commercial restriction. The
-<a href="noncommercial/">non-commercial tier</a> holds
-<strong>8,967</strong> under CC BY-NC-SA 4.0 and <span class="hint" tabindex="0" role="note" aria-label="It can carry share-alike material in full rather than only counting it as corroboration, so it covers addresses the primary feed must withhold.">sees more<span class="tip">It can carry share-alike material in full rather than only counting it as corroboration, so it covers addresses the primary feed must withhold.</span></span>.</p>
-<p class="note">At a company, or building anything anyone pays for: primary. Home
-lab, school, charity, or research: non-commercial. Terms in
-<a href="noncommercial/LICENSE.txt">LICENSE.txt</a>.</p>
-<table>
-<tr><th>File</th><th>What it is</th><th class="num">Entries</th></tr>
-<tr><td><a href="noncommercial/high-confidence.txt">noncommercial/high-confidence.txt</a></td>
-    <td>Safe to block. Non-commercial use only.</td>
-    <td class="num">8,239</td></tr>
-<tr><td><a href="noncommercial/medium-confidence.txt">noncommercial/medium-confidence.txt</a></td>
-    <td>Two independent sources. Non-commercial use only.</td>
-    <td class="num">728</td></tr>
-<tr><td><a href="noncommercial/all.json">noncommercial/all.json</a></td>
-    <td>Full provenance. Non-commercial use only.</td>
-    <td class="num">8,967</td></tr>
-</table>
-
-<h3>Credit</h3>
-<p class="note">xfeeds compiles publicly available feeds and is not sold. Every
-published file names its contributing sources and carries their terms.</p>
-<p class="note">Spamhaus attribution travels with the data as their terms require.
-Threat data also provided by
-<a href="https://ipthreat.net">IPThreat at https://ipthreat.net</a>, and by the
-<a href="https://view.sentinel.turris.cz/">Turris Sentinel</a> project at CZ.NIC
-(CC BY-NC-SA 4.0, non-commercial tier only).</p>
-
-<h2>False positives</h2>
-<p class="note">No block list is perfect. If an address here is legitimate,
-<a href="https://github.com/neilweitzel/xfeeds/issues">open an issue</a> &mdash; those are triaged first, and
-confirmed mistakes go on a permanent allowlist so they cannot come back.</p>
-
-<p class="note" style="margin-top:34px;border-top:1px solid var(--line);padding-top:18px">
-Provided as-is with no warranty. Test against your own traffic before blocking in
-production.</p>
-
-</div>
-<script>var PROJECT="https://github.com/neilweitzel/xfeeds";
-// Tabbed setup guides.
-// Tabs are scoped to their own group; the page has more than one set.
-document.querySelectorAll('.tab').forEach(function(t){
-  t.addEventListener('click', function(){
-    var group = t.closest('.tabgroup') || document;
-    group.querySelectorAll('.tab').forEach(function(x){x.setAttribute('aria-selected','false')});
-    group.querySelectorAll('.tabpanel').forEach(function(x){x.hidden=true});
-    t.setAttribute('aria-selected','true');
-    document.getElementById(t.dataset.panel).hidden=false;
-  });
-});
-
-// Copy buttons on every code block.
-document.querySelectorAll('pre').forEach(function(pre){
-  var b=document.createElement('button');
-  b.className='copy'; b.textContent='copy';
-  b.addEventListener('click', function(){
-    navigator.clipboard.writeText(pre.querySelector('code').innerText);
-    b.textContent='copied'; setTimeout(function(){b.textContent='copy'},1400);
-  });
-  pre.appendChild(b);
-});
-
-// IP lookup. Loads a compact index once, on first use, so the page stays fast.
-var IDX=null, LOADING=false;
-function ipToInt(s){
-  var p=s.split('.'); if(p.length!==4) return null;
-  var n=0;
-  for(var i=0;i<4;i++){
-    var o=Number(p[i]);
-    if(!Number.isInteger(o)||o<0||o>255||p[i]==='') return null;
-    n=n*256+o;
+  URL: https://neilweitzel.github.io/xfeeds/high-confidence.txt
+  Update frequency: 1 day</code></div><p class="command-note">Create a WAN block rule using this alias. The combined list contains both families.</p></section><section class="platform-panel" id="mikro" role="tabpanel" hidden><div class="terminal"><button class="copy" type="button" data-copy="mikro" aria-label="Copy MikroTik setup">Copy</button><span class="sr-only copy-status" role="status" aria-live="polite"></span><code>/tool fetch url=&quot;https://neilweitzel.github.io/xfeeds/high-confidence.txt&quot; dst-path=xfeeds.txt
+/import file-name=xfeeds.txt</code></div><p class="command-note">Use an address list with a scheduled script. Strip # comments before importing.</p></section><section class="platform-panel" id="cloudflare" role="tabpanel" hidden><div class="terminal"><button class="copy" type="button" data-copy="cloudflare" aria-label="Copy Cloudflare setup">Copy</button><span class="sr-only copy-status" role="status" aria-live="polite"></span><code>curl -sS https://neilweitzel.github.io/xfeeds/high-confidence.txt | grep -v &#x27;^#&#x27; &gt; xfeeds.txt
+# Account → Configurations → Lists → upload xfeeds.txt</code></div><p class="command-note">Use the high-confidence tier to stay within custom-list limits.</p></section><section class="platform-panel" id="siem" role="tabpanel" hidden><div class="terminal"><button class="copy" type="button" data-copy="siem" aria-label="Copy SIEM / TIP setup">Copy</button><span class="sr-only copy-status" role="status" aria-live="polite"></span><code>MISP: https://neilweitzel.github.io/xfeeds/misp-manifest.json
+STIX: https://neilweitzel.github.io/xfeeds/stix-bundle.json
+CSV:  https://neilweitzel.github.io/xfeeds/all.csv</code></div><p class="command-note">Direct URLs for MISP, STIX 2.1, OpenCTI, Elastic, Splunk, Sentinel, and spreadsheet consumers.</p></section></div><div class="availability"><span>40 recent runs</span><div class="run-strip" aria-label="Availability across recent feed runs"><button class="run-tick partial" style="height:29px" aria-label="Run 1: 3,761 published, 10 of 11 sources healthy"></button><button class="run-tick partial" style="height:29px" aria-label="Run 2: 3,761 published, 10 of 11 sources healthy"></button><button class="run-tick partial" style="height:29px" aria-label="Run 3: 3,764 published, 10 of 11 sources healthy"></button><button class="run-tick partial" style="height:29px" aria-label="Run 4: 3,734 published, 10 of 11 sources healthy"></button><button class="run-tick partial" style="height:29px" aria-label="Run 5: 3,734 published, 10 of 11 sources healthy"></button><button class="run-tick partial" style="height:31px" aria-label="Run 6: 4,224 published, 11 of 12 sources healthy"></button><button class="run-tick partial" style="height:31px" aria-label="Run 7: 4,240 published, 11 of 12 sources healthy"></button><button class="run-tick partial" style="height:28px" aria-label="Run 8: 3,525 published, 12 of 13 sources healthy"></button><button class="run-tick partial" style="height:31px" aria-label="Run 9: 4,480 published, 13 of 14 sources healthy"></button><button class="run-tick partial" style="height:31px" aria-label="Run 10: 4,426 published, 13 of 14 sources healthy"></button><button class="run-tick partial" style="height:31px" aria-label="Run 11: 4,426 published, 13 of 14 sources healthy"></button><button class="run-tick partial" style="height:31px" aria-label="Run 12: 4,424 published, 13 of 14 sources healthy"></button><button class="run-tick partial" style="height:30px" aria-label="Run 13: 4,157 published, 13 of 14 sources healthy"></button><button class="run-tick partial" style="height:30px" aria-label="Run 14: 4,011 published, 13 of 14 sources healthy"></button><button class="run-tick partial" style="height:30px" aria-label="Run 15: 3,987 published, 13 of 14 sources healthy"></button><button class="run-tick partial" style="height:30px" aria-label="Run 16: 3,961 published, 13 of 14 sources healthy"></button><button class="run-tick partial" style="height:29px" aria-label="Run 17: 3,819 published, 13 of 14 sources healthy"></button><button class="run-tick partial" style="height:31px" aria-label="Run 18: 4,446 published, 13 of 14 sources healthy"></button><button class="run-tick partial" style="height:30px" aria-label="Run 19: 3,948 published, 13 of 14 sources healthy"></button><button class="run-tick partial" style="height:29px" aria-label="Run 20: 3,771 published, 13 of 14 sources healthy"></button><button class="run-tick partial" style="height:29px" aria-label="Run 21: 3,795 published, 14 of 15 sources healthy"></button><button class="run-tick partial" style="height:29px" aria-label="Run 22: 3,795 published, 16 of 17 sources healthy"></button><button class="run-tick partial" style="height:29px" aria-label="Run 23: 3,791 published, 16 of 17 sources healthy"></button><button class="run-tick partial" style="height:29px" aria-label="Run 24: 3,792 published, 16 of 17 sources healthy"></button><button class="run-tick partial" style="height:31px" aria-label="Run 25: 4,441 published, 23 of 24 sources healthy"></button><button class="run-tick partial" style="height:31px" aria-label="Run 26: 4,452 published, 23 of 24 sources healthy"></button><button class="run-tick partial" style="height:33px" aria-label="Run 27: 5,085 published, 23 of 24 sources healthy"></button><button class="run-tick partial" style="height:33px" aria-label="Run 28: 4,962 published, 23 of 24 sources healthy"></button><button class="run-tick partial" style="height:32px" aria-label="Run 29: 4,874 published, 23 of 24 sources healthy"></button><button class="run-tick severe" style="height:32px" aria-label="Run 30: 4,821 published, 22 of 24 sources healthy"></button><button class="run-tick severe" style="height:32px" aria-label="Run 31: 4,697 published, 22 of 24 sources healthy"></button><button class="run-tick partial" style="height:32px" aria-label="Run 32: 4,658 published, 23 of 24 sources healthy"></button><button class="run-tick partial" style="height:34px" aria-label="Run 33: 5,240 published, 23 of 24 sources healthy"></button><button class="run-tick partial" style="height:33px" aria-label="Run 34: 5,011 published, 23 of 24 sources healthy"></button><button class="run-tick severe" style="height:32px" aria-label="Run 35: 4,805 published, 22 of 24 sources healthy"></button><button class="run-tick partial" style="height:32px" aria-label="Run 36: 4,713 published, 23 of 24 sources healthy"></button><button class="run-tick partial" style="height:34px" aria-label="Run 37: 5,390 published, 23 of 24 sources healthy"></button><button class="run-tick partial" style="height:33px" aria-label="Run 38: 5,190 published, 23 of 24 sources healthy"></button><button class="run-tick partial" style="height:33px" aria-label="Run 39: 5,111 published, 23 of 24 sources healthy"></button><button class="run-tick partial" style="height:33px" aria-label="Run 40: 5,029 published, 23 of 24 sources healthy"></button></div><span>height = published · outline = 2+ missing</span></div></section><section class="section" aria-labelledby="lookup-title"><div class="lookup-grid"><div><div class="eyebrow">Local check</div><h2 id="lookup-title">Check an address</h2><p class="section-sub">Does it appear in this feed right now?</p><form class="lookup-form" id="lookup-form"><label class="sr-only" for="ip">IP address or prefix</label><input id="ip" name="ip" type="text" placeholder="Try 1.10.16.7 or 2001:db8::7" autocomplete="off" spellcheck="false"><button class="action" type="submit">Check address</button></form><small class="privacy">Runs entirely in your browser. The production page loads <code>lookup.json</code> only when you check; no query is logged.</small></div><div class="verdict" id="verdict" aria-live="polite"><div class="verdict-label">Local lookup</div><div class="verdict-address">Ready when you are</div><p>Enter an address to compare it with the current published feed.</p></div></div></section><section class="section" aria-labelledby="feeds-title"><div class="section-head"><div><div class="eyebrow">Downloads</div><h2 id="feeds-title">Choose the thing your tooling speaks.</h2></div><span class="section-sub">Primary / commercial-safe tier</span></div><div class="feed-groups"><section class="feed-group"><h3>Block lists</h3><div class="feed-row"><a class="file" href="high-confidence.txt">high-confidence.txt</a><span class="family">both</span><span class="entry-count">4,224</span></div><div class="feed-row"><a class="file" href="high-confidence-v4.txt">high-confidence-v4.txt</a><span class="family">v4</span><span class="entry-count">4,133</span></div><div class="feed-row"><a class="file" href="high-confidence-v6.txt">high-confidence-v6.txt</a><span class="family">v6</span><span class="entry-count">91</span></div><div class="feed-row"><a class="file" href="medium-confidence.txt">medium-confidence.txt</a><span class="family">both</span><span class="entry-count">805</span></div><div class="feed-row"><a class="file" href="medium-confidence-v4.txt">medium-confidence-v4.txt</a><span class="family">v4</span><span class="entry-count">805</span></div><div class="feed-row"><a class="file" href="medium-confidence-v6.txt">medium-confidence-v6.txt</a><span class="family">v6</span><span class="entry-count">0</span></div></section><section class="feed-group"><h3>Structured formats</h3><div class="feed-row"><a class="file" href="all.csv">all.csv</a><span class="family">both</span><span class="entry-count">5,029</span></div><div class="feed-row"><a class="file" href="all.json">all.json</a><span class="family">both</span><span class="entry-count">5,029</span></div><div class="feed-row"><a class="file" href="stix-bundle.json">stix-bundle.json</a><span class="family">both</span><span class="entry-count">4,224</span></div><div class="feed-row"><a class="file" href="misp-manifest.json">misp-manifest.json</a><span class="family">both</span><span class="entry-count">4,224</span></div><div class="feed-row"><a class="file" href="nftables.conf">nftables.conf</a><span class="family">both</span><span class="entry-count">4,224</span></div><div class="feed-row"><a class="file" href="iptables.ipset">iptables.ipset</a><span class="family">v4</span><span class="entry-count">4,133</span></div><div class="feed-row"><a class="file" href="iptables6.ipset">iptables6.ipset</a><span class="family">v6</span><span class="entry-count">91</span></div></section><section class="feed-group"><h3>Metadata</h3><div class="feed-row"><a class="file" href="manifest.json">manifest.json</a><span class="family">run data</span><span class="entry-count">—</span></div><div class="feed-row"><a class="file" href="history.json">history.json</a><span class="family">40 runs</span><span class="entry-count">—</span></div><div class="feed-row"><a class="file" href="lookup.json">lookup.json</a><span class="family">lazy index</span><span class="entry-count">—</span></div></section></div><p class="feeds-foot">Non-commercial equivalents retain these filenames under <a href="noncommercial/high-confidence.txt">/noncommercial/</a>.</p><div class="callout-link"><span>Studying the corpus? <b>4,224 high-confidence entries</b></span><a href="analysis.html">Open analysis →</a></div></section></main><footer class="shell"><div class="foot-grid"><div><p><strong>Two licence tiers.</strong> The primary tier is for any use, including commercial work. The <a href="noncommercial/">non-commercial tier</a> is CC BY-NC-SA 4.0 and can carry more share-alike material.</p><p>Spamhaus attribution travels with the data. Threat data is also provided by <a href="https://ipthreat.net">IPThreat at ipthreat.net</a> and the Turris Sentinel project at CZ.NIC (CC BY-NC-SA 4.0, non-commercial tier only).</p></div><div><p>Network attribution in analysis: <a href="https://iptoasn.com/">IPtoASN by Frank Denis</a> (Public Domain, PDDL v1.0). It maps networks; it contributes no threat data.</p><p>Think an address is wrong? <a href="https://github.com/neilweitzel/xfeeds/issues">Report a false positive</a>. Confirmed mistakes are permanently allowlisted.</p></div></div><p class="footer-note">Provided as-is with no warranty. Test against your own traffic before blocking in production.</p></footer><script>
+(function () {
+  const tabs = Array.from(document.querySelectorAll('.platform'));
+  const panels = Array.from(document.querySelectorAll('.platform-panel'));
+  function choose(tab) {
+    tabs.forEach(function (item) { item.setAttribute('aria-selected', item === tab ? 'true' : 'false'); });
+    panels.forEach(function (panel) { panel.hidden = panel.id !== tab.getAttribute('aria-controls'); });
   }
-  return n;
-}
-// IPv6 to BigInt. 128 bits does not fit a JS number, so the v6 index carries its
-// bounds as decimal strings and every comparison on this path uses BigInt.
-function ip6ToBig(s){
-  s=s.trim().replace(/^\[/,'').replace(/\]$/,'');
-  var slash=s.indexOf('/');
-  if(slash>-1) s=s.slice(0,slash);   // accept a pasted prefix, match its base
-  if(s.indexOf(':')<0) return null;
-  if((s.match(/::/g)||[]).length>1) return null;
-  // IPv4-mapped form such as ::ffff:192.0.2.1 - the trailing dotted quad stands
-  // in for the final two 16-bit groups.
-  var tail=null;
-  if(s.indexOf('.')>-1){
-    var cut=s.lastIndexOf(':')+1;
-    var v4=ipToInt(s.slice(cut));
-    if(v4===null) return null;
-    tail=[Math.floor(v4/65536),v4%65536];
-    s=s.slice(0,cut)+'0:0';
-  }
-  function grp(part){
-    if(part==='') return [];
-    var out=part.split(':');
-    for(var i=0;i<out.length;i++){
-      if(!/^[0-9a-fA-F]{1,4}$/.test(out[i])) return null;
-      out[i]=parseInt(out[i],16);
-    }
-    return out;
-  }
-  var halves=s.split('::');
-  if(halves.length>2) return null;
-  var head=grp(halves[0]); if(head===null) return null;
-  var rest=halves.length===2?grp(halves[1]):[]; if(rest===null) return null;
-  var total=head.length+rest.length;
-  var all;
-  if(halves.length===2){
-    if(total>7) return null;                       // :: must cover >=1 group
-    all=head.concat(new Array(8-total).fill(0)).concat(rest);
-  } else {
-    if(total!==8) return null;
-    all=head;
-  }
-  if(tail){ all[6]=tail[0]; all[7]=tail[1]; }
-  var n=0n;
-  for(var j=0;j<8;j++){ n=(n<<16n)+BigInt(all[j]); }
-  return n;
-}
-function render(html){document.getElementById('res').innerHTML=html;}
-function esc(s){return String(s).replace(/[&<>]/g,function(c){
-  return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c];});}
-
-function lookup(){
-  var q=document.getElementById('ip').value.trim();
-  if(!q){render('');return;}
-  var n=ipToInt(q), n6=null;
-  if(n===null){ n6=ip6ToBig(q); }
-  if(n===null && n6===null){
-    render('<div class="verdict"><div class="vt">Not a valid IP address</div>'+
-      '<div class="note">Enter something like 45.33.32.156 or '+
-      '2001:678:254::1.</div></div>');
-    return;
-  }
-  if(!IDX){
-    if(LOADING) return;
-    LOADING=true;
-    render('<div class="verdict"><div class="vt">Loading index…</div></div>');
-    fetch('lookup.json').then(function(r){return r.json();}).then(function(d){
-      IDX=d; LOADING=false; lookup();
-    }).catch(function(){
-      LOADING=false;
-      render('<div class="verdict"><div class="vt">Could not load the index</div>'+
-        '<div class="note">Try <code>curl -s '+
-        'https://neilweitzel.github.io/xfeeds/high-confidence.txt | grep '+esc(q)+
-        '</code></div></div>');
+  tabs.forEach(function (tab, index) {
+    tab.addEventListener('click', function () { choose(tab); });
+    tab.addEventListener('keydown', function (event) {
+      if (!['ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(event.key)) return;
+      event.preventDefault();
+      const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 :
+        (index + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+      tabs[next].focus(); choose(tabs[next]);
     });
-    return;
-  }
-  var hit=null;
-  if(n6!==null){
-    // v6 bounds arrive as decimal strings; compare as BigInt so a 128-bit
-    // range is not silently truncated to 53 bits of precision.
-    var r6=IDX.r6||[];
-    for(var k=0;k<r6.length;k++){
-      var f=r6[k];
-      if(n6>=BigInt(f[0]) && n6<=BigInt(f[1])){hit=f;break;}
+  });
+  document.querySelectorAll('.copy').forEach(function (button) {
+    const status = button.parentNode.querySelector('.copy-status');
+    let pending = null;
+    // The button carries an aria-label, which masks its own text from screen
+    // readers, so the visible label and the announcement are updated separately.
+    function report(message) {
+      if (pending === null) return;
+      clearTimeout(pending); pending = null;
+      button.textContent = message;
+      if (status) status.textContent = message;
+      setTimeout(function () { button.textContent = 'Copy'; if (status) status.textContent = ''; }, 2200);
     }
-  } else {
-    for(var i=0;i<IDX.r.length;i++){
-      var e=IDX.r[i];
-      if(n>=e[0] && n<=e[1]){hit=e;break;}
+    button.addEventListener('click', function () {
+      const code = document.querySelector('#' + button.dataset.copy + ' code');
+      if (code === null) return;
+      const text = code.innerText.replace(/^\$ /gm, '');
+      pending = setTimeout(function () {
+        // Sandboxed and unfocused documents can leave writeText permanently
+        // unsettled, which used to leave the click with no acknowledgement at
+        // all. Selecting the command is a fallback that always works.
+        const range = document.createRange();
+        range.selectNodeContents(code);
+        const selection = window.getSelection();
+        selection.removeAllRanges(); selection.addRange(range);
+        report('Selected');
+      }, 500);
+      try {
+        navigator.clipboard.writeText(text).then(
+          function () { report('Copied'); },
+          function () { report('Press Ctrl+C'); }
+        );
+      } catch (error) { report('Press Ctrl+C'); }
+    });
+  });
+
+  let index = null;
+  let loading = false;
+  const form = document.getElementById('lookup-form');
+  const input = document.getElementById('ip');
+  const output = document.getElementById('verdict');
+  function escapeHtml(value) { return String(value).replace(/[&<>]/g, function (char) {
+    return {'&':'&amp;','<':'&lt;','>':'&gt;'}[char];
+  }); }
+  function ipToInt(value) {
+    const parts = value.split('.'); if (parts.length !== 4) return null;
+    let number = 0;
+    for (let i = 0; i < 4; i += 1) {
+      const octet = Number(parts[i]);
+      if (!Number.isInteger(octet) || octet < 0 || octet > 255 || parts[i] === '') return null;
+      number = number * 256 + octet;
     }
+    return number;
   }
-  if(!hit){
-    render('<div class="verdict miss"><div class="vt">'+esc(q)+
-      ' is not in the feed</div><div class="note">It was either never reported, '+
-      'reported by only one independent source (so it was withheld), or removed '+
-      'by a safety filter such as the allowlist.</div></div>');
-    return;
+  function ip6ToBig(value) {
+    let address = value.trim().replace(/^\[/, '').replace(/\]$/, '');
+    const slash = address.indexOf('/'); if (slash > -1) address = address.slice(0, slash);
+    if (address.indexOf(':') < 0 || (address.match(/::/g) || []).length > 1) return null;
+    let tail = null;
+    if (address.indexOf('.') > -1) {
+      const cut = address.lastIndexOf(':') + 1; const v4 = ipToInt(address.slice(cut));
+      if (v4 === null) return null;
+      tail = [Math.floor(v4 / 65536), v4 % 65536]; address = address.slice(0, cut) + '0:0';
+    }
+    function groups(part) {
+      if (part === '') return [];
+      const result = part.split(':');
+      for (let i = 0; i < result.length; i += 1) {
+        if (!/^[0-9a-fA-F]{1,4}$/.test(result[i])) return null;
+        result[i] = parseInt(result[i], 16);
+      }
+      return result;
+    }
+    const halves = address.split('::'); const head = groups(halves[0]);
+    const rest = halves.length === 2 ? groups(halves[1]) : [];
+    if (head === null || rest === null || halves.length > 2) return null;
+    let all;
+    if (halves.length === 2) {
+      if (head.length + rest.length > 7) return null;
+      all = head.concat(new Array(8 - head.length - rest.length).fill(0)).concat(rest);
+    } else { if (head.length !== 8) return null; all = head; }
+    if (tail) { all[6] = tail[0]; all[7] = tail[1]; }
+    let number = 0n;
+    for (let i = 0; i < 8; i += 1) number = (number << 16n) + BigInt(all[i]);
+    return number;
   }
-  var band=hit[3], cls=hit[4], score=hit[2], label=hit[5], srcs=hit[6];
-  var rst=hit[7]||0;  // classes that corroborated under a non-redistributable licence
-  var ref=hit[8]||'';  // upstream listing ticket, where the source publishes one
-  var css = band==='high' ? 'hit-high' : 'hit-med';
-  var head = band==='high'
-    ? esc(q)+' is listed — high confidence'
-    : esc(q)+' is listed — medium confidence';
-  // Be precise about WHY it qualified. "1 independent source" next to
-  // "corroborated" reads like a contradiction; promotion is a different route.
-  var advice;
-  if(band==='high' && cls===1){
-    advice='Safe to block. Reported by a high-precision source — a Spamhaus DROP '+
-      'hijacked netblock or an active abuse.ch command-and-control server. Those '+
-      'do not need a second opinion.';
-  } else if(band==='high' && rst>0){
-    // Some sources are licensed for our own use but not for republication, so we
-    // can count their agreement without naming them.
-    advice='Safe to block. Corroborated by '+(cls+rst)+' independent sources, '+
-      (rst===1?'one of which is':rst+' of which are')+' licensed for our own use '+
-      'but not for republication, so '+(rst===1?'it is':'they are')+' not named here.';
-  } else if(band==='high'){
-    advice='Safe to block. Corroborated by '+cls+' independent sources.';
-  } else {
-    advice='Reported by '+cls+' independent source'+(cls===1?'':'s')+'. Consider '+
-      'challenging or rate-limiting rather than blocking outright.';
+  function renderVerdict(value) { output.innerHTML = value; }
+  function lookup() {
+    const query = input.value.trim(); if (!query) { input.focus(); return; }
+    let number = ipToInt(query); let number6 = null; if (number === null) number6 = ip6ToBig(query);
+    if (number === null && number6 === null) {
+      renderVerdict('<div class="verdict-label">Lookup</div><div class="verdict-address">Not a valid IP address</div><p>Enter an IPv4 or IPv6 address or prefix.</p>'); return;
+    }
+    if (!index) {
+      if (loading) return; loading = true;
+      renderVerdict('<div class="verdict-label">Lookup</div><div class="verdict-address">Loading index…</div>');
+      fetch('lookup.json').then(function (response) { return response.json(); }).then(function (data) {
+        index = data; loading = false; lookup();
+      }).catch(function () { loading = false; renderVerdict('<div class="verdict-label">Lookup</div><div class="verdict-address">Could not load the index</div><p>Try again after the feed files finish loading.</p>'); });
+      return;
+    }
+    let hit = null;
+    if (number6 !== null) {
+      const ranges6 = index.r6 || [];
+      for (let i = 0; i < ranges6.length; i += 1) if (number6 >= BigInt(ranges6[i][0]) && number6 <= BigInt(ranges6[i][1])) { hit = ranges6[i]; break; }
+    } else {
+      for (let i = 0; i < index.r.length; i += 1) if (number >= index.r[i][0] && number <= index.r[i][1]) { hit = index.r[i]; break; }
+    }
+    if (!hit) {
+      renderVerdict('<div class="verdict-top"><span class="verdict-label">Lookup</span><span class="tag clear">not listed</span></div><div class="verdict-address">' + escapeHtml(query) + '</div><p>Not in this feed. It may be unreported, uncorroborated, filtered, or no longer current.</p>'); return;
+    }
+    const band = hit[3]; const css = band === 'high' ? 'high' : 'medium';
+    const action = band === 'high' ? 'Safe to block.' : 'Challenge or rate-limit rather than drop outright.';
+    renderVerdict('<div class="verdict-top"><span class="verdict-label">Lookup</span><span class="tag ' + css + '">listed · ' + band + '</span></div><div class="verdict-address">' + escapeHtml(query) + '</div><p>Matched <span class="mono">' + escapeHtml(hit[5]) + '</span>. ' + action + '</p><dl><dt>Score</dt><dd>' + hit[2] + ' / 100</dd><dt>Evidence</dt><dd>' + hit[4] + ' class' + (hit[4] === 1 ? '' : 'es') + '</dd><dt>Source</dt><dd>' + escapeHtml(hit[6]) + '</dd></dl>');
   }
-  render('<div class="verdict '+css+'"><div class="vt">'+head+'</div>'+
-    '<div class="note">'+advice+'</div>'+
-    '<dl class="kv">'+
-    '<dt>Matched entry</dt><dd><code>'+esc(label)+'</code></dd>'+
-    '<dt>Score</dt><dd>'+score+' / 100</dd>'+
-    '<dt>Independent sources</dt><dd>'+(cls+rst)+(cls===1&&rst===0?' (promoted)':'')+
-      (rst>0?' <span class="note">('+rst+' unnamed)</span>':'')+'</dd>'+
-    '<dt>Reported by</dt><dd>'+esc(srcs)+'</dd>'+
-    (ref?'<dt>Upstream listing</dt><dd><code>'+esc(ref)+'</code> — '+
-      '<a href="https://check.spamhaus.org/" rel="noopener">look up the reason '+
-      'for this listing</a></dd>':'')+
-    '</dl>'+
-    '<div class="note" style="margin-top:11px">Think this is wrong? '+
-    '<a href="'+PROJECT+'/issues/new?title=False+positive:+'+encodeURIComponent(q)+
-    '">Report it as a false positive</a> — those are triaged first.</div></div>');
-}
-document.getElementById('go').addEventListener('click',lookup);
-document.getElementById('ip').addEventListener('keydown',function(e){
-  if(e.key==='Enter') lookup();
-});
-</script>
-</body></html>
+  form.addEventListener('submit', function (event) { event.preventDefault(); lookup(); });
+}());
+</script></body></html>

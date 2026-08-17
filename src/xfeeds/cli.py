@@ -135,7 +135,7 @@ def dashboard(
     a merged improvement invisible for up to six hours.
 
     Reads the committed manifest, history, published records and insights, and
-    rewrites index.html and lookup.json beside them.
+    rewrites the operator console, analysis surface, and lookup index beside them.
     """
     configure_logging()
     from xfeeds.dashboard import write_dashboard
@@ -148,12 +148,12 @@ def dashboard(
         raise typer.Exit(code=1)
 
     try:
-        out = write_dashboard(feeds_dir)
+        outputs = write_dashboard(feeds_dir)
     except (OSError, ValueError, KeyError) as e:
         typer.secho(f"Could not render the dashboard: {e}", fg=typer.colors.RED)
         raise typer.Exit(code=1) from e
 
-    typer.secho(f"Wrote {out}", fg=typer.colors.GREEN)
+    typer.secho(f"Wrote {', '.join(str(path) for path in outputs)}", fg=typer.colors.GREEN)
 
 
 @app.command()
