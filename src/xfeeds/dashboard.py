@@ -671,7 +671,7 @@ def _downloads(manifest: dict[str, Any], history: list[dict[str, Any]]) -> str:
             _feed_row("lookup.json", "lazy index", None),
         )
     )
-    return f"""<section class="section" aria-labelledby="feeds-title"><div class="section-head"><div><div class="eyebrow">Downloads</div><h2 id="feeds-title">Choose the thing your tooling speaks.</h2></div><span class="section-sub">Primary / commercial-safe tier</span></div><div class="feed-groups"><section class="feed-group"><h3>Block lists</h3>{block}</section><section class="feed-group"><h3>Structured formats</h3>{structured}</section><section class="feed-group"><h3>Metadata</h3>{metadata}</section></div><p class="feeds-foot">Non-commercial equivalents retain these filenames under <a href="noncommercial/high-confidence.txt">/noncommercial/</a>.</p><div class="callout-link"><span>Studying the corpus? <b>{high:,} high-confidence entries</b></span><a href="analysis.html">Open analysis →</a></div></section>"""
+    return f"""<section class="section" aria-labelledby="feeds-title"><div class="section-head"><div><div class="eyebrow">Downloads</div><h2 id="feeds-title">Download a feed format.</h2></div><span class="section-sub">Primary / commercial-safe tier</span></div><div class="feed-groups"><section class="feed-group"><h3>Block lists</h3>{block}</section><section class="feed-group"><h3>Structured formats</h3>{structured}</section><section class="feed-group"><h3>Metadata</h3>{metadata}</section></div><p class="feeds-foot">Non-commercial equivalents retain these filenames under <a href="noncommercial/high-confidence.txt">/noncommercial/</a>.</p><div class="callout-link"><span>Studying the corpus? <b>{high:,} high-confidence entries</b></span><a href="analysis.html">Open analysis →</a></div></section>"""
 
 
 def _footer() -> str:
@@ -721,7 +721,7 @@ def _hero(manifest: dict[str, Any], history: list[dict[str, Any]]) -> str:
         f"{numbers}"
         f"{_hero_history_chart(history)}"
         '<p class="hero-followups">'
-        "<span>Look up a specific address below, grab a file, then wire up your platform. "
+        "<span>Look up a specific address below, download a feed, or review deployment examples. "
         'Full aggregate evidence in <a href="analysis.html">analysis</a>.</span>'
         "</p>"
         "</section>"
@@ -755,9 +755,9 @@ def _deploy_section(base_url: str) -> str:
         '<section class="section deploy-band" aria-labelledby="deploy-title">'
         '<div class="section-head">'
         '<div><div class="eyebrow">Deploy</div>'
-        '<h2 id="deploy-title">Wire the feed into your platform.</h2>'
-        '<p class="section-sub">Six copy-ready setups. The command runs against the files above; '
-        "add it to cron on the same six-hour cadence.</p></div>"
+        '<h2 id="deploy-title">Deployment examples</h2>'
+        '<p class="section-sub">Reference commands for common environments. Use the feed format above and '
+        "schedule refreshes on the same six-hour cadence.</p></div>"
         "</div>"
         f"{_platforms(base_url)}"
         "</section>"
