@@ -424,13 +424,13 @@ def _availability(history: list[dict[str, Any]]) -> str:
         )
     return (
         '<div class="hero-runs-label">'
-        '<strong>Source health per run</strong>'
+        "<strong>Source health per run</strong>"
         '<span class="run-key">'
         '<span><i class="k-ok"></i>All sources OK</span>'
         '<span><i class="k-partial"></i>1 missing</span>'
         '<span><i class="k-severe"></i>2+ missing</span>'
-        '</span>'
-        '</div>'
+        "</span>"
+        "</div>"
         '<div class="hero-runs-strip" role="img" aria-label="Availability across the last 40 refreshes">'
         + "".join(ticks)
         + "</div>"
