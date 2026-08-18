@@ -18,7 +18,7 @@ These were decided with measured evidence. If you believe one is wrong, **say so
 - **Do not add** `netaddr`, `orjson`, `pandas`, `polars`, `requests`, `aiohttp`, or any database. Standard-library `ipaddress` and `json` are sufficient and intentional. Adding a dependency requires a new ADR entry.
 - **`httpx` is used synchronously.** Do not introduce `asyncio`. Twelve sources do not need an event loop.
 - **No TAXII server.** STIX 2.1 is emitted as static bundles.
-- The source list in `sources.yaml` is final for Phase 2. **Do not enable a disabled source, and do not add new ones**, without an explicit instruction saying so.
+- The source list in `sources.yaml` is final for Phase 2. **Do not enable a disabled source, and do not add new ones**, without an explicit instruction saying so — which includes the source-discovery review process (ADR-052). See [`docs/source-lifecycle.md`](docs/source-lifecycle.md) for the admission criteria and [`docs/SOURCE_DISCOVERY_BRIEF.md`](docs/SOURCE_DISCOVERY_BRIEF.md) for the agent workflow.
 
 ## The single most important concept: independence classes
 
@@ -61,7 +61,7 @@ Parsers must survive things these fixtures actually contain: `\r\n` line endings
 - **Spamhaus DROP JSON is newline-delimited JSON objects, not a JSON array.** `json.loads` on the whole body fails. Parse line by line, and skip the trailing metadata line.
 - **Binary Defense returns a 301 to an HTML page without a browser-like User-Agent.** Send the configured UA and reject any `text/html` response as a source failure.
 - **`224.0.0.0/3` appears in FireHOL level1** — 537 million addresses of multicast space. The CIDR width cap exists precisely to catch things like this. Never bypass it.
-- **Feodo Tracker currently has ~5 entries and a last-updated header from March 2026.** That is expected, not a bug. Emit a staleness warning past 30 days; do not "fix" it.
+- **Feodo Tracker is dormant (ADR-052).** It has ~5 entries and a last-updated header from March 2026 because the botnet families it tracks were dismantled by law enforcement. It is marked `dormant: true` in `sources.yaml`: it stays enabled for corroboration but cannot solo-promote, and the staleness warning is suppressed. Do not re-enable promotion or remove the dormant flag without a maintainer review. See [`docs/source-lifecycle.md`](docs/source-lifecycle.md).
 - **SSLBL is currently empty.** A source returning zero valid records is a warning, not an error.
 - **Tor exit nodes appear inside other feeds** (265 of them in IPsum L3). They must be tagged and capped below the high-confidence threshold, never blocked outright.
 - **AbuseIPDB free tier allows only 5 blacklist calls per day.** Cache the response; never call it in a loop or a test.
