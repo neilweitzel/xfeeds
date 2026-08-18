@@ -71,6 +71,8 @@ Deliberately **not** used: `netaddr` (stdlib `ipaddress` suffices), `orjson`/`pa
 
 Configured entirely in [`sources.yaml`](sources.yaml). Adding a source means adding a YAML entry and, if the format is new, a parser — never a pipeline change.
 
+For what each upstream documents about its own sensors and scoring — and why we derive our own score from independent presence rather than composing theirs — see [`docs/source-methodology-2026-08.md`](docs/source-methodology-2026-08.md).
+
 **Eleven independent voting classes**, each a distinct sensor network, reporter community, or research team. AbuseIPDB and ThreatFox are keyed sources: both are enabled in `sources.yaml`, and both skip cleanly when their key is absent from the environment, so a fresh clone with no secrets still produces a correct feed and simply gains accuracy once the keys are set. `ABUSEIPDB_API_KEY` was added to repo secrets on 2026-08-14; AbuseIPDB remains `redistribute: false` per ADR-012, so it raises confidence without contributing rows to any published file.
 
 | Source | Class | Weight | Volume | Notes |
