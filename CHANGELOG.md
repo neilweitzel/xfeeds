@@ -10,6 +10,39 @@ six hours by design. A consumer pinning a tag still fetches the same live URLs.
 
 ## [Unreleased]
 
+### Added
+
+#### Pipeline
+- Freshness-gated promotion (ADR-052): a source whose HTTP Last-Modified
+  exceeds `min(30 days, ttl_days)` cannot solo-promote. Stale-evidence
+  observations may still vote and corroborate at a decayed weight, but cannot
+  put IPs into the high-confidence feed on their own. The core invariant: fetch
+  time is not evidence time.
+- Dormant source state (ADR-052): a source marked `dormant: true` in
+  `sources.yaml` stays enabled for corroboration but cannot solo-promote, and
+  the recurring staleness warning is downgraded to an informational log line.
+  Reactivation requires a maintainer review and removing the flag.
+- Source lifecycle and discovery policy (`docs/source-lifecycle.md`): defines
+  five lifecycle states (Active, Stale watch, Dormant, Retired, Reactivated),
+  freshness thresholds, and a recurring source discovery review process with
+  documented admission criteria.
+- Source discovery review workflow (`.github/workflows/source-review.yml`):
+  opens a recurring GitHub issue with a review checklist. Monthly during RC
+  burn-in, quarterly after v1.0.0. Does not auto-enable sources.
+
+### Changed
+- Feodo Tracker marked `dormant: true`. The families it tracks (Emotet, Dridex,
+  TrickBot, QakBot, BazarLoader) have almost no live C2 left after the 2021
+  Emotet takedown and Operation Endgame (2024–2026). Its 5 solo-promoted
+  records fall out of the high-confidence feed unless fresh evidence from
+  another source corroborates them.
+- Staleness threshold now uses `min(STALENESS_DAYS, source.ttl_days)` instead
+  of a flat 30-day ceiling, so short-TTL sources are caught sooner.
+
+### Notes
+- This is a `sources.yaml` + scoring-code change that restarts the RC burn-in
+  clock. Cut as `rc.2`.
+
 ## [1.0.0-rc.1] — 2026-08-18
 
 First candidate for a stable release. The pipeline has run unattended on a

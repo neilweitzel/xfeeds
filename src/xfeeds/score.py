@@ -239,9 +239,17 @@ def score_indicators(
             # A carried observation cannot promote. Promotion is an assertion that
             # this source's word alone is enough, which requires it to be saying so
             # in the current run rather than up to 30 days ago.
+            # A stale-evidence observation cannot promote (ADR-052). A successful
+            # fetch is not the same as fresh evidence: a source whose upstream
+            # has not updated in months is not vouching for these IPs today.
+            # A dormant source cannot promote (ADR-052). The maintainer has
+            # confirmed the tracked threat is inactive, so even a fresh fetch
+            # from a dormant source should not put IPs into the feed unaided.
             is_compromised = "compromised-host" in observation.tags
             promotes = (
                 not observation.carried
+                and not observation.evidence_stale
+                and not config.dormant
                 and config.redistribute
                 and (
                     observation.source in {"spamhaus_drop_v4", "spamhaus_drop_v6"}

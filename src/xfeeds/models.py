@@ -99,6 +99,17 @@ class SourceConfig(BaseModel):
     be combined into a NonCommercial output. See ADR-041.
     """
     notes: str | None = None
+    dormant: bool = False
+    """Reviewed-stale: the maintainer has confirmed the tracked threat is inactive
+    (ADR-052).
+
+    A dormant source stays enabled and continues to fetch and vote, but:
+    - It cannot solo-promote, regardless of evidence freshness.
+    - The staleness warning is downgraded to an informational log line.
+
+    Reactivation requires a maintainer review (licence, method, content shape)
+    and removing this flag. See ``docs/source-lifecycle.md``.
+    """
 
     # Optional fields from sources.yaml
     method: str | None = None
@@ -223,6 +234,17 @@ class IndicatorRecord(BaseModel):
     outage degrades confidence smoothly instead of dropping a whole independence
     class. It deliberately cannot promote: promotion asserts "safe to block on
     this source's word alone", which requires the source to be saying it now.
+    """
+    evidence_stale: bool = False
+    """True when the source's own declared update time exceeds the freshness
+    threshold (ADR-052).
+
+    A successful HTTP fetch is not the same as fresh evidence. When a source's
+    HTTP Last-Modified or payload-level timestamp is older than
+    ``min(STALENESS_DAYS, ttl_days)``, the pipeline marks every observation from
+    that source as stale. A stale-evidence observation may still vote and
+    corroborate at a decayed weight, but cannot solo-promote — the same gate
+    that applies to carried observations. See ``docs/source-lifecycle.md``.
     """
     source_reference: str | None = None
     """Upstream ticket or listing identifier, where the source publishes one.

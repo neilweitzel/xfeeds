@@ -73,6 +73,10 @@ sources:
     weight: 1.0
     categories: [botnet-c2]
     ttl_days: 7
+    dormant: true   # ADR-052: tracked threat families dismantled by law enforcement.
+                     # Stays enabled for corroboration and possible reactivation, but
+                     # cannot solo-promote while dormant. Reactivation requires a
+                     # maintainer review and removing this flag.
     license: "CC0 1.0 - Feodo Tracker ToS: all datasets usable for commercial and non-commercial purpose without any limitations"
     license_url: https://feodotracker.abuse.ch/blocklist/
     notes: >
@@ -82,10 +86,11 @@ sources:
       (Emotet, Dridex, TrickBot, QakBot, BazarLoader) have almost no live C2 left
       after the 2021 Emotet takedown and Operation Endgame in 2024. No replacement
       endpoint exists.
-      KEEP ENABLED. It is the only CC0 source that can promote on its own, its
-      false-positive rate is near zero, and a maintainer-explained lull is not a
-      dead feed. Do not rely on it for volume, and do not "fix" the staleness.
-      A staleness warning must fire if the last-updated header is >30d old.
+      DORMANT per ADR-052 (2026-08-18). The tracked threat is confirmed inactive,
+      so the source cannot solo-promote and the staleness warning is suppressed.
+      It stays enabled for corroboration and will reactivate automatically if
+      upstream publishes fresh data. Reactivation requires a maintainer review
+      (licence, method, content shape) and removing dormant: true.
 
   - name: sslbl
     url: https://sslbl.abuse.ch/blacklist/sslipblacklist.txt
