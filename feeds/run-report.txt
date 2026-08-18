@@ -1,31 +1,30 @@
-xfeeds run 2026-08-18T13:09:05.741524+00:00
+xfeeds run 2026-08-18T18:57:29.699972+00:00
   sources:   23/24 ok
-  published: 5266 (high 4356, medium 910)
-  withheld:  44932 single-source
-  deltas:    +350 / -451
+  published: 5167 (high 4304, medium 863)
+  withheld:  45711 single-source
+  deltas:    +445 / -544
     abuseipdb_blacklist      10000 records
     binary_defense           1489 records
-    blocklist_de             26321 records
+    blocklist_de             26730 records
     blocklist_de_strongips   350 records
-    bruteforceblocker        548 records
+    bruteforceblocker        546 records
     cins_army                15000 records
-    dataplane_proto41        55856 records
-    dataplane_smtpgreet      7509 records
-    dataplane_sshclient      18231 records
-    dataplane_sshpwauth      8876 records
-    dataplane_telnetlogin    80088 records
-    dataplane_vncrfb         4803 records
+    dataplane_proto41        55929 records
+    dataplane_smtpgreet      7519 records
+    dataplane_sshclient      18125 records
+    dataplane_sshpwauth      8765 records
+    dataplane_telnetlogin    79739 records
+    dataplane_vncrfb         4511 records
     dshield_block            20 records
     et_compromised           564 records
     feodo_tracker            stale
-    greensnow                2781 records
+    greensnow                2822 records
     ipsum_levels             17985 records
-    ipthreat                 5228 records
+    ipthreat                 5175 records
     spamhaus_drop_v4         1693 records
     spamhaus_drop_v6         91 records
-    stopforumspam_listed     52949 records
-    threatfox                1663 records
-    tor_exits                1534 records
+    stopforumspam_listed     54360 records
+    threatfox                1692 records
+    tor_exits                1538 records
     turris_greylist          9819 records
-  ! feodo_tracker: upstream last updated 48 days ago - a dead feed is not the same as a quiet internet
-  ! 630 records capped high -> medium as benign scanners
+  ! 596 records capped high -> medium as benign scanners
