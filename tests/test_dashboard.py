@@ -654,14 +654,19 @@ def test_project_story_is_reachable_after_the_data() -> None:
     Putting the project story below the operational surface is deliberate: an
     operator who already knows what xfeeds is shouldn't have to scroll past
     marketing to reach the corpus. This asserts the story is present, in that
-    position, and still names the two things that matter contractually — the
-    licence tiers and where to file a false positive.
+    position, and still names the things that matter contractually — the
+    licence tiers and where to file a false positive — which now live in the
+    shared footer rather than the about band itself.
     """
     console, _ = _pages()
     about = re.search(r'<section class="about-band"[^>]*>(.*?)</section>', console, re.DOTALL)
     assert about is not None, "about band missing"
     about_body = about.group(1)
-    for phrase in ("licence tiers", "false positive", "analysis surface"):
-        assert phrase.lower() in about_body.lower(), f"about band missing: {phrase}"
-    # And it sits below the downloads in source order.
+    # The about band carries the project story and the analysis surface link.
+    assert "analysis surface" in about_body.lower(), "about band missing: analysis surface"
+    # Licence tiers and false-positive reporting are in the shared footer,
+    # which appears on both pages. Check the full page, not just the about band.
+    for phrase in ("licence tiers", "false positive"):
+        assert phrase.lower() in console.lower(), f"console page missing: {phrase}"
+    # And the story sits below the downloads in source order.
     assert console.find('id="about-title"') > console.find('id="feeds-title"')

@@ -798,8 +798,7 @@ def _about_section(manifest: dict[str, Any]) -> str:
         "prefixes and known cloud, CDN, and resolver space are held back rather than published "
         "as blocks.</p>"
         f"<p>The corpus draws on <strong>{source_count} sources across {classes} independent "
-        "evidence classes</strong>, refreshed every six hours. Two licence tiers keep "
-        "commercial-safe records separate from share-alike, non-commercial ones.</p>"
+        "evidence classes</strong>, refreshed every six hours.</p>"
         "</div>"
         '<div><div class="eyebrow">Why it matters</div>'
         "<h2>An open, auditable alternative to opaque blocklists.</h2>"
@@ -808,9 +807,7 @@ def _about_section(manifest: dict[str, Any]) -> str:
         "corroboration histogram, per-source health, and the IPv4 address-space distribution, "
         "so a security team can decide for themselves what to trust.</p>"
         "<p>Everything is generated from committed artifacts, hosted on GitHub Pages, and "
-        "reproducible from source. Think an address is wrong? "
-        f'<a href="{PROJECT_URL}/issues">Report a false positive</a> — confirmed mistakes are '
-        "permanently allowlisted.</p>"
+        "reproducible from source.</p>"
         "</div></div></section>"
     )
 
@@ -1264,7 +1261,7 @@ def _source_rows(manifest: dict[str, Any]) -> str:
 def _analysis_footer(manifest: dict[str, Any], nc_manifest: dict[str, Any]) -> str:
     primary = _int(manifest.get("counts", {}), "published")
     noncommercial = _int(nc_manifest.get("counts", {}), "published")
-    return f"""<section id="licensing" class="analysis-section"><div class="eyebrow">Terms and provenance</div><h2>Licensing is a publication control, not a footnote.</h2><div class="license-row"><div class="tier" data-tier="primary" data-family="both"><h3>Primary tier</h3><p>{primary:,} addresses suitable for commercial and non-commercial use. Restricted sources may contribute only to scoring and are never republished.</p></div><div class="tier" data-tier="noncommercial" data-family="both"><h3>Non-commercial tier</h3><p>{noncommercial:,} addresses under CC BY-NC-SA 4.0. It can retain share-alike material that the primary tier must withhold.</p></div></div><h3>Contractual credit</h3><p class="note">Spamhaus attribution travels with the data. Threat data is also provided by <a href="https://ipthreat.net">IPThreat at ipthreat.net</a> and the <a href="https://view.sentinel.turris.cz/">Turris Sentinel</a> project at CZ.NIC (CC BY-NC-SA 4.0, non-commercial tier only).</p><p class="note">Network attribution uses <a href="https://iptoasn.com/">IPtoASN by Frank Denis</a> (Public Domain, PDDL v1.0). It maps networks and contributes no threat data.</p><h3>False positives</h3><p class="note">No block list is perfect. <a href="{PROJECT_URL}/issues">Report a false positive</a>; confirmed mistakes are permanently allowlisted.</p></section>"""
+    return f"""<section id="licensing" class="analysis-section"><div class="eyebrow">Terms and provenance</div><h2>Licensing is a publication control, not a footnote.</h2><div class="license-row"><div class="tier" data-tier="primary" data-family="both"><h3>Primary tier</h3><p>{primary:,} addresses suitable for commercial and non-commercial use. Restricted sources may contribute only to scoring and are never republished.</p></div><div class="tier" data-tier="noncommercial" data-family="both"><h3>Non-commercial tier</h3><p>{noncommercial:,} addresses under CC BY-NC-SA 4.0. It can retain share-alike material that the primary tier must withhold.</p></div></div></section>"""
 
 
 def render_analysis(
