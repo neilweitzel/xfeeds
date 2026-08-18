@@ -10,14 +10,20 @@ six hours by design. A consumer pinning a tag still fetches the same live URLs.
 
 ## [Unreleased]
 
+## [1.0.0-rc.2] — 2026-08-18
+
+Second release candidate. The rc.1 burn-in window caught a source (Feodo
+Tracker) that had been stale for 166 days but could still solo-promote IPs
+into the published feed on old evidence. ADR-052 generalises the fix into a
+standing policy: fetch time is not evidence time.
+
 ### Added
 
 #### Pipeline
 - Freshness-gated promotion (ADR-052): a source whose HTTP Last-Modified
   exceeds `min(30 days, ttl_days)` cannot solo-promote. Stale-evidence
   observations may still vote and corroborate at a decayed weight, but cannot
-  put IPs into the high-confidence feed on their own. The core invariant: fetch
-  time is not evidence time.
+  put IPs into the high-confidence feed on their own.
 - Dormant source state (ADR-052): a source marked `dormant: true` in
   `sources.yaml` stays enabled for corroboration but cannot solo-promote, and
   the recurring staleness warning is downgraded to an informational log line.
@@ -38,10 +44,15 @@ six hours by design. A consumer pinning a tag still fetches the same live URLs.
   another source corroborates them.
 - Staleness threshold now uses `min(STALENESS_DAYS, source.ttl_days)` instead
   of a flat 30-day ceiling, so short-TTL sources are caught sooner.
+- Dashboard text dedup: removed redundant licence-tier, attribution, and
+  false-positive text that appeared two or three times across the about
+  section, licensing section, and shared footer. Each piece of information now
+  appears once.
 
 ### Notes
 - This is a `sources.yaml` + scoring-code change that restarts the RC burn-in
-  clock. Cut as `rc.2`.
+  clock.
+- ADR-052 supersedes the Feodo-specific note from the 2026-08-15 review pass.
 
 ## [1.0.0-rc.1] — 2026-08-18
 
@@ -122,5 +133,6 @@ to `1.0.0` unchanged.
   by manual review get a regression test.
 - No unit test touches the network.
 
-[Unreleased]: https://github.com/neilweitzel/xfeeds/compare/v1.0.0-rc.1...HEAD
+[Unreleased]: https://github.com/neilweitzel/xfeeds/compare/v1.0.0-rc.2...HEAD
+[1.0.0-rc.2]: https://github.com/neilweitzel/xfeeds/releases/tag/v1.0.0-rc.2
 [1.0.0-rc.1]: https://github.com/neilweitzel/xfeeds/releases/tag/v1.0.0-rc.1
