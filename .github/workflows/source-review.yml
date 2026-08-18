@@ -1,0 +1,131 @@
+name: Source discovery review
+
+# ADR-052: recurring cycle that surveys candidate feeds against documented
+# admission criteria. This workflow does NOT auto-enable sources — it opens
+# an issue with a review checklist so a maintainer can evaluate candidates
+# and open PRs for any that pass.
+#
+# Cadence:
+#   - Monthly during the RC burn-in window (the first quarter after v1.0.0)
+#   - Quarterly after v1.0.0 is promoted
+#   - Manually triggered when a source is retired, a threat ecosystem is
+#     disrupted, or a coverage gap is identified
+#
+# The issue it opens is a prompt for a human review, not an automated change.
+# See docs/source-lifecycle.md for the full policy.
+
+on:
+  schedule:
+    # First of every month at 09:00 UTC during the RC burn-in period.
+    # After v1.0.0 promotion, switch this to quarterly:
+    #   cron: "0 9 1 */3 *"
+    - cron: "0 9 1 * *"
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Why this review is triggered (retirement, disruption, gap, routine)"
+        type: string
+        default: "routine"
+
+permissions:
+  issues: write
+
+jobs:
+  open-review-issue:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Count sources and stale sources
+        id: stats
+        run: |
+          total=$(grep -c "^  - name:" sources.yaml || echo 0)
+          stale=$(grep -c "dormant: true" sources.yaml || echo 0)
+          echo "total=$total" >> "$GITHUB_OUTPUT"
+          echo "stale=$stale" >> "$GITHUB_OUTPUT"
+
+      - name: Open or update source discovery review issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const reason = '${{ inputs.reason || 'routine' }}';
+            const total = '${{ steps.stats.outputs.total }}';
+            const stale = '${{ steps.stats.outputs.stale }}';
+            const date = new Date().toISOString().slice(0, 10);
+
+            const title = `Source discovery review — ${date}`;
+
+            const body = [
+              '## Source discovery review',
+              '',
+              `**Trigger:** ${reason}`,
+              `**Date:** ${date}`,
+              `**Sources configured:** ${total} (${stale} dormant)`,
+              '',
+              'This is a recurring review cycle per [ADR-052](../blob/main/docs/DECISIONS.md) and',
+              '[`docs/source-lifecycle.md`](../blob/main/docs/source-lifecycle.md).',
+              '',
+              '### What to do',
+              '',
+              '1. **Check dormant and stale sources.** Review each source with `dormant: true`',
+              '   or `status: "stale"` in the manifest. Has the threat recovered? Should any be',
+              '   retired (disabled) or reactivated (dormant flag removed)?',
+              '',
+              '2. **Survey candidate feeds** matching current coverage gaps. See the admission',
+              '   criteria in `docs/source-lifecycle.md`. Record each candidate and its verdict,',
+              '   including rejections, so the same ground is not re-covered.',
+              '',
+              '3. **Check for upstream changes** in existing sources: licence terms, endpoint',
+              '   stability, update cadence, content shape. A licence change can force tier',
+              '   reassignment or retirement.',
+              '',
+              '4. **Open PRs** for any candidates recommended for admission or state changes.',
+              '   Each PR must update `sources.yaml`, `docs/DECISIONS.md`, and the test suite.',
+              '',
+              '### Admission criteria (summary)',
+              '',
+              '- [ ] Licence and redistribution rights (explicit written grant required)',
+              '- [ ] Independence (Jaccard overlap <0.5 with any existing source)',
+              '- [ ] Sensor method documented (not a mirror or aggregate)',
+              '- [ ] Update cadence with a feed-level timestamp for freshness evaluation',
+              '- [ ] Endpoint stability (stable URL, free auth acceptable)',
+              '- [ ] Volume and churn measured across several runs',
+              '- [ ] False-positive risk assessed (cloud/recycled IPs are high risk)',
+              '- [ ] Address families (IPv4, IPv6, or both)',
+              '- [ ] Parser feasibility with a test fixture from a real response',
+              '',
+              '### Triggers for an off-cycle review',
+              '',
+              '- Source retirement (run `workflow_dispatch` with reason "retirement")',
+              '- Threat ecosystem disruption (major takedown, malware family collapse)',
+              '- Repeated false-positive reports suggesting a source is admitting bad data',
+              '- Licence or terms change on an existing source',
+              '- IPv6 or address-family coverage gap identified',
+              '',
+              '---',
+              'Close this issue when the review is complete. If any candidates are admitted,',
+              'link their PRs here.',
+            ].join('\n');
+
+            // Update existing open issue or create new one
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo,
+              state: 'open', labels: 'source-review',
+            });
+            const match = existing.data.find(i => i.title.startsWith('Source discovery review —'));
+            if (match) {
+              await github.rest.issues.update({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: match.number, title, body,
+              });
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: match.number,
+                body: `Review cycle re-triggered (${reason}). Updated ${date}.`,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner, repo: context.repo.repo,
+                title, body, labels: ['source-review', 'automated'],
+              });
+            }

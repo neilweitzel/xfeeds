@@ -1475,6 +1475,75 @@ of top-20 /24 subnets.
 - [ ] Only two sources publish dated history, so days before this project started running are covered by those two alone. Worth checking whether Blocklist.de or CINS expose a dated variant.
 - [ ] ipthreat.net's licence contradicts itself, naming "creative-commons by attribution" while saying "the creative commons by sa license can be used as a guide" and requiring derived data under the same licence. We read it conservatively as ShareAlike. Worth asking them to clarify, since a plain CC BY reading would let it into the non-commercial tier too.
 - [x] ELLIO community feed now 404s. DataPlane.org was resolved in ADR-048: redistribution is still refused, but its use grant permits ingesting it as a scoring source, which is now done.
-- [ ] Feodo Tracker has been stale for 43 days and its IP blocklist is nearly empty. It is our only CC0 promoting source now that ThreatFox cannot promote. If it stays dead, the abuse.ch promotion path is effectively gone and should be removed rather than left looking active.
+- [x] Feodo Tracker has been stale for 43 days and its IP blocklist is nearly empty. It is our only CC0 promoting source now that ThreatFox cannot promote. If it stays dead, the abuse.ch promotion path is effectively gone and should be removed rather than left looking active. **Resolved 2026-08-18: ADR-052 establishes a freshness-gated promotion policy. Feodo moves to Dormant; its records cannot solo-promote while stale. See `docs/source-lifecycle.md`.**
 - [x] Confirm whether Binary Defense's terms permit redistribution — done, they do (ADR-039).
 - [ ] Re-check DShield: independent and PGP-signed, but `block.txt` is only the top 20 /24 subnets, so it is not worth a collector at that volume.
+
+
+
+## ADR-052 — Source lifecycle and discovery policy
+
+**Date:** 2026-08-18. **Status:** Accepted.
+
+### Context
+
+Feodo Tracker has been stale for 166 days (last updated 2026-03-04). The
+staleness warning fires every run, but nothing acts on it. The source can
+still solo-promote 5 IPs into the high-confidence feed on 166-day-old
+evidence with no corroboration. The 2026-08-15 review pass noted: "If it is
+still dead in a month, remove the promotion path." This generalises that
+ad-hoc note into a standing policy.
+
+The threat landscape is dynamic: law-enforcement operations (Emotet 2021,
+Operation Endgame 2024–2026) dismantle the infrastructure that
+family-specific trackers like Feodo monitor. When the threat goes away, the
+feed goes stale, and the pipeline must handle that gracefully rather than
+treating a frozen upstream as current evidence.
+
+### Decision
+
+Two policies, documented in [`docs/source-lifecycle.md`](source-lifecycle.md):
+
+1. **Stale-source lifecycle.** Sources move through five states: Active →
+   Stale watch → Dormant → Retired, with Reactivated as a return path. The
+   core invariant: **fetch time is not evidence time.** A source whose
+   declared update timestamp exceeds `min(30 days, ttl_days)` cannot
+   solo-promote. Its records may corroborate at decaying weight but cannot
+   put IPs into the feed on their own.
+
+2. **Source discovery process.** A recurring review cycle (quarterly after
+   v1.0.0, monthly during RC burn-in, triggered by retirements or threat
+   disruptions) surveys candidate feeds against documented admission
+   criteria. Output is a report, not an auto-enable. Sources are admitted
+   only through a PR that updates `sources.yaml`, this file, and the test
+   suite.
+
+### Implementation
+
+- New `evidence_stale` field on `IndicatorRecord`: set by the pipeline when
+  a source's HTTP `Last-Modified` exceeds `min(STALENESS_DAYS, ttl_days)`.
+  The scorer treats stale-evidence observations like carried observations for
+  promotion purposes — they may vote and corroborate, but cannot
+  solo-promote.
+- New `dormant` field on `SourceConfig`: marks a source as reviewed-stale.
+  Suppresses the recurring staleness warning. Does not disable collection.
+  A dormant source cannot solo-promote regardless of evidence freshness;
+  reactivation requires a maintainer review and removing the flag.
+- Feodo Tracker marked `dormant: true` in `sources.yaml`.
+
+### Supersedes
+
+The Feodo-specific note from the 2026-08-15 review pass: "If it is still dead
+in a month, remove the promotion path rather than leave it looking active."
+The policy here is broader and the action is the same — gate promotion on
+freshness, not on a calendar.
+
+### Consequences
+
+- Feodo Tracker's 5 solo-promoted records fall out of the high-confidence
+  feed unless fresh evidence from another source corroborates them.
+- This is a `sources.yaml` + scoring-code change that restarts the RC
+  burn-in clock. Cut as `rc.2`.
+- Follow-up: parse feed-level timestamps from payload headers (e.g., Feodo's
+  `Last updated:` line) for more precise evidence age than HTTP
+  `Last-Modified` provides. Tracked as an open item.

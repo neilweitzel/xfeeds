@@ -157,15 +157,30 @@ def collect_all(
 
             entry["cached"] = result.cached
             last_modified = _parse_last_modified(result.last_modified_header)
+            source_is_stale = False
             if last_modified:
                 entry["last_modified"] = last_modified.isoformat()
-                if observed_on - last_modified > timedelta(days=STALENESS_DAYS):
+                # ADR-052: freshness threshold is the shorter of the global ceiling
+                # and the source's own TTL. A source whose evidence age exceeds this
+                # cannot solo-promote, even when the fetch succeeded.
+                freshness_days = min(STALENESS_DAYS, source.ttl_days)
+                if observed_on - last_modified > timedelta(days=freshness_days):
                     age = (observed_on - last_modified).days
+                    source_is_stale = True
                     entry["status"] = "stale"
-                    warnings.append(
-                        f"{source.name}: upstream last updated {age} days ago - "
-                        "a dead feed is not the same as a quiet internet"
-                    )
+                    if source.dormant:
+                        # Reviewed-stale: the threat is confirmed inactive.
+                        # Log quietly rather than raising a recurring warning.
+                        logger.info(
+                            "source_dormant_stale",
+                            source=source.name,
+                            age_days=age,
+                        )
+                    else:
+                        warnings.append(
+                            f"{source.name}: upstream last updated {age} days ago - "
+                            "a dead feed is not the same as a quiet internet"
+                        )
 
             parser = PARSERS.get(source.parser)
             if parser is None:
@@ -175,6 +190,13 @@ def collect_all(
 
             kwargs = {"level": level} if source.parser == "ipsum_levels" else {}
             parsed = list(parser(result.content, probe, observed_on, **kwargs))
+            # Mark observations from a stale-evidence source so the scorer can
+            # gate promotion (ADR-052). The records are still valid evidence
+            # for corroboration; they just cannot put IPs into the feed on their
+            # own while the upstream is frozen.
+            if source_is_stale:
+                for record in parsed:
+                    record.evidence_stale = True
             records.extend(parsed)
             entry["records"] += len(parsed)
 

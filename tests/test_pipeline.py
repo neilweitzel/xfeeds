@@ -588,6 +588,155 @@ def test_carried_votes_expire_at_the_source_ttl() -> None:
 
 
 # --------------------------------------------------------------------------
+# Freshness-gated promotion: ADR-052
+# --------------------------------------------------------------------------
+
+
+def test_stale_evidence_observation_cannot_promote() -> None:
+    """A source whose upstream has not updated cannot solo-promote (ADR-052).
+
+    Feodo Tracker returns HTTP 200 with the same 5 IPs every run, but its
+    Last-Modified header is 166 days old. A successful fetch is not fresh
+    evidence. The observation still votes and corroborates, but cannot put
+    an IP into the high-confidence feed on its own.
+    """
+    now = datetime(2026, 8, 12, tzinfo=UTC)
+    registry = Registry(
+        version=1,
+        defaults=DefaultsConfig(),
+        sources=[
+            SourceConfig(
+                name="feodo_tracker",
+                url="https://example.invalid/x",
+                parser="plain_text",
+                independence_class="abusech",
+                weight=1.0,
+                ttl_days=7,
+            )
+        ],
+        allowlist_sources=[],
+    )
+    fresh = obs("feodo_tracker", "abusech", categories=["botnet-c2"])
+    assert score_indicators([fresh], registry, now)[0].promoted_by == "feodo_tracker"
+
+    stale_evidence = obs("feodo_tracker", "abusech", categories=["botnet-c2"])
+    stale_evidence.evidence_stale = True
+    result = score_indicators([stale_evidence], registry, now)[0]
+    assert result.promoted_by is None
+    assert result.band is Band.WITHHELD, "stale evidence alone cannot publish"
+
+
+def test_stale_evidence_can_corroborate_a_fresh_source() -> None:
+    """A stale source still contributes its class for corroboration (ADR-052).
+
+    The stale observation votes and adds its independence class, so a record
+    that has a fresh source in a second class can still reach medium or high.
+    The gate is on solo-promotion, not on voting.
+    """
+    now = datetime(2026, 8, 12, tzinfo=UTC)
+    registry = registry_of(
+        src("feodo_tracker", "abusech", weight=1.0, ttl_days=7),
+        src("blocklist_de", "blocklist_de", weight=0.8),
+    )
+    fresh = obs("blocklist_de", "blocklist_de")
+    stale = obs("feodo_tracker", "abusech", categories=["botnet-c2"])
+    stale.evidence_stale = True
+
+    result = score_indicators([fresh, stale], registry, now)[0]
+    assert result.band is Band.MEDIUM, "two classes publish even with one stale"
+    assert result.promoted_by is None, "neither source solo-promoted"
+
+
+def test_dormant_source_cannot_promote() -> None:
+    """A dormant source cannot solo-promote even with fresh evidence (ADR-052).
+
+    Dormant means the maintainer has confirmed the tracked threat is inactive.
+    The source still fetches and votes, but cannot put IPs into the feed on
+    its own. Reactivation requires removing the dormant flag after review.
+    """
+    now = datetime(2026, 8, 12, tzinfo=UTC)
+    registry = Registry(
+        version=1,
+        defaults=DefaultsConfig(),
+        sources=[
+            SourceConfig(
+                name="feodo_tracker",
+                url="https://example.invalid/x",
+                parser="plain_text",
+                independence_class="abusech",
+                weight=1.0,
+                ttl_days=7,
+                dormant=True,
+            )
+        ],
+        allowlist_sources=[],
+    )
+    fresh = obs("feodo_tracker", "abusech", categories=["botnet-c2"])
+    result = score_indicators([fresh], registry, now)[0]
+    assert result.promoted_by is None
+    assert result.band is Band.WITHHELD
+
+
+def test_dormant_source_can_corroborate() -> None:
+    """A dormant source still contributes its class for corroboration (ADR-052)."""
+    now = datetime(2026, 8, 12, tzinfo=UTC)
+    registry = registry_of(
+        src("feodo_tracker", "abusech", weight=1.0, ttl_days=7, dormant=True),
+        src("blocklist_de", "blocklist_de", weight=0.8),
+    )
+    fresh = obs("blocklist_de", "blocklist_de")
+    dormant = obs("feodo_tracker", "abusech", categories=["botnet-c2"])
+
+    result = score_indicators([fresh, dormant], registry, now)[0]
+    assert result.band is Band.MEDIUM, "two classes publish even with one dormant"
+    assert result.promoted_by is None
+
+
+def test_spamhaus_promotion_unaffected_by_freshness_gate() -> None:
+    """Spamhaus DROP is not stale and not dormant, so it still promotes.
+
+    The freshness gate must not regress existing promotion behaviour for
+    healthy sources.
+    """
+    now = datetime(2026, 8, 12, tzinfo=UTC)
+    registry = registry_of(src("spamhaus_drop_v4", "spamhaus", weight=1.0))
+    record = score_indicators([obs("spamhaus_drop_v4", "spamhaus", ip="45.79.1.1")], registry, now)[
+        0
+    ]
+    assert record.band is Band.HIGH
+    assert record.promoted_by == "spamhaus_drop_v4"
+
+
+def test_existing_carried_promotion_test_still_passes() -> None:
+    """The carried-observation promotion gate and the evidence-stale gate
+    are independent: a carried observation that is also evidence-stale
+    still cannot promote, and a fresh non-carried observation still can.
+    """
+    now = datetime(2026, 8, 12, tzinfo=UTC)
+    registry = Registry(
+        version=1,
+        defaults=DefaultsConfig(),
+        sources=[
+            SourceConfig(
+                name="spamhaus_drop_v4",
+                url="https://example.invalid/x",
+                parser="plain_text",
+                independence_class="spamhaus",
+                weight=1.0,
+                ttl_days=30,
+            )
+        ],
+        allowlist_sources=[],
+    )
+    current = obs("spamhaus_drop_v4", "spamhaus")
+    assert score_indicators([current], registry, now)[0].promoted_by == "spamhaus_drop_v4"
+
+    stale = obs("spamhaus_drop_v4", "spamhaus")
+    stale.carried = True
+    assert score_indicators([stale], registry, now)[0].promoted_by is None
+
+
+# --------------------------------------------------------------------------
 # Two-tier publication: ADR-041
 # --------------------------------------------------------------------------
 
