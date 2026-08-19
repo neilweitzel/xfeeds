@@ -10,6 +10,41 @@ six hours by design. A consumer pinning a tag still fetches the same live URLs.
 
 ## [Unreleased]
 
+### Fixed
+
+#### Pipeline
+- Unvouched evidence is now non-admitting (ADR-053). ADR-052 stopped a stale or
+  dormant source solo-promoting, but its independence class still counted toward
+  the two classes required to publish — so an address could be admitted on one
+  live source plus an upstream frozen months earlier. Stale and dormant classes
+  now join the same non-admitting lane as licence-restricted sources: they may
+  upgrade a record that already qualifies on live corroboration, never admit one.
+- Stale and dormant votes are actually damped now (ADR-053). ADR-052 described
+  corroboration "at a decayed weight", but `recency_factor` decays on
+  `last_seen`, which equals the current run on every successful fetch — so a
+  frozen upstream voted at full strength indefinitely. A new
+  `STALE_EVIDENCE_FACTOR` (0.2, matching `recency_factor`'s floor) applies the
+  intended decay.
+- Promotion, vote damping, and the admission lane now derive from a single
+  `evidence_vouched` predicate, so the three gates cannot drift apart.
+
+#### Dashboard
+- Restored the console and analysis footer's vertical padding, which gave the
+  licence-tier block visibly cramped spacing beneath the about section. The
+  `footer` rule set `padding: 26px 0 44px`, but `<footer class="shell">` meant
+  `.shell`'s own `padding` shorthand won on specificity and zeroed it. Now set as
+  longhand on `footer.shell`, which preserves `.shell`'s responsive horizontal
+  padding at every breakpoint and in print.
+- Increased the about band's bottom padding for a balanced transition into the
+  footer.
+
+### Changed
+- `restricted_corroboration` now counts unvouched classes as well as
+  licence-restricted ones. Source names remain omitted, for the same disclosure
+  reason as before.
+- `uv.lock` corrected: it still recorded the project version as `1.0.0rc1` after
+  the rc.2 bump.
+
 ## [1.0.0-rc.2] — 2026-08-18
 
 Second release candidate. The rc.1 burn-in window caught a source (Feodo

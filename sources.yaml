@@ -73,10 +73,12 @@ sources:
     weight: 1.0
     categories: [botnet-c2]
     ttl_days: 7
-    dormant: true   # ADR-052: tracked threat families dismantled by law enforcement.
-                     # Stays enabled for corroboration and possible reactivation, but
-                     # cannot solo-promote while dormant. Reactivation requires a
-                     # maintainer review and removing this flag.
+    dormant: true   # ADR-052/053: tracked threat families dismantled by law enforcement.
+                     # Stays enabled for upgrades and possible reactivation, but while
+                     # dormant it cannot solo-promote AND is non-admitting: its vote is
+                     # damped and never counts toward the classes that publish an
+                     # address. Reactivation requires a maintainer review and removing
+                     # this flag.
     license: "CC0 1.0 - Feodo Tracker ToS: all datasets usable for commercial and non-commercial purpose without any limitations"
     license_url: https://feodotracker.abuse.ch/blocklist/
     notes: >
@@ -88,9 +90,15 @@ sources:
       endpoint exists.
       DORMANT per ADR-052 (2026-08-18). The tracked threat is confirmed inactive,
       so the source cannot solo-promote and the staleness warning is suppressed.
-      It stays enabled for corroboration and will reactivate automatically if
-      upstream publishes fresh data. Reactivation requires a maintainer review
-      (licence, method, content shape) and removing dormant: true.
+      It stays enabled and will reactivate automatically if upstream publishes
+      fresh data. Reactivation requires a maintainer review (licence, method,
+      content shape) and removing dormant: true.
+      NON-ADMITTING per ADR-053 (2026-08-19). Being dormant no longer only blocks
+      solo-promotion: this source's class is excluded from the count that admits a
+      record, and its vote is damped by STALE_EVIDENCE_FACTOR. It may still
+      upgrade an address that two live classes already published. Previously it
+      could supply one of the two classes needed to publish, which meant a
+      tracker frozen since 2026-03-04 could be half the basis for a block.
 
   - name: sslbl
     url: https://sslbl.abuse.ch/blacklist/sslipblacklist.txt

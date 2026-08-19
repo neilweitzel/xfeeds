@@ -48,9 +48,16 @@ alerts.
   whichever is shorter).
 - The manifest reports `status: "stale"` and the run report raises a
   staleness warning. These already exist and fire correctly.
-- **Cannot solo-promote.** Its records may still corroborate other sources'
-  observations at a decaying weight, but cannot put an IP into the feed on
-  its own.
+- **Cannot solo-promote, and cannot admit.** Its records are *non-admitting*
+  (ADR-053): they may strengthen a record that already qualifies on live
+  corroboration, but they never count toward the independence classes that
+  admit one, and they never promote. This is the same asymmetry
+  licence-restricted sources get.
+- **Votes at a damped weight.** `score.STALE_EVIDENCE_FACTOR` (0.2) is applied
+  on top of `recency_factor`. The damping is applied explicitly because
+  `recency_factor` alone would not do it: it decays on when we last *saw* the
+  address, which equals now on every successful fetch, so an upstream frozen
+  for months would otherwise vote at full strength forever.
 - Records that were solo-promoted by this source in a prior active period
   fall out of the feed on the next run unless another fresh source
   corroborates them. This is the existing source-driven publication model
@@ -67,8 +74,12 @@ alerts.
 - It does not generate a "needs review" alert every run. The staleness
   warning is suppressed or downgraded to an informational log line once the
   source is marked dormant in `sources.yaml`.
-- Still cannot solo-promote. Still may corroborate at decaying weight if
-  evidence is within TTL.
+- Still cannot solo-promote, and is still non-admitting with a damped vote
+  (ADR-053) — regardless of evidence freshness, because dormant is a
+  maintainer's statement that the tracked threat itself is gone. A live HTTP 200
+  from a dead tracker is not evidence about today.
+- It stays enabled rather than disabled precisely because it can still upgrade a
+  record that two live classes already admitted.
 
 ### 4. Retired (disabled)
 
@@ -128,8 +139,9 @@ Spamhaus DROP), and the shorter of the two governs.
 
 | Behavior | Active | Stale / Dormant |
 |---|---|---|
-| Vote in scoring | Yes, full weight | Yes, decaying via `recency_factor` up to `ttl_days` |
-| Corroboration | Yes | Yes, at decayed weight |
+| Vote in scoring | Yes, full weight | Yes, damped by `STALE_EVIDENCE_FACTOR` (0.2) |
+| Counts toward admission | Yes | **No** — non-admitting (ADR-053) |
+| Upgrades an already-admitted record | Yes | Yes |
 | Solo-promotion | Yes, if otherwise qualified | **No** |
 | Records age out | Normal `ttl_days` | Same — source-driven publication means records leave when no fresh source reports them |
 
