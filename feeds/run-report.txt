@@ -1,31 +1,30 @@
-xfeeds run 2026-08-19T07:06:22.464700+00:00
-  sources:   22/24 ok
-  published: 5559 (high 4508, medium 1051)
-  withheld:  42692 single-source
-  deltas:    +240 / -624
+xfeeds run 2026-08-19T13:09:57.949410+00:00
+  sources:   23/24 ok
+  published: 5326 (high 4365, medium 961)
+  withheld:  42009 single-source
+  deltas:    +330 / -563
     abuseipdb_blacklist      10000 records
     binary_defense           1822 records
-    blocklist_de             24746 records
+    blocklist_de             23685 records
     blocklist_de_strongips   351 records
-    bruteforceblocker        540 records
+    bruteforceblocker        541 records
     cins_army                15000 records
-    dataplane_proto41        55982 records
-    dataplane_smtpgreet      7418 records
-    dataplane_sshclient      17792 records
-    dataplane_sshpwauth      8628 records
-    dataplane_telnetlogin    77732 records
-    dataplane_vncrfb         4651 records
+    dataplane_proto41        55967 records
+    dataplane_smtpgreet      7434 records
+    dataplane_sshclient      17937 records
+    dataplane_sshpwauth      8633 records
+    dataplane_telnetlogin    77753 records
+    dataplane_vncrfb         4710 records
     dshield_block            20 records
     et_compromised           552 records
     feodo_tracker            stale
-    greensnow                3212 records
+    greensnow                2779 records
     ipsum_levels             18842 records
-    ipthreat                 5171 records
+    ipthreat                 4939 records
     spamhaus_drop_v4         1693 records
     spamhaus_drop_v6         91 records
     stopforumspam_listed     53929 records
-    threatfox                1735 records
-    tor_exits                failed (request error: [Errno 104] Connection reset by peer)
+    threatfox                1905 records
+    tor_exits                1548 records
     turris_greylist          9956 records
-  ! tor_exits: request error: [Errno 104] Connection reset by peer
-  ! 798 records capped high -> medium as benign scanners
+  ! 685 records capped high -> medium as benign scanners
