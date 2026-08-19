@@ -10,6 +10,15 @@ six hours by design. A consumer pinning a tag still fetches the same live URLs.
 
 ## [Unreleased]
 
+## [1.0.0-rc.3] — 2026-08-19
+
+Third release candidate. The rc.2 burn-in window showed that ADR-052 had stated
+the right invariant — fetch time is not evidence time — but only implemented half
+of it. A stale or dormant source could not solo-promote, yet it still voted at
+full weight and its independence class still counted toward the two classes
+required to publish. ADR-053 closes both halves: evidence nobody is vouching for
+today is non-admitting.
+
 ### Fixed
 
 #### Pipeline
@@ -168,6 +177,7 @@ to `1.0.0` unchanged.
   by manual review get a regression test.
 - No unit test touches the network.
 
-[Unreleased]: https://github.com/neilweitzel/xfeeds/compare/v1.0.0-rc.2...HEAD
+[Unreleased]: https://github.com/neilweitzel/xfeeds/compare/v1.0.0-rc.3...HEAD
+[1.0.0-rc.3]: https://github.com/neilweitzel/xfeeds/releases/tag/v1.0.0-rc.3
 [1.0.0-rc.2]: https://github.com/neilweitzel/xfeeds/releases/tag/v1.0.0-rc.2
 [1.0.0-rc.1]: https://github.com/neilweitzel/xfeeds/releases/tag/v1.0.0-rc.1
