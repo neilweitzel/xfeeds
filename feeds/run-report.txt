@@ -1,30 +1,31 @@
-xfeeds run 2026-08-19T01:53:46.413554+00:00
-  sources:   23/24 ok
-  published: 5943 (high 4716, medium 1227)
-  withheld:  42928 single-source
-  deltas:    +797 / -21
+xfeeds run 2026-08-19T07:06:22.464700+00:00
+  sources:   22/24 ok
+  published: 5559 (high 4508, medium 1051)
+  withheld:  42692 single-source
+  deltas:    +240 / -624
     abuseipdb_blacklist      10000 records
     binary_defense           1822 records
-    blocklist_de             26583 records
+    blocklist_de             24746 records
     blocklist_de_strongips   351 records
-    bruteforceblocker        537 records
+    bruteforceblocker        540 records
     cins_army                15000 records
-    dataplane_proto41        55970 records
-    dataplane_smtpgreet      7537 records
-    dataplane_sshclient      17993 records
-    dataplane_sshpwauth      8721 records
-    dataplane_telnetlogin    79045 records
-    dataplane_vncrfb         4656 records
+    dataplane_proto41        55982 records
+    dataplane_smtpgreet      7418 records
+    dataplane_sshclient      17792 records
+    dataplane_sshpwauth      8628 records
+    dataplane_telnetlogin    77732 records
+    dataplane_vncrfb         4651 records
     dshield_block            20 records
     et_compromised           552 records
     feodo_tracker            stale
-    greensnow                3208 records
+    greensnow                3212 records
     ipsum_levels             18842 records
-    ipthreat                 5182 records
+    ipthreat                 5171 records
     spamhaus_drop_v4         1693 records
     spamhaus_drop_v6         91 records
-    stopforumspam_listed     54360 records
-    threatfox                1731 records
-    tor_exits                1542 records
+    stopforumspam_listed     53929 records
+    threatfox                1735 records
+    tor_exits                failed (request error: [Errno 104] Connection reset by peer)
     turris_greylist          9956 records
-  ! 939 records capped high -> medium as benign scanners
+  ! tor_exits: request error: [Errno 104] Connection reset by peer
+  ! 798 records capped high -> medium as benign scanners
