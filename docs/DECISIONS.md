@@ -1547,3 +1547,80 @@ freshness, not on a calendar.
 - Follow-up: parse feed-level timestamps from payload headers (e.g., Feodo's
   `Last updated:` line) for more precise evidence age than HTTP
   `Last-Modified` provides. Tracked as an open item.
+
+## ADR-053 — Unvouched evidence is non-admitting
+
+**Date:** 2026-08-19. **Status:** Accepted. **Amends:** ADR-052.
+
+### Context
+
+ADR-052 established the right invariant — **fetch time is not evidence time** —
+and promised that a stale source's records "may corroborate at decaying weight
+but cannot put IPs into the feed on their own". Only the promotion half of that
+was implemented. Two gaps survived:
+
+1. **No decay.** `recency_factor` decays on `observation.last_seen`, and its own
+   docstring notes that anything collected in the current run has
+   `last_seen == now` and therefore scores 1.0. Feodo Tracker answers HTTP 200
+   on every run, so its five records were re-collected as fresh sightings each
+   cycle and voted at *full* weight against content frozen on 2026-03-04. The
+   promised decay never applied to the case it was written for.
+
+2. **Admission on unvouched evidence.** `evidence_stale` and `dormant` appeared
+   only in the `promotes` expression. The voting path above it added the source's
+   independence class to `open_classes` unconditionally. Publication needs two
+   open classes, so a stale source could supply *half* the basis for admitting an
+   address — "on their own" had been read as "solo-promotion only".
+
+The practical exposure was narrow but real: any of Feodo's five addresses needed
+just one additional live class to publish, with half the admitting evidence
+coming from a tracker dismantled by law enforcement. Nothing was published on
+that path at the time of writing (0 of 5,326 records cited `feodo_tracker`),
+which made this a safe moment to close it rather than an incident.
+
+### Decision
+
+Evidence nobody is vouching for today is **non-admitting**. A stale or dormant
+source may strengthen a record that already stands on live corroboration; it may
+never be one of the classes that admits one, and it may never promote.
+
+This deliberately reuses the asymmetry already built for licence-restricted
+sources (ADR-041): different reason, identical treatment. `_band` was already the
+right shape — the only bug was which lane the evidence went into.
+
+### Implementation
+
+- `score.py` derives one predicate, `evidence_vouched`, from
+  `observation.evidence_stale` and `config.dormant`, and uses it for three things:
+  - the class lane: unvouched evidence joins `restricted_classes`, not
+    `open_classes`, so it cannot count toward the admission threshold;
+  - the vote weight: damped by the new `STALE_EVIDENCE_FACTOR` (0.2, equal to
+    `recency_factor`'s floor — the weakest weight we still call meaningful);
+  - promotion: `promotes` now consumes the same predicate rather than repeating
+    the two conditions, so the gates cannot drift apart.
+- `restricted_corroboration` now counts both licence-restricted and unvouched
+  classes. Its docstring says so; the names remain omitted for the same
+  disclosure reason as before.
+
+### Not done deliberately
+
+Generalising evidence-age decay to *every* source with a `Last-Modified` header
+was considered and rejected for now. `ttl_days` currently means "how long we
+carry an observation", not "how fast we expect upstream to publish", and
+conflating them would penalise healthy sources for a normal cadence:
+`spamhaus_drop_v6` had a six-day-old `Last-Modified` against a 7-day TTL and
+would have been damped to the floor. Doing it properly needs a per-source
+`expected_update_days` and a measured dry-run diff. Left as an open item.
+
+### Consequences
+
+- Publication now requires two independence classes that are vouched for today.
+- No output change at the time of the change: Feodo is the only stale or dormant
+  source, its five addresses appear in no published artifact, and no published
+  record cited it. Verified before merge.
+- Feodo Tracker stays enabled and keeps its `dormant: true` flag. It can still
+  upgrade a corroborated record, which is why it is not simply disabled.
+- Two ADR-052 tests asserted the old contract (stale/dormant plus one live class
+  publishing at medium). They were rewritten to assert the new one rather than
+  removed, and named for the regression they now guard.
+- Scoring change, so the RC burn-in clock restarts. Cut as `rc.3`.

@@ -42,6 +42,16 @@ IPSUM_PRIOR_BONUS = 0.15
 """Deliberately small. IPsum aggregates our own sources, so it corroborates but
 must never be able to move a record between bands on its own."""
 
+STALE_EVIDENCE_FACTOR = 0.2
+"""Multiplier applied to a vote whose upstream is stale or dormant (ADR-053).
+
+Deliberately equal to ``recency_factor``'s floor, the weakest weight we still
+consider meaningful. ADR-052 promised stale sources would corroborate "at
+decaying weight", but decay keys off ``last_seen``, which equals now on every
+successful fetch — so a frozen upstream serving 200 voted at full strength
+indefinitely. This is that promised decay.
+"""
+
 CATEGORY_SEVERITY = {
     "botnet-c2": 1.0,
     "malware-infrastructure": 1.0,
@@ -82,11 +92,14 @@ def recency_factor(last_seen: datetime, now: datetime, ttl_days: int) -> float:
 
 
 def _band(open_classes: int, restricted_classes: int) -> Band:
-    """Assign a band, letting restricted sources upgrade but never admit.
+    """Assign a band, letting non-admitting sources upgrade but never admit.
 
-    ``open_classes`` counts classes we are licensed to republish; the rest are
-    sources such as the Turris greylist (CC BY-NC-SA) that we may consume but not
-    redistribute.
+    ``open_classes`` counts classes that may admit a record: licensed to
+    republish *and* vouched for today. ``restricted_classes`` counts the
+    non-admitting remainder, which arises two ways — a licence that forbids
+    redistribution (the Turris greylist, CC BY-NC-SA), or evidence nobody is
+    vouching for today (a stale or dormant upstream, ADR-053). Different reasons,
+    identical treatment: both may strengthen a record, neither may admit one.
 
     A restricted class can raise medium to high. It can never turn a lone sighting
     into a published record. That asymmetry is the whole point: if one restricted
@@ -215,14 +228,28 @@ def score_indicators(
             if not config.vote:
                 continue
 
+            # Is anybody vouching for this evidence today? A dormant source has a
+            # maintainer-confirmed dead threat behind it; a stale one has an
+            # upstream that stopped updating. Both keep answering HTTP 200, and
+            # ``recency_factor`` keys off when we last saw the address rather than
+            # when the source last asserted it, so neither decays on its own.
+            # Fetch time is not evidence time (ADR-052).
+            evidence_vouched = not observation.evidence_stale and not config.dormant
             contribution = (
                 config.weight
                 * recency_factor(observation.last_seen, now, config.ttl_days)
                 * _severity(observation.categories)
             )
+            if not evidence_vouched:
+                contribution *= STALE_EVIDENCE_FACTOR
             class_name = config.independence_class
             best_per_class[class_name] = max(best_per_class.get(class_name, 0.0), contribution)
-            if publishable_source:
+            # Unvouched evidence gets the same asymmetry as a licence-restricted
+            # source (ADR-053): it may raise confidence in a record that already
+            # stands on live corroboration, but it must never be half the basis for
+            # admitting one. Without this, a source frozen since March could supply
+            # one of the two classes that publish an address.
+            if publishable_source and evidence_vouched:
                 open_classes.add(class_name)
             else:
                 restricted_classes.add(class_name)
@@ -239,17 +266,13 @@ def score_indicators(
             # A carried observation cannot promote. Promotion is an assertion that
             # this source's word alone is enough, which requires it to be saying so
             # in the current run rather than up to 30 days ago.
-            # A stale-evidence observation cannot promote (ADR-052). A successful
-            # fetch is not the same as fresh evidence: a source whose upstream
-            # has not updated in months is not vouching for these IPs today.
-            # A dormant source cannot promote (ADR-052). The maintainer has
-            # confirmed the tracked threat is inactive, so even a fresh fetch
-            # from a dormant source should not put IPs into the feed unaided.
+            # Unvouched evidence cannot promote either (ADR-052) - see
+            # ``evidence_vouched`` above. Promotion is the strongest claim we make,
+            # so it is the last thing a stale or dormant source may do.
             is_compromised = "compromised-host" in observation.tags
             promotes = (
                 not observation.carried
-                and not observation.evidence_stale
-                and not config.dormant
+                and evidence_vouched
                 and config.redistribute
                 and (
                     observation.source in {"spamhaus_drop_v4", "spamhaus_drop_v6"}

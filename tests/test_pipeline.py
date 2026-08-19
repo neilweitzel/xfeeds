@@ -8,6 +8,7 @@ while actually being one source echoed several times.
 
 import ipaddress
 import json
+import math
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
@@ -41,6 +42,8 @@ from xfeeds.models import (
     SourceConfig,
 )
 from xfeeds.score import (
+    CATEGORY_SEVERITY,
+    STALE_EVIDENCE_FACTOR,
     noncommercial_sources,
     open_sources,
     recency_factor,
@@ -626,12 +629,14 @@ def test_stale_evidence_observation_cannot_promote() -> None:
     assert result.band is Band.WITHHELD, "stale evidence alone cannot publish"
 
 
-def test_stale_evidence_can_corroborate_a_fresh_source() -> None:
-    """A stale source still contributes its class for corroboration (ADR-052).
+def test_stale_evidence_cannot_be_half_the_basis_for_publishing() -> None:
+    """Stale evidence is non-admitting (ADR-053). THE regression this closes.
 
-    The stale observation votes and adds its independence class, so a record
-    that has a fresh source in a second class can still reach medium or high.
-    The gate is on solo-promotion, not on voting.
+    ADR-052 stopped a stale source solo-promoting but still let it supply one of
+    the two independence classes that admit a record. That meant an address could
+    be published on one live source plus an upstream frozen months ago — half the
+    admitting evidence coming from a list nobody maintains. Publication now
+    requires two classes that are *vouched for today*.
     """
     now = datetime(2026, 8, 12, tzinfo=UTC)
     registry = registry_of(
@@ -643,8 +648,10 @@ def test_stale_evidence_can_corroborate_a_fresh_source() -> None:
     stale.evidence_stale = True
 
     result = score_indicators([fresh, stale], registry, now)[0]
-    assert result.band is Band.MEDIUM, "two classes publish even with one stale"
+    assert result.band is Band.WITHHELD, "one live class plus stale evidence must not publish"
     assert result.promoted_by is None, "neither source solo-promoted"
+    assert result.independence_classes == ["blocklist_de"], "stale class must not count as open"
+    assert result.restricted_corroboration == 1, "stale class is reported as non-admitting"
 
 
 def test_dormant_source_cannot_promote() -> None:
@@ -677,8 +684,13 @@ def test_dormant_source_cannot_promote() -> None:
     assert result.band is Band.WITHHELD
 
 
-def test_dormant_source_can_corroborate() -> None:
-    """A dormant source still contributes its class for corroboration (ADR-052)."""
+def test_dormant_source_cannot_be_half_the_basis_for_publishing() -> None:
+    """A dormant source is non-admitting (ADR-053), even on a fresh fetch.
+
+    Dormant is a maintainer's statement that the tracked threat is dead. A live
+    HTTP 200 from a dead tracker is not evidence about today, so it may not
+    supply one of the classes that admits a record.
+    """
     now = datetime(2026, 8, 12, tzinfo=UTC)
     registry = registry_of(
         src("feodo_tracker", "abusech", weight=1.0, ttl_days=7, dormant=True),
@@ -688,8 +700,72 @@ def test_dormant_source_can_corroborate() -> None:
     dormant = obs("feodo_tracker", "abusech", categories=["botnet-c2"])
 
     result = score_indicators([fresh, dormant], registry, now)[0]
-    assert result.band is Band.MEDIUM, "two classes publish even with one dormant"
+    assert result.band is Band.WITHHELD, "one live class plus dormant evidence must not publish"
     assert result.promoted_by is None
+    assert result.independence_classes == ["blocklist_de"], "dormant class must not count as open"
+
+
+def test_unvouched_evidence_still_upgrades_a_record_that_already_qualifies() -> None:
+    """Non-admitting is not the same as ignored (ADR-053).
+
+    The asymmetry that licence-restricted sources get applies here too: stale and
+    dormant evidence may raise confidence in a record that already stands on live
+    corroboration. Two live classes admit at medium; the dormant third upgrades it
+    to high. This is why the source stays enabled rather than being disabled.
+    """
+    now = datetime(2026, 8, 12, tzinfo=UTC)
+    registry = registry_of(
+        src("feodo_tracker", "abusech", weight=1.0, ttl_days=7, dormant=True),
+        src("blocklist_de", "blocklist_de", weight=0.8),
+        src("cins_army", "cins", weight=0.8),
+    )
+    live = [obs("blocklist_de", "blocklist_de"), obs("cins_army", "cins")]
+    dormant = obs("feodo_tracker", "abusech", categories=["botnet-c2"])
+
+    without = score_indicators(list(live), registry, now)[0]
+    assert without.band is Band.MEDIUM, "two live classes admit at medium"
+
+    with_dormant = score_indicators([*live, dormant], registry, now)[0]
+    assert with_dormant.band is Band.HIGH, "dormant evidence may upgrade what already qualifies"
+    assert with_dormant.restricted_corroboration == 1
+
+
+def test_unvouched_vote_weight_is_damped() -> None:
+    """Unvouched evidence votes at the recency floor, not full strength (ADR-053).
+
+    ADR-052 promised corroboration "at decaying weight", but ``recency_factor``
+    keys off ``last_seen``, which equals now on every successful fetch. A frozen
+    upstream therefore scored identically to a live one. It must not.
+
+    Uses a non-promoting class deliberately: an abusech source would hit the
+    promotion floor and mask the score difference being measured here.
+    """
+    now = datetime(2026, 8, 12, tzinfo=UTC)
+    registry = registry_of(
+        src("binary_defense", "binary_defense", weight=1.0, ttl_days=7),
+        src("blocklist_de", "blocklist_de", weight=0.8),
+        src("cins_army", "cins", weight=0.8),
+    )
+    live = [obs("blocklist_de", "blocklist_de"), obs("cins_army", "cins")]
+
+    vouched = obs("binary_defense", "binary_defense", categories=["botnet-c2"])
+    unvouched = obs("binary_defense", "binary_defense", categories=["botnet-c2"])
+    unvouched.evidence_stale = True
+
+    with_vouched = score_indicators([*live, vouched], registry, now)[0]
+    with_unvouched = score_indicators([*live, unvouched], registry, now)[0]
+
+    assert with_vouched.promoted_by is None, "guard: this class must not promote"
+    assert with_unvouched.score < with_vouched.score, "stale evidence must weigh less"
+
+    # Recover each raw total through the saturating transform and confirm the
+    # damped class contributed exactly STALE_EVIDENCE_FACTOR of its weight.
+    # Tolerance accommodates the 2dp rounding applied to the published score.
+    raw_vouched = -math.log(1.0 - with_vouched.score / 100.0)
+    raw_unvouched = -math.log(1.0 - with_unvouched.score / 100.0)
+    contribution = 1.0 * CATEGORY_SEVERITY["botnet-c2"]
+    expected_delta = contribution * (1.0 - STALE_EVIDENCE_FACTOR)
+    assert raw_vouched - raw_unvouched == pytest.approx(expected_delta, abs=1e-3)
 
 
 def test_spamhaus_promotion_unaffected_by_freshness_gate() -> None:

@@ -105,6 +105,8 @@ class SourceConfig(BaseModel):
 
     A dormant source stays enabled and continues to fetch and vote, but:
     - It cannot solo-promote, regardless of evidence freshness.
+    - It is non-admitting and its vote is damped, exactly as for a stale source
+      (ADR-053) — it may upgrade a record, never admit one.
     - The staleness warning is downgraded to an informational log line.
 
     Reactivation requires a maintainer review (licence, method, content shape)
@@ -242,9 +244,14 @@ class IndicatorRecord(BaseModel):
     A successful HTTP fetch is not the same as fresh evidence. When a source's
     HTTP Last-Modified or payload-level timestamp is older than
     ``min(STALENESS_DAYS, ttl_days)``, the pipeline marks every observation from
-    that source as stale. A stale-evidence observation may still vote and
-    corroborate at a decayed weight, but cannot solo-promote — the same gate
-    that applies to carried observations. See ``docs/source-lifecycle.md``.
+    that source as stale. A stale-evidence observation still votes, but (ADR-053):
+
+    - its weight is damped by ``score.STALE_EVIDENCE_FACTOR``, and
+    - it is non-admitting: it may upgrade a record that already qualifies on live
+      corroboration, but never counts toward the classes that admit one, and it
+      cannot solo-promote.
+
+    See ``docs/source-lifecycle.md``.
     """
     source_reference: str | None = None
     """Upstream ticket or listing identifier, where the source publishes one.
@@ -288,8 +295,10 @@ class ScoredIndicator(BaseModel):
     promoted_by: str | None = None
     """Set when a high-precision source bypassed the corroboration threshold."""
     restricted_corroboration: int = 0
-    """Count of independence classes that corroborated under a licence forbidding
-    redistribution.
+    """Count of independence classes that corroborated but could not admit.
+
+    Two kinds land here: a licence forbidding redistribution, and evidence nobody
+    is vouching for today (a stale or dormant upstream, ADR-053).
 
     Their names are deliberately omitted. Publishing "turris" against an address
     would disclose that the address is on the Turris greylist, which is the thing
