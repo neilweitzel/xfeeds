@@ -1,0 +1,38 @@
+cff-version: 1.2.0
+title: "xfeeds: an independence-aware public threat intelligence feed"
+message: "If you use xfeeds or its published feeds in your work, please cite it using the metadata in this file."
+type: software
+authors:
+  - given-names: Neil
+    family-names: Weitzel
+    orcid: "https://orcid.org/0009-0007-2546-2331"
+    city: Indianapolis
+    region: Indiana
+    country: US
+repository-code: "https://github.com/neilweitzel/xfeeds"
+url: "https://neilweitzel.github.io/xfeeds/"
+abstract: >-
+  xfeeds is a self-updating, open threat intelligence pipeline that collects,
+  normalizes, enriches, scores, filters, and publishes malicious-IP indicators
+  in interoperable formats including CSV, JSON, STIX 2.1, MISP, and firewall
+  rule sets. Unlike naive aggregation of public blocklists, which manufactures
+  false confidence because many public lists mirror or re-derive one another,
+  xfeeds models source dependency explicitly. Sources are assigned independence
+  classes and only the strongest contribution within a class counts toward
+  corroboration, while freshness gating prevents dormant observations from
+  independently promoting an indicator. Redistribution rights are enforced
+  structurally: restricted sources may raise confidence without appearing in
+  published records, and separate non-commercial and clean-provenance feed
+  tiers carry distinct redistribution promises.
+keywords:
+  - threat intelligence
+  - indicators of compromise
+  - IP blocklist
+  - data provenance
+  - source independence
+  - STIX
+  - open data
+  - network security
+license: MIT
+version: 1.0.0-rc.3
+date-released: "2026-08-19"

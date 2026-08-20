@@ -10,6 +10,39 @@ six hours by design. A consumer pinning a tag still fetches the same live URLs.
 
 ## [Unreleased]
 
+### Added
+
+#### Project metadata
+- `LICENSE` at the repository root. The README had declared MIT since the start,
+  but with no licence file the claim was unverifiable by tooling and blocked
+  archival — Zenodo and most package indexes expect a licence file so reuse terms
+  are unambiguous. `pyproject.toml` now carries `license = "MIT"` and
+  `license-files`, so the SPDX expression travels with the built distribution.
+- `CITATION.cff` (CFF 1.2.0), which makes GitHub render a "Cite this repository"
+  button with pre-formatted APA and BibTeX. Author identity is anchored to ORCID
+  iD 0009-0007-2546-2331.
+- `.zenodo.json`, committed ahead of any deposit. Without it the Zenodo GitHub
+  integration derives authorship from repository contributors, which would credit
+  coding-agent and automation commits as authors of the archived record. It
+  cannot be added retroactively to a published record, so it has to precede the
+  first archived release.
+- A `citation` CI job that validates the CFF against its schema, parses
+  `.zenodo.json`, and asserts the ORCID iD and licence agree across
+  `CITATION.cff`, `.zenodo.json`, and `pyproject.toml`. Metadata that drifts is
+  worse than absent metadata, so it is checked rather than trusted.
+- `docs/CITABILITY.md`, recording the archival plan: no DOI is minted for a
+  release candidate, the clean-provenance tier is the only one eligible for an
+  open-access dataset deposit, and the Zenodo webhook choice is one-time and
+  irreversible.
+
+### Changed
+
+- The README `## License` section now states per-tier data terms in a table
+  rather than a single sentence. Code is MIT; feed data is not uniformly
+  licensed and cannot be relicensed by aggregation, so the primary, clean, and
+  non-commercial tiers are described separately with links to their generated
+  licence manifests.
+
 ## [1.0.0-rc.3] — 2026-08-19
 
 Third release candidate. The rc.2 burn-in window showed that ADR-052 had stated
