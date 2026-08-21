@@ -34,9 +34,18 @@ six hours by design. A consumer pinning a tag still fetches the same live URLs.
   release candidate, the clean-provenance tier is the only one eligible for an
   open-access dataset deposit, and the Zenodo webhook choice is one-time and
   irreversible.
+- `docs/RELEASE_CHECKLIST.md`, enumerating the `v1.0.0` promotion steps. Three
+  files now carry a version string and nothing enforces that they agree; because
+  a Zenodo deposit is immutable, a missed bump would permanently disagree with
+  the repository's own citation metadata. The checklist also records which steps
+  are irreversible and flags the `source-review.yml` cadence switch that has to
+  land after the release rather than in it.
 
 ### Changed
 
+- The README Releases section named `v1.0.0-rc.1` as the candidate under burn-in;
+  corrected to `v1.0.0-rc.3` and made explicit which change classes restart the
+  window.
 - The README `## License` section now states per-tier data terms in a table
   rather than a single sentence. Code is MIT; feed data is not uniformly
   licensed and cannot be relicensed by aggregation, so the primary, clean, and
