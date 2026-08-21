@@ -24,21 +24,31 @@ Without it, the Zenodo GitHub integration derives its author list from repositor
 
 ---
 
-## Deferred until `v1.0.0`
+## Archived releases
 
-**No DOI is minted for a release candidate.** Release tags version the pipeline and its published contracts, and `v1.0.0-rc.3` is inside a burn-in window where corrective changes restart the candidate. Archiving a candidate would put a permanent identifier on a snapshot expected to change.
+The project has two DOIs:
+
+| DOI | Meaning |
+|---|---|
+| [10.5281/zenodo.22045733](https://doi.org/10.5281/zenodo.22045733) | **Concept DOI.** Always resolves to the newest published version. Cite this in prose. |
+| [10.5281/zenodo.22045734](https://doi.org/10.5281/zenodo.22045734) | **Version DOI** for `v1.0.0-rc.3`. Cite where exact reproducibility matters. |
+
+`rc.3` was archived on 2026-08-21 through the Zenodo REST API rather than the GitHub webhook, because the webhook path was blocked by a two-factor authentication challenge that could not be cleared through automation. Consequence: this record cannot be bound to Zenodo's GitHub integration later, so the `v1.0.0` archive will also be created by API rather than fired automatically by a release.
+
+Release candidates were originally deferred, on the reasoning that a permanent identifier on a snapshot expected to change is the wrong artifact. That reasoning still holds for the version DOI, which is deliberately not being cited as the primary identifier. It does not hold for the concept DOI, which is version-agnostic and updated automatically when `v1.0.0` is archived. Publishing early therefore costs nothing that the concept-DOI abstraction does not already recover.
+
+## `v1.0.0` promotion
 
 The promotion procedure is enumerated step by step in
 [`RELEASE_CHECKLIST.md`](RELEASE_CHECKLIST.md), including the version references that
 must be bumped together. In outline, when `v1.0.0` is promoted:
 
-1. Log in to Zenodo **with ORCID** rather than GitHub, so the account is bound to the iD from the start.
-2. Enable the `neilweitzel/xfeeds` repository in Zenodo's GitHub settings. This installs a release webhook.
-3. Promote and publish the `v1.0.0` release. Zenodo archives it and mints two DOIs: a version DOI for that snapshot, and a concept DOI that always resolves to the newest version.
-4. Add the DOI badge and the resolved citation to the README `## Citation` section, replacing the interim repository citation.
-5. Authorize DataCite as a trusted party in ORCID so subsequent release DOIs populate the ORCID record without manual entry.
+1. Bump every version reference and cut the tag as documented in the release checklist.
+2. Create a new version of the existing Zenodo record via the REST API, upload the `v1.0.0` source tarball, replace the metadata, and publish. This mints a new version DOI and updates the concept DOI to point at it.
+3. The record's ORCID iD is unchanged, so DataCite auto-update pushes the new version DOI to the ORCID Works section automatically.
+4. Update the DOI badge, the version-DOI line, and the `CITATION.cff` identifiers to reference the new version DOI. The concept DOI stays the same.
 
-Two constraints worth knowing before step 2: an existing Zenodo record cannot be retroactively bound to the GitHub integration, and a DOI cannot be pre-reserved for a webhook-triggered release. The webhook path and the manual-upload path are a one-time, irreversible choice.
+DataCite auto-update is already authorised on the ORCID record, so no further ORCID action is required.
 
 ---
 

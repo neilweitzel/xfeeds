@@ -62,16 +62,13 @@ cffconvert --validate -i CITATION.cff
 - [ ] `README.md` — the `## Citation` section carries an interim repository citation reading "Version 1.0.0-rc.3". Replace it with the resolved DOI citation once minted (step 6).
 - [ ] `CHANGELOG.md` — move everything under `## [Unreleased]` into a new `## [1.0.0] — YYYY-MM-DD` section, leaving `[Unreleased]` empty. The metadata work from PR #42 currently sits there.
 
-## 4. Prepare Zenodo — before tagging
+## 4. Prepare Zenodo — the API path
 
-Do this **before** creating the release, because the webhook only archives releases published after the repository is enabled.
+The `rc.3` deposit was created through the Zenodo REST API rather than the GitHub webhook, because GitHub's sudo-mode 2FA blocked the webhook authorisation. `v1.0.0` follows the same path — a Zenodo record cannot switch from API-managed to webhook-managed after the fact.
 
-- [ ] Sign in at [zenodo.org](https://zenodo.org/) using **Log in with ORCID**, not GitHub, so the account is bound to ORCID iD [0009-0007-2546-2331](https://orcid.org/0009-0007-2546-2331) from the start.
-- [ ] Profile menu → GitHub → **Sync now** → toggle `neilweitzel/xfeeds` **on**.
-- [ ] Confirm the webhook appears under repository Settings → Webhooks.
-- [ ] Confirm `.zenodo.json` is present on `main`. Without it, Zenodo builds the author list from repository contributors and credits coding-agent and automation commits as authors.
-
-**Irreversible:** an existing Zenodo record cannot later be bound to the GitHub integration, and a DOI cannot be pre-reserved for a webhook-triggered release. Choosing the webhook path here forecloses the manual-upload path.
+- [ ] Confirm the Zenodo access token is still valid. The `xfeeds-deposit` token has scopes `deposit:write` and `deposit:actions`. If it has been revoked, create a new one under [Applications → Personal access tokens](https://zenodo.org/account/settings/applications/) and register it in the credentials vault as `zenodo.org`.
+- [ ] Note the concept record ID `22045733` — the new version is created against this record, not against the version-specific `22045734`.
+- [ ] Confirm `.zenodo.json` on `main` reflects the version being released. Zenodo's REST API respects the metadata sent with the deposit, not the file on disk, so the actual authority is the JSON in the API call — but keeping the checked-in file in sync avoids drift.
 
 ## 5. Tag and release
 
@@ -80,16 +77,31 @@ Do this **before** creating the release, because the webhook only archives relea
 - [ ] Publish the GitHub release. Follow the existing pattern in `docs/release-1.0.0-rc.3-body.md` for the release body, and add a corresponding `docs/release-1.0.0-body.md`.
 - [ ] Mark it a full release, **not** a pre-release — this is what distinguishes it from the candidates.
 
-## 6. Confirm the DOI and wire it back in
+## 6. Publish and wire the new version DOI back in
 
-- [ ] Zenodo shows the repository as received, then published. Allow up to an hour for the DOI to be issued and about a day for it to resolve through doi.org.
-- [ ] Record both DOIs. Zenodo issues a **version DOI** for this exact snapshot and a **concept DOI** that always resolves to the newest version.
-- [ ] Check the Zenodo record's author list shows only Neil Weitzel with the ORCID iD attached, and no bot or agent accounts.
+Run the API sequence against the existing concept record `22045733`:
+
+```bash
+# 1. Create a new-version draft of the concept record
+curl -X POST \
+  https://zenodo.org/api/deposit/depositions/22045734/actions/newversion
+# response contains links.latest_draft, which is the new draft's URL
+
+# 2. Fetch that draft to get its new id and bucket URL
+# 3. Upload the v1.0.0 source tarball to the bucket
+# 4. PUT updated metadata (version, publication_date, notes)
+# 5. POST /actions/publish on the new draft
+```
+
+All five calls take `api_credentials=["custom-cred:zenodo.org"]` — the token stays out of the shell.
+
+- [ ] The new version DOI is issued. The concept DOI (`10.5281/zenodo.22045733`) now resolves to it automatically.
+- [ ] Record the new version DOI. Allow about a day for it to resolve through doi.org.
+- [ ] Check the record's author list shows only Neil Weitzel with the ORCID iD attached, no bot accounts.
 - [ ] Confirm the record's licence reads MIT.
-- [ ] Add the DOI badge to `README.md`:
-      `[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.XXXXXXX.svg)](https://doi.org/10.5281/zenodo.XXXXXXX)`
-- [ ] Replace the interim citation in the README `## Citation` section with the concept DOI. Cite the concept DOI in prose; cite the version DOI where reproducibility matters.
-- [ ] Add `identifiers:` to `CITATION.cff` carrying the concept DOI, so the "Cite this repository" button emits a DOI-bearing citation.
+- [ ] Update the DOI badge line in `README.md` — the badge already tracks the concept DOI, so only the version-specific reference below it needs updating.
+- [ ] Update the version DOI entry under `identifiers:` in `CITATION.cff`.
+- [ ] Bump `date-released` in `CITATION.cff` to match the tag date.
 
 ## 7. Confirm the ORCID side
 
