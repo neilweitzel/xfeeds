@@ -44,3 +44,28 @@ jobs:
 
       - name: Validate source registry
         run: uv run xfeeds validate
+
+  citation:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Validate CITATION.cff
+        uses: citation-file-format/cffconvert-github-action@2.0.0
+        with:
+          args: "--validate"
+
+      - name: Validate .zenodo.json
+        run: python -c "import json, pathlib; json.loads(pathlib.Path('.zenodo.json').read_text())"
+
+      - name: Check citation metadata agrees on ORCID and licence
+        run: |
+          set -euo pipefail
+          orcid="0009-0007-2546-2331"
+          grep -q "https://orcid.org/${orcid}" CITATION.cff
+          grep -q "\"${orcid}\"" .zenodo.json
+          grep -q '^license: MIT$' CITATION.cff
+          grep -q '"license": "MIT"' .zenodo.json
+          grep -q '^license = "MIT"$' pyproject.toml

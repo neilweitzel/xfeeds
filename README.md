@@ -471,6 +471,28 @@ Open an issue to propose a source — include URL, format, cadence, licence, and
 
 False-positive reports are triaged first. Include the IP, why it is legitimate, and observable evidence.
 
+## Citation
+
+If xfeeds informs published work — a paper, a report, a talk, or another tool — please cite it. Machine-readable metadata lives in [`CITATION.cff`](CITATION.cff), so GitHub renders a **Cite this repository** button with pre-formatted APA and BibTeX in the sidebar.
+
+A persistent DOI will be minted through Zenodo when `v1.0.0` is promoted; release candidates are deliberately not archived. Until then, cite the repository and the tag you used:
+
+> Weitzel, N. (2026). *xfeeds: an independence-aware public threat intelligence feed* (Version 1.0.0-rc.3) [Computer software]. https://github.com/neilweitzel/xfeeds
+
+If you are citing feed *contents* rather than the pipeline, cite the `generated_at` timestamp from the relevant [`feeds/manifest.json`](feeds/manifest.json) as well — feeds are regenerated every six hours and are not themselves versioned by tag.
+
+See [`docs/CITABILITY.md`](docs/CITABILITY.md) for the archival plan and the reasoning behind it.
+
 ## License
 
-Code: MIT. Aggregated feed data is provided as-is with no warranty. Upstream source licences apply and are recorded per-source in `sources.yaml` and in every `feeds/manifest.json`. Feeds derived from Spamhaus DROP carry Spamhaus attribution as required.
+**Code: MIT** — see [`LICENSE`](LICENSE).
+
+**Feed data is licensed separately and per tier**, because upstream source terms are not uniform and cannot be relicensed by aggregation:
+
+| Tier | Path | Terms |
+|---|---|---|
+| Primary | `feeds/` | Compiled from every usable public source, including publishers that grant no explicit reuse licence. Provided as-is; absence of a prohibition is not a grant. |
+| Clean provenance | `feeds/clean/` | Only sources with a written, named licence affirmatively permitting redistribution including commercial use. Smaller by design. Per-source terms in [`feeds/clean/LICENSE.txt`](feeds/clean/LICENSE.txt). |
+| Non-commercial | `feeds/noncommercial/` | CC BY-NC-SA 4.0 share-alike material, republished under the same licence in a separately marked tier. See [`feeds/noncommercial/LICENSE.txt`](feeds/noncommercial/LICENSE.txt). |
+
+Upstream licences are recorded per-source in `sources.yaml` and in every `feeds/manifest.json`. Feeds derived from Spamhaus DROP carry Spamhaus attribution as required. If your use needs to survive a legal review, use `feeds/clean/`.

@@ -1,0 +1,36 @@
+{
+  "title": "xfeeds: an independence-aware public threat intelligence feed",
+  "upload_type": "software",
+  "description": "<p><strong>xfeeds</strong> is a self-updating, open threat intelligence pipeline that collects, normalizes, enriches, scores, filters, and publishes malicious-IP indicators in interoperable formats (CSV, JSON, STIX 2.1, MISP, and firewall rule sets). A scheduled six-hour GitHub Actions pipeline regenerates every feed and a reader-facing dashboard served over GitHub Pages.</p><p>Most public blocklists mirror or re-derive one another, so naive aggregation manufactures false confidence. xfeeds models that dependency explicitly:</p><ul><li><strong>Independence classes.</strong> Sources are grouped into families, and only the strongest contribution within a family counts toward corroboration, so mirrored lists cannot vote twice.</li><li><strong>Freshness gating.</strong> Successful fetches do not establish evidence freshness. Dormant observations may corroborate fresh evidence but cannot independently promote an indicator.</li><li><strong>Redistribution-aware tiering.</strong> Restricted sources may raise confidence without appearing in published records. Separate non-commercial and clean-provenance feed tiers carry distinct redistribution promises, each with a generated licence-and-credit manifest.</li><li><strong>Conservative admission.</strong> Indicators observed by only a single independent sensor network are discarded. Benign-scanner evidence caps confidence rather than deleting records, preserving the consumer's policy choice.</li></ul><p>Design decisions, source methodology, and licence research are recorded in the repository under <code>docs/</code>.</p>",
+  "creators": [
+    {
+      "name": "Weitzel, Neil",
+      "orcid": "0009-0007-2546-2331"
+    }
+  ],
+  "keywords": [
+    "threat intelligence",
+    "indicators of compromise",
+    "IP blocklist",
+    "data provenance",
+    "source independence",
+    "STIX 2.1",
+    "MISP",
+    "open data",
+    "network security"
+  ],
+  "license": "MIT",
+  "access_right": "open",
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/neilweitzel/xfeeds",
+      "relation": "isSupplementTo",
+      "scheme": "url"
+    },
+    {
+      "identifier": "https://neilweitzel.github.io/xfeeds/",
+      "relation": "isDocumentedBy",
+      "scheme": "url"
+    }
+  ]
+}
