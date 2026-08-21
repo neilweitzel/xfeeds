@@ -424,8 +424,13 @@ hours. Feed URLs are stable and served from GitHub Pages, so pinning a tag does 
 change what a consumer fetches; it only tells you which pipeline produced the
 contracts you are integrating against.
 
-`v1.0.0-rc.1` is a release candidate under a roughly one-month burn-in window. If it
-needs no corrective work it will be promoted to `v1.0.0` unchanged.
+`v1.0.0-rc.3` is a release candidate under a roughly one-month burn-in window. If it
+needs no corrective work it will be promoted to `v1.0.0` unchanged. Corrective
+pipeline, source-configuration, or workflow changes cut a new candidate and restart
+the window; routine refresh commits and documentation do not.
+
+The promotion steps are enumerated in
+[`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md).
 
 ---
 

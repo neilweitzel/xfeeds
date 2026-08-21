@@ -28,7 +28,9 @@ Without it, the Zenodo GitHub integration derives its author list from repositor
 
 **No DOI is minted for a release candidate.** Release tags version the pipeline and its published contracts, and `v1.0.0-rc.3` is inside a burn-in window where corrective changes restart the candidate. Archiving a candidate would put a permanent identifier on a snapshot expected to change.
 
-When `v1.0.0` is promoted:
+The promotion procedure is enumerated step by step in
+[`RELEASE_CHECKLIST.md`](RELEASE_CHECKLIST.md), including the version references that
+must be bumped together. In outline, when `v1.0.0` is promoted:
 
 1. Log in to Zenodo **with ORCID** rather than GitHub, so the account is bound to the iD from the start.
 2. Enable the `neilweitzel/xfeeds` repository in Zenodo's GitHub settings. This installs a release webhook.
