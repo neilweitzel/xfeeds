@@ -478,15 +478,19 @@ False-positive reports are triaged first. Include the IP, why it is legitimate, 
 
 ## Citation
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22045733.svg)](https://doi.org/10.5281/zenodo.22045733)
+
 If xfeeds informs published work — a paper, a report, a talk, or another tool — please cite it. Machine-readable metadata lives in [`CITATION.cff`](CITATION.cff), so GitHub renders a **Cite this repository** button with pre-formatted APA and BibTeX in the sidebar.
 
-A persistent DOI will be minted through Zenodo when `v1.0.0` is promoted; release candidates are deliberately not archived. Until then, cite the repository and the tag you used:
+Cite the **concept DOI** in prose; it always resolves to the latest published version:
 
-> Weitzel, N. (2026). *xfeeds: an independence-aware public threat intelligence feed* (Version 1.0.0-rc.3) [Computer software]. https://github.com/neilweitzel/xfeeds
+> Weitzel, N. (2026). *xfeeds: an independence-aware public threat intelligence feed*. Zenodo. https://doi.org/10.5281/zenodo.22045733
+
+Cite the **version DOI** where exact reproducibility matters — the current archived version is `v1.0.0-rc.3` at [10.5281/zenodo.22045734](https://doi.org/10.5281/zenodo.22045734). When `v1.0.0` is promoted it will be archived as a new version under the same concept DOI.
 
 If you are citing feed *contents* rather than the pipeline, cite the `generated_at` timestamp from the relevant [`feeds/manifest.json`](feeds/manifest.json) as well — feeds are regenerated every six hours and are not themselves versioned by tag.
 
-See [`docs/CITABILITY.md`](docs/CITABILITY.md) for the archival plan and the reasoning behind it.
+See [`docs/CITABILITY.md`](docs/CITABILITY.md) for the archival plan and [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md) for the v1.0.0 promotion procedure.
 
 ## License
 
