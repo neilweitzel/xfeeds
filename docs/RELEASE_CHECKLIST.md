@@ -9,7 +9,7 @@ Companion documents: [`CITABILITY.md`](CITABILITY.md) for why archival is sequen
 ## 1. Confirm the burn-in window closed cleanly
 
 - [ ] At least one month has elapsed since the current candidate was tagged. `v1.0.0-rc.3` was tagged **2026-08-19**, so the window closes on or after **2026-09-19**.
-- [ ] No corrective pipeline, source-configuration, or workflow change has landed since the candidate was cut. Any such change restarts the window with a new candidate. Documentation-only changes do not.
+- [ ] No change to `sources.yaml` or `src/` has landed since the candidate was cut. Per [`source-lifecycle.md`](source-lifecycle.md), **any** change to either restarts the clock — not only corrective ones. Workflow changes restart it too. Documentation-only changes and routine refresh commits do not.
 - [ ] `git log v1.0.0-rc.3..main --oneline` shows only routine `chore(feeds): refresh` commits, plus any docs-only commits.
 - [ ] CI is green on `main`.
 - [ ] The last four scheduled cycles each show Update feeds → Publish to Pages → Heartbeat all succeeding.
@@ -17,6 +17,25 @@ Companion documents: [`CITABILITY.md`](CITABILITY.md) for why archival is sequen
 - [ ] The live manifest at [neilweitzel.github.io/xfeeds/manifest.json](https://neilweitzel.github.io/xfeeds/manifest.json) has a `generated_at` within the last six hours, and the committed manifest matches it.
 
 If any box fails, fix the cause and cut `rc.4` rather than releasing.
+
+### The 1 September source review falls inside this window
+
+`source-review.yml` opens a review issue on the first of each month during burn-in. For the `rc.3` window that lands on **2026-09-01**, about two and a half weeks before the window closes.
+
+Opening the issue is harmless — the workflow does not auto-enable anything, it only prompts a human review. The decision point is what gets merged afterward:
+
+| Review outcome | Effect on `v1.0.0` |
+|---|---|
+| Review completed, nothing merged | None. Release proceeds on schedule. |
+| A candidate source admitted (`sources.yaml` PR) | Restarts burn-in from the merge date. Release slips roughly a month. |
+| A source marked dormant or retired (`sources.yaml`) | Same — restarts the clock. |
+| Findings recorded, admission PRs held | None. Release proceeds; merge the admissions after `v1.0.0`. |
+
+The default is to **run the review and hold any admission PRs until after promotion**. Admission is additive work with no deadline, and a source admitted the week before a release has had no burn-in of its own.
+
+One exception: if the review finds a source *admitting bad data* — repeated false positives traceable to it — that is corrective. Fix it immediately and accept the slip, because a release that publishes known-bad indicators is worse than a late release.
+
+The review report template already requires a statement of whether the clock restarts, so record the decision there.
 
 ## 2. Bump every version reference together
 
