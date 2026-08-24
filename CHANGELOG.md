@@ -10,6 +10,50 @@ six hours by design. A consumer pinning a tag still fetches the same live URLs.
 
 ## [Unreleased]
 
+### Changed
+
+- **One version number is now used everywhere, always (ADR-055).** Between
+  `rc.3` and `rc.5` the repository carried two at once: `pyproject.toml` said
+  `1.0.0rc5` while `CITATION.cff` said `1.0.0-rc.3`. That was deliberate and
+  documented, and it was still wrong.
+
+  The cause was a false constraint. `CITATION.cff` listed a **version-specific**
+  DOI for `rc.3` alongside the concept DOI, which pinned the file to that one
+  archive — so its `version` field had to lag whenever a candidate was not
+  deposited. The version DOI was never required to be there. `CITATION.cff` now
+  lists only the concept DOI, which is version-agnostic and therefore never
+  constrains the version field, and its `version` tracks `pyproject.toml`
+  exactly.
+
+  Two spellings of the one version remain, and are not a disagreement: PEP 440
+  requires `1.0.0rc5` in `pyproject.toml` while `CITATION.cff` and the git tag use
+  `1.0.0-rc.5`. Forcing one spelling would break either packaging or tag
+  conventions, so CI compares them on a canonical form.
+
+  A version-specific DOI may still appear in `CITATION.cff`, but only when it
+  names the same version as the rest of the file — in practice at a final release,
+  once that release is deposited. Version DOIs per release are recorded in
+  `docs/CITABILITY.md`, and remain discoverable from the concept DOI's Zenodo
+  version list. `rc.3`'s DOI is unaffected and still resolves.
+
+- `scripts/check_version_agreement.py` is correspondingly stricter. It previously
+  had to tolerate the divergence, so it could only demand agreement once
+  `pyproject.toml` named a final release — meaning the check was inert during
+  every candidate window, which is when changes actually land. That exemption is
+  gone. It now also verifies that any non-concept DOI describes the file's own
+  version, that the concept DOI is present, and that `date-released` is a real,
+  non-future date. All eight behaviours were confirmed by deliberately breaking
+  the state.
+
+- Cutting a release candidate now includes bumping `CITATION.cff`, not just
+  `pyproject.toml` and the tag. `docs/RELEASE_CHECKLIST.md` step 2 no longer
+  documents an intentional disagreement, and instead describes adding the version
+  DOI back at promotion.
+
+- `docs/source-lifecycle.md` records that `scripts/` does not restart the burn-in
+  clock: nothing in `src/` imports it and it runs only from CI or by hand, so it
+  cannot change feed output.
+
 ## [1.0.0-rc.5] — 2026-08-24
 
 Fifth release candidate, cut the same day as `rc.4`. No pipeline behaviour

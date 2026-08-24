@@ -33,7 +33,20 @@ The project has two DOIs:
 | [10.5281/zenodo.22045733](https://doi.org/10.5281/zenodo.22045733) | **Concept DOI.** Always resolves to the newest published version. Cite this in prose. |
 | [10.5281/zenodo.22045734](https://doi.org/10.5281/zenodo.22045734) | **Version DOI** for `v1.0.0-rc.3`. Cite where exact reproducibility matters. |
 
-`rc.3` remains the most recent *archived* version. Later release candidates are not deposited individually — a candidate does not need its own permanent identifier, and a DOI per candidate would clutter the record's version history for no benefit. So the pipeline is at a later version than the archive: `rc.4` was cut on 2026-08-24 for ADR-054. `CITATION.cff` deliberately tracks the archive rather than the pipeline for this reason, and the two converge at `v1.0.0`.
+### Where to find a version DOI
+
+This table is the record of version DOIs per release. `CITATION.cff` lists only the concept DOI, by design — see [ADR-055](DECISIONS.md). A concept DOI is version-agnostic, so it stays correct whatever version the file describes; a version-specific DOI would pin the file to one archive and force its `version` field to lag the pipeline whenever a candidate is not deposited. Keeping the version DOIs here instead means one version number is used everywhere in the repository, always.
+
+Every version DOI is also discoverable from the concept DOI's Zenodo version list.
+
+| Release | Archived | Version DOI |
+|---|---|---|
+| `v1.0.0-rc.3` | 2026-08-21 | [10.5281/zenodo.22045734](https://doi.org/10.5281/zenodo.22045734) |
+| `v1.0.0-rc.4` | not deposited | — |
+| `v1.0.0-rc.5` | not deposited | — |
+| `v1.0.0` | pending | pending |
+
+Release candidates are not deposited by default: a candidate does not need a permanent identifier, and a DOI per candidate would add four unciteable entries to the record for every one that matters. The exception is deliberate — if a paper or talk needs to cite an exact pre-release snapshot, deposit that candidate on purpose and add its version DOI to `CITATION.cff`, which will then agree with the version field. At `v1.0.0` the version DOI is added back permanently.
 
 `rc.3` was archived on 2026-08-21 through the Zenodo REST API rather than the GitHub webhook, because the webhook path was blocked by a two-factor authentication challenge that could not be cleared through automation. Consequence: this record cannot be bound to Zenodo's GitHub integration later, so the `v1.0.0` archive will also be created by API rather than fired automatically by a release.
 
