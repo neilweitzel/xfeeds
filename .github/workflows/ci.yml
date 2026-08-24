@@ -69,3 +69,10 @@ jobs:
           grep -q '^license: MIT$' CITATION.cff
           grep -q '"license": "MIT"' .zenodo.json
           grep -q '^license = "MIT"$' pyproject.toml
+
+      # A published Zenodo record is immutable, so a wrong version string in it is
+      # permanent. This guards the version fields, which the checks above do not.
+      # It tolerates CITATION.cff legitimately lagging pyproject during an RC
+      # window and only demands exact agreement at a final release.
+      - name: Check version metadata cannot drift
+        run: python3 scripts/check_version_agreement.py

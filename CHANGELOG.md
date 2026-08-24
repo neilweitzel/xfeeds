@@ -10,6 +10,50 @@ six hours by design. A consumer pinning a tag still fetches the same live URLs.
 
 ## [Unreleased]
 
+### Added
+
+- `scripts/check_version_agreement.py`, wired into the `citation` CI job. A
+  published Zenodo record is immutable, so a wrong version string in it is
+  permanent, and the existing citation checks covered ORCID and licence but not
+  version. A blunt equality check between `pyproject.toml` and `CITATION.cff`
+  would false-fail, because the CFF deliberately tracks the most recent
+  *archived* version while the pipeline moves ahead during a candidate window.
+  The guard instead asserts three things that hold regardless: the CFF's
+  `version` agrees with the version its own version-DOI `description` names;
+  `pyproject.toml` and `CITATION.cff` agree exactly once `pyproject.toml` names
+  a final release; and `date-released` is a real, non-future ISO date.
+
+### Changed
+
+- `docs/source-lifecycle.md` now carries the authoritative list of what restarts
+  the RC burn-in clock, and `docs/RELEASE_CHECKLIST.md` defers to it rather than
+  restating it. The checklist had asserted that workflow changes restart the
+  clock while citing a document that did not say so. Presentation-only code under
+  `src/` is explicitly *not* carved out, with the reasoning recorded.
+- `docs/RELEASE_CHECKLIST.md` corrections found in a pre-promotion audit:
+  - The `pyproject.toml` version was described as `1.0.0rc3`; it is `1.0.0rc4`.
+  - Two sections contradicted each other on `.zenodo.json` — one said it carries
+    no version field, the other said to keep its version in sync. It carries
+    none, and the earlier claim that Zenodo derives the version from the git tag
+    is wrong for this record: it is API-managed, so the version comes from the
+    metadata payload. That payload is now listed as a fourth place carrying a
+    version.
+  - The `[Unreleased]` changelog section was described as holding the PR #42
+    metadata work. That content moved into `[1.0.0-rc.4]` when the candidate was
+    cut, so the instruction to "move everything under `[Unreleased]`" would have
+    silently done nothing.
+  - The freshness check demanded a manifest `generated_at` within six hours.
+    Scheduled runs are six hours apart but GitHub's queue delivers them late:
+    observed gaps reached 7.17h. Relaxed to eight hours so the check cannot fail
+    on a healthy pipeline.
+  - The Zenodo step 6 sequence was pseudo-code. It is now the exact call
+    sequence, with three documented API behaviours that are easy to get wrong —
+    `newversion` takes the version id and rejects the concept id, its response is
+    the original record rather than the new draft, and the new draft inherits a
+    snapshot of the previous version's files. That last one means the `rc.3`
+    tarball must be deleted before publishing or the record permanently carries
+    both, so it is now also listed as an irreversible failure mode.
+
 ## [1.0.0-rc.4] — 2026-08-24
 
 Fourth release candidate. The `rc.3` burn-in window surfaced a carry-forward

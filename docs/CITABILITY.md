@@ -33,6 +33,8 @@ The project has two DOIs:
 | [10.5281/zenodo.22045733](https://doi.org/10.5281/zenodo.22045733) | **Concept DOI.** Always resolves to the newest published version. Cite this in prose. |
 | [10.5281/zenodo.22045734](https://doi.org/10.5281/zenodo.22045734) | **Version DOI** for `v1.0.0-rc.3`. Cite where exact reproducibility matters. |
 
+`rc.3` remains the most recent *archived* version. Later release candidates are not deposited individually — a candidate does not need its own permanent identifier, and a DOI per candidate would clutter the record's version history for no benefit. So the pipeline is at a later version than the archive: `rc.4` was cut on 2026-08-24 for ADR-054. `CITATION.cff` deliberately tracks the archive rather than the pipeline for this reason, and the two converge at `v1.0.0`.
+
 `rc.3` was archived on 2026-08-21 through the Zenodo REST API rather than the GitHub webhook, because the webhook path was blocked by a two-factor authentication challenge that could not be cleared through automation. Consequence: this record cannot be bound to Zenodo's GitHub integration later, so the `v1.0.0` archive will also be created by API rather than fired automatically by a release.
 
 Release candidates were originally deferred, on the reasoning that a permanent identifier on a snapshot expected to change is the wrong artifact. That reasoning still holds for the version DOI, which is deliberately not being cited as the primary identifier. It does not hold for the concept DOI, which is version-agnostic and updated automatically when `v1.0.0` is archived. Publishing early therefore costs nothing that the concept-DOI abstraction does not already recover.
