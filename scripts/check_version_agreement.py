@@ -1,26 +1,28 @@
 #!/usr/bin/env python3
-"""Assert the citation metadata cannot drift in ways that end up permanent.
+"""Assert that one version number is used everywhere, with no exceptions.
 
-A Zenodo record is immutable once published, so a wrong version string there is
-forever. The `citation` CI job already checks that ORCID and licence agree across
-`CITATION.cff`, `.zenodo.json`, and `pyproject.toml`. Version agreement is harder,
-because the files legitimately disagree during a release-candidate window:
+A published Zenodo record is immutable, so a wrong version string in it is
+permanent. The `citation` CI job checks that ORCID and licence agree across
+`CITATION.cff`, `.zenodo.json`, and `pyproject.toml`. This adds version.
 
-* `pyproject.toml` names the **pipeline** version, e.g. `1.0.0rc4`.
-* `CITATION.cff` names the most recent **archived** version, e.g. `1.0.0-rc.3`,
-  because its `identifiers:` block carries that archive's version DOI. Candidates
-  are not deposited individually, so the CFF deliberately lags.
+Per ADR-055 there is exactly **one** version number for the project, and every
+file that names a version must name that one. Two spellings are unavoidable and
+are not a disagreement:
 
-A blunt equality check would fail on that healthy state. So this asserts the three
-invariants that must hold regardless:
+* `pyproject.toml` must use PEP 440, e.g. `1.0.0rc5`.
+* `CITATION.cff` and the git tag use the conventional form, e.g. `1.0.0-rc.5`.
 
-1. `CITATION.cff`'s `version` agrees with the version its own version-DOI
-   `description` names. This is the drift that actually bites: bumping one and not
-   the other silently advertises a DOI that resolves to different code.
-2. When `pyproject.toml` names a **final** release (no `rc`/`a`/`b`/`.dev`
-   marker), the two files must agree exactly. That is precisely the promotion
-   moment the checklist warns about.
-3. `date-released` parses as a real ISO date and is not in the future.
+So the comparison is done on a canonical form rather than as raw strings. Every
+other kind of divergence is a failure.
+
+Invariants:
+
+1. `pyproject.toml` and `CITATION.cff` name the same version. Always \u2014 there is
+   no release-candidate exemption, which is the whole point of ADR-055.
+2. If `CITATION.cff` lists a version-specific DOI, its description names that
+   same version. A version DOI pins the file to one archive, so it may only be
+   present when it agrees. The concept DOI is version-agnostic and is exempt.
+3. `date-released` is a real ISO date and is not in the future.
 
 Run: python3 scripts/check_version_agreement.py
 """
@@ -35,7 +37,9 @@ from typing import NoReturn
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 
-PRERELEASE = re.compile(r"(rc|a|b|\.dev|\.post)", re.IGNORECASE)
+# The concept DOI is version-agnostic: it always resolves to the newest published
+# version, so it never constrains the version field.
+CONCEPT_DOI = "10.5281/zenodo.22045733"
 
 
 def fail(msg: str) -> NoReturn:
@@ -44,19 +48,20 @@ def fail(msg: str) -> NoReturn:
 
 
 def normalise(v: str) -> str:
-    """`1.0.0rc4` and `1.0.0-rc.4` are the same version, spelled two ways.
+    """Canonical form for comparison.
 
-    PEP 440 wants the former, CFF and git tags conventionally use the latter.
-    Compare on a canonical form rather than forcing one spelling on both.
+    `1.0.0rc5` and `1.0.0-rc.5` are the same version spelled two ways: PEP 440
+    mandates the former in pyproject.toml, while CFF and git tags conventionally
+    use the latter. Strip the separators rather than forcing one spelling on both,
+    which would either break packaging or break tag conventions.
     """
-    return v.strip().lower().replace("-", "").replace("_", "").replace(".", "")
+    return v.strip().lower().lstrip("v").replace("-", "").replace("_", "").replace(".", "")
 
 
 def main() -> int:
     cff_text = (ROOT / "CITATION.cff").read_text(encoding="utf-8")
     pyproject_text = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
 
-    # --- pull the fields, tolerating quotes and comments ---------------------
     m = re.search(r"^version:\s*['\"]?([^'\"\s#]+)", cff_text, re.MULTILINE)
     if not m:
         fail("no `version:` field in CITATION.cff")
@@ -72,45 +77,55 @@ def main() -> int:
         fail("no `version =` in pyproject.toml")
     py_version = m.group(1)
 
-    # --- invariant 1: CFF version agrees with its own version-DOI description -
-    descriptions = re.findall(r"description:\s*Version DOI for\s+v?([^\s#]+)", cff_text)
-    if not descriptions:
+    # --- invariant 1: one version, everywhere, always ------------------------
+    if normalise(py_version) != normalise(cff_version):
         fail(
-            "CITATION.cff has no `description: Version DOI for vX.Y.Z` entry under "
-            "`identifiers:`. That description is how a reader knows which release the "
-            "version DOI points at, so it must name a version."
-        )
-    if len(descriptions) > 1:
-        fail(f"CITATION.cff names more than one version DOI: {descriptions}")
-    doi_version = descriptions[0]
-
-    if normalise(doi_version) != normalise(cff_version):
-        fail(
-            f"CITATION.cff `version: {cff_version}` disagrees with its version-DOI "
-            f"description, which names v{doi_version}.\n"
-            "  The version DOI is immutable and resolves to one specific archive. If "
-            "the version field moved, the DOI and its description must move with it, "
-            "or the file advertises a DOI that resolves to different code."
+            f"version mismatch.\n"
+            f"  pyproject.toml : {py_version}\n"
+            f"  CITATION.cff   : {cff_version}\n"
+            "  Per ADR-055 these must always name the same version, including during\n"
+            "  a release-candidate window. Bump both together, and the git tag with\n"
+            "  them. Differing spellings are fine (PEP 440 vs the tag form); differing\n"
+            "  versions are not.\n"
+            "  See docs/RELEASE_CHECKLIST.md step 2."
         )
 
-    # --- invariant 2: at a final release, everything converges ---------------
-    py_is_prerelease = bool(PRERELEASE.search(py_version))
-    if not py_is_prerelease:
-        if normalise(py_version) != normalise(cff_version):
+    # --- invariant 2: a version-specific DOI must agree ----------------------
+    # Parse identifier entries as (value, description) pairs so a version DOI
+    # cannot be present while describing some other release.
+    entries = re.findall(
+        r"-\s*type:\s*doi\s*\n\s*value:\s*([^\s#]+)\s*\n\s*description:\s*([^\n]+)",
+        cff_text,
+    )
+    if not entries:
+        fail("CITATION.cff lists no DOI under `identifiers:`; the concept DOI must be present")
+
+    saw_concept = False
+    for value, description in entries:
+        if value.strip() == CONCEPT_DOI:
+            saw_concept = True
+            continue
+        # Any non-concept DOI is version-specific and must name this version.
+        named = re.search(r"v?([0-9]+\.[0-9]+\.[0-9]+[^\s,;]*)", description)
+        if not named:
             fail(
-                f"pyproject.toml is at final release `{py_version}` but CITATION.cff "
-                f"says `{cff_version}`.\n"
-                "  During a release-candidate window these may differ: the CFF tracks "
-                "the most recent archived version while the pipeline moves ahead. At a "
-                "final release they must agree, because that is the version being "
-                "archived, and Zenodo metadata is permanent.\n"
-                "  See docs/RELEASE_CHECKLIST.md step 2."
+                f"version-specific DOI {value} has description {description!r}, which "
+                "does not name a version. A version DOI pins this file to one archive, "
+                "so its description must say which release it is."
             )
-    else:
-        print(
-            f"note: pyproject is a prerelease ({py_version}); CITATION.cff may "
-            f"legitimately lag at {cff_version} (most recent archived version)."
-        )
+        if normalise(named.group(1)) != normalise(cff_version):
+            fail(
+                f"version-specific DOI {value} describes v{named.group(1)} but "
+                f"CITATION.cff is at version {cff_version}.\n"
+                "  A version DOI resolves to one immutable archive. It may only appear "
+                "here while it names the version this file describes \u2014 otherwise the "
+                "file advertises a DOI that resolves to different code.\n"
+                "  If this version is not deposited, remove the version DOI and keep "
+                "only the concept DOI, which is version-agnostic. See ADR-055."
+            )
+
+    if not saw_concept:
+        fail(f"the concept DOI {CONCEPT_DOI} is missing from CITATION.cff `identifiers:`")
 
     # --- invariant 3: the release date is real -------------------------------
     try:
@@ -120,9 +135,11 @@ def main() -> int:
     if released > dt.datetime.now(tz=dt.UTC).date():
         fail(f"`date-released: {cff_date}` is in the future")
 
+    version_dois = [v for v, _ in entries if v.strip() != CONCEPT_DOI]
+    suffix = f", version DOI {version_dois[0]}" if version_dois else ", concept DOI only"
     print(
-        f"ok: pyproject={py_version}  CITATION.cff={cff_version} "
-        f"(DOI describes v{doi_version}, released {cff_date})"
+        f"ok: one version everywhere \u2014 pyproject={py_version}, "
+        f"CITATION.cff={cff_version} (released {cff_date}{suffix})"
     )
     return 0
 

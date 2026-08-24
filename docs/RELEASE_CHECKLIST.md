@@ -43,25 +43,35 @@ The review report template already requires a statement of whether the clock res
 
 ## 2. Bump every version reference together
 
-**Four** places carry a version and **nothing enforces that they agree**. Missing one leaves the Zenodo record permanently disagreeing with the repository's own citation metadata, and the Zenodo record is immutable.
+Per [ADR-055](DECISIONS.md) there is **one** version number for the project, and every file naming a version names that one. There is no release-candidate exemption, so if you have been cutting candidates correctly these are already in step and this section is a formality.
 
 - [ ] `pyproject.toml` → `version = "1.0.0"` (currently `1.0.0rc5`)
-- [ ] `CITATION.cff` → `version: 1.0.0` (currently `1.0.0-rc.3`, deliberately — see below)
+- [ ] `CITATION.cff` → `version: 1.0.0` (currently `1.0.0-rc.5`)
 - [ ] `CITATION.cff` → `date-released: "YYYY-MM-DD"`, set to the actual release date
 - [ ] The git tag itself → `v1.0.0`
-- [ ] The `version` field in the **Zenodo API metadata payload** at step 6. This is the one that ends up permanently in the archived record.
+- [ ] The `version` field in the **Zenodo API metadata payload** at step 6. This is the one that ends up permanently in the archived record, and it is the only one CI cannot check for you.
 
-### Why `CITATION.cff` currently disagrees with `pyproject.toml`
+Two spellings of the one version are expected and are not a mismatch: PEP 440 requires `1.0.0rc5` in `pyproject.toml`, while `CITATION.cff` and the git tag use `1.0.0-rc.5`. CI compares them on a canonical form. At a final release there is no suffix and the spellings coincide anyway.
 
-This is intentional and is not the drift this section warns about. `pyproject.toml` names the **pipeline** version (`1.0.0rc5`). `CITATION.cff` names the most recent **archived** version a reader can actually retrieve (`1.0.0-rc.3`), because its `identifiers:` block carries the version DOI for that archive. Candidates after `rc.3` are not deposited individually, so bumping the CFF to `rc.5` would advertise a version DOI that resolves to different code.
+### Adding the version DOI back at promotion
 
-At `v1.0.0` the two converge, and the file carries an inline comment saying so. If you are reading this during promotion: set both to `1.0.0`, and remove that comment from `CITATION.cff` since it no longer applies.
+`CITATION.cff` lists only the concept DOI during candidate windows, because a concept DOI is version-agnostic and so never constrains the `version` field. Once `v1.0.0` is actually deposited at step 6, add its version DOI back:
+
+```yaml
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.22045733
+    description: Concept DOI (always resolves to the newest version)
+  - type: doi
+    value: 10.5281/zenodo.NEW_ID
+    description: Version DOI for v1.0.0
+```
+
+- [ ] Do this **after** the deposit exists, not before. The guard rejects a version DOI whose description names a version other than the file's own, which is what catches a copy-paste of the old `rc.3` entry.
 
 ### `.zenodo.json` carries no version field
 
-That is deliberate, but not for the reason an earlier draft of this checklist gave. Zenodo does **not** derive the version from the git tag for this record — that only happens for webhook-managed deposits, and this record is API-managed (see step 4). The version reaches Zenodo through the metadata payload you `PUT` in step 6, and that payload is the sole authority. `.zenodo.json` supplies authorship, licence, description, and keywords only.
-
-So: leave `.zenodo.json` alone, and do not treat it as a version reference to keep in sync. Get the version right in the step 6 payload.
+Deliberate. Zenodo does **not** derive the version from the git tag for this record — that only happens for webhook-managed deposits, and this record is API-managed (see step 4). The version reaches Zenodo through the metadata payload you `PUT` in step 6, and that payload is the sole authority. `.zenodo.json` supplies authorship, licence, description, and keywords only.
 
 Verify after editing:
 
@@ -72,7 +82,7 @@ cffconvert --validate -i CITATION.cff
 python3 scripts/check_version_agreement.py
 ```
 
-That last script is also a CI gate, so a version mismatch fails the build rather than reaching Zenodo. It knows `CITATION.cff` may lag `pyproject.toml` during a candidate window and only demands exact agreement once `pyproject.toml` names a final release — which is this step. It also asserts the CFF's `version` agrees with the version its own version-DOI `description` names, so you cannot bump one without the other.
+That last script is also a CI gate, so a version mismatch fails the build rather than reaching Zenodo. It enforces one version across `pyproject.toml` and `CITATION.cff` at all times, that any version-specific DOI names that same version, that the concept DOI is present, and that `date-released` is real and not in the future.
 
 ## 3. Update stale prose
 

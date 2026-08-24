@@ -251,6 +251,10 @@ defers to it.
 - Documentation, including `docs/`, `README.md`, `CHANGELOG.md`, and this file.
 - Citation metadata that does not alter pipeline behaviour: `CITATION.cff`,
   `.zenodo.json`, `LICENSE`.
+- Release and audit tooling under `scripts/`. Nothing in `src/` imports it and it
+  runs only from CI or by hand, so it cannot change feed output. If a script ever
+  becomes part of producing a feed, move it under `src/` and it falls under the
+  rule above.
 
 **Deliberately not carved out:** presentation-only code under `src/`, such as
 `src/xfeeds/dashboard.py`. It is genuinely downstream of feed generation — it only

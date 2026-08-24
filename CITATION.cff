@@ -11,13 +11,23 @@ authors:
     country: US
 repository-code: "https://github.com/neilweitzel/xfeeds"
 url: "https://neilweitzel.github.io/xfeeds/"
+# Only the concept DOI is listed here, and that is deliberate. A concept DOI is
+# version-agnostic — it always resolves to the newest published version — so it
+# stays correct no matter what `version` below says. A version-specific DOI does
+# not: listing one pins this file to whichever release that DOI archives, which
+# would force `version` to lag the pipeline whenever a candidate is not deposited.
+#
+# The rule going forward: `version` below always equals the version in
+# pyproject.toml, and `scripts/check_version_agreement.py` fails CI if it does
+# not. A version-specific DOI is added here only for a final release, at which
+# point it names the same version as everything else. See ADR-055.
+#
+# Version DOIs for individual releases are recorded in docs/CITABILITY.md and are
+# always discoverable from the concept DOI's Zenodo version list.
 identifiers:
   - type: doi
     value: 10.5281/zenodo.22045733
     description: Concept DOI (always resolves to the newest version)
-  - type: doi
-    value: 10.5281/zenodo.22045734
-    description: Version DOI for v1.0.0-rc.3
 abstract: >-
   xfeeds is a self-updating, open threat intelligence pipeline that collects,
   normalizes, enriches, scores, filters, and publishes malicious-IP indicators
@@ -41,10 +51,8 @@ keywords:
   - open data
   - network security
 license: MIT
-# This file describes the most recent *archived* version, which is what a reader
-# can actually cite and retrieve. The pipeline itself is at 1.0.0-rc.4 (see
-# pyproject.toml); release candidates after rc.3 are not deposited to Zenodo
-# individually, so bumping this to rc.4 would claim a version DOI that resolves
-# to different code. Both fields move together at v1.0.0.
-version: 1.0.0-rc.3
-date-released: "2026-08-19"
+# Must equal pyproject.toml's version. PEP 440 requires `1.0.0rc5` there and the
+# git tag uses `v1.0.0-rc.5`; these are the same version in two mandated
+# spellings, and CI compares them on a canonical form rather than as strings.
+version: 1.0.0-rc.5
+date-released: "2026-08-24"

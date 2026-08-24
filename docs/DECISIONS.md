@@ -1721,3 +1721,62 @@ way is not a regression test.
   of 16.34% per run; an unknown share of that is this defect rather than genuine
   indicator turnover.
 - Scoring change, so the RC burn-in clock restarts. Cut as `rc.4`.
+
+## ADR-055 — One version number, everywhere, always
+
+**Date:** 2026-08-24. **Status:** Accepted. **Amends:** the version-bump procedure in `RELEASE_CHECKLIST.md`.
+
+### Context
+
+Between `rc.3` and `rc.5` the repository carried two different version numbers at once: `pyproject.toml` said `1.0.0rc5` while `CITATION.cff` said `1.0.0-rc.3`. This was deliberate, documented, and defended in the checklist — and it was still wrong.
+
+The reasoning behind it was sound as far as it went. `CITATION.cff` listed two DOIs under `identifiers:`, a concept DOI and a **version-specific** DOI for `rc.3`. Release candidates after `rc.3` were not deposited to Zenodo, on the view that a candidate does not need a permanent identifier. So bumping the CFF's `version` to `rc.4` would have left the file claiming version `rc.4` while advertising a version DOI that resolves to `rc.3` code. Lagging the version field was the lesser of two inaccuracies.
+
+That framing accepted a false constraint. The version-specific DOI was never required to be in that file. Listing it is what pinned the file to one archive and forced the divergence.
+
+The cost of the divergence was not hypothetical:
+
+- Two numbers meant two things to keep straight, and a reader had no way to tell the state was intentional rather than an oversight.
+- The CI guard added alongside it had to be weakened to tolerate the gap: it could only demand agreement once `pyproject.toml` named a final release. During every candidate window — which is when changes actually land — the strongest check available was switched off.
+- It required a permanent explanatory comment in `CITATION.cff`, a dedicated subsection of the release checklist, and a paragraph in `CITABILITY.md`, all to explain why two fields disagreed on purpose.
+
+Documentation that exists to explain an avoidable inconsistency is a signal the inconsistency should go.
+
+### Decision
+
+There is **one** version number for the project. Every file that names a version names that one, at all times, including during release-candidate windows.
+
+To make that possible, `CITATION.cff` lists **only the concept DOI**. A concept DOI is version-agnostic — it always resolves to the newest published version — so it remains correct regardless of what `version` says, and therefore never constrains it.
+
+A version-specific DOI may appear in `CITATION.cff` only when it names the same version as the rest of the file. In practice that means at a final release, once that release is actually deposited.
+
+Two spellings of the one version are unavoidable and are **not** a disagreement:
+
+- `pyproject.toml` must use PEP 440: `1.0.0rc5`.
+- `CITATION.cff` and the git tag use the conventional form: `1.0.0-rc.5`.
+
+Forcing a single spelling would either break packaging or break tag conventions. Comparison is therefore done on a canonical form, not on raw strings.
+
+### Alternative considered: deposit every release candidate
+
+Depositing each candidate would also align everything, because each version would then have its own DOI to name. It was rejected as the default:
+
+- It mints a permanent identifier per candidate. `rc.1` through `rc.5` would be five DOIs on the record, four of which nobody should cite.
+- Each deposit is a manual API sequence with an irreversible publish step. Repeating that per candidate multiplies the chance of the mistakes `RELEASE_CHECKLIST.md` step 6 exists to prevent.
+- It solves the alignment problem by adding work rather than by removing a constraint.
+
+It remains available for a specific case: if a paper or talk needs to cite an exact pre-release snapshot, deposit that candidate deliberately and add its version DOI to `CITATION.cff`, which will then agree with everything else. The guard permits that; it only rejects a version DOI naming some *other* version.
+
+### Implementation
+
+- `CITATION.cff` — the `rc.3` version DOI is removed from `identifiers:`, leaving the concept DOI. `version` is `1.0.0-rc.5` and `date-released` is `2026-08-24`, matching the current tag.
+- `scripts/check_version_agreement.py` — the release-candidate exemption is gone. `pyproject.toml` and `CITATION.cff` must always name the same version. The script additionally verifies that any non-concept DOI in `identifiers:` describes that same version, that the concept DOI is present, and that `date-released` is a real, non-future date.
+- `RELEASE_CHECKLIST.md` — the subsection explaining the deliberate disagreement is deleted. Bumping `CITATION.cff` is now part of cutting **every** candidate, not only the final release.
+- `CITABILITY.md` — carries the table of version DOIs per release, which is where a reader looks for an exact archive now that `CITATION.cff` does not list them.
+
+### Consequences
+
+- Cutting a candidate now touches one more file. That is the intended trade: the work moves from remembering an exception to following a rule, and CI enforces it either way.
+- The guard is strictly stronger. Previously it was inert during candidate windows; now a mismatch fails the build at any point in the cycle.
+- `rc.3`'s version DOI (`10.5281/zenodo.22045734`) is unaffected. It still exists, still resolves, and is still listed in `CITABILITY.md` and in the concept DOI's Zenodo version list. It is simply no longer asserted by a file describing a different version.
+- Not a pipeline change. `CITATION.cff` and `scripts/` are neither `sources.yaml`, `src/`, nor `.github/workflows/`, so this does **not** restart the burn-in clock. `rc.5` stands and the window still closes on or after 2026-09-24.
