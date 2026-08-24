@@ -227,8 +227,39 @@ dormant, reactivate) or adds a new source must include:
 - [ ] Scoring test if voting or promotion behavior changes
 - [ ] Manifest and run-report behavior verified against a live run
 - [ ] `CHANGELOG.md` entry
-- [ ] Statement of whether the RC burn-in clock restarts (any change to
-      `sources.yaml` or `src/` restarts it)
+- [ ] Statement of whether the RC burn-in clock restarts
+
+### What restarts the RC burn-in clock
+
+This is the authoritative statement; [`RELEASE_CHECKLIST.md`](RELEASE_CHECKLIST.md)
+defers to it.
+
+**Restarts the clock, and requires cutting a new candidate:**
+
+- Any change to `sources.yaml`. Not only corrective ones — admitting a source,
+  retiring one, or marking one dormant all count.
+- Any change under `src/`. Again, not only corrective ones.
+- Any change under `.github/workflows/`. A workflow governs how and when feeds
+  are produced and published, so changing one changes the thing under
+  observation.
+
+**Does not restart the clock:**
+
+- Routine `chore(feeds): refresh` commits, and the `chore(dashboard): re-render`
+  commits that accompany them. These are the pipeline running, which is the point
+  of the window.
+- Documentation, including `docs/`, `README.md`, `CHANGELOG.md`, and this file.
+- Citation metadata that does not alter pipeline behaviour: `CITATION.cff`,
+  `.zenodo.json`, `LICENSE`.
+
+**Deliberately not carved out:** presentation-only code under `src/`, such as
+`src/xfeeds/dashboard.py`. It is genuinely downstream of feed generation — it only
+reads `feeds/*.json` and writes HTML — so an exception would be defensible. It is
+not granted, because "is this change really presentation-only?" is a judgement
+call made under release pressure, and the rule's value comes from not having to
+make it. Two dashboard commits landed during the `rc.3` window (PRs #45 and #46)
+and the ambiguity was only resolved because `rc.4` was cut for an unrelated
+reason. Treat `src/` as `src/`.
 
 ---
 
