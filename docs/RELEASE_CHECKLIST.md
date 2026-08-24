@@ -8,19 +8,21 @@ Companion documents: [`CITABILITY.md`](CITABILITY.md) for why archival is sequen
 
 ## 1. Confirm the burn-in window closed cleanly
 
-- [ ] At least one month has elapsed since the current candidate was tagged. `v1.0.0-rc.3` was tagged **2026-08-19**, so the window closes on or after **2026-09-19**.
+- [ ] At least one month has elapsed since the current candidate was tagged. `v1.0.0-rc.4` was tagged **2026-08-24**, so the window closes on or after **2026-09-24**.
+
+  Earlier candidates, for context: `rc.3` was tagged 2026-08-19 and its window was cut short by ADR-054, a scoring fix for a carry-forward defect that had been demoting records on three runs out of every four. Finding that during burn-in is the window working as intended, not a setback.
 - [ ] No change to `sources.yaml` or `src/` has landed since the candidate was cut. Per [`source-lifecycle.md`](source-lifecycle.md), **any** change to either restarts the clock — not only corrective ones. Workflow changes restart it too. Documentation-only changes and routine refresh commits do not.
-- [ ] `git log v1.0.0-rc.3..main --oneline` shows only routine `chore(feeds): refresh` commits, plus any docs-only commits.
+- [ ] `git log v1.0.0-rc.4..main --oneline` shows only routine `chore(feeds): refresh` commits, plus any docs-only commits.
 - [ ] CI is green on `main`.
 - [ ] The last four scheduled cycles each show Update feeds → Publish to Pages → Heartbeat all succeeding.
 - [ ] No open pull requests and no unresolved issues, including no open false-positive reports.
 - [ ] The live manifest at [neilweitzel.github.io/xfeeds/manifest.json](https://neilweitzel.github.io/xfeeds/manifest.json) has a `generated_at` within the last six hours, and the committed manifest matches it.
 
-If any box fails, fix the cause and cut `rc.4` rather than releasing.
+If any box fails, fix the cause and cut `rc.5` rather than releasing.
 
 ### The 1 September source review falls inside this window
 
-`source-review.yml` opens a review issue on the first of each month during burn-in. For the `rc.3` window that lands on **2026-09-01**, about two and a half weeks before the window closes.
+`source-review.yml` opens a review issue on the first of each month during burn-in. For the `rc.4` window that lands on **2026-09-01**, a little over three weeks before the window closes.
 
 Opening the issue is harmless — the workflow does not auto-enable anything, it only prompts a human review. The decision point is what gets merged afterward:
 
@@ -58,13 +60,15 @@ cffconvert --validate -i CITATION.cff
 
 ## 3. Update stale prose
 
-- [ ] `README.md` — the Releases section names `v1.0.0-rc.1` as the candidate under burn-in. Update it to describe `v1.0.0` as released, and drop the burn-in sentence.
-- [ ] `README.md` — the `## Citation` section carries an interim repository citation reading "Version 1.0.0-rc.3". Replace it with the resolved DOI citation once minted (step 6).
+- [ ] `README.md` — the Releases section names the current candidate as being under burn-in, and explains that `rc.4` exists because of ADR-054. Update it to describe `v1.0.0` as released, and drop the burn-in sentences.
+- [ ] `README.md` — the `## Citation` section carries an interim repository citation naming the current candidate version. Replace it with the resolved DOI citation once minted (step 6).
 - [ ] `CHANGELOG.md` — move everything under `## [Unreleased]` into a new `## [1.0.0] — YYYY-MM-DD` section, leaving `[Unreleased]` empty. The metadata work from PR #42 currently sits there.
 
 ## 4. Prepare Zenodo — the API path
 
 The `rc.3` deposit was created through the Zenodo REST API rather than the GitHub webhook, because GitHub's sudo-mode 2FA blocked the webhook authorisation. `v1.0.0` follows the same path — a Zenodo record cannot switch from API-managed to webhook-managed after the fact.
+
+Note that `rc.4` was deliberately **not** deposited to Zenodo. Release candidates do not need DOIs, and the existing concept DOI already resolves to the newest published version; minting a DOI per candidate would clutter the record's version history for no benefit.
 
 - [ ] Confirm the Zenodo access token is still valid. The `xfeeds-deposit` token has scopes `deposit:write` and `deposit:actions`. If it has been revoked, create a new one under [Applications → Personal access tokens](https://zenodo.org/account/settings/applications/) and register it in the credentials vault as `zenodo.org`.
 - [ ] Note the concept record ID `22045733` — the new version is created against this record, not against the version-specific `22045734`.
@@ -74,7 +78,7 @@ The `rc.3` deposit was created through the Zenodo REST API rather than the GitHu
 
 - [ ] Land steps 2 and 3 on `main` in a single release commit.
 - [ ] Tag `v1.0.0` on that commit and push the tag.
-- [ ] Publish the GitHub release. Follow the existing pattern in `docs/release-1.0.0-rc.3-body.md` for the release body, and add a corresponding `docs/release-1.0.0-body.md`.
+- [ ] Publish the GitHub release. Follow the existing pattern in `docs/release-1.0.0-rc.4-body.md` for the release body, and add a corresponding `docs/release-1.0.0-body.md`.
 - [ ] Mark it a full release, **not** a pre-release — this is what distinguishes it from the candidates.
 
 ## 6. Publish and wire the new version DOI back in

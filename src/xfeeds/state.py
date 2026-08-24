@@ -205,7 +205,16 @@ def carried_observations(
             if config is None or config.ttl_days <= 0:
                 continue
             age_days = (now - last_seen).total_seconds() / 86400.0
-            if age_days <= 0.0 or age_days > config.ttl_days:
+            # A zero age is the normal case, not an edge case. Observation
+            # timestamps are truncated to the UTC day (pipeline.py), so every
+            # sighting recorded earlier in the *same* day has an age of exactly
+            # 0.0. Rejecting that -- as `<= 0.0` did -- disabled carry-forward on
+            # every run except the first of each day, which silently reintroduced
+            # the regression this function exists to prevent: a source missing
+            # from one mid-day fetch took its whole independence class with it.
+            # Only a negative age is nonsense, and that means clock skew or a
+            # bad upstream timestamp, so keep rejecting it.
+            if age_days < 0.0 or age_days > config.ttl_days:
                 continue
             carried.append(
                 IndicatorRecord(

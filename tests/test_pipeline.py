@@ -573,6 +573,115 @@ def test_carried_observations_never_resurrect_a_dead_indicator() -> None:
     assert all(c.carried for c in carried)
 
 
+def test_carried_observations_survive_later_runs_in_the_same_utc_day() -> None:
+    """A sighting from earlier the same day still carries.
+
+    Observation timestamps are truncated to the UTC day, so a source that
+    reported at 01:00 has ``last_seen == now`` when the 07:00 run asks about it.
+    That is an age of exactly zero. Treating zero as "not carryable" disabled
+    carry-forward on three runs out of every four: the source was absent from
+    the current fetch *and* refused a carried vote, so its independence class
+    vanished and every record relying on it was demoted until the next UTC
+    midnight. The feed visibly sawtoothed as a result.
+    """
+    now = datetime(2026, 8, 12, tzinfo=UTC)
+    registry = _registry_with_restricted()
+    previous = {
+        "203.0.113.7": StateEntry(
+            first_seen=now - timedelta(days=3),
+            last_seen=now,
+            band=Band.MEDIUM,
+            class_count=2,
+            # Both sources were seen during an earlier run of *this* day.
+            sightings={"open_a": now, "open_b": now},
+        )
+    }
+
+    # open_a reports again in this run; open_b has dropped out of the fetch.
+    carried = carried_observations([_obs("open_a", "a", now)], previous, registry, now)
+
+    assert [c.source for c in carried] == ["open_b"], (
+        "a source seen earlier the same UTC day must keep voting when it misses a later run"
+    )
+    assert all(c.carried for c in carried), "carried records stay flagged"
+
+
+def test_carried_observations_reject_a_sighting_from_the_future() -> None:
+    """Negative ages mean clock skew or a bad upstream stamp, and stay rejected."""
+    now = datetime(2026, 8, 12, tzinfo=UTC)
+    registry = _registry_with_restricted()
+    previous = {
+        "203.0.113.7": StateEntry(
+            first_seen=now - timedelta(days=3),
+            last_seen=now + timedelta(days=1),
+            band=Band.MEDIUM,
+            class_count=2,
+            sightings={"open_b": now + timedelta(days=1)},
+        )
+    }
+    carried = carried_observations([_obs("open_a", "a", now)], previous, registry, now)
+    assert carried == [], "a sighting dated in the future is not evidence"
+
+
+def test_a_source_reporting_now_is_never_also_carried() -> None:
+    """Admitting a zero age must not let a fresh source vote twice."""
+    now = datetime(2026, 8, 12, tzinfo=UTC)
+    registry = _registry_with_restricted()
+    previous = {
+        "203.0.113.7": StateEntry(
+            first_seen=now - timedelta(days=3),
+            last_seen=now,
+            band=Band.MEDIUM,
+            class_count=2,
+            sightings={"open_a": now, "open_b": now},
+        )
+    }
+    both_reporting = [_obs("open_a", "a", now), _obs("open_b", "b", now)]
+    carried = carried_observations(both_reporting, previous, registry, now)
+    assert carried == [], "nothing to carry when every prior source reported now"
+
+
+def test_same_day_dropout_keeps_the_record_published() -> None:
+    """End to end: a mid-day dropout must not change the band.
+
+    This is the user-visible symptom the zero-age fix addresses. Two independent
+    classes publish a record on the first run of a day. On a later run one source
+    is briefly unavailable. The record must keep both classes and hold its band.
+    """
+    now = datetime(2026, 8, 12, tzinfo=UTC)
+    registry = _registry_with_restricted()
+
+    first_run = [_obs("open_a", "a", now), _obs("open_b", "b", now)]
+    scored_first = score_indicators(first_run, registry, now)[0]
+
+    previous = {
+        "203.0.113.7": StateEntry(
+            first_seen=now,
+            last_seen=now,
+            band=scored_first.band,
+            class_count=len(scored_first.independence_classes),
+            sightings={"open_a": now, "open_b": now},
+        )
+    }
+
+    # Later the same UTC day, open_b's fetch fails.
+    later_fresh = [_obs("open_a", "a", now)]
+    carried = carried_observations(later_fresh, previous, registry, now)
+    scored_later = score_indicators([*later_fresh, *carried], registry, now)[0]
+
+    assert sorted(scored_later.independence_classes) == sorted(scored_first.independence_classes), (
+        "a brief mid-day dropout must not cost the record an independence class"
+    )
+    assert scored_later.band is scored_first.band, "and must not change its band"
+
+    # Without the carried vote the record would have lost a class, which is the
+    # regression itself. Assert the carried vote is what saved it.
+    unaided = score_indicators(later_fresh, registry, now)[0]
+    assert len(unaided.independence_classes) < len(scored_first.independence_classes), (
+        "sanity check: the fresh observation alone is not enough"
+    )
+
+
 def test_carried_votes_expire_at_the_source_ttl() -> None:
     """Beyond ttl_days a sighting stops counting entirely."""
     now = datetime(2026, 8, 12, tzinfo=UTC)

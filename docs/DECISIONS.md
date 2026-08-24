@@ -1624,3 +1624,100 @@ would have been damped to the floor. Doing it properly needs a per-source
   publishing at medium). They were rewritten to assert the new one rather than
   removed, and named for the regression they now guard.
 - Scoring change, so the RC burn-in clock restarts. Cut as `rc.3`.
+
+## ADR-054 — A same-day sighting is carryable evidence
+
+**Date:** 2026-08-24. **Status:** Accepted. **Amends:** ADR-037 (a source that misses a run keeps voting, decayed).
+
+### Context
+
+Neil noticed that roughly every fourth refresh added far more addresses than the
+runs around it, and reasonably assumed it reflected upstream sources publishing
+on daily schedules. The additions half of that is real — the spikes land at
+01:00–02:00 UTC without exception. But measuring the same window showed removals
+collapsing from a mean of ~550 per run to ~30 at exactly that hour. Upstream
+publication cadence explains more additions. It does not explain removals nearly
+stopping, and that asymmetry located the cause inside the pipeline.
+
+Two individually reasonable decisions combined into a defect.
+
+1. **Run timestamps are truncated to the UTC day.** `pipeline.py` sets
+   `observed_on = now.replace(hour=0, ...)`, for good reasons documented inline:
+   TTLs are measured in days, so sub-day precision buys nothing, and microsecond
+   stamps would rewrite every row of `all.json` on every run — a 2 MB diff four
+   times a day and an unreadable history. State `last_seen` values are written
+   from the same truncated stamp.
+
+2. **`carried_observations` rejected a zero age.** The guard read
+   `if age_days <= 0.0 or age_days > config.ttl_days: continue`.
+
+Given (1), a source seen earlier in the *same* UTC day has an age of exactly
+`0.0`, so (2) discarded it. Carry-forward therefore worked only on the first run
+of each day and was silently inert on the other three. A source missing from a
+mid-day fetch had neither a fresh observation nor a carried one, so its whole
+independence class vanished and every record depending on it was demoted until
+the next UTC midnight — the precise regression `carried_observations` was written
+to prevent, described in its own docstring.
+
+The `<= 0.0` guard was presumably defending against a *negative* age from clock
+skew or a bad upstream timestamp, which would let an observation outlive its TTL.
+That intent is correct. The error was lumping `0.0` in with negatives, when day
+truncation makes `0.0` the normal case rather than an edge case.
+
+The user-visible symptom was a sawtooth in feed size, peaking on the first run
+after UTC midnight and decaying across the day:
+
+```
+2026-08-22  01:51 → 6153    07:00 → 5852    13:02 → 5694    18:50 → 5782
+2026-08-23  02:00 → 6657    07:02 → 6385    13:03 → 6196    18:49 → 6136
+2026-08-24  01:58 → 6898    07:29 → 6515    13:14 → 6324
+```
+
+### Decision
+
+A sighting age of zero is valid evidence and is carried. Only a negative age is
+rejected.
+
+### Implementation
+
+- `state.py` — the guard becomes `if age_days < 0.0 or age_days > config.ttl_days`.
+  The comment records why zero is the normal case, so the next reader does not
+  "tidy" it back.
+- No change to `recency_factor`, which already handles zero age correctly: it
+  clamps with `max(0.0, ...)` and returns `1.0`. A carried sighting from earlier
+  the same day scores undecayed, which is right — the source did see the address
+  today.
+- No weakening of promotion discipline. Carried records remain flagged and a
+  flagged record still cannot promote, so this restores corroboration counting
+  without letting a carried vote admit an address on its own.
+- No double counting. A source present in the current run is already excluded by
+  the `if source_name in seen_by: continue` check above the guard.
+
+### Tests
+
+Four tests were added, and the two that assert the fix were confirmed to fail
+against the old guard before being kept — a regression test that passes either
+way is not a regression test.
+
+- A source seen earlier the same UTC day carries when it misses a later run.
+- A sighting dated in the future is still rejected.
+- A source reporting in the current run is never also carried.
+- End to end: a mid-day dropout leaves the record's independence classes and band
+  unchanged, with a sanity assertion that the fresh observation alone would not
+  have sufficed.
+
+### Consequences
+
+- Feed size stops depending on the hour it is sampled. Before the fix the
+  published feed held 6,898 records at 01:58 UTC on 2026-08-24 and 6,324 at
+  13:14 — a 9% swing from sampling time alone. Consumers comparing xfeeds against
+  another feed were comparing against a moving target.
+- Published volume will settle *higher* and flatter, because records that were
+  being demoted for three runs in four now hold their band. This is a correction,
+  not an inflation: those records always had the corroboration, and the pipeline
+  was failing to count it.
+- Measured per-run churn figures from before this fix are overstated and must not
+  be published. An analysis of the 2026-08-19 → 2026-08-24 window reported a mean
+  of 16.34% per run; an unknown share of that is this defect rather than genuine
+  indicator turnover.
+- Scoring change, so the RC burn-in clock restarts. Cut as `rc.4`.
