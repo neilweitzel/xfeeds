@@ -52,6 +52,29 @@ six hours by design. A consumer pinning a tag still fetches the same live URLs.
   non-commercial tiers are described separately with links to their generated
   licence manifests.
 
+### Fixed
+
+#### Pipeline
+- Carry-forward no longer skips a sighting from earlier the same UTC day
+  (ADR-054). Observation timestamps are truncated to the day, so a source seen on
+  an earlier run of the same day had an age of exactly `0.0` — which the guard
+  `age_days <= 0.0` discarded along with genuinely nonsensical negative ages. The
+  effect was that carry-forward worked on the first run of each day and was
+  silently inert on the other three: a source missing from a mid-day fetch had
+  neither a fresh observation nor a carried one, so its independence class
+  vanished and every record relying on it was demoted until the next UTC midnight.
+  This was the exact regression `carried_observations` was added to prevent
+  (ADR-037). Only negative ages are rejected now.
+
+  The visible symptom was a sawtooth in feed size — 6,898 published records at
+  01:58 UTC on 2026-08-24 against 6,324 at 13:14, a 9% swing driven purely by
+  sampling time. Published volume now settles higher and flatter. That is a
+  correction rather than an inflation: the affected records always had the
+  corroboration, and the pipeline was failing to count it.
+
+  Per-run churn measurements taken before this fix are overstated and should not
+  be cited.
+
 ## [1.0.0-rc.3] — 2026-08-19
 
 Third release candidate. The rc.2 burn-in window showed that ADR-052 had stated

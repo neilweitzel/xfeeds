@@ -424,10 +424,14 @@ hours. Feed URLs are stable and served from GitHub Pages, so pinning a tag does 
 change what a consumer fetches; it only tells you which pipeline produced the
 contracts you are integrating against.
 
-`v1.0.0-rc.3` is a release candidate under a roughly one-month burn-in window. If it
+`v1.0.0-rc.4` is a release candidate under a roughly one-month burn-in window. If it
 needs no corrective work it will be promoted to `v1.0.0` unchanged. Corrective
 pipeline, source-configuration, or workflow changes cut a new candidate and restart
 the window; routine refresh commits and documentation do not.
+
+That is not hypothetical. `rc.4` exists because the `rc.3` window surfaced a
+carry-forward defect (ADR-054) that had been demoting corroborated records on three
+refreshes out of every four. The window did its job.
 
 The promotion steps are enumerated in
 [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md).
@@ -486,7 +490,7 @@ Cite the **concept DOI** in prose; it always resolves to the latest published ve
 
 > Weitzel, N. (2026). *xfeeds: an independence-aware public threat intelligence feed*. Zenodo. https://doi.org/10.5281/zenodo.22045733
 
-Cite the **version DOI** where exact reproducibility matters — the current archived version is `v1.0.0-rc.3` at [10.5281/zenodo.22045734](https://doi.org/10.5281/zenodo.22045734). When `v1.0.0` is promoted it will be archived as a new version under the same concept DOI.
+Cite the **version DOI** where exact reproducibility matters — the most recent archived version is `v1.0.0-rc.3` at [10.5281/zenodo.22045734](https://doi.org/10.5281/zenodo.22045734). Later candidates are not archived individually; `v1.0.0` will be. When `v1.0.0` is promoted it will be archived as a new version under the same concept DOI.
 
 If you are citing feed *contents* rather than the pipeline, cite the `generated_at` timestamp from the relevant [`feeds/manifest.json`](feeds/manifest.json) as well — feeds are regenerated every six hours and are not themselves versioned by tag.
 
