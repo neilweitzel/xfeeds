@@ -10,6 +10,19 @@ six hours by design. A consumer pinning a tag still fetches the same live URLs.
 
 ## [Unreleased]
 
+## [1.0.0-rc.4] — 2026-08-24
+
+Fourth release candidate. The `rc.3` burn-in window surfaced a carry-forward
+defect that had been demoting corroborated records on three refreshes out of
+every four, so the candidate is re-cut rather than promoted. This candidate also
+carries the citation and licensing metadata that made the project archivable.
+
+The defect was found from a user observation about addition counts spiking on a
+regular cycle. The spikes were real and were correctly guessed to be time-locked,
+but the accompanying collapse in *removals* at the same hour is what identified
+the cause as internal rather than upstream. Burn-in windows exist for exactly
+this.
+
 ### Added
 
 #### Project metadata
