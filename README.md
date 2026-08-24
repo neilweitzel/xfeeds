@@ -424,14 +424,15 @@ hours. Feed URLs are stable and served from GitHub Pages, so pinning a tag does 
 change what a consumer fetches; it only tells you which pipeline produced the
 contracts you are integrating against.
 
-`v1.0.0-rc.4` is a release candidate under a roughly one-month burn-in window. If it
+`v1.0.0-rc.5` is a release candidate under a roughly one-month burn-in window. If it
 needs no corrective work it will be promoted to `v1.0.0` unchanged. Corrective
 pipeline, source-configuration, or workflow changes cut a new candidate and restart
 the window; routine refresh commits and documentation do not.
 
 That is not hypothetical. `rc.4` exists because the `rc.3` window surfaced a
 carry-forward defect (ADR-054) that had been demoting corroborated records on three
-refreshes out of every four. The window did its job.
+refreshes out of every four. `rc.5` followed the same day, when a pre-promotion audit
+of the release path touched a workflow file. The window did its job.
 
 The promotion steps are enumerated in
 [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md).

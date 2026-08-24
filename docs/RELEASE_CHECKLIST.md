@@ -8,11 +8,11 @@ Companion documents: [`CITABILITY.md`](CITABILITY.md) for why archival is sequen
 
 ## 1. Confirm the burn-in window closed cleanly
 
-- [ ] At least one month has elapsed since the current candidate was tagged. `v1.0.0-rc.4` was tagged **2026-08-24**, so the window closes on or after **2026-09-24**.
+- [ ] At least one month has elapsed since the current candidate was tagged. `v1.0.0-rc.5` was tagged **2026-08-24**, so the window closes on or after **2026-09-24**.
 
   Earlier candidates, for context: `rc.3` was tagged 2026-08-19 and its window was cut short by ADR-054, a scoring fix for a carry-forward defect that had been demoting records on three runs out of every four. Finding that during burn-in is the window working as intended, not a setback.
 - [ ] Nothing has landed since the candidate was cut that restarts the clock. [`source-lifecycle.md`](source-lifecycle.md#what-restarts-the-rc-burn-in-clock) is the authoritative list: `sources.yaml`, anything under `src/`, and anything under `.github/workflows/` all restart it, corrective or not. Documentation, citation metadata, and routine refresh commits do not.
-- [ ] `git log v1.0.0-rc.4..main --oneline` shows only routine `chore(feeds): refresh` commits, plus any docs-only commits.
+- [ ] `git log v1.0.0-rc.5..main --oneline` shows only routine `chore(feeds): refresh` commits, plus any docs-only commits.
 - [ ] CI is green on `main`.
 - [ ] The last four scheduled cycles each show Update feeds → Publish to Pages → Heartbeat all succeeding.
 - [ ] No open pull requests and no unresolved issues, including no open false-positive reports.
@@ -20,11 +20,11 @@ Companion documents: [`CITABILITY.md`](CITABILITY.md) for why archival is sequen
 
   Eight rather than six deliberately. `update-feeds.yml` is scheduled `17 */6 * * *`, so four runs a day is the intent, but GitHub's scheduled-workflow queue runs late under load: observed gaps between consecutive runs over 2026-08-19 to 2026-08-24 ranged from 5.03h to **7.17h**, median 5.8h. A six-hour bound would fail this check on a perfectly healthy pipeline.
 
-If any box fails, fix the cause and cut `rc.5` rather than releasing.
+If any box fails, fix the cause and cut `rc.6` rather than releasing.
 
 ### The 1 September source review falls inside this window
 
-`source-review.yml` opens a review issue on the first of each month during burn-in. For the `rc.4` window that lands on **2026-09-01**, a little over three weeks before the window closes.
+`source-review.yml` opens a review issue on the first of each month during burn-in. For the `rc.5` window that lands on **2026-09-01**, a little over three weeks before the window closes.
 
 Opening the issue is harmless — the workflow does not auto-enable anything, it only prompts a human review. The decision point is what gets merged afterward:
 
@@ -45,7 +45,7 @@ The review report template already requires a statement of whether the clock res
 
 **Four** places carry a version and **nothing enforces that they agree**. Missing one leaves the Zenodo record permanently disagreeing with the repository's own citation metadata, and the Zenodo record is immutable.
 
-- [ ] `pyproject.toml` → `version = "1.0.0"` (currently `1.0.0rc4`)
+- [ ] `pyproject.toml` → `version = "1.0.0"` (currently `1.0.0rc5`)
 - [ ] `CITATION.cff` → `version: 1.0.0` (currently `1.0.0-rc.3`, deliberately — see below)
 - [ ] `CITATION.cff` → `date-released: "YYYY-MM-DD"`, set to the actual release date
 - [ ] The git tag itself → `v1.0.0`
@@ -53,7 +53,7 @@ The review report template already requires a statement of whether the clock res
 
 ### Why `CITATION.cff` currently disagrees with `pyproject.toml`
 
-This is intentional and is not the drift this section warns about. `pyproject.toml` names the **pipeline** version (`1.0.0rc4`). `CITATION.cff` names the most recent **archived** version a reader can actually retrieve (`1.0.0-rc.3`), because its `identifiers:` block carries the version DOI for that archive. Candidates after `rc.3` are not deposited individually, so bumping the CFF to `rc.4` would advertise a version DOI that resolves to different code.
+This is intentional and is not the drift this section warns about. `pyproject.toml` names the **pipeline** version (`1.0.0rc5`). `CITATION.cff` names the most recent **archived** version a reader can actually retrieve (`1.0.0-rc.3`), because its `identifiers:` block carries the version DOI for that archive. Candidates after `rc.3` are not deposited individually, so bumping the CFF to `rc.5` would advertise a version DOI that resolves to different code.
 
 At `v1.0.0` the two converge, and the file carries an inline comment saying so. If you are reading this during promotion: set both to `1.0.0`, and remove that comment from `CITATION.cff` since it no longer applies.
 
@@ -76,17 +76,17 @@ That last script is also a CI gate, so a version mismatch fails the build rather
 
 ## 3. Update stale prose
 
-- [ ] `README.md` — the Releases section names the current candidate as being under burn-in, and explains that `rc.4` exists because of ADR-054. Update it to describe `v1.0.0` as released, and drop the burn-in sentences.
+- [ ] `README.md` — the Releases section names the current candidate as being under burn-in, and explains why `rc.4` and `rc.5` were cut. Update it to describe `v1.0.0` as released, and drop the burn-in sentences.
 - [ ] `README.md` — the `## Citation` section carries an interim repository citation naming the current candidate version. Replace it with the resolved DOI citation once minted (step 6).
-- [ ] `CHANGELOG.md` — add a `## [1.0.0] — YYYY-MM-DD` section above `## [1.0.0-rc.4]`.
+- [ ] `CHANGELOG.md` — add a `## [1.0.0] — YYYY-MM-DD` section above `## [1.0.0-rc.5]`.
 
-  Note that `[Unreleased]` is currently **empty**: the metadata work from PR #42 and the ADR-054 fix were both moved into the `[1.0.0-rc.4]` section when that candidate was cut. So unless new work has landed since, there is nothing to move — the `[1.0.0]` entry should state that `rc.4` was promoted unchanged and point at its section rather than duplicating it. If `[Unreleased]` does have content, that content is by definition a post-`rc.4` change, which means the burn-in clock restarted and you should not be releasing yet.
+  Note that `[Unreleased]` is currently **empty**: everything was moved into the `[1.0.0-rc.4]` and `[1.0.0-rc.5]` sections when those candidates were cut. So unless new work has landed since, there is nothing to move — the `[1.0.0]` entry should state that `rc.5` was promoted unchanged and point at its section rather than duplicating it. If `[Unreleased]` does have content, that content is by definition a post-`rc.5` change, which means the burn-in clock restarted and you should not be releasing yet.
 
 ## 4. Prepare Zenodo — the API path
 
 The `rc.3` deposit was created through the Zenodo REST API rather than the GitHub webhook, because GitHub's sudo-mode 2FA blocked the webhook authorisation. `v1.0.0` follows the same path — a Zenodo record cannot switch from API-managed to webhook-managed after the fact.
 
-Note that `rc.4` was deliberately **not** deposited to Zenodo. Release candidates do not need DOIs, and the existing concept DOI already resolves to the newest published version; minting a DOI per candidate would clutter the record's version history for no benefit.
+Note that no release candidate after `rc.3` was deposited to Zenodo. Release candidates do not need DOIs, and the existing concept DOI already resolves to the newest published version; minting a DOI per candidate would clutter the record's version history for no benefit.
 
 - [ ] Confirm the Zenodo access token is still valid. The `xfeeds-deposit` token has scopes `deposit:write` and `deposit:actions`. If it has been revoked, create a new one under [Applications → Personal access tokens](https://zenodo.org/account/settings/applications/) and register it in the credentials vault as `zenodo.org`.
 - [ ] Note the concept record ID `22045733` — the new version is created against this record, not against the version-specific `22045734`.
@@ -96,7 +96,7 @@ Note that `rc.4` was deliberately **not** deposited to Zenodo. Release candidate
 
 - [ ] Land steps 2 and 3 on `main` in a single release commit.
 - [ ] Tag `v1.0.0` on that commit and push the tag.
-- [ ] Publish the GitHub release. Follow the existing pattern in `docs/release-1.0.0-rc.4-body.md` for the release body, and add a corresponding `docs/release-1.0.0-body.md`.
+- [ ] Publish the GitHub release. Follow the existing pattern in `docs/release-1.0.0-rc.5-body.md` for the release body, and add a corresponding `docs/release-1.0.0-body.md`.
 - [ ] Mark it a full release, **not** a pre-release — this is what distinguishes it from the candidates.
 
 ## 6. Publish and wire the new version DOI back in

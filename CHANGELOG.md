@@ -10,6 +10,18 @@ six hours by design. A consumer pinning a tag still fetches the same live URLs.
 
 ## [Unreleased]
 
+## [1.0.0-rc.5] — 2026-08-24
+
+Fifth release candidate, cut the same day as `rc.4`. No pipeline behaviour
+changed; `rc.5` exists because a pre-promotion audit hardened the release path,
+and one of those changes touched `.github/workflows/ci.yml`, which restarts the
+burn-in clock by policy.
+
+Cutting it the same day costs nothing. `rc.4` was tagged 2026-08-24, so both
+windows close on or after **2026-09-24**. The alternative — deferring the version
+guard to after promotion, where the checklist had it filed as optional — would
+have meant the guard was absent for the one release it was designed to protect.
+
 ### Added
 
 - `scripts/check_version_agreement.py`, wired into the `citation` CI job. A
