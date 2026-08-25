@@ -204,7 +204,7 @@
       "valid_from": "2026-08-21T00:00:00Z"
     },
     {
-      "confidence": 96,
+      "confidence": 98,
       "created": "2026-08-12T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -1354,6 +1354,38 @@
       "spec_version": "2.1",
       "type": "indicator",
       "valid_from": "2026-08-17T00:00:00Z"
+    },
+    {
+      "confidence": 97,
+      "created": "2026-08-12T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "et_compromised",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipthreat",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--e10acf63-1647-6a4f-fb7a-603348ff5097",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "reported-abuse",
+        "scanning"
+      ],
+      "modified": "2026-08-25T00:00:00Z",
+      "name": "Malicious IP 144.225.6.182",
+      "pattern": "[ipv4-addr:value = '144.225.6.182']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-08-12T00:00:00Z"
     },
     {
       "confidence": 96,
