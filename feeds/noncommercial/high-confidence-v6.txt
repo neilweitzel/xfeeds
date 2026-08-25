@@ -2,12 +2,12 @@
 # xfeeds - high confidence (IPv6) (non-commercial tier)
 # https://github.com/neilweitzel/xfeeds
 #
-# Generated: 2026-08-24T19:00:56.600278+00:00
-# Entries:   94
+# Generated: 2026-08-25T01:53:17.086377+00:00
+# Entries:   92
 # Family:    IPv6 only
 # Licence:   CC BY-NC-SA 4.0
 #
-# Scope:     11,488,579 /48 sites
+# Scope:     11,488,577 /48 sites
 #
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # NON-COMMERCIAL USE ONLY. This file is NOT the same as the primary feed.
@@ -24,11 +24,14 @@
 # precision justifies it alone. Provided as-is with no warranty.
 #
 # Data in this file is compiled from these sources:
-#   blocklist_de - Blocklist.de - fail2ban reporting community, blocklist.de (https://blocklist.de/)
-#     terms: Free, non-commercial reporting service
 #   spamhaus_drop_v6 - (c) 2026 The Spamhaus Project SLU (https://www.spamhaus.org/drop/terms/)
-#   turris_greylist - Turris Sentinel greylist - CZ.NIC, view.sentinel.turris.cz (CC BY-NC-SA 4.0) (https://view.sentinel.turris.cz/greylist-data/LICENSE.txt)
-#     terms: CC BY-NC-SA 4.0
+#
+# CONCENTRATION NOTICE - IPv6 coverage in this file rests on a
+#   single independence class (spamhaus_drop_v6).
+#   These records are published on that source's precision alone, which is
+#   the same basis used for a large share of the IPv4 feed. The limitation
+#   is concentration, not quality: nothing corroborates these entries, and
+#   nothing covers for them if that one source degrades or disappears.
 #
 # Report a false positive: https://github.com/neilweitzel/xfeeds/issues
 ##############################################################################
@@ -63,8 +66,6 @@
 2604:be0:fff0::/44
 2607:d100::/32
 2607:f2d0::/32
-2607:ff10:c8:594::7
-2607:ff10:c8:594::a
 2803:4860::/32
 2803:5380:ffff::/48
 2803:8700::/32
