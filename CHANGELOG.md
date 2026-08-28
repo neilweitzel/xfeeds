@@ -54,6 +54,22 @@ six hours by design. A consumer pinning a tag still fetches the same live URLs.
   clock: nothing in `src/` imports it and it runs only from CI or by hand, so it
   cannot change feed output.
 
+### Fixed
+
+- **`RELEASE_CHECKLIST.md` no longer contradicts `source-lifecycle.md` about what
+  restarts the burn-in clock.** Step 3 claimed that any content in this file's
+  `[Unreleased]` section meant the clock had restarted and the release should not
+  proceed. That is wrong. `source-lifecycle.md` is the authoritative statement and
+  explicitly excludes documentation, this changelog, citation metadata, and
+  `scripts/` — precisely the changes that collect in `[Unreleased]` during a
+  candidate window. Only `sources.yaml`, `src/`, and `.github/workflows/` restart
+  it.
+
+  The contradiction was live rather than hypothetical: ADR-055 (#49) landed an
+  hour after `rc.5` was tagged, touching none of the restarting paths, so step 1
+  read the clock as intact while step 3 read it as restarted. Step 3 now defers to
+  the path list and gives the `git diff` invocation that settles it.
+
 ## [1.0.0-rc.5] — 2026-08-24
 
 Fifth release candidate, cut the same day as `rc.4`. No pipeline behaviour

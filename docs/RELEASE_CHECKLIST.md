@@ -90,7 +90,17 @@ That last script is also a CI gate, so a version mismatch fails the build rather
 - [ ] `README.md` — the `## Citation` section carries an interim repository citation naming the current candidate version. Replace it with the resolved DOI citation once minted (step 6).
 - [ ] `CHANGELOG.md` — add a `## [1.0.0] — YYYY-MM-DD` section above `## [1.0.0-rc.5]`.
 
-  Note that `[Unreleased]` is currently **empty**: everything was moved into the `[1.0.0-rc.4]` and `[1.0.0-rc.5]` sections when those candidates were cut. So unless new work has landed since, there is nothing to move — the `[1.0.0]` entry should state that `rc.5` was promoted unchanged and point at its section rather than duplicating it. If `[Unreleased]` does have content, that content is by definition a post-`rc.5` change, which means the burn-in clock restarted and you should not be releasing yet.
+  `[Unreleased]` currently holds the ADR-055 entry from #49, which landed shortly after `rc.5` was tagged. Move it into the `[1.0.0]` section. Where `rc.5` was promoted unchanged, the `[1.0.0]` entry should say so and point at the `[1.0.0-rc.5]` section rather than duplicating it.
+
+  **Content in `[Unreleased]` is not by itself evidence that the burn-in clock restarted.** An earlier version of this step said it was, which contradicted [`source-lifecycle.md`](source-lifecycle.md#what-restarts-the-rc-burn-in-clock) — the authoritative statement, which this checklist defers to and which explicitly excludes documentation, `CHANGELOG.md`, citation metadata, and `scripts/` from restarting the clock. Those are exactly the changes that accumulate in `[Unreleased]` during a candidate window, so a non-empty `[Unreleased]` is the normal case, not an alarm.
+
+  Determine the clock from the paths a commit touched, never from whether the changelog has entries:
+
+  ```bash
+  git diff --name-only v1.0.0-rc.5..main -- sources.yaml src/ .github/workflows/
+  ```
+
+  Empty output means the clock is intact. Any output means cut a new candidate instead of releasing. The corresponding item in §1 is the authoritative gate; this step concerns only the prose.
 
 ## 4. Prepare Zenodo — the API path
 
