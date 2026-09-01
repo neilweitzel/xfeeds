@@ -119,6 +119,29 @@ Two coverage gaps remain open, and both are now machine-visible in `category_cov
 
 **IPv6 still has exactly one independence class** after a second cycle. Worth knowing operationally: `spamhaus_drop_v6` publishes its 92 records by solo-promotion, which a stale source cannot do, so if it ever crosses 30 days the IPv6 feeds empty out. Measured cadence over June–September is 9–12 days, worst observed gap 12 against a 30-day threshold — comfortable, but there is no second source to absorb it.
 
+### Licence ambiguity now has a stated policy
+
+Several sources publish freely and say nothing about reuse; a few say two things that do not agree. The project had accumulated an open item per source, each waiting on a written confirmation from a maintainer who had not been asked or had not replied.
+
+ADR-060 settles it: **read each licence as written, record the reading, publish on it, and let anyone who disagrees say so.** Seven open items close as decided rather than pending.
+
+It reads permissive and is not. `redistribute: false` is still enforced in code with a test, publication still needs two redistributable independence classes, and `feeds/clean/` still contains only written grants. What changed is who carries the ambiguity — and withholding every source that had not written back would have removed four of the six admitting classes because nobody answered an email.
+
+**The objection path is now in the header of every published feed file:**
+
+```
+# Report a false positive: https://github.com/neilweitzel/xfeeds/issues
+# Source maintainers: if you disagree with how your licence has been
+# read here, open an issue or a PR and it will be actioned. Removal or
+# restriction on request, no argument.
+```
+
+The publisher most likely to disagree with a reading is the least likely to be reading the repository.
+
+### The monthly review moved to the 8th
+
+A candidate tagged on the 1st closes its window on the 1st of the following month — exactly when a review opened on the 1st lands. The `rc.6` window would have hit that on 2026-10-01, deciding a promotion in the same hour as a review that might defer it. **Promote `v1.0.0` on or after 2026-10-01, then let the review open on 2026-10-08.**
+
 ### Burn-in
 
 `rc.6` is under a roughly one-month window closing **on or after 2026-10-01**. The next scheduled source review falls on that same date.

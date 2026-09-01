@@ -17,6 +17,33 @@ admitted no source, and the one defect it found was latent rather than active �
 it touches `src/` and `sources.yaml`, so the burn-in clock restarts and the window
 now closes on or after **2026-10-01**.
 
+### Changed — licensing policy
+
+- **Licences are read as written, and objections are handled by the objector
+  (ADR-060).** The project had accumulated one open item per source, each waiting
+  on a written confirmation from a maintainer who had not been asked or had not
+  replied — Spamhaus, Blocklist.de, bruteforceblocker, Tor, Dataplane,
+  StopForumSpam, AbuseIPDB. That queue does not converge, and chasing written
+  grants turns a threat-intelligence project into a licence-administration one.
+
+  Each source's terms are now read as written, the reading is recorded in
+  `sources.yaml` and surfaced in the manifest, and we publish on it. Anyone who
+  disagrees — most likely the publisher — can open an issue or a PR, and removal
+  or restriction happens on request without argument.
+
+  This reads permissive and is not: `redistribute: false` is still enforced in
+  code with a test, publication still needs two redistributable independence
+  classes, and `feeds/clean/` still contains only written grants. What changed is
+  who carries the ambiguity. Withholding every source that has not written back
+  would have removed four of the six admitting classes on the strength of nobody
+  answering an email.
+
+  **The objection path is now in the header of every published feed file**, not
+  only the README. The publisher most likely to disagree is the least likely to
+  be reading the repository.
+
+  Seven open items closed as decided rather than pending.
+
 ### Changed — source lifecycle
 
 - **Staleness is no longer a terminal state (ADR-059).** A stale source used to
@@ -55,6 +82,13 @@ now closes on or after **2026-10-01**.
   nothing, so counting them would restate the ADR-058 overstatement one field to
   the left. The published value is unchanged today (13), because ThreatFox still
   votes for the `abusech` class.
+
+- **The monthly source review moved from the 1st to the 8th.** A candidate tagged
+  on the 1st closes its burn-in window on the 1st of the following month —
+  exactly when a review opened on the 1st lands, and a review that merges a
+  `sources.yaml` change restarts the clock. Deciding a promotion in the same hour
+  as a review that might defer it is a trap, and the `rc.6` window would have hit
+  it on 2026-10-01. The 8th gives a week of clearance.
 
 - **The dashboard no longer claims an expired source publishes.** Its Publication
   column read the licence flag alone, so Feodo Tracker — which is CC0 — showed

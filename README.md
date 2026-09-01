@@ -547,3 +547,15 @@ See [`docs/CITABILITY.md`](docs/CITABILITY.md) for the archival plan and [`docs/
 | Non-commercial | `feeds/noncommercial/` | CC BY-NC-SA 4.0 share-alike material, republished under the same licence in a separately marked tier. See [`feeds/noncommercial/LICENSE.txt`](feeds/noncommercial/LICENSE.txt). |
 
 Upstream licences are recorded per-source in `sources.yaml` and in every `feeds/manifest.json`. Feeds derived from Spamhaus DROP carry Spamhaus attribution as required. If your use needs to survive a legal review, use `feeds/clean/`.
+
+### How licence ambiguity is handled
+
+Several sources publish freely and say nothing about reuse; a few say two things that do not quite agree. The policy is to **read each licence as written, record that reading, and publish on it** — not to hold data back pending correspondence, and not to assume a grant that was never made.
+
+Three safeguards sit underneath that, and none of them depend on interpretation:
+
+- `redistribute: false` is enforced in code with a test, not in documentation.
+- Publishing an address requires two independent classes we are permitted to republish, so a restricted source can never put one into a feed.
+- `feeds/clean/` contains only sources with a written, named grant — for anyone who cannot rely on a reading.
+
+**If you maintain a source and disagree with how we have read your licence**, [open an issue](https://github.com/neilweitzel/xfeeds/issues) or a pull request and it will be actioned. Removal or restriction on request, no argument. That line appears in the header of every published feed file, because the publisher is the person most likely to disagree and least likely to be reading this page. See ADR-060.

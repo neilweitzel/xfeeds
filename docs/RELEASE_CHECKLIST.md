@@ -29,6 +29,12 @@ Companion documents: [`CITABILITY.md`](CITABILITY.md) for why archival is sequen
 
 If any box fails, fix the cause and cut `rc.7` rather than releasing.
 
+### The monthly review runs on the 8th, not the 1st
+
+Moved in `rc.6`. A candidate tagged on the 1st closes its window on the 1st of the following month — exactly when a review opened on the 1st lands. Deciding a promotion in the same hour as a review that might defer it is a trap, and the `rc.6` window would have hit it on 2026-10-01. The 8th gives a week of clearance so `v1.0.0` can be promoted first and reviewed after, which is the order this checklist asks for anyway.
+
+**For `rc.6`: promote `v1.0.0` on or after 2026-10-01, then let the review open on 2026-10-08.**
+
 ### The 1 September source review has already run — and it cut this candidate
 
 Recorded here rather than deleted, because the reasoning is what the next review should follow.
@@ -208,7 +214,7 @@ DataCite auto-update is already enabled and DataCite is a trusted party on the O
 
 ## 8. Switch the source review cadence
 
-- [ ] `.github/workflows/source-review.yml` — the schedule is monthly during burn-in and must be switched to quarterly after promotion. The file documents this inline; change the cron from `0 9 1 * *` to `0 9 1 */3 *`.
+- [ ] `.github/workflows/source-review.yml` — the schedule is monthly during burn-in and must be switched to quarterly after promotion. The file documents this inline; change the cron from `0 9 8 * *` to `0 9 8 */3 *`. Keep the day at the 8th: the 1st collides with the burn-in window closing date, which is what moved it.
 
 Note this is a workflow change, so land it **after** the release is cut rather than in the release commit.
 

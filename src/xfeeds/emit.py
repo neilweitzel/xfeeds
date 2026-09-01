@@ -177,6 +177,14 @@ def _header(
         lines += _single_class_notice(records, FAMILY_LABEL[family].replace(" only", ""))
     lines += [
         "# Report a false positive: " + PROJECT_URL + "/issues",
+        # The objection path belongs here and not only in the README (ADR-060).
+        # We read each source's licence as written and record that reading; the
+        # person most likely to disagree with a reading is the publisher whose
+        # data this is, and they are far more likely to encounter this file than
+        # the repository. A control nobody can find is not a control.
+        "# Source maintainers: if you disagree with how your licence has been",
+        "# read here, open an issue or a PR and it will be actioned. Removal or",
+        "# restriction on request, no argument.",
         "#" * 78,
     ]
     return "\n".join(lines) + "\n"

@@ -366,3 +366,36 @@ def test_category_status_distinguishes_uncovered_from_unpublishable() -> None:
     assert coverage["botnet-c2"]["status"] == "corroboration-only"
     assert coverage["botnet-c2"]["voting_classes"] == 1
     assert coverage["scanning"]["status"] == "admitting"
+
+
+def test_every_feed_header_carries_the_licence_objection_path() -> None:
+    """ADR-060 puts the objection path where a publisher will actually find it.
+
+    We read each source's licence as written and record that reading. The person
+    most likely to disagree with a reading is the publisher whose data it is, and
+    they will encounter a feed file long before they encounter the README. A
+    control nobody can find is not a control.
+    """
+    from xfeeds.emit import write_text_feed
+
+    registry = registry_of(src("a", "alpha"))
+    record = ScoredIndicator(
+        ip_or_cidr=ipaddress.ip_address("45.33.32.156"),
+        first_seen=NOW,
+        last_seen=NOW,
+        score=50.0,
+        band=Band.MEDIUM,
+        independence_classes=["alpha"],
+        sources=["a"],
+        categories=["scanning"],
+    )
+    import tempfile
+    from pathlib import Path as _Path
+
+    path = _Path(tempfile.mkdtemp()) / "feed.txt"
+    write_text_feed(path, "test", [record], registry, NOW)
+    header = path.read_text()
+
+    assert "Source maintainers" in header
+    assert "disagree with how your licence has been" in header
+    assert "restriction on request, no argument" in header

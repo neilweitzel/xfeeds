@@ -1458,18 +1458,18 @@ of top-20 /24 subnets.
 
 - [ ] **Find a second IPv6 source that reports individual hosts and permits redistribution.** *Still open after the 2026-09-01 cycle, which specifically checked and eliminated four candidates: StopForumSpam publishes no IPv6 variant (404); Turris has 35 IPv6 hosts but is `redistribute: false`; Blocklist.de has 388 but still states no licence; sefinek has 5,490 under MIT but fails the churn gate (ADR-057). Licence availability is no longer the binding constraint here — data hygiene is.* This is the only change that would let IPv6 participate in independence scoring at all. Blocklist.de already supplies the host-level IPv6 volume (431/run) but has no licence, and nothing else surveyed is both host-level and redistributable. Everything conditional in the IPv6 work keys off this.
 - [ ] **Decide whether Blocklist.de's IPv6 hosts should ever publish.** They are withheld correctly today. If its licence gap is ever resolved and a second host-level source appears, this becomes a volume question and needs a churn measurement first.
-- [ ] **Email Spamhaus** for written confirmation that redistributing DROP inside a public aggregate is permitted. Their Terms of Use §3.1 grant no IP licence while the blocklist page invites free use with credit; we currently publish on the second reading. Highest-value open question in this document (ADR-048).
-- [ ] Confirm AbuseIPDB redistribution terms in writing; flip `redistribute` if permitted. Key is now configured and the source is live as a scoring input (ADR-048).
+- [x] **Email Spamhaus** for written confirmation that redistributing DROP inside a public aggregate is permitted. **Closed by policy 2026-09-01 (ADR-060).** Their Terms of Use §3.1 grant no IP licence while the blocklist page invites free use with credit; we publish on the second reading, state that reading in `sources.yaml`, and carry the required credit and date text. Spamhaus may object through the path in every feed header.
+- [x] Confirm AbuseIPDB redistribution terms in writing; flip `redistribute` if permitted. **Closed by policy 2026-09-01 (ADR-060).** Their terms grant no redistribution as written, so it stays `redistribute: false` and scoring-only. That is the reading; it does not need confirming to be acted on.
 - [x] Measure sefinek churn across several runs, then decide between enabling it upgrade-only or leaving it out (ADR-048/ADR-051). **Closed 2026-09-01, decided-no: ADR-057.** Measured across 140 upstream commits rather than several runs — the list is kept in git, so its whole history is readable directly. Zero removals in 32 days. Rejected under the all-time-list rule despite MIT licensing, the best independence measured anywhere (max Jaccard 0.0035), and 5,490 host-level IPv6 addresses. Do not re-survey without evidence of an upstream expiry policy.
 - [ ] Backfill the Turris archive: 2,404 daily snapshots exist back to 2020, and a 30-day union is 75,454 unique addresses against 9,488 in one snapshot. Same licence, no new endpoint, but it interacts with state and ageing so it needs its own measurement (ADR-050).
 - [ ] Check the provenance of `threatview_CS_c2.rules` (752 Cobalt Strike C2). It is the only genuinely new Emerging Threats dataset, but it is third-party data inside ET's directory and its licence is not the ET BSD grant (ADR-050).
-- [ ] **Ask StopForumSpam for a written No-Derivative-Works waiver**, which their Waiver clause explicitly allows ("Any of the above conditions can be waived if you get permission from the copyright holder"). This is worth more than it looks: their NonCommercial clause bars only resale and misattribution, not commercial use, so ND is the single clause blocking 54,710 addresses from both tiers. Also ask them to resolve the contradiction between the "To Share" grant and the ND clause, and to confirm that scripted fetching of their published download files is permitted, since read literally the ND clause forbids automated copying of any site data. Until then the source stays scoring-only in both tiers (ADR-050, re-reviewed 2026-08-15).
+- [x] **Ask StopForumSpam for a written No-Derivative-Works waiver.** **Closed by policy 2026-09-01 (ADR-060).** The ND clause is read as written, so the source stays scoring-only in both tiers and 54,710 addresses stay unpublished. Recorded rather than pursued; the original reasoning is kept below because it is the argument StopForumSpam would need to see if they ever revisit it. ~~Ask StopForumSpam for a written No-Derivative-Works waiver~~, which their Waiver clause explicitly allows ("Any of the above conditions can be waived if you get permission from the copyright holder"). This is worth more than it looks: their NonCommercial clause bars only resale and misattribution, not commercial use, so ND is the single clause blocking 54,710 addresses from both tiers. Also ask them to resolve the contradiction between the "To Share" grant and the ND clause, and to confirm that scripted fetching of their published download files is permitted, since read literally the ND clause forbids automated copying of any site data. Until then the source stays scoring-only in both tiers (ADR-050, re-reviewed 2026-08-15).
 - [ ] **Dead disclosure path in `emit._header`.** The "consulted for corroboration only" block can never render: `score.py` adds a source to `r.sources` only when it is redistributable, so `all_contributing - redistributable` is always empty. Verified against the live feeds - no tier header lists any scoring-only source. This publishes *less* than intended rather than more, so it is not a licence exposure, but it is a safeguard that looks present and is not. Either drive it from the registry instead of from the records, or delete it and rely on `restricted_corroboration`.
-- [ ] Ask Dataplane.org whether they would grant redistribution permission for the non-commercial tier; their header requires express permission rather than forbidding it outright (ADR-048).
+- [x] Ask Dataplane.org whether they would grant redistribution permission for the non-commercial tier. **Closed by policy 2026-09-01 (ADR-060).** Their header requires express permission, which we do not have, so as written they stay scoring-only in both tiers.
 - [x] Decide whether a separately-licensed NC-SA feed variant is worth shipping — done, shipped (ADR-041). DShield remains unattractive on volume, not licence: `block.txt` is only the top 20 /24 subnets.
 - [x] GreyNoise wired up (ADR-049). The obtainable free tier is "Business - Free": enterprise scanner intelligence with a 10-day window, but **not** the Business Service (RIOT) add-on, which is paid-tier only. Benign-scanner capping shipped instead, and it addresses 17% of the published feed.
 - [ ] Watch `benign_scanners_capped` in the manifest across a few runs. If GreyNoise starts returning 429, the run degrades silently by design — the count dropping to 0 while the feed grows is the signal to look for.
-- [ ] Blocklist.de, bruteforceblocker and the Tor exit list state **no licence at all**. We publish them, and now credit them properly (ADR-043), but a credit is not a grant. Still need an explicit statement from each maintainer; this remains the weakest position in the set.
+- [x] Blocklist.de, bruteforceblocker and the Tor exit list state **no licence at all**. **Closed by policy 2026-09-01 (ADR-060).** A credit is still not a grant and the README says so plainly; `feeds/clean/` exists for users who need written grants only. We do not chase statements, and any of the three can have their data removed on request.
 - [ ] Google Cloud appears prominently in raw volume but drops sharply once normalised by announced size (ADR-045), which is the expected shape for a hyperscaler. Still worth confirming the allowlist covers Google's published service ranges rather than only the ones we happened to add.
 - [ ] Consider whether `source_last_reported` should feed `last_seen` and therefore scoring. It would make recency decay real for the two sources that publish dates, but it restates every score and needs a churn measurement first (ADR-045).
 - [ ] Only two sources publish dated history, so days before this project started running are covered by those two alone. Worth checking whether Blocklist.de or CINS expose a dated variant.
@@ -2059,3 +2059,45 @@ Expired sources are excluded from carry-forward explicitly, and there is a test 
 - Lifecycle states go from five to four, all driven by one number.
 - The `abusech` class now has only ThreatFox voting, so `botnet-c2` is `corroboration-only`: watched, and unpublishable on that evidence alone. See the open items — the 2026-09-01 cycle found no redistributable replacement, and ET botcc is a verbatim mirror of Feodo's five dead addresses.
 - `src/` and `sources.yaml` both changed. Folded into `rc.6`.
+
+---
+
+## ADR-060 — Licences are read as written, and objections are handled by the objector
+
+**Date:** 2026-09-01
+**Status:** Accepted
+**Resolves:** the standing open items asking for written confirmation from Spamhaus, Blocklist.de, bruteforceblocker, the Tor exit list, Dataplane.org, StopForumSpam, AbuseIPDB and ipthreat.
+
+### Context
+
+Several sources publish data freely and say nothing about reuse, or say two things that do not agree. Spamhaus's Terms of Use §3.1 grants no IP licence while its blocklist page invites free use with credit. Blocklist.de and bruteforceblocker state no licence at all. CINS says the list is shared "to parse and use in any way you see fit" and publishes no formal terms. ipthreat names CC BY and then describes ShareAlike.
+
+Four of the six independence classes that can admit a record sit on one of those readings. The project had accumulated an open item per source, each waiting on a written confirmation from a maintainer who has not been asked or has not replied.
+
+That queue does not converge. Chasing written grants turns a threat-intelligence project into a licence-administration project, and the answer to "did they reply yet" is load-bearing for nothing: the feed is either publishable today or it is not.
+
+### Decision
+
+**Read every licence as written. Record the reading. Publish on it. Let anyone who disagrees say so.**
+
+1. **As written, per source.** Each source's terms are recorded in `sources.yaml` with the reading we took and why, and surfaced in `feeds/manifest.json`. Where the terms are silent, that is stated as silence — `README.md` says plainly that absence of a prohibition is not a grant, and `feeds/clean/` exists precisely so that a user who needs written grants can have only those.
+2. **No confirmation is sought as a precondition.** Waiting on correspondence is not a control; it is a queue.
+3. **The objection path is the control.** A source maintainer who disagrees with our reading can email, open an issue, or open a pull request. A PR that changes how their data is treated will be approved.
+4. **Removal is not negotiated.** If a publisher asks to be removed or restricted, that is done — not argued.
+
+### Why this is the conservative choice, not the loose one
+
+It reads as permissive and is not, because the project already fails safe in three ways this policy does not touch:
+
+- `redistribute: false` is enforced in code, not documentation, and there is a test for it.
+- Publication needs two *redistributable* independence classes, so no restricted source can put an address into a feed.
+- The clean tier exists for exactly the user who cannot rely on an interpretation.
+
+What changes is only who carries the ambiguity. The alternative — withholding every source that has not written back — would remove Blocklist.de, bruteforceblocker, CINS and Spamhaus, which is four of the six admitting classes and most of the feed, on the strength of nobody having replied to an email. That is not caution, it is paralysis, and it would make the feed worse at the thing it exists to do while making no publisher better off.
+
+### Consequences
+
+- The per-source confirmation open items are closed as decided. They are not pending work.
+- The objection path has to be visible where a publisher would actually encounter the data, not only in the README — so it goes in the header of every published feed file alongside the false-positive line.
+- If a maintainer does object, the response is a `sources.yaml` change, which restarts the RC burn-in clock. Accepted: a licence correction is corrective work and takes priority over a release date.
+- This is a documentation and policy record. It changes no code behaviour on its own.
