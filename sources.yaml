@@ -73,12 +73,13 @@ sources:
     weight: 1.0
     categories: [botnet-c2]
     ttl_days: 7
-    dormant: true   # ADR-052/053: tracked threat families dismantled by law enforcement.
-                     # Stays enabled for upgrades and possible reactivation, but while
-                     # dormant it cannot solo-promote AND is non-admitting: its vote is
-                     # damped and never counts toward the classes that publish an
-                     # address. Reactivation requires a maintainer review and removing
-                     # this flag.
+    dormant: true   # ADR-059: manual expiry. The tracked threat families were dismantled
+                     # by law enforcement, so this source contributes NOTHING - its records
+                     # are dropped before scoring, it casts no vote of any weight, and it
+                     # cannot be carried forward from state. It stays enabled so the fetch
+                     # keeps running: that is the signal that tells a maintainer upstream
+                     # has started publishing again. Only removing this flag brings it
+                     # back, and reviewed_on deliberately cannot.
     license: "CC0 1.0 - Feodo Tracker ToS: all datasets usable for commercial and non-commercial purpose without any limitations"
     license_url: https://feodotracker.abuse.ch/blocklist/
     notes: >
@@ -88,17 +89,22 @@ sources:
       (Emotet, Dridex, TrickBot, QakBot, BazarLoader) have almost no live C2 left
       after the 2021 Emotet takedown and Operation Endgame in 2024. No replacement
       endpoint exists.
-      DORMANT per ADR-052 (2026-08-18). The tracked threat is confirmed inactive,
-      so the source cannot solo-promote and the staleness warning is suppressed.
-      It stays enabled and will reactivate automatically if upstream publishes
-      fresh data. Reactivation requires a maintainer review (licence, method,
-      content shape) and removing dormant: true.
-      NON-ADMITTING per ADR-053 (2026-08-19). Being dormant no longer only blocks
-      solo-promotion: this source's class is excluded from the count that admits a
-      record, and its vote is damped by STALE_EVIDENCE_FACTOR. It may still
-      upgrade an address that two live classes already published. Previously it
-      could supply one of the two classes needed to publish, which meant a
-      tracker frozen since 2026-03-04 could be half the basis for a block.
+      EXPIRED per ADR-059 (2026-09-01), superseding the dormant-but-still-voting
+      treatment of ADR-052/053. Measured at 180 days stale on 2026-09-01, twice the
+      90-day expiry ceiling. It now contributes nothing at all rather than a damped,
+      non-admitting vote - half-counting evidence from a threat we had already
+      declared dead was a distinction without a purpose.
+      Verified harmless before the change: all 5 of its addresses were already
+      WITHHELD and none appeared in the published feed, so dropping the source moved
+      neither the high nor the medium count. It had been contributing exactly nothing
+      of consequence for months while still being fetched four times a day.
+      It stays enabled ON PURPOSE. The fetch is now a review trigger rather than a
+      scoring input: when the manifest shows evidence_age_days falling, that is the
+      prompt to run the reactivation review (licence, method, content shape,
+      independence class) and remove dormant: true. It will NOT come back on its own.
+      Do not replace this with ET botcc: measured 2026-09-01, emerging-botcc.rules is
+      generated from abuse.ch and contains the identical 5 addresses. Same class, same
+      dead data, BSD wrapper.
 
   - name: sslbl
     url: https://sslbl.abuse.ch/blacklist/sslipblacklist.txt
@@ -732,9 +738,26 @@ sources:
       Contrast dataplane+dshield in the same experiment: published unchanged at 3,518
       with 375 records upgraded medium -> high. That is what a good corroborating
       source looks like.
-      To enable: measure churn across several runs first, and consider capping its
-      contribution to upgrade-only (vote true, cannot admit) the way ADR-035 handles
-      restricted classes.
+      CHURN MEASURED 2026-09-01, and the answer is zero (ADR-056). The list is kept in
+      git, so the whole publication history is inspectable rather than needing several
+      runs to sample: across 140 upstream commits between 2026-08-01 and 2026-09-01,
+      sampled daily, IPv4 went 209,443 -> 215,654 and IPv6 5,085 -> 5,490 with NOT ONE
+      address removed on any sample, and nothing present on 01-08 absent on 01-09.
+      "Generally not removed" is literally true: the removal rate is exactly 0, and the
+      list gains roughly 200 never-expiring addresses a day.
+      docs/source-lifecycle.md rejects all-time lists that never remove entries unless
+      they document a verification step, and none is documented. STAYS DISABLED, and
+      this is now a decided question rather than an open one - do not re-survey it
+      without evidence that upstream has adopted an expiry or verification policy.
+      Re-measured independence is still the best of any candidate seen: max Jaccard
+      0.0035 against any existing source, against a 0.5 rejection threshold. It also
+      carries 5,490 host-level IPv6 addresses under MIT, which is the only thing found
+      in two discovery cycles that could close the ADR-033 IPv6 open item. It is being
+      rejected on hygiene, not licence or independence, and IPv6 makes the no-expiry
+      problem worse rather than better because SLAAC privacy addresses rotate faster
+      than IPv4 ones.
+      If the coverage is ever wanted, the only safe shape is ADR-035's: vote true,
+      non-admitting, upgrade-only. That is a maintainer decision, not a discovery one.
 
   - name: duggytuxy_data_shield
     url: https://raw.githubusercontent.com/duggytuxy/Data-Shield_IPv4_Blocklist/main/prod_critical_data-shield_ipv4_blocklist.txt

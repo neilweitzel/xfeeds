@@ -15,7 +15,15 @@ ADR conflict, the ADR is superseded — see the revision log at the bottom.
 
 A successful HTTP fetch means the endpoint answered. It does **not** mean the
 data is fresh. Feodo Tracker returns HTTP 200 with a `Last updated` header of
-2026-03-04 — the transport is live, the evidence is 166 days old.
+2026-03-04 — the transport is live, the evidence is 166 days old (180 as of
+2026-09-01).
+
+The transport can also lie about itself, which is a distinct problem from the
+transport merely being live. On 2026-09-01 both Feodo Tracker and SSLBL served
+`Last-Modified: Tue, 30 Jun 2026 04:53 GMT` over payloads declaring 2026-03-04
+and 2025-01-02 — two feeds frozen fourteen months apart reporting transport
+timestamps fourteen seconds apart. A source's own statement about when it
+published outranks anything its CDN says on its behalf.
 
 Published records must be supported by **fresh enough evidence**. The
 source-declared update time — feed header, `Last-Modified`, content hash
@@ -29,81 +37,113 @@ not as current observations, regardless of whether the fetch succeeded.
 
 ## Source lifecycle states
 
-Every source in `sources.yaml` is in one of five states. The state determines
-whether the source can vote, corroboration, solo-promote, and how loudly it
-alerts.
+Every source is in one of four states. Three of them are decided by a single
+number — how old the source's own evidence is — so there is one question to ask
+about a source and one place the answer comes from.
+
+| State | Trigger | Votes? | Admits? | Promotes? |
+|---|---|---|---|---|
+| **Active** | evidence within `min(30, ttl_days)` | full weight | yes | yes |
+| **Stale** | evidence older than that, up to the expiry ceiling | damped ×0.2 | no | no |
+| **Expired** | evidence past the expiry ceiling, or `dormant: true` | **no** | no | no |
+| **Retired** | `enabled: false` | not even fetched | — | — |
 
 ### 1. Active
 
-- Source fetches successfully.
-- Source-declared update time is within its freshness policy (see below).
-- May vote normally.
-- May solo-promote if it otherwise qualifies (CC0, documented verification,
-  redistributable, not a compromised-host tag).
+Fetches successfully, evidence is current. Nothing special.
 
-### 2. Stale watch
+### 2. Stale
 
-- Source still fetches, but its own declared update timestamp exceeds the
-  freshness threshold (default: 30 days, or the source's own `ttl_days`,
-  whichever is shorter).
-- The manifest reports `status: "stale"` and the run report raises a
-  staleness warning. These already exist and fire correctly.
-- **Cannot solo-promote, and cannot admit.** Its records are *non-admitting*
-  (ADR-053): they may strengthen a record that already qualifies on live
-  corroboration, but they never count toward the independence classes that
-  admit one, and they never promote. This is the same asymmetry
-  licence-restricted sources get.
-- **Votes at a damped weight.** `score.STALE_EVIDENCE_FACTOR` (0.2) is applied
-  on top of `recency_factor`. The damping is applied explicitly because
-  `recency_factor` alone would not do it: it decays on when we last *saw* the
-  address, which equals now on every successful fetch, so an upstream frozen
-  for months would otherwise vote at full strength forever.
-- Records that were solo-promoted by this source in a prior active period
-  fall out of the feed on the next run unless another fresh source
-  corroborates them. This is the existing source-driven publication model
-  working as designed — no resurrection, no retention window.
+The source still answers, but its own declared update time is older than
+`min(30 days, ttl_days)`.
 
-### 3. Dormant (reviewed stale)
+- Manifest reports `status: "stale"` and the run report raises a warning.
+- **Cannot admit and cannot promote** (ADR-053). It may strengthen a record that
+  already stands on live corroboration; it can never be one of the two classes
+  that publish one.
+- **Votes at a damped weight**, `score.STALE_EVIDENCE_FACTOR` (0.2). The damping
+  is explicit because `recency_factor` would not do it: that decays on when we
+  last *saw* an address, which is today on every successful fetch, so a frozen
+  upstream would otherwise vote at full strength forever.
 
-- A maintainer has reviewed the stale source and determined the tracked
-  threat family or network is genuinely inactive — not a broken fetch, not
-  a transient outage, but the threat itself is diminished or dismantled.
-- The source stays configured in `sources.yaml` so it wakes up
-  automatically if upstream publishes fresh data. No code change is needed
-  to reactivate.
-- It does not generate a "needs review" alert every run. The staleness
-  warning is suppressed or downgraded to an informational log line once the
-  source is marked dormant in `sources.yaml`.
-- Still cannot solo-promote, and is still non-admitting with a damped vote
-  (ADR-053) — regardless of evidence freshness, because dormant is a
-  maintainer's statement that the tracked threat itself is gone. A live HTTP 200
-  from a dead tracker is not evidence about today.
-- It stays enabled rather than disabled precisely because it can still upgrade a
-  record that two live classes already admitted.
+Stale is now a **bounded** state. It used to be terminal, which is what ADR-059
+fixed.
 
-### 4. Retired (disabled)
+### 3. Expired
 
-- The endpoint is deprecated, dead, legally unusable, replaced by a paid-only
-  service, or the threat category is permanently gone.
-- `enabled: false` in `sources.yaml`. The entry is kept with documentation
-  explaining why it was retired, so a future source-discovery sweep does not
-  re-add it.
-- Example: SSLBL, retired 2025-01-03 with a deprecation notice in its own
-  payload. Example: ELLIO, which 301-redirected to an account-gated platform.
+Evidence older than `EXPIRY_DAYS` (90), **or** the maintainer set `dormant: true`.
 
-### 5. Reactivated
+- **Contributes nothing.** Records are dropped before the scorer sees them. Not a
+  damped vote, not a non-admitting vote — nothing.
+- **Cannot be carried forward from state either.** This matters more than it
+  looks: `carried_observations` re-casts recent sightings for sources that missed
+  a run, reading them out of state rather than out of the fetch. Without an
+  explicit exclusion, dropping an expired source at collection would achieve
+  nothing — it would keep voting from state for a further `ttl_days`.
+- **Still fetched, on purpose.** The fetch stops being a scoring input and becomes
+  a review trigger: `evidence_age_days` falling in the manifest is what tells a
+  maintainer the upstream is alive again and it is worth running the reactivation
+  review.
+- **Latched.** See below.
 
-- Upstream publishes a genuinely fresh update (new `Last updated` header,
-  new content, changed hash).
-- Before restoring normal scoring and promotion, re-check:
-  - Licence and redistribution rights (upstream terms change — see SSLBL
-    and ThreatFox's divergence from Feodo's CC0).
-  - Attribution requirements.
-  - Sensor method and provenance (upstream may have changed methodology).
-  - Content shape (parser may need updates).
-  - Independence class (upstream may have merged with another source).
-- If all checks pass, the source returns to Active. If the licence or
-  method has changed, cut a new ADR before re-enabling.
+Ninety days is chosen against `docs/staleness-analysis.md`: 86% of blocklisted
+addresses are short-lived offenders averaging about a week, reused addresses can
+sit in blocklists up to 44 days before they start hitting somebody innocent, and
+the most recurrent offenders cycle on about 5.5 weeks. At 90 days a source's
+entire corpus is at least twice the longest of those windows. It is deliberately
+far longer than any `ttl_days`: staleness already says "your data is old", and
+expiry says "you have stopped being a source".
+
+### Re-admission requires a review, and the latch enforces it
+
+An expired source **does not come back on its own**. When upstream starts
+publishing again, the fresh data is the prompt to review, not the review.
+
+The pipeline records the expiry date in `feeds/source-freshness.json`. The source
+stays expired until `sources.yaml` carries a `reviewed_on` date **on or after**
+it. A review dated earlier does nothing, so a review written before an expiry
+cannot retroactively authorise it.
+
+```yaml
+- name: some_source
+  reviewed_on: 2026-10-14   # clears an expiry latched on or before this date
+```
+
+Clearing the latch does not vouch for the data — it only removes the block.
+Normal freshness rules then apply, so a source readmitted while its evidence is
+still 45 days old lands in Stale, not Active.
+
+The reactivation review is the checklist that was always written down and never
+enforced: licence and redistribution rights, attribution requirements, sensor
+method and provenance, content shape, and independence class. Upstream terms and
+methods change while a source is away — SSLBL and ThreatFox both diverged from
+Feodo's CC0 — so none of it can be assumed. If the licence or method has changed,
+cut a new ADR before setting `reviewed_on`.
+
+Editing `reviewed_on` is a `sources.yaml` change, which restarts the RC burn-in
+clock. That is deliberate: readmitting a source is a scoring change.
+
+### `dormant` is manual expiry
+
+`dormant: true` means a maintainer has concluded the tracked threat itself is
+gone. It produces exactly the Expired state, and `reviewed_on` deliberately
+**cannot** clear it — only removing the flag can. Otherwise a routine review date
+would quietly resurrect a source somebody had killed on purpose.
+
+Before ADR-059, dormant meant a damped, non-admitting vote. Half-counting
+evidence from a threat we had already declared dead was a distinction without a
+purpose, and it let Feodo Tracker sit in that state for 180 days.
+
+### 4. Retired
+
+`enabled: false`. The endpoint is dead, legally unusable, replaced by a paid
+service, or the threat category is permanently gone. Not fetched at all. The
+entry stays in `sources.yaml` with the reason, so a later discovery sweep does
+not re-add it. Example: SSLBL, retired 2025-01-03 with a deprecation notice in
+its own payload.
+
+Use Retired over Expired when there is nothing left to watch for. Use `dormant`
+when the endpoint still answers and might one day carry real data again.
 
 ---
 
@@ -114,13 +154,42 @@ alerts.
 Priority order for determining a source's evidence age:
 
 1. **Feed-level timestamp in the payload** — e.g., Feodo's `Last updated`
-   header line, ThreatFox API response timestamp.
+   header line, AbuseIPDB's `meta.generatedAt`, Spamhaus DROP's trailing
+   `{"type": "metadata"}` record.
 2. **HTTP `Last-Modified` response header** — when the payload has no
    embedded timestamp.
 3. **Content hash change** — when neither is available, a hash of the
    fetched body compared to the previous run. If the hash is unchanged,
    the evidence age is the time since the last observed change, not the
    fetch time.
+
+All three are implemented in `src/xfeeds/freshness.py` as of ADR-056. Until
+then only step 2 existed, which understated Feodo's evidence age by 118 days
+and left the three sources that send no `Last-Modified` with no freshness
+gate at all. The order is absolute: a payload timestamp wins even when the
+HTTP header is newer, because that combination is the defect, not a tie.
+
+Two constraints on step 1 worth knowing before adding a format:
+
+- **Only the leading comment block is searched.** Several feeds carry
+  per-row dates, and a whole-file sweep reports one arbitrary row's date as
+  the feed's publication date.
+- **A timestamp more than a day ahead of the run is discarded** and the next
+  priority used. Observations are truncated to midnight UTC, so a feed
+  published at midday is legitimately "ahead" of the run; a full day ahead is
+  a broken clock.
+
+The step-3 history lives in `feeds/source-freshness.json`, which is
+**committed**, unlike `.cache/state.json`. A cache that goes cold would reset
+every source's change history to "changed just now", making a permanently
+frozen upstream look permanently fresh — the exact failure the step exists to
+catch. In `feeds/` a reset is visible in a diff.
+
+The manifest reports `evidence_time`, `evidence_age_days`, and
+`evidence_basis` per source, so which mechanism decided is observable in the
+published output. `last_modified` remains the raw transport signal and is
+deliberately reported separately — the two being conflated is what hid the
+original defect.
 
 ### Freshness threshold
 
@@ -137,20 +206,20 @@ Spamhaus DROP), and the shorter of the two governs.
 
 ### What staleness changes in scoring
 
-| Behavior | Active | Stale / Dormant |
-|---|---|---|
-| Vote in scoring | Yes, full weight | Yes, damped by `STALE_EVIDENCE_FACTOR` (0.2) |
-| Counts toward admission | Yes | **No** — non-admitting (ADR-053) |
-| Upgrades an already-admitted record | Yes | Yes |
-| Solo-promotion | Yes, if otherwise qualified | **No** |
-| Records age out | Normal `ttl_days` | Same — source-driven publication means records leave when no fresh source reports them |
+| Behavior | Active | Stale | Expired |
+|---|---|---|---|
+| Vote in scoring | full weight | damped ×0.2 | **none — records dropped** |
+| Counts toward admission | yes | no | no |
+| Upgrades an already-admitted record | yes | yes | no |
+| Solo-promotion | if otherwise qualified | no | no |
+| Carried forward from state | yes | yes | **no** |
+| Still fetched | yes | yes | yes, as a review trigger |
+| Returns automatically | — | yes, when upstream publishes | **no — needs `reviewed_on`** |
 
-The promotion gate is the key change. The existing code already prevents
-carried observations (from state, not current run) from promoting. The gap is
-that a stale source returning the same frozen body every run still counts as
-a current observation. The fix: a source whose evidence age exceeds the
-freshness threshold is treated as carried for promotion purposes, even when
-the fetch succeeded.
+The promotion gate is the ADR-052 change and the carry-forward exclusion is the
+ADR-059 one. Both close the same shape of hole: a source that has stopped
+publishing but keeps answering HTTP 200 must not keep influencing the feed
+through a side channel.
 
 ---
 
@@ -269,38 +338,43 @@ reason. Treat `src/` as `src/`.
 
 ## Feodo Tracker: worked example
 
-Feodo Tracker is the concrete case this policy was written for.
+Feodo Tracker is the case both policies were written for, and it has now been
+through all of it.
 
-**Current state:** Stale watch, moving to Dormant.
+**2026-08-18 (ADR-052).** Evidence 166 days old, endpoint returning HTTP 200 with
+5 records. Marked dormant: could not solo-promote, voted at a damped weight, the
+recurring staleness warning suppressed. abuse.ch's own FAQ explained the lull —
+the families it tracks (Emotet, Dridex, TrickBot, QakBot, BazarLoader) have
+almost no live C2 left after the 2021 Emotet takedown and Operation Endgame.
 
-- The endpoint is live (HTTP 200) but evidence is 166 days old (last updated
-  2026-03-04).
-- The staleness warning fires correctly every run.
-- abuse.ch's FAQ explains the lull: the families Feodo tracks (Emotet,
-  Dridex, TrickBot, QakBot, BazarLoader) have almost no live C2 left after
-  the 2021 Emotet takedown and Operation Endgame (2024–2026).
-- It is the only CC0 source that can solo-promote, and its false-positive
-  rate is near zero — but its 5 records are 166-day-old evidence with no
-  corroboration.
+**2026-08-19 (ADR-053).** Also made non-admitting: its class stopped counting
+toward the two that publish an address.
 
-**Action under this policy:**
+**2026-09-01 (ADR-056).** Found that its evidence was 180 days old, not the 63 the
+manifest reported — abuse.ch rotates its HTTP `Last-Modified` independently of
+the payload, and the pipeline was reading the header.
 
-1. Mark feodo_tracker as dormant in `sources.yaml` (new `dormant: true` flag
-   or equivalent, with a maintainer note referencing this policy).
-2. Gate solo-promotion on evidence freshness in the scoring code. Feodo's
-   5 solo-promoted high-confidence records fall out of the feed on the next
-   run unless another fresh source corroborates them.
-3. Suppress the recurring staleness warning — it has been reviewed and
-   explained. Replace with an informational log line.
-4. Keep the source configured. If abuse.ch publishes a fresh update, the
-   source reactivates automatically after the reactivation checks pass.
-5. Cut `rc.2` — this is a `sources.yaml` + scoring-code change that
-   restarts the burn-in clock.
+**2026-09-01 (ADR-059).** Expired. It now contributes nothing at all.
 
-**Supersedes:** The note in DECISIONS.md (2026-08-15) saying "If it is still
-dead in a month, remove the promotion path rather than leave it looking
-active." The month has not passed, but the policy here is broader and the
-action is the same: gate promotion on freshness, not on a calendar.
+The measurement that settled it: **all 5 of its addresses were already withheld,
+and none appeared in the published feed.** Dropping the source moved neither the
+high nor the medium count. It had been contributing nothing of consequence for
+months while still being fetched four times a day and still carrying enough
+apparatus — a damped vote, an upgrade path, a suppressed warning — to look like a
+live part of the system.
+
+That is the argument for an expiry ceiling in one source: the intermediate states
+were doing no work, and the only thing keeping the source alive was that nothing
+had a clock on it.
+
+It stays `enabled: true` and `dormant: true`. The fetch is the review trigger. If
+`evidence_age_days` in the manifest ever starts falling, that is the prompt to run
+the reactivation review and remove the flag.
+
+**Do not replace it with ET botcc.** Measured 2026-09-01:
+`rules.emergingthreats.net/blockrules/emerging-botcc.rules` is generated from
+abuse.ch's own trackers and contains the identical five addresses. Same class,
+same dead data, BSD wrapper.
 
 ---
 
@@ -309,3 +383,5 @@ action is the same: gate promotion on freshness, not on a calendar.
 | Date | Change |
 |---|---|
 | 2026-08-18 | Initial policy. Supersedes the Feodo "wait a month" note from the 2026-08-15 DECISIONS.md pass. Adds stale-source lifecycle, freshness-gated promotion, and source discovery process. |
+| 2026-09-01 | Freshness priority order is now implemented in full (ADR-056), not just step 2. Documents the payload-beats-header rule, the header-block and future-timestamp guards, the committed step-3 ledger, and the new manifest fields. Records that the 2026-09-01 discovery cycle admitted nothing and closed the sefinek churn item as decided-no (ADR-057). |
+| 2026-09-01 | **Staleness is no longer terminal (ADR-059).** Adds the Expired state and a 90-day ceiling: past it a source contributes nothing, cannot be carried forward from state, and does not return without a recorded `reviewed_on`. `dormant` becomes manual expiry rather than a damped vote. Lifecycle states rewritten from five to four, all driven by one number. |

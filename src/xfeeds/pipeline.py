@@ -11,7 +11,7 @@ happens last so nothing downstream can reintroduce an allowlisted address.
 
 import json
 from dataclasses import dataclass, field
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -30,6 +30,16 @@ from xfeeds.emit import (
 )
 from xfeeds.enrich import load_asn_index
 from xfeeds.filters import apply_filters
+from xfeeds.freshness import (
+    FRESHNESS_LEDGER_PATH,
+    EvidenceAge,
+    FreshnessLedger,
+    SourceState,
+    classify_source,
+    determine_evidence_age,
+    newest,
+    parse_http_date,
+)
 from xfeeds.greynoise import benign_addresses, cap_benign_scanners
 from xfeeds.insights import (
     ASN_HISTORY_PATH,
@@ -38,7 +48,7 @@ from xfeeds.insights import (
     build_spectrum,
     update_asn_history,
 )
-from xfeeds.models import Band, IndicatorRecord, Registry, ScoredIndicator
+from xfeeds.models import Band, IndicatorRecord, Registry, ScoredIndicator, SourceConfig
 from xfeeds.score import (
     noncommercial_sources,
     open_sources,
@@ -57,7 +67,25 @@ not that the internet changed. Better to publish yesterday's feed than a wrong o
 """
 
 STALENESS_DAYS = 30
-"""Warn when a source's own last-updated header is older than this."""
+"""Evidence older than this is stale: damped, non-admitting, cannot promote."""
+
+EXPIRY_DAYS = 90
+"""Evidence older than this is dropped entirely (ADR-059).
+
+Staleness used to be a terminal state - a source could sit damped and
+non-admitting forever, still fetched four times a day, still nudging scores with
+evidence nobody had vouched for in months. Feodo Tracker sat there for 180 days.
+
+Ninety days is chosen against the measurement in ``docs/staleness-analysis.md``:
+86% of blocklisted addresses are short-lived offenders averaging about a week,
+reused addresses can sit in blocklists up to 44 days before they start hitting
+somebody innocent, and the most recurrent offenders cycle on about 5.5 weeks. At
+90 days a source's entire corpus is at least twice the longest of those windows,
+so it is no longer describing the internet - it is describing the past.
+
+Deliberately much longer than any ttl_days. This is not "your data is old", which
+staleness already handles; it is "you have stopped being a source".
+"""
 
 
 class ChurnGuardTripped(RuntimeError):
@@ -104,29 +132,25 @@ class RunReport:
         return "\n".join(lines)
 
 
-def _parse_last_modified(value: str | None) -> datetime | None:
-    if not value:
-        return None
-    from email.utils import parsedate_to_datetime
-
-    try:
-        parsed = parsedate_to_datetime(value)
-    except (TypeError, ValueError):
-        return None
-    return parsed if parsed.tzinfo else parsed.replace(tzinfo=UTC)
-
-
 def collect_all(
-    registry: Registry, observed_on: datetime, only: str | None = None
-) -> tuple[list[IndicatorRecord], dict[str, dict[str, Any]], list[str]]:
+    registry: Registry,
+    observed_on: datetime,
+    only: str | None = None,
+    ledger: FreshnessLedger | None = None,
+) -> tuple[list[IndicatorRecord], dict[str, dict[str, Any]], list[str], set[str]]:
     """Fetch and parse every enabled source.
 
     A failing source is recorded and skipped. It never aborts the run - one dead
     upstream must not cost us the other eleven.
+
+    ``ledger`` carries the content-hash history that backs priority-3 evidence
+    ageing. It is mutated in place and saved by the caller, so a dry run can
+    measure freshness without writing anything.
     """
     records: list[IndicatorRecord] = []
     status: dict[str, dict[str, Any]] = {}
     warnings: list[str] = []
+    expired: set[str] = set()
 
     for source in registry.sources:
         if not source.enabled:
@@ -136,6 +160,12 @@ def collect_all(
 
         entry: dict[str, Any] = {"status": "ok", "records": 0, "error": None, "cached": False}
         status[source.name] = entry
+
+        # Records are held back until every URL for this source has been fetched.
+        # Staleness is a property of the source, not of one file within it, so it
+        # cannot be decided until the newest evidence across all of them is known.
+        source_records: list[IndicatorRecord] = []
+        evidence: EvidenceAge | None = None
 
         levels: list[int | None] = list(source.levels) if source.levels else [None]
         for level in levels:
@@ -156,31 +186,25 @@ def collect_all(
                 continue
 
             entry["cached"] = result.cached
-            last_modified = _parse_last_modified(result.last_modified_header)
-            source_is_stale = False
-            if last_modified:
-                entry["last_modified"] = last_modified.isoformat()
-                # ADR-052: freshness threshold is the shorter of the global ceiling
-                # and the source's own TTL. A source whose evidence age exceeds this
-                # cannot solo-promote, even when the fetch succeeded.
-                freshness_days = min(STALENESS_DAYS, source.ttl_days)
-                if observed_on - last_modified > timedelta(days=freshness_days):
-                    age = (observed_on - last_modified).days
-                    source_is_stale = True
-                    entry["status"] = "stale"
-                    if source.dormant:
-                        # Reviewed-stale: the threat is confirmed inactive.
-                        # Log quietly rather than raising a recurring warning.
-                        logger.info(
-                            "source_dormant_stale",
-                            source=source.name,
-                            age_days=age,
-                        )
-                    else:
-                        warnings.append(
-                            f"{source.name}: upstream last updated {age} days ago - "
-                            "a dead feed is not the same as a quiet internet"
-                        )
+            if result.last_modified_header:
+                # Kept as the raw transport signal it has always been. It is no
+                # longer what decides staleness, and the manifest now reports the
+                # two apart so the difference between them stays visible.
+                header_time = parse_http_date(result.last_modified_header)
+                if header_time:
+                    entry["last_modified"] = header_time.isoformat()
+
+            ledger_key = f"{source.name}#{level}" if level is not None else source.name
+            evidence = newest(
+                evidence,
+                determine_evidence_age(
+                    result.content,
+                    result.last_modified_header,
+                    ledger,
+                    ledger_key,
+                    observed_on,
+                ),
+            )
 
             parser = PARSERS.get(source.parser)
             if parser is None:
@@ -190,21 +214,94 @@ def collect_all(
 
             kwargs = {"level": level} if source.parser == "ipsum_levels" else {}
             parsed = list(parser(result.content, probe, observed_on, **kwargs))
-            # Mark observations from a stale-evidence source so the scorer can
-            # gate promotion (ADR-052). The records are still valid evidence
-            # for corroboration; they just cannot put IPs into the feed on their
-            # own while the upstream is frozen.
-            if source_is_stale:
-                for record in parsed:
-                    record.evidence_stale = True
-            records.extend(parsed)
+            source_records.extend(parsed)
             entry["records"] += len(parsed)
+
+        state = _apply_freshness(source, entry, evidence, ledger, observed_on, warnings)
+
+        if state.is_expired:
+            # Dropped, not damped. An expired source contributes nothing at all,
+            # so its records never reach the scorer and cannot be carried forward
+            # from state either (ADR-059).
+            expired.add(source.name)
+            entry["dropped_records"] = len(source_records)
+            entry["records"] = 0
+            continue
+
+        # Mark observations from a stale-evidence source so the scorer can gate
+        # promotion (ADR-052). The records are still valid evidence for
+        # corroboration; they just cannot put IPs into the feed on their own
+        # while the upstream is frozen.
+        if state.is_stale:
+            for record in source_records:
+                record.evidence_stale = True
+        records.extend(source_records)
 
         if entry["status"] == "ok" and entry["records"] == 0:
             entry["status"] = "empty"
             warnings.append(f"{source.name}: returned zero usable records")
 
-    return records, status, warnings
+    return records, status, warnings, expired
+
+
+def _apply_freshness(
+    source: SourceConfig,
+    entry: dict[str, Any],
+    evidence: EvidenceAge | None,
+    ledger: FreshnessLedger | None,
+    observed_on: datetime,
+    warnings: list[str],
+) -> SourceState:
+    """Classify the source, record it on the manifest entry, and raise the warning.
+
+    An unknown evidence age is treated as fresh. With no evidence either way,
+    inventing one would fire the gate on sources nobody has measured - and the
+    content-hash arm means "unknown" only survives a source's first few runs.
+    """
+    state = classify_source(
+        source_name=source.name,
+        dormant=source.dormant,
+        freshness_days=min(STALENESS_DAYS, source.ttl_days),
+        expiry_days=source.expire_after_days or EXPIRY_DAYS,
+        reviewed_on=source.reviewed_on,
+        evidence=evidence,
+        ledger=ledger,
+        observed_on=observed_on,
+    )
+
+    entry["evidence_basis"] = state.age.basis
+    if state.age.known:
+        assert state.age.timestamp is not None
+        entry["evidence_time"] = state.age.timestamp.isoformat()
+        entry["evidence_age_days"] = state.age.age_days(observed_on)
+
+    if state.is_expired:
+        entry["status"] = "expired"
+        entry["expired_since"] = state.expired_since.isoformat() if state.expired_since else None
+        entry["expiry_reason"] = state.reason
+        if source.dormant:
+            # Already reviewed and decided. Logging it every run would be noise.
+            logger.info("source_expired_dormant", source=source.name, reason=state.reason)
+        else:
+            # Deliberately loud, and deliberately every run. Unlike a dormant
+            # source this is an open action item: somebody has to either review
+            # the source or retire it in sources.yaml. A quiet expiry would
+            # reproduce the thing this policy exists to stop - a dead source
+            # lingering because nobody was reminded.
+            warnings.append(
+                f"{source.name}: EXPIRED and contributing nothing - {state.reason}. "
+                "Review it and set reviewed_on, or retire it with enabled: false."
+            )
+        return state
+
+    if state.is_stale:
+        entry["status"] = "stale"
+        warnings.append(
+            f"{source.name}: upstream last updated {state.age.age_days(observed_on)} days ago "
+            f"(by {state.age.basis}) - a dead feed is not the same as a quiet internet"
+        )
+
+    return state
 
 
 def check_churn(new_high: int, previous_high: int, force: bool) -> None:
@@ -242,7 +339,15 @@ def run(
     # work only to discover we cannot safely publish the result.
     allowlist = build_allowlist(registry.allowlist_sources, registry.defaults)
 
-    records, status, warnings = collect_all(registry, observed_on, only=only)
+    # The freshness ledger is loaded from, and written back to, the feeds
+    # directory being produced, so a run against a scratch directory cannot
+    # corrupt the committed one.
+    ledger_path = feeds_dir / FRESHNESS_LEDGER_PATH.name
+    ledger = FreshnessLedger.load(ledger_path)
+
+    records, status, warnings, expired = collect_all(
+        registry, observed_on, only=only, ledger=ledger
+    )
     report.source_status = status
     report.warnings = warnings
 
@@ -252,7 +357,7 @@ def run(
     # carried_observations.
     open_names = open_sources(registry)
     previous = load_state()
-    carried = carried_observations(records, previous, registry, observed_on)
+    carried = carried_observations(records, previous, registry, observed_on, excluded=expired)
     observations = records + carried
     scored = score_indicators(observations, registry, observed_on)
 
@@ -307,6 +412,11 @@ def run(
         return report
 
     check_churn(high_count, previous_high, force)
+
+    # Written only once the churn guard has passed. A run that aborts must not
+    # leave the ledger claiming it saw bodies whose records were never published,
+    # or the next run would date their evidence from an abandoned pass.
+    ledger.save(ledger_path)
 
     manifest = build_manifest(
         registry,

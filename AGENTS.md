@@ -26,7 +26,11 @@ Most public blocklists copy from each other. `sources.yaml` gives every source a
 
 Getting this wrong produces a feed that looks highly corroborated and is actually one source echoed five times. Any change to scoring must have a test proving that adding a second source to an existing class does not increase the score.
 
-A class only counts toward *admission* if it is both redistributable and vouched for today. Licence-restricted sources (ADR-041) and stale or dormant ones (ADR-053) are **non-admitting**: they may upgrade a record that two live classes already admitted, but they can never be one of those two. When you touch `score.py`, keep the `open_classes` / `restricted_classes` split intact — that split is what enforces it.
+A class only counts toward *admission* if it is both redistributable and vouched for today. Licence-restricted sources (ADR-041) and stale ones (ADR-053) are **non-admitting**: they may upgrade a record that two live classes already admitted, but they can never be one of those two. When you touch `score.py`, keep the `open_classes` / `restricted_classes` split intact — that split is what enforces it.
+
+Three states, one axis, and the difference matters (ADR-059). **Stale** is a damped, non-admitting vote. **Expired** — past 90 days, or `dormant: true` — is not a weaker vote, it is *no vote*: the records never reach the scorer, and they are excluded from carry-forward too. If you are adding a code path that reads observations, check whether it needs the expired-source exclusion; `carried_observations` did, and missing it would have silently undone the whole policy.
+
+An expired source does not come back on its own. Re-admission needs a `reviewed_on` date in `sources.yaml` on or after the expiry recorded in `feeds/source-freshness.json`. Do not add an automatic-reactivation path.
 
 ## Hard rules
 
@@ -63,8 +67,9 @@ Parsers must survive things these fixtures actually contain: `\r\n` line endings
 - **Spamhaus DROP JSON is newline-delimited JSON objects, not a JSON array.** `json.loads` on the whole body fails. Parse line by line, and skip the trailing metadata line.
 - **Binary Defense returns a 301 to an HTML page without a browser-like User-Agent.** Send the configured UA and reject any `text/html` response as a source failure.
 - **`224.0.0.0/3` appears in FireHOL level1** — 537 million addresses of multicast space. The CIDR width cap exists precisely to catch things like this. Never bypass it.
-- **Feodo Tracker is dormant (ADR-052/053).** It has ~5 entries and a last-updated header from March 2026 because the botnet families it tracks were dismantled by law enforcement. It is marked `dormant: true` in `sources.yaml`: it stays enabled, but it cannot solo-promote, its vote is damped by `STALE_EVIDENCE_FACTOR`, and it is **non-admitting** — its class never counts toward the two classes that publish an address, though it may still upgrade one that already qualifies. The staleness warning is suppressed. Do not re-enable promotion, make it admitting, or remove the dormant flag without a maintainer review. See [`docs/source-lifecycle.md`](docs/source-lifecycle.md).
+- **Feodo Tracker is expired (ADR-059).** It has ~5 entries and a payload header from March 2026 — 180 days stale — because the botnet families it tracks were dismantled by law enforcement. `dormant: true` now means **manual expiry**: it contributes *nothing*. Its records are dropped before scoring, it casts no vote at any weight, and it is excluded from carry-forward. It stays `enabled: true` on purpose, because the fetch is a review trigger rather than a scoring input. Do not restore it to a damped vote (that was the superseded ADR-052/053 behaviour), and do not remove the dormant flag without the reactivation review. See [`docs/source-lifecycle.md`](docs/source-lifecycle.md).
 - **SSLBL is currently empty.** A source returning zero valid records is a warning, not an error.
+- **`feeds/source-freshness.json` is committed on purpose.** It carries the content-hash history behind evidence ageing and the expiry latch. It looks like cache state and it is not: if it lived in `.cache/`, a cold `actions/cache` would reset every source's change history to "changed just now" and release every expiry latch. Do not move it, and do not add a field to it that changes on every run — it must stay diff-quiet, which measured at 2 of 27 entries changing between back-to-back runs.
 - **Tor exit nodes appear inside other feeds** (265 of them in IPsum L3). They must be tagged and capped below the high-confidence threshold, never blocked outright.
 - **AbuseIPDB free tier allows only 5 blacklist calls per day.** Cache the response; never call it in a loop or a test.
 

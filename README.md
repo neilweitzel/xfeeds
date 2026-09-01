@@ -78,7 +78,7 @@ For what each upstream documents about its own sensors and scoring — and why w
 | Source | Class | Weight | Volume | Notes |
 |---|---|---|---|---|
 | [Spamhaus DROP](https://www.spamhaus.org/blocklists/do-not-route-or-peer/) v4/v6 | `spamhaus` | 1.0 | 1,687 + 92 CIDRs | Auto-promotes to high confidence |
-| [Feodo Tracker](https://feodotracker.abuse.ch/) | `abusech` | 1.0 | 5 IPs | Dormant but near-zero FP |
+| [Feodo Tracker](https://feodotracker.abuse.ch/) | `abusech` | 1.0 | 5 IPs | **Expired** — frozen since March 2026, contributes nothing |
 | [SSLBL](https://sslbl.abuse.ch/) | `abusech` | 1.0 | 0 currently | Wired up, harmless |
 | ThreatFox | `abusech` | 1.0 | key required | Auth-Key mandatory |
 | [Blocklist.de](https://blocklist.de/) | `blocklist_de` | 0.8 | 28,605 | Largest independent sensor net |
@@ -99,7 +99,7 @@ For what each upstream documents about its own sensors and scoring — and why w
 | ET compromised-ips | Disabled | Jaccard **0.953** against bruteforceblocker. A mirror, not a second opinion. |
 | ET compromised-ips | Disabled | Also 96% contained in the duggytuxy list, and class-pinned to bruteforceblocker, so it cannot add a vote. |
 | SSLBL (IP list) | Disabled | Not empty — **retired**. The file says "deprecated on 2025-01-03". |
-| [sefinek](https://github.com/sefinek/Malicious-IP-Addresses) | Disabled | MIT and the most independent list we have measured, but "entries ... are generally not removed", so nothing ever expires. See ADR-048. |
+| [sefinek](https://github.com/sefinek/Malicious-IP-Addresses) | Disabled | MIT and the most independent list we have measured, but measured across 140 upstream commits it removes **nothing** — zero retractions in 32 days. See ADR-057. |
 | [duggytuxy Data-Shield](https://github.com/duggytuxy/Data-Shield_IPv4_Blocklist) | Disabled | Claims own probes; contains **90.7% of everything we publish**. A re-aggregator by measurement. |
 | Tor exits | Tag only | Blocking Tor is the consumer's policy choice, not a threat assertion. |
 
@@ -130,6 +130,39 @@ Use `feeds/clean/` if you have to satisfy a legal review. It is much smaller —
 Only classes we are licensed to republish count toward the threshold that admits a record. Sources we may consume but not republish (AbuseIPDB, GreenSnow, ThreatFox, DataPlane) can raise a record from medium to high, but can never bring one into the feed on their own, and their names are withheld from published records so the feed cannot disclose their membership. See ADR-035.
 
 That split is what makes a restricted source safe to use, and ADR-048 measured the payoff: adding DataPlane and DShield left the published count **unchanged at 3,518** while upgrading 375 records from medium to high. Pure corroboration, zero new exposure.
+
+### A source that stops publishing eventually stops counting
+
+A successful fetch means the endpoint answered, not that anything behind it is current. Evidence age is taken from the source's own declared publication time where it has one, falling back to the HTTP `Last-Modified` header and then to a content hash — in that order, because [abuse.ch serves a `Last-Modified` that moves independently of its payload](docs/DECISIONS.md).
+
+Three states follow from that one number:
+
+| Evidence age | State | What it contributes |
+|---|---|---|
+| within `min(30 days, ttl_days)` | **Active** | full vote, can admit, can promote |
+| past that, up to 90 days | **Stale** | damped ×0.2, cannot admit, cannot promote |
+| past 90 days, or `dormant: true` | **Expired** | **nothing** — records dropped before scoring |
+
+Expired sources are still fetched. The fetch stops being a scoring input and becomes a review trigger: `evidence_age_days` falling in the manifest is what tells a maintainer the upstream is alive again.
+
+**They do not come back on their own.** Re-admission needs a `reviewed_on` date in `sources.yaml` on or after the expiry recorded in `feeds/source-freshness.json`, which is the point at which somebody re-checks the licence, the sensor method, and the content shape. Fresh data is the prompt to review, not the review. Full policy in [`docs/source-lifecycle.md`](docs/source-lifecycle.md).
+
+### Voting is not admitting
+
+Those are two different rights, and the difference is larger than it looks. As of 2026-09-01 there are **13 voting classes and 6 admitting ones**. The other seven — `abusech`, `abuseipdb`, `dataplane`, `dshield`, `greensnow`, `stopforumspam`, `turris` — can strengthen a record that two live classes already admitted, and can never be one of those two, because their licence forbids redistribution or the upstream behind them has stopped publishing.
+
+`manifest.json` reports both, plus `voting_only_classes` and a per-category `category_coverage` block. Four categories currently have **no** admitting class at all:
+
+| Category | Voting | Admitting | Why |
+|---|---|---|---|
+| `botnet-c2` | 1 | 0 | Feodo Tracker expired, ThreatFox non-redistributable |
+| `abuse` | 2 | 0 | StopForumSpam and DataPlane both non-redistributable |
+| `spam-source` | 2 | 0 | the same two |
+| `telnet-attack` | 1 | 0 | DataPlane only |
+
+Those are reported as `status: "corroboration-only"` rather than as a bare zero, because the two situations a zero could mean are very different: we watch all four categories and vote on them, we just may not publish an address on that evidence alone. It is a licensing outcome, not a blind spot. See ADR-058.
+
+For `botnet-c2` specifically the free ecosystem has no fix, and the 2026-09-01 review measured why: ET's `emerging-botcc.rules` is generated from abuse.ch and carries the identical five dead addresses as Feodo; Viriback states no licence and accumulates back to 2019; TweetFeed is CC0 but its sensor method is "somebody tweeted it". The one live, high-quality option is ThreatFox, and licence is the single thing blocking it.
 
 Measured against live data on 2026-08-11, of 54,241 unique candidate IPs:
 
@@ -165,7 +198,8 @@ near 5,000 requests/hour/IP and blocks the IP for 30 minutes when exceeded.
 | `nftables.conf` | both | `blocklist4` and `blocklist6` sets in one file. |
 | `iptables.ipset` | IPv4 | ipset restore format, set `xfeeds`. |
 | `iptables6.ipset` | IPv6 | ipset restore format, set `xfeeds6`. An ipset holds one family. |
-| `manifest.json` | — | Per-source status, licences, counts, deltas, per-family breakdown. |
+| `manifest.json` | — | Per-source status, licences, counts, deltas, per-family breakdown. Carries both `active_voting_classes` and `active_admitting_classes` — see below, they are different numbers. Also `evidence_time`, `evidence_age_days`, and `evidence_basis` per source — how old the upstream's own data is, and which of the three mechanisms in [`docs/source-lifecycle.md`](docs/source-lifecycle.md#how-evidence-age-is-determined) established that. Distinct from `last_modified`, which is the raw HTTP header and is not always honest about the payload behind it. |
+| `source-freshness.json` | — | When each source's body last actually changed. Backs the content-hash arm of evidence ageing for sources that declare no timestamp. |
 | `history.json` | — | Rolling per-run history behind the charts. |
 
 The combined files carry both address families and are unchanged — existing
@@ -261,7 +295,7 @@ feeds, which firewalls parse.
 - **Churn guard.** A run that would add or remove more than 25% of the feed fails, opens an issue, and leaves the previous feed in place.
 - **Redistribution flags enforced in code.** Sources marked `redistribute: false` inform scoring and never reach an emitter.
 - **Provenance always.** No IP ships without a named source in `all.json`.
-- **Staleness detection.** A source whose last-updated header exceeds 30 days raises a warning, so a dead upstream is never mistaken for a quiet internet.
+- **Staleness detection.** A source whose own evidence exceeds 30 days is damped and stops counting toward admission, so a dead upstream is never mistaken for a quiet internet. Past 90 days it is dropped entirely and does not return without a recorded review — see below.
 
 ## What the dashboard shows
 
@@ -424,15 +458,18 @@ hours. Feed URLs are stable and served from GitHub Pages, so pinning a tag does 
 change what a consumer fetches; it only tells you which pipeline produced the
 contracts you are integrating against.
 
-`v1.0.0-rc.5` is a release candidate under a roughly one-month burn-in window. If it
+`v1.0.0-rc.6` is a release candidate under a roughly one-month burn-in window. If it
 needs no corrective work it will be promoted to `v1.0.0` unchanged. Corrective
 pipeline, source-configuration, or workflow changes cut a new candidate and restart
 the window; routine refresh commits and documentation do not.
 
-That is not hypothetical. `rc.4` exists because the `rc.3` window surfaced a
-carry-forward defect (ADR-054) that had been demoting corroborated records on three
-refreshes out of every four. `rc.5` followed the same day, when a pre-promotion audit
-of the release path touched a workflow file. The window did its job.
+That is not hypothetical, and it has now happened three times. `rc.4` exists because
+the `rc.3` window surfaced a carry-forward defect (ADR-054) that had been demoting
+corroborated records on three refreshes out of every four. `rc.5` followed the same
+day, when a pre-promotion audit of the release path touched a workflow file. `rc.6`
+exists because the 1 September source review found that only one of the three
+evidence-age mechanisms the freshness policy specifies had ever been implemented
+(ADR-056). The window did its job.
 
 The promotion steps are enumerated in
 [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md).
@@ -510,3 +547,15 @@ See [`docs/CITABILITY.md`](docs/CITABILITY.md) for the archival plan and [`docs/
 | Non-commercial | `feeds/noncommercial/` | CC BY-NC-SA 4.0 share-alike material, republished under the same licence in a separately marked tier. See [`feeds/noncommercial/LICENSE.txt`](feeds/noncommercial/LICENSE.txt). |
 
 Upstream licences are recorded per-source in `sources.yaml` and in every `feeds/manifest.json`. Feeds derived from Spamhaus DROP carry Spamhaus attribution as required. If your use needs to survive a legal review, use `feeds/clean/`.
+
+### How licence ambiguity is handled
+
+Several sources publish freely and say nothing about reuse; a few say two things that do not quite agree. The policy is to **read each licence as written, record that reading, and publish on it** — not to hold data back pending correspondence, and not to assume a grant that was never made.
+
+Three safeguards sit underneath that, and none of them depend on interpretation:
+
+- `redistribute: false` is enforced in code with a test, not in documentation.
+- Publishing an address requires two independent classes we are permitted to republish, so a restricted source can never put one into a feed.
+- `feeds/clean/` contains only sources with a written, named grant — for anyone who cannot rely on a reading.
+
+**If you maintain a source and disagree with how we have read your licence**, [open an issue](https://github.com/neilweitzel/xfeeds/issues) or a pull request and it will be actioned. Removal or restriction on request, no argument. That line appears in the header of every published feed file, because the publisher is the person most likely to disagree and least likely to be reading this page. See ADR-060.

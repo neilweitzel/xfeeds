@@ -10,9 +10,204 @@ six hours by design. A consumer pinning a tag still fetches the same live URLs.
 
 ## [Unreleased]
 
+## [1.0.0-rc.6] — 2026-09-01
+
+Cut by the 1 September source review. **No published output changes.** The review
+admitted no source, and the one defect it found was latent rather than active — but
+it touches `src/` and `sources.yaml`, so the burn-in clock restarts and the window
+now closes on or after **2026-10-01**.
+
+### Changed — licensing policy
+
+- **Licences are read as written, and objections are handled by the objector
+  (ADR-060).** The project had accumulated one open item per source, each waiting
+  on a written confirmation from a maintainer who had not been asked or had not
+  replied — Spamhaus, Blocklist.de, bruteforceblocker, Tor, Dataplane,
+  StopForumSpam, AbuseIPDB. That queue does not converge, and chasing written
+  grants turns a threat-intelligence project into a licence-administration one.
+
+  Each source's terms are now read as written, the reading is recorded in
+  `sources.yaml` and surfaced in the manifest, and we publish on it. Anyone who
+  disagrees — most likely the publisher — can open an issue or a PR, and removal
+  or restriction happens on request without argument.
+
+  This reads permissive and is not: `redistribute: false` is still enforced in
+  code with a test, publication still needs two redistributable independence
+  classes, and `feeds/clean/` still contains only written grants. What changed is
+  who carries the ambiguity. Withholding every source that has not written back
+  would have removed four of the six admitting classes on the strength of nobody
+  answering an email.
+
+  **The objection path is now in the header of every published feed file**, not
+  only the README. The publisher most likely to disagree is the least likely to
+  be reading the repository.
+
+  Seven open items closed as decided rather than pending.
+
+### Changed — source lifecycle
+
+- **Staleness is no longer a terminal state (ADR-059).** A stale source used to
+  stay stale indefinitely: still fetched four times a day, still voting at a
+  damped weight on evidence nobody had vouched for in months. Feodo Tracker sat
+  there for 180 days.
+
+  There is now an expiry ceiling. Past `EXPIRY_DAYS` (90) a source is **Expired**
+  and contributes nothing at all — its records are dropped before the scorer sees
+  them, and it cannot be carried forward from state either. Ninety days is set
+  against `docs/staleness-analysis.md`: it is at least twice the longest window in
+  which a blocklisted address is still describing the present.
+
+  `dormant: true` now means the same thing — manual expiry. Half-counting evidence
+  from a threat we had already declared dead was a distinction without a purpose.
+
+  **Re-admission requires a review.** An expired source does not resurrect itself
+  when upstream publishes again; the fresh data is the prompt to review, not the
+  review. The expiry date is latched in `feeds/source-freshness.json`, and the
+  source stays out until `sources.yaml` carries a `reviewed_on` date on or after
+  it. A review dated earlier does nothing, and `reviewed_on` deliberately cannot
+  clear `dormant` — a maintainer's statement is only undone by a maintainer.
+
+  Expired sources are **still fetched**, on purpose: the fetch stops being a
+  scoring input and becomes a review trigger.
+
+  Lifecycle states go from five to four, all driven by one number.
+
+- **Feodo Tracker now contributes nothing.** Verified harmless first: all 5 of its
+  addresses were already withheld and none appeared in the published feed, so
+  dropping it moved neither the high nor the medium count. Every mechanism built
+  around it — the damped vote, the upgrade path, the suppressed warning — had been
+  doing no work for months.
+
+- **`active_voting_classes` no longer counts dormant classes.** They contribute
+  nothing, so counting them would restate the ADR-058 overstatement one field to
+  the left. The published value is unchanged today (13), because ThreatFox still
+  votes for the `abusech` class.
+
+- **The monthly source review moved from the 1st to the 8th.** A candidate tagged
+  on the 1st closes its burn-in window on the 1st of the following month —
+  exactly when a review opened on the 1st lands, and a review that merges a
+  `sources.yaml` change restarts the clock. Deciding a promotion in the same hour
+  as a review that might defer it is a trap, and the `rc.6` window would have hit
+  it on 2026-10-01. The 8th gives a week of clearance.
+
+- **The dashboard no longer claims an expired source publishes.** Its Publication
+  column read the licence flag alone, so Feodo Tracker — which is CC0 — showed
+  "yes" next to a source supplying zero records. It now reads "not contributing",
+  and expired sources are styled apart from stale ones rather than sharing the
+  same amber: it is a different outcome, not a louder version of the same one.
+
+- `category_coverage` entries carry a `status` of `admitting` or
+  `corroboration-only`. A bare `0` conflated two different situations: "we cannot
+  see this category" and "we see it but may not republish on its authority".
+  `botnet-c2` is the second — ThreatFox watches it and votes.
+
+### Fixed
+
+- **Evidence age is now determined by the payload first, then the HTTP header, then
+  a content hash (ADR-056).** `docs/source-lifecycle.md` has specified that priority
+  order since 2026-08-18 and only the middle step was ever implemented.
+
+  abuse.ch is why the order matters. It serves a `Last-Modified` that moves
+  independently of its payload: on 2026-09-01 both Feodo Tracker and SSLBL returned
+  `Last-Modified: Tue, 30 Jun 2026 04:53 GMT` while their payloads declared
+  2026-03-04 and 2025-01-02 — two feeds frozen fourteen months apart reporting
+  transport timestamps fourteen seconds apart. The manifest was recording Feodo's
+  evidence as 63 days old when the tracker itself said 180.
+
+  The larger half of the same defect: where no `Last-Modified` was sent, staleness
+  was not evaluated at all, because the whole check sat inside `if last_modified:`.
+  Three live sources (`abuseipdb_blacklist`, `ipsum_levels`, `threatfox`) send none,
+  so they had no freshness gate of any kind.
+
+  Nine payload formats are supported, every one taken from a real recorded response.
+  Two guards worth knowing: the scan stops at the first data line, because several
+  feeds carry per-row dates that a whole-file sweep would misread as the feed's own;
+  and a timestamp more than a day ahead of the run is discarded in favour of the next
+  priority, because a broken upstream clock must not manufacture freshness.
+
+  Verified against a live run of all 22 reachable sources. Feodo now reports basis
+  `payload` at 180 days; nine sources moved from the header to their own declared
+  timestamp; `ipsum_levels` is gated by content hash where it was previously ungated.
+  No source was newly marked stale and no new warnings were raised. **The fix is
+  protective, not corrective** — Feodo was already dormant and therefore already
+  non-admitting, and both the old and new ages exceed its 7-day threshold.
+
+- Staleness is now decided once per source, using the newest evidence across all of
+  its URLs. Previously the last URL fetched silently overwrote the verdict of the
+  earlier ones, which was arbitrary for `ipsum_levels` and its six files.
+
+- **The dashboard homepage no longer overstates the corroboration base.** It
+  rendered the voting-class count as "13 independent evidence classes", which was
+  the same overstatement as the manifest's, on the most public surface the project
+  has. It now quotes the admitting count and describes the voting-only classes for
+  what they are.
+
+- **`RELEASE_CHECKLIST.md` no longer contradicts `source-lifecycle.md` about what
+  restarts the burn-in clock.** Step 3 claimed that any content in this file's
+  `[Unreleased]` section meant the clock had restarted and the release should not
+  proceed. That is wrong. `source-lifecycle.md` is the authoritative statement and
+  explicitly excludes documentation, this changelog, citation metadata, and
+  `scripts/` — precisely the changes that collect in `[Unreleased]` during a
+  candidate window. Only `sources.yaml`, `src/`, and `.github/workflows/` restart
+  it.
+
+  The contradiction was live rather than hypothetical: ADR-055 (#49) landed an
+  hour after `rc.5` was tagged, touching none of the restarting paths, so step 1
+  read the clock as intact while step 3 read it as restarted. Step 3 now defers to
+  the path list and gives the `git diff` invocation that settles it.
+
+### Added
+
+- **The manifest now publishes admitting rights, not just voting rights
+  (ADR-058).** `active_voting_classes` was being read as a measure of
+  corroboration capacity and is not one. ADR-053 made a class count toward
+  *admission* only when it is both redistributable and vouched for today; that was
+  enforced in `score.py` and reported nowhere.
+
+  Measuring it was worse than the case that prompted it. There are **13 voting
+  classes and 6 admitting ones** — `abusech`, `abuseipdb`, `dataplane`, `dshield`,
+  `greensnow`, `stopforumspam` and `turris` can corroborate and can never publish
+  an address. Four categories have no admitting class at all: `botnet-c2`,
+  `abuse`, `spam-source`, `telnet-attack`. Each source's restriction was already
+  documented individually; the aggregate was visible nowhere.
+
+  Adds `active_admitting_classes`, `voting_only_classes`, and `category_coverage`
+  to the manifest, and `admits` / `admitting_blocked_by` per source.
+  `active_voting_classes` is unchanged in both meaning and value — consumers read
+  it — and is now accompanied by the fields that make it honest.
+
+  No scoring change. `score.py` already had this right; published output is
+  byte-for-byte unchanged.
+
+- `feeds/manifest.json` gains `evidence_time`, `evidence_age_days`, and
+  `evidence_basis` per source, so which mechanism decided a staleness verdict is
+  visible in the published output. `last_modified` keeps its existing meaning as the
+  raw transport signal and is now reported alongside rather than instead — the two
+  being conflated is what hid the original defect.
+- `feeds/source-freshness.json`, recording when each source's body last changed.
+  Committed rather than cached: a cold `actions/cache` would otherwise reset every
+  source's change history to "changed just now", making a permanently frozen upstream
+  look permanently fresh.
+
 ### Changed
 
-- **One version number is now used everywhere, always (ADR-055).** Between
+- **`sefinek_malicious_ip` stays disabled, now on measured evidence (ADR-057).** The
+  ADR-048/051 open item asked for a churn measurement across several runs. The list
+  is published from a git repository, so its whole history was read directly instead:
+  across 140 upstream commits between 2026-08-01 and 2026-09-01, IPv4 grew
+  209,443 → 215,654 and IPv6 5,085 → 5,490 with **zero removals** on any daily
+  sample. Rejected under the all-time-list rule despite MIT licensing, the best
+  independence of any candidate measured (max Jaccard 0.0035 against a 0.5
+  threshold), and 5,490 host-level IPv6 addresses — which would have been the only
+  thing found in two cycles capable of closing the ADR-033 IPv6 item.
+- The 2026-09-01 discovery cycle surveyed twelve further candidates and admitted
+  none. Recorded in issue #52 and in the open items, so the same ground is not
+  re-covered. HoneyDB is called out specifically: its data would have passed
+  independence and a distributed honeypot network would be a genuinely new class, but
+  the Community tier forbids redistribution and embedding outright.
+
+- **One version number is now used everywhere, always (ADR-055).** Landed in #49
+  shortly after `rc.5` was tagged, so it ships in this candidate. Between
   `rc.3` and `rc.5` the repository carried two at once: `pyproject.toml` said
   `1.0.0rc5` while `CITATION.cff` said `1.0.0-rc.3`. That was deliberate and
   documented, and it was still wrong.
@@ -53,22 +248,6 @@ six hours by design. A consumer pinning a tag still fetches the same live URLs.
 - `docs/source-lifecycle.md` records that `scripts/` does not restart the burn-in
   clock: nothing in `src/` imports it and it runs only from CI or by hand, so it
   cannot change feed output.
-
-### Fixed
-
-- **`RELEASE_CHECKLIST.md` no longer contradicts `source-lifecycle.md` about what
-  restarts the burn-in clock.** Step 3 claimed that any content in this file's
-  `[Unreleased]` section meant the clock had restarted and the release should not
-  proceed. That is wrong. `source-lifecycle.md` is the authoritative statement and
-  explicitly excludes documentation, this changelog, citation metadata, and
-  `scripts/` — precisely the changes that collect in `[Unreleased]` during a
-  candidate window. Only `sources.yaml`, `src/`, and `.github/workflows/` restart
-  it.
-
-  The contradiction was live rather than hypothetical: ADR-055 (#49) landed an
-  hour after `rc.5` was tagged, touching none of the restarting paths, so step 1
-  read the clock as intact while step 3 read it as restarted. Step 3 now defers to
-  the path list and gives the `git diff` invocation that settles it.
 
 ## [1.0.0-rc.5] — 2026-08-24
 

@@ -1,6 +1,6 @@
 import ipaddress
 import os
-from datetime import datetime
+from datetime import date, datetime
 from enum import Enum
 from typing import Any
 
@@ -100,17 +100,40 @@ class SourceConfig(BaseModel):
     """
     notes: str | None = None
     dormant: bool = False
-    """Reviewed-stale: the maintainer has confirmed the tracked threat is inactive
-    (ADR-052).
+    """Manually expired: the maintainer has confirmed the tracked threat is gone.
 
-    A dormant source stays enabled and continues to fetch and vote, but:
-    - It cannot solo-promote, regardless of evidence freshness.
-    - It is non-admitting and its vote is damped, exactly as for a stale source
-      (ADR-053) — it may upgrade a record, never admit one.
-    - The staleness warning is downgraded to an informational log line.
+    Identical in effect to running out the expiry clock (ADR-059) — the source
+    keeps being fetched, and contributes **nothing** to scoring. It is not a
+    damped vote and not a non-admitting vote; its records are dropped before the
+    scorer sees them.
 
-    Reactivation requires a maintainer review (licence, method, content shape)
-    and removing this flag. See ``docs/source-lifecycle.md``.
+    It is still fetched on purpose. The fetch is what tells a maintainer the
+    upstream has started publishing again, which is the signal to run the
+    reactivation review. Clearing this flag is that review's outcome, and unlike
+    clock expiry it cannot be cleared by ``reviewed_on`` — a maintainer's
+    statement is only undone by a maintainer.
+
+    Superseded ADR-052/053 behaviour, where dormant meant a damped, non-admitting
+    vote. Half-counting evidence from a threat we have already declared dead was
+    a distinction without a defensible purpose.
+    """
+    expire_after_days: int | None = None
+    """Days of stale evidence before this source's data is dropped entirely.
+
+    Defaults to ``pipeline.EXPIRY_DAYS`` (90). Set it lower for a source whose
+    data goes dangerous rather than merely useless when it ages.
+    """
+    reviewed_on: date | None = None
+    """Date of the last maintainer review of this source.
+
+    Clears a clock expiry when it is on or after the date the source expired: the
+    source rejoins scoring under the normal freshness rules. An older date does
+    nothing, so a review recorded before an expiry cannot silently authorise it.
+
+    This is the "re-admitted upon review during a sources refresh" half of
+    ADR-059. Editing it is a ``sources.yaml`` change, which restarts the RC
+    burn-in clock — deliberately, because readmitting a source is a scoring
+    change.
     """
 
     # Optional fields from sources.yaml
