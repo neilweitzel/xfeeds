@@ -86,9 +86,7 @@ def main() -> int:
             print(f"  {when.date()}  {len(addresses):,} addresses")
 
     window.save()
-    qualifying = window.recurring(
-        source.name, source.sighting_min_days, source.ttl_days, today
-    )
+    qualifying = window.recurring(source.name, source.sighting_min_days, source.ttl_days, today)
     print(
         f"\n{source.name}: {fetched} snapshots read, {missing} unavailable\n"
         f"  tracked addresses      : {window.tracked(source.name):,}\n"
