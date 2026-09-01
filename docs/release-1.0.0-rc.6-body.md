@@ -1,6 +1,6 @@
 ## xfeeds v1.0.0-rc.6
 
-Sixth release candidate, cut by the 1 September source review (#52). **No published output changes.** The review admitted no source. What restarted the burn-in clock is two reporting defects it found while re-checking the dormant sources: a freshness gate that could not see a frozen payload (ADR-056), and a manifest that overstated how many independent classes actually stand behind the feed (ADR-058).
+Sixth release candidate, cut by the 1 September source review (#52). **No published output changes.** The review admitted no source. What restarted the burn-in clock is what it found while re-checking the dormant sources: a freshness gate that could not see a frozen payload (ADR-056), a manifest that overstated how many independent classes actually stand behind the feed (ADR-058), and a staleness model with no end to it (ADR-059).
 
 If you are consuming feeds, there is nothing to do. Feed paths, record schema, and every existing manifest field are unchanged from `rc.5`, and `rc.4`'s ADR-054 carry-forward fix remains the last change that altered published output. The manifest gains seven fields and `feeds/` gains one file; all additive.
 
@@ -52,6 +52,33 @@ All 22 reachable sources, 2026-09-01:
 - `feeds/manifest.json` gains `evidence_time`, `evidence_age_days`, and `evidence_basis` per source, so which mechanism decided a staleness verdict is visible in the output. `last_modified` keeps its existing meaning as the raw transport signal and is reported alongside rather than instead — the two being conflated is what hid this in the first place.
 - `feeds/source-freshness.json` records when each source's body last changed. It is **committed** rather than cached, which is deliberate: a cold `actions/cache` would reset every source's change history to "changed just now", making a permanently frozen upstream look permanently fresh. That is the exact failure the content-hash step exists to catch, so its state cannot live somewhere that silently resets.
 
+### Staleness now ends
+
+Stale used to be terminal. A source could sit in it indefinitely — still fetched four times a day, still voting at a damped weight on evidence nobody had vouched for in months, still allowed to upgrade records. Feodo Tracker sat there for 180 days.
+
+There is now a ceiling. Past 90 days a source is **Expired** and contributes nothing: records dropped before scoring, and excluded from carry-forward too. That second half matters more than it looks — `carried_observations` reads sightings out of state rather than out of the fetch, so dropping an expired source at collection alone would have achieved nothing and it would have kept voting from state for a further `ttl_days`.
+
+Ninety days is set against `docs/staleness-analysis.md`: at least twice the longest window in which a blocklisted address is still describing the present.
+
+**Re-admission requires a review.** An expired source does not resurrect itself when upstream publishes again — the fresh data is the prompt to review, not the review. The expiry date is latched in `feeds/source-freshness.json`, and the source stays out until `sources.yaml` carries a `reviewed_on` date on or after it:
+
+```yaml
+- name: some_source
+  reviewed_on: 2026-10-14
+```
+
+A review dated before the expiry does nothing, so one written in June cannot retroactively authorise an expiry in August. Clearing the latch does not vouch for the data either — normal freshness rules apply, so a source readmitted with 45-day-old evidence lands in Stale, not Active.
+
+`dormant: true` now means the same thing: manual expiry. Half-counting evidence from a threat we had already declared dead was a distinction without a purpose. `reviewed_on` deliberately cannot clear it — a maintainer's statement is only undone by a maintainer.
+
+Expired sources are **still fetched**, on purpose. The fetch stops being a scoring input and becomes a review trigger: `evidence_age_days` falling in the manifest is what tells you the upstream is alive again.
+
+Lifecycle states go from five to four, all driven by one number.
+
+#### Feodo Tracker, measured before it was dropped
+
+All 5 of its addresses were **already withheld**, and none appeared in the published feed. Dropping the source moved neither the high nor the medium count. Every mechanism built around it — the damped vote, the upgrade path, the suppressed warning — had been doing no work for months. The only thing keeping it alive was that nothing had a clock on it.
+
 ### The manifest was overstating the corroboration base
 
 Found while writing up the coverage gaps, and fixed here rather than deferred (ADR-058).
@@ -84,7 +111,11 @@ It is rejected under the all-time-list rule despite having the cleanest licence 
 
 **HoneyDB is not usable.** Evaluated with a live Community API key. The data is real and would have passed independence, and a distributed honeypot network would have been a genuinely new class. But the Community tier reads "internal, non-commercial use only — no redistribution or embedding in products or services", with redistribution reserved to a paid Commercial/OEM licence. A public feed is what that forbids. It also would not have helped: zero IPv6, and its `last_seen` was already five days behind.
 
-Two coverage gaps remain open. `botnet-c2` has no admitting source at all, and cannot get one from configuration — it needs a redistributable C2 feed and this cycle found none. IPv6 still has exactly one independence class after a second cycle. Both are now machine-visible in `category_coverage` rather than living in an issue comment.
+Two coverage gaps remain open, and both are now machine-visible in `category_coverage` rather than living in an issue comment.
+
+**`botnet-c2` is corroboration-only** — ThreatFox watches it and votes; nothing can publish on C2 evidence alone. Searched properly this cycle, and the free ecosystem has no fix: ET's `emerging-botcc.rules` is a BSD-licensed wrapper around abuse.ch and carries the identical five dead addresses as Feodo; Viriback states no licence anywhere and accumulates back to 2019; TweetFeed is genuinely CC0 and C2-tagged but its sensor method is "somebody tweeted it" across 67 unlinked reporters; criminalip publishes a deliberate 50-address daily sample under a bespoke licence. The free C2 ecosystem consolidated into abuse.ch, which then moved C2 behind restrictive terms. ThreatFox is the only live, high-quality option and licence is the single thing blocking it.
+
+**IPv6 still has exactly one independence class** after a second cycle. Worth knowing operationally: `spamhaus_drop_v6` publishes its 92 records by solo-promotion, which a stale source cannot do, so if it ever crosses 30 days the IPv6 feeds empty out. Measured cadence over June–September is 9–12 days, worst observed gap 12 against a 30-day threshold — comfortable, but there is no second source to absorb it.
 
 ### Burn-in
 

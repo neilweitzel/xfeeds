@@ -78,7 +78,7 @@ For what each upstream documents about its own sensors and scoring — and why w
 | Source | Class | Weight | Volume | Notes |
 |---|---|---|---|---|
 | [Spamhaus DROP](https://www.spamhaus.org/blocklists/do-not-route-or-peer/) v4/v6 | `spamhaus` | 1.0 | 1,687 + 92 CIDRs | Auto-promotes to high confidence |
-| [Feodo Tracker](https://feodotracker.abuse.ch/) | `abusech` | 1.0 | 5 IPs | Dormant but near-zero FP |
+| [Feodo Tracker](https://feodotracker.abuse.ch/) | `abusech` | 1.0 | 5 IPs | **Expired** — frozen since March 2026, contributes nothing |
 | [SSLBL](https://sslbl.abuse.ch/) | `abusech` | 1.0 | 0 currently | Wired up, harmless |
 | ThreatFox | `abusech` | 1.0 | key required | Auth-Key mandatory |
 | [Blocklist.de](https://blocklist.de/) | `blocklist_de` | 0.8 | 28,605 | Largest independent sensor net |
@@ -99,7 +99,7 @@ For what each upstream documents about its own sensors and scoring — and why w
 | ET compromised-ips | Disabled | Jaccard **0.953** against bruteforceblocker. A mirror, not a second opinion. |
 | ET compromised-ips | Disabled | Also 96% contained in the duggytuxy list, and class-pinned to bruteforceblocker, so it cannot add a vote. |
 | SSLBL (IP list) | Disabled | Not empty — **retired**. The file says "deprecated on 2025-01-03". |
-| [sefinek](https://github.com/sefinek/Malicious-IP-Addresses) | Disabled | MIT and the most independent list we have measured, but "entries ... are generally not removed", so nothing ever expires. See ADR-048. |
+| [sefinek](https://github.com/sefinek/Malicious-IP-Addresses) | Disabled | MIT and the most independent list we have measured, but measured across 140 upstream commits it removes **nothing** — zero retractions in 32 days. See ADR-057. |
 | [duggytuxy Data-Shield](https://github.com/duggytuxy/Data-Shield_IPv4_Blocklist) | Disabled | Claims own probes; contains **90.7% of everything we publish**. A re-aggregator by measurement. |
 | Tor exits | Tag only | Blocking Tor is the consumer's policy choice, not a threat assertion. |
 
@@ -139,12 +139,14 @@ Those are two different rights, and the difference is larger than it looks. As o
 
 | Category | Voting | Admitting | Why |
 |---|---|---|---|
-| `botnet-c2` | 1 | 0 | Feodo Tracker dormant, ThreatFox non-redistributable |
+| `botnet-c2` | 1 | 0 | Feodo Tracker expired, ThreatFox non-redistributable |
 | `abuse` | 2 | 0 | StopForumSpam and DataPlane both non-redistributable |
 | `spam-source` | 2 | 0 | the same two |
 | `telnet-attack` | 1 | 0 | DataPlane only |
 
-This does not mean nothing in those categories is ever published — an address can still reach the feed on the strength of two other admitting classes that also saw it. It means no address is admitted on that category's evidence alone. See ADR-058.
+Those are reported as `status: "corroboration-only"` rather than as a bare zero, because the two situations a zero could mean are very different: we watch all four categories and vote on them, we just may not publish an address on that evidence alone. It is a licensing outcome, not a blind spot. See ADR-058.
+
+For `botnet-c2` specifically the free ecosystem has no fix, and the 2026-09-01 review measured why: ET's `emerging-botcc.rules` is generated from abuse.ch and carries the identical five dead addresses as Feodo; Viriback states no licence and accumulates back to 2019; TweetFeed is CC0 but its sensor method is "somebody tweeted it". The one live, high-quality option is ThreatFox, and licence is the single thing blocking it.
 
 Measured against live data on 2026-08-11, of 54,241 unique candidate IPs:
 

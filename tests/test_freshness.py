@@ -381,39 +381,48 @@ def test_collect_all_marks_records_stale_from_the_payload(
 ) -> None:
     """End to end: a fresh HTTP header does not rescue a frozen payload.
 
-    This is the behaviour the manifest was misreporting. The header says today;
-    the payload says March; every parsed record must come out non-admitting.
+    Forty days old - past the freshness threshold, well short of the 90-day
+    expiry ceiling - so this is the damped, non-admitting middle state.
     """
     monkeypatch.setattr("xfeeds.collectors.base.CACHE_DIR", tmp_path / "cache")
     httpx_mock.add_response(
-        content=fixture("feodo_ipblocklist.txt"),
+        content=b"# Last updated: 2026-07-23 00:00:00 UTC\n1.2.3.4\n",
         headers={"Last-Modified": "Tue, 01 Sep 2026 00:00:00 GMT"},
     )
 
-    records, status, warnings = collect_all(_registry(), NOW, ledger=FreshnessLedger())
+    records, status, warnings, expired = collect_all(_registry(), NOW, ledger=FreshnessLedger())
 
     entry = status["frozen_source"]
     assert entry["status"] == "stale"
     assert entry["evidence_basis"] == "payload"
-    assert entry["evidence_age_days"] == 180
+    assert entry["evidence_age_days"] == 40
     # The transport signal is still reported, and is still visibly different.
     assert entry["last_modified"] == "2026-09-01T00:00:00+00:00"
     assert records and all(r.evidence_stale for r in records)
-    assert any("180 days ago" in w for w in warnings)
+    assert any("40 days ago" in w for w in warnings)
+    assert expired == set()
 
 
 def test_collect_all_stays_quiet_for_a_dormant_source(
     httpx_mock: HTTPXMock, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """A reviewed-stale source is still gated, just not re-announced every run."""
+    """A dormant source contributes nothing, and does not re-announce itself.
+
+    Under ADR-059 dormant is manual expiry, not a damped vote: the records are
+    dropped rather than marked. The silence is the point - it has been reviewed.
+    """
     monkeypatch.setattr("xfeeds.collectors.base.CACHE_DIR", tmp_path / "cache")
     httpx_mock.add_response(content=fixture("feodo_ipblocklist.txt"))
 
-    records, status, warnings = collect_all(_registry(dormant=True), NOW, ledger=FreshnessLedger())
+    records, status, warnings, expired = collect_all(
+        _registry(dormant=True), NOW, ledger=FreshnessLedger()
+    )
 
-    assert status["frozen_source"]["status"] == "stale"
-    assert records and all(r.evidence_stale for r in records)
-    assert not [w for w in warnings if "days ago" in w]
+    assert status["frozen_source"]["status"] == "expired"
+    assert status["frozen_source"]["dropped_records"] == 5
+    assert records == []
+    assert expired == {"frozen_source"}
+    assert warnings == []
 
 
 def test_collect_all_gates_a_source_that_has_no_timestamp_at_all(
@@ -430,12 +439,12 @@ def test_collect_all_gates_a_source_that_has_no_timestamp_at_all(
     body = fixture("cins_ci-badguys.txt")
 
     httpx_mock.add_response(content=body)
-    _, first_status, _ = collect_all(_registry(), NOW - timedelta(days=40), ledger=ledger)
+    _, first_status, _, _ = collect_all(_registry(), NOW - timedelta(days=40), ledger=ledger)
     assert first_status["frozen_source"]["status"] == "ok"
     assert first_status["frozen_source"]["evidence_basis"] == "content-hash"
 
     httpx_mock.add_response(content=body)
-    records, status, _ = collect_all(_registry(), NOW, ledger=ledger)
+    records, status, _, _ = collect_all(_registry(), NOW, ledger=ledger)
     assert status["frozen_source"]["status"] == "stale"
     assert status["frozen_source"]["evidence_age_days"] == 40
     assert records and all(r.evidence_stale for r in records)
@@ -450,7 +459,7 @@ def test_a_source_that_keeps_publishing_is_never_marked_stale(
 
     for day in range(0, 40, 5):
         httpx_mock.add_response(content=f"1.2.3.{day}\n".encode())
-        _, status, warnings = collect_all(
+        _, status, warnings, _ = collect_all(
             _registry(), NOW - timedelta(days=40 - day), ledger=ledger
         )
         assert status["frozen_source"]["status"] == "ok"

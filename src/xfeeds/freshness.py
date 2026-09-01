@@ -31,7 +31,7 @@ import json
 import re
 from collections.abc import Callable
 from dataclasses import dataclass
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from email.utils import parsedate_to_datetime
 from pathlib import Path
 
@@ -292,8 +292,13 @@ class FreshnessLedger:
     and buries the signal in diff noise.
     """
 
-    def __init__(self, entries: dict[str, dict[str, str]] | None = None) -> None:
+    def __init__(
+        self,
+        entries: dict[str, dict[str, str]] | None = None,
+        expired: dict[str, str] | None = None,
+    ) -> None:
         self._entries: dict[str, dict[str, str]] = dict(entries or {})
+        self._expired: dict[str, str] = dict(expired or {})
 
     @classmethod
     def load(cls, path: Path = FRESHNESS_LEDGER_PATH) -> "FreshnessLedger":
@@ -309,15 +314,25 @@ class FreshnessLedger:
         except (OSError, json.JSONDecodeError) as exc:
             logger.warning("freshness_ledger_unreadable", path=str(path), error=str(exc))
             return cls()
-        sources = payload.get("sources") if isinstance(payload, dict) else None
-        if not isinstance(sources, dict):
+        if not isinstance(payload, dict):
             return cls()
-        entries = {
-            key: value
-            for key, value in sources.items()
-            if isinstance(value, dict) and isinstance(value.get("digest"), str)
-        }
-        return cls(entries)
+        sources = payload.get("sources")
+        entries = (
+            {
+                key: value
+                for key, value in sources.items()
+                if isinstance(value, dict) and isinstance(value.get("digest"), str)
+            }
+            if isinstance(sources, dict)
+            else {}
+        )
+        raw_expired = payload.get("expired")
+        expired = (
+            {k: v for k, v in raw_expired.items() if isinstance(v, str)}
+            if isinstance(raw_expired, dict)
+            else {}
+        )
+        return cls(entries, expired)
 
     def save(self, path: Path = FRESHNESS_LEDGER_PATH) -> None:
         """Write the ledger deterministically, sorted by source key."""
@@ -329,6 +344,12 @@ class FreshnessLedger:
                 "See docs/source-lifecycle.md."
             ),
             "sources": {key: self._entries[key] for key in sorted(self._entries)},
+            # When each expired source crossed the line. This is the latch: a
+            # source that has run out its clock stays out until a maintainer
+            # records a review dated on or after this. Keeping it here rather than
+            # in sources.yaml means the pipeline owns the fact and the maintainer
+            # owns only the decision.
+            "expired": {key: self._expired[key] for key in sorted(self._expired)},
         }
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -347,6 +368,27 @@ class FreshnessLedger:
                 return changed_at
         self._entries[key] = {"digest": digest, "changed_at": observed_on.isoformat()}
         return observed_on
+
+    def mark_expired(self, source: str, observed_on: datetime) -> datetime:
+        """Latch a source as expired and return when it first crossed.
+
+        Idempotent: the date is set once and does not move while the source stays
+        expired, so "how long has this been out" is answerable and a review dated
+        against it means something.
+        """
+        existing = parse_iso(self._expired.get(source))
+        if existing is not None:
+            return existing
+        self._expired[source] = observed_on.isoformat()
+        return observed_on
+
+    def expired_since(self, source: str) -> datetime | None:
+        """When this source was latched as expired, if it is."""
+        return parse_iso(self._expired.get(source))
+
+    def clear_expiry(self, source: str) -> None:
+        """Release the latch, after a review or after the source came back."""
+        self._expired.pop(source, None)
 
 
 def parse_iso(value: str | None) -> datetime | None:
@@ -397,6 +439,109 @@ def determine_evidence_age(
         return EvidenceAge(hash_changed_at, "content-hash")
 
     return EvidenceAge(None, "unknown")
+
+
+@dataclass(frozen=True)
+class SourceState:
+    """What a source is allowed to contribute this run.
+
+    Three states on one axis, so there is exactly one question to ask about a
+    source and one place the answer comes from:
+
+    ``fresh``
+        Full vote, may admit, may promote.
+    ``stale``
+        Evidence past its freshness threshold but not yet expired. Damped vote,
+        non-admitting, cannot promote (ADR-053).
+    ``expired``
+        Evidence past the expiry ceiling, or the maintainer marked it dormant.
+        Contributes **nothing** - its records are dropped before the scorer sees
+        them. Latched until reviewed.
+    """
+
+    name: str
+    age: EvidenceAge
+    expired_since: datetime | None = None
+    reason: str | None = None
+
+    @property
+    def is_stale(self) -> bool:
+        return self.name == "stale"
+
+    @property
+    def is_expired(self) -> bool:
+        return self.name == "expired"
+
+
+def classify_source(
+    *,
+    source_name: str,
+    dormant: bool,
+    freshness_days: int,
+    expiry_days: int,
+    reviewed_on: date | None,
+    evidence: EvidenceAge | None,
+    ledger: FreshnessLedger | None,
+    observed_on: datetime,
+) -> SourceState:
+    """Decide what a source may contribute, and latch it if it has expired.
+
+    The ordering matters and is deliberate:
+
+    1. ``dormant`` wins outright. It is a maintainer's standing statement that the
+       tracked threat is gone, and ``reviewed_on`` cannot override it - only
+       removing the flag can. Otherwise a review date could quietly resurrect a
+       source somebody had deliberately killed.
+    2. A latched expiry survives fresh data. An upstream that starts publishing
+       again does **not** re-admit itself; that is the entire point of the latch.
+       Fresh data is the signal to go and review, not the review.
+    3. A review dated on or after the expiry releases the latch. Dated before it,
+       it does nothing - a review cannot pre-authorise an expiry that had not
+       happened when it was written.
+    """
+    age = evidence or EvidenceAge(None, "unknown")
+
+    if dormant:
+        since = ledger.mark_expired(source_name, observed_on) if ledger else observed_on
+        return SourceState(
+            "expired",
+            age,
+            since,
+            "dormant: maintainer confirmed the tracked threat is inactive",
+        )
+
+    latched = ledger.expired_since(source_name) if ledger else None
+    if latched is not None:
+        cleared = reviewed_on is not None and reviewed_on >= latched.date()
+        if not cleared:
+            days = max(0, (observed_on - latched).days)
+            return SourceState(
+                "expired", age, latched, f"expired {days} days ago and not reviewed since"
+            )
+        if ledger is not None:
+            ledger.clear_expiry(source_name)
+
+    if not age.known:
+        return SourceState("fresh", age)
+
+    days_old = age.age_days(observed_on)
+    assert days_old is not None
+
+    if days_old > expiry_days:
+        since = ledger.mark_expired(source_name, observed_on) if ledger else observed_on
+        return SourceState(
+            "expired",
+            age,
+            since,
+            f"evidence is {days_old} days old, past the {expiry_days}-day expiry ceiling",
+        )
+
+    if days_old > freshness_days:
+        return SourceState(
+            "stale", age, None, f"evidence is {days_old} days old, past {freshness_days} days"
+        )
+
+    return SourceState("fresh", age)
 
 
 def newest(left: EvidenceAge | None, right: EvidenceAge) -> EvidenceAge:

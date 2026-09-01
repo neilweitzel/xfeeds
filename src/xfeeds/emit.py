@@ -586,6 +586,8 @@ def _admission_block(
         return False, "licence forbids redistribution"
     if config.dormant:
         return False, "dormant: tracked threat reviewed and confirmed inactive"
+    if status.get("status") == "expired":
+        return False, str(status.get("expiry_reason") or "expired")
     if status.get("status") == "stale":
         age = status.get("evidence_age_days")
         return False, f"stale: upstream evidence is {age} days old"
@@ -638,13 +640,15 @@ def build_manifest(
     # never admits - which means botnet-c2 has no admitting source at all. That was
     # true for two weeks before anybody noticed, because the manifest said
     # "active_voting_classes: [... abusech ...]" and nothing contradicted it.
-    voting_classes = {
-        s.independence_class for s in registry.sources if s.enabled and s.vote and s.weight > 0
-    }
+    # `not s.dormant` appears in both, and that is the ADR-059 change: a dormant
+    # source is manually expired and contributes nothing, so it is not a voting
+    # class either. Previously it voted at a damped weight and was counted here.
+    def _votes(s: SourceConfig) -> bool:
+        return s.enabled and s.vote and s.weight > 0 and not s.dormant
+
+    voting_classes = {s.independence_class for s in registry.sources if _votes(s)}
     admitting_classes = {
-        s.independence_class
-        for s in registry.sources
-        if s.enabled and s.vote and s.weight > 0 and s.redistribute and not s.dormant
+        s.independence_class for s in registry.sources if _votes(s) and s.redistribute
     }
 
     # Per-category coverage, so a category losing its last admitting source is
@@ -653,9 +657,9 @@ def build_manifest(
     # structural gap.
     categories: dict[str, dict[str, Any]] = {}
     for source in registry.sources:
-        if not (source.enabled and source.vote and source.weight > 0):
+        if not _votes(source):
             continue
-        can_admit = source.redistribute and not source.dormant
+        can_admit = source.redistribute
         for category in source.categories:
             entry = categories.setdefault(category, {"voting": set(), "admitting": set()})
             entry["voting"].add(source.independence_class)
@@ -696,6 +700,11 @@ def build_manifest(
                 "voting_classes": len(entry["voting"]),
                 "admitting_classes": len(entry["admitting"]),
                 "admitting_class_names": sorted(entry["admitting"]),
+                # Named rather than left as a bare zero. "We see this category but
+                # may not republish on its authority" is a licensing outcome; "we
+                # cannot see it" would be a coverage failure. They look identical
+                # as a 0 and they are not the same problem.
+                "status": "admitting" if entry["admitting"] else "corroboration-only",
             }
             for name, entry in sorted(categories.items())
         },

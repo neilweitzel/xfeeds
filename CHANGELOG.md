@@ -17,6 +17,50 @@ admitted no source, and the one defect it found was latent rather than active �
 it touches `src/` and `sources.yaml`, so the burn-in clock restarts and the window
 now closes on or after **2026-10-01**.
 
+### Changed — source lifecycle
+
+- **Staleness is no longer a terminal state (ADR-059).** A stale source used to
+  stay stale indefinitely: still fetched four times a day, still voting at a
+  damped weight on evidence nobody had vouched for in months. Feodo Tracker sat
+  there for 180 days.
+
+  There is now an expiry ceiling. Past `EXPIRY_DAYS` (90) a source is **Expired**
+  and contributes nothing at all — its records are dropped before the scorer sees
+  them, and it cannot be carried forward from state either. Ninety days is set
+  against `docs/staleness-analysis.md`: it is at least twice the longest window in
+  which a blocklisted address is still describing the present.
+
+  `dormant: true` now means the same thing — manual expiry. Half-counting evidence
+  from a threat we had already declared dead was a distinction without a purpose.
+
+  **Re-admission requires a review.** An expired source does not resurrect itself
+  when upstream publishes again; the fresh data is the prompt to review, not the
+  review. The expiry date is latched in `feeds/source-freshness.json`, and the
+  source stays out until `sources.yaml` carries a `reviewed_on` date on or after
+  it. A review dated earlier does nothing, and `reviewed_on` deliberately cannot
+  clear `dormant` — a maintainer's statement is only undone by a maintainer.
+
+  Expired sources are **still fetched**, on purpose: the fetch stops being a
+  scoring input and becomes a review trigger.
+
+  Lifecycle states go from five to four, all driven by one number.
+
+- **Feodo Tracker now contributes nothing.** Verified harmless first: all 5 of its
+  addresses were already withheld and none appeared in the published feed, so
+  dropping it moved neither the high nor the medium count. Every mechanism built
+  around it — the damped vote, the upgrade path, the suppressed warning — had been
+  doing no work for months.
+
+- **`active_voting_classes` no longer counts dormant classes.** They contribute
+  nothing, so counting them would restate the ADR-058 overstatement one field to
+  the left. The published value is unchanged today (13), because ThreatFox still
+  votes for the `abusech` class.
+
+- `category_coverage` entries carry a `status` of `admitting` or
+  `corroboration-only`. A bare `0` conflated two different situations: "we cannot
+  see this category" and "we see it but may not republish on its authority".
+  `botnet-c2` is the second — ThreatFox watches it and votes.
+
 ### Fixed
 
 - **Evidence age is now determined by the payload first, then the HTTP header, then

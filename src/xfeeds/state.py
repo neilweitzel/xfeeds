@@ -173,6 +173,7 @@ def carried_observations(
     previous: dict[str, StateEntry],
     registry: Registry,
     now: datetime,
+    excluded: set[str] | None = None,
 ) -> list[IndicatorRecord]:
     """Re-cast recent sightings from sources that missed the current run.
 
@@ -187,8 +188,17 @@ def carried_observations(
       current evidence at all there is nothing to corroborate, so nothing is
       resurrected: the feed still contains only addresses somebody reports today.
     * Carried records are flagged, and a flagged record cannot promote.
+    * ``excluded`` names sources that must not carry at all - in practice the ones
+      that expired this run (ADR-059). Without this, dropping an expired source
+      from collection would achieve nothing: its sightings are still in state, and
+      it would keep voting from there for a further ``ttl_days``. Carrying an
+      expired source is exactly the "still voting from evidence nobody vouches
+      for" behaviour the expiry ceiling exists to end.
     """
-    by_source = {s.name: s for s in registry.sources if s.enabled and s.vote}
+    blocked = excluded or set()
+    by_source = {
+        s.name: s for s in registry.sources if s.enabled and s.vote and s.name not in blocked
+    }
     reported_now: dict[str, set[str]] = {}
     for record in fresh:
         reported_now.setdefault(str(record.ip_or_cidr), set()).add(record.source)

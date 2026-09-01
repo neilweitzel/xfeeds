@@ -1482,7 +1482,13 @@ of top-20 /24 subnets.
 - [ ] **Do not use HoneyDB.** Evaluated 2026-09-01 with a live Community API key. The data is real and would have passed independence (11,499 hosts, max Jaccard 0.108 against `ipsum_l3`), but the Community tier states *"internal, non-commercial use only — no redistribution or embedding in products or services"*, and redistribution requires a paid Commercial/OEM licence. A public feed is exactly what that forbids, and the `redistribute: false` vote-only pattern does not rescue it, because embedding the data in the pipeline that produces public output is itself named in the prohibition. Recorded here because a distributed honeypot network would be a genuinely new independence class and the temptation to revisit it will recur. Separately it would not have helped: zero IPv6, and its `last_seen` was already 5 days behind with the `/24hours` endpoint returning empty. Revisit only if the terms change or a commercial licence is bought.
 - [x] **Expose admitting rights in the manifest, not just `active_voting_classes`.** **Closed 2026-09-01: ADR-058.** Measuring it turned out worse than the `botnet-c2` case that prompted it: 13 voting classes against 6 admitting, and four categories with no admitting source (`botnet-c2`, `abuse`, `spam-source`, `telnet-attack`). The dashboard homepage was quoting the voting count as "13 independent evidence classes". Manifest now carries `active_admitting_classes`, `voting_only_classes`, `category_coverage`, and per-source `admits` / `admitting_blocked_by`.
 - [ ] **Alert when a category *loses* its last admitting class.** ADR-058 exposes the zero but deliberately does not warn on it, because a warning that fires every run for a known condition is the alert fatigue ADR-052 avoided for dormant sources. The useful signal is the transition, not the state, and it needs a comparison against the previous run — `history.json` already retains 720 runs and could carry `category_coverage` to support it.
-- [ ] **`botnet-c2` has no admitting source and cannot get one from configuration.** `feodo_tracker` is dormant, `sslbl` retired, `threatfox` non-redistributable. It needs a redistributable C2 feed; the 2026-09-01 cycle surveyed and found none. Worth a targeted search next cycle rather than a general sweep — this is the coverage gap with a named shape.
+- [ ] **`botnet-c2` is corroboration-only, and the free ecosystem has no fix.** ThreatFox watches it and votes; nothing can publish on C2 evidence alone. Searched properly on 2026-09-01 and the answer is that the free C2 ecosystem consolidated into abuse.ch, which then moved C2 behind restrictive terms while Feodo's threat families were dismantled. Measured, so it is not re-surveyed:
+  - **ET `emerging-botcc.rules`** — BSD-licensed wrapper, but its own header says it is "generated from the EXCELLENT work done by the abuse.ch folks" and it contains the **identical 5 addresses** as Feodo. Same class, same dead data.
+  - **Viriback Tracker** — 8,071 IPs, but no licence stated anywhere, and an all-time accumulation running back to 2019 with only 287 first seen in 2026. Fails licence and the all-time-list rule together.
+  - **TweetFeed.live** — genuinely CC0 and genuinely C2-tagged (86 of 643 monthly entries), but the sensor method is "somebody tweeted it" across 67 unlinked reporters with no verification step. For a feed that drops traffic, that is the false-positive vector, not a source.
+  - **criminalip/C2-Daily-Feed** — a deliberate 50-address daily sample under a bespoke "C2_TI license"; a shop window for a commercial product.
+
+  What would actually close it: a C2 tracker with an explicit redistribution grant that expires entries. Worth a targeted watch rather than a general sweep — and worth re-checking abuse.ch's terms if they ever soften, since ThreatFox is the only live, high-quality option and licence is the single thing blocking it.
 
 
 
@@ -1984,3 +1990,68 @@ The split is intentional. Dormancy is a maintainer's standing statement that a t
 - A consumer can now tell how many independent classes actually stand behind the feed, and which categories rest entirely on sources we may score with but not republish.
 - The next source-discovery cycle has a machine-readable statement of where coverage is thin, instead of relying on someone re-deriving it.
 - `src/` changed, so the RC burn-in clock restarts. Folded into the same `rc.6` as ADR-056 and ADR-057.
+
+---
+
+## ADR-059 — Staleness is not a terminal state
+
+**Date:** 2026-09-01
+**Status:** Accepted
+**Supersedes:** the dormant-source scoring behaviour in ADR-052 and ADR-053. Dormant no longer means a damped, non-admitting vote; it means expired.
+
+### Context
+
+ADR-052 gave a stale source a damped vote and no admission rights. ADR-053 extended that to dormant sources. Neither put an end on it, so "stale" was terminal: a source could sit in it indefinitely, still fetched four times a day, still nudging scores with evidence nobody had vouched for in months.
+
+Feodo Tracker sat there for 180 days. Every run it was fetched, parsed, scored at 0.2× weight, allowed to upgrade records, and excused from raising a warning. Three mechanisms carefully arranged around a source that had published nothing since March.
+
+The measurement that settled it: **all 5 of Feodo's addresses were already withheld, and none appeared in the published feed.** Dropping the source entirely moves neither the high nor the medium count. Every one of those mechanisms was doing no work. The only thing keeping the source alive was that nothing had a clock on it.
+
+### Decision
+
+**Add an expiry ceiling. Past it, a source contributes nothing and does not come back without a review.**
+
+| Evidence age | State | Contribution |
+|---|---|---|
+| ≤ `min(30, ttl_days)` | Active | full vote, may admit, may promote |
+| > that, ≤ `EXPIRY_DAYS` | Stale | damped ×0.2, non-admitting, no promotion |
+| > `EXPIRY_DAYS` (90) | **Expired** | **nothing** |
+
+`EXPIRY_DAYS` is 90, chosen against `docs/staleness-analysis.md`: 86% of blocklisted addresses are short-lived offenders averaging about a week, reused addresses can sit in blocklists up to 44 days before they start hitting somebody innocent, and the most recurrent offenders cycle on about 5.5 weeks. At 90 days a source's entire corpus is at least twice the longest of those windows — it is no longer describing the internet, it is describing the past.
+
+Deliberately far longer than any `ttl_days`. Staleness already says "your data is old". Expiry says "you have stopped being a source".
+
+### `dormant` becomes manual expiry
+
+A dormant source contributes nothing, exactly as if the clock had run out. Half-counting evidence from a threat we have already declared dead was a distinction without a defensible purpose.
+
+It stays `enabled: true` and keeps being fetched, and that is the point: the fetch stops being a scoring input and becomes a **review trigger**. `evidence_age_days` falling in the manifest is what tells a maintainer the upstream is alive again.
+
+### The latch, and why re-admission is not automatic
+
+An expired source **does not resurrect itself when upstream publishes again**. Fresh data is the prompt to review, not the review.
+
+The expiry date is recorded in `feeds/source-freshness.json`. The source stays out until `sources.yaml` carries a `reviewed_on` date on or after it. Three properties matter:
+
+- **A review dated before the expiry does nothing.** Otherwise a review written in June could retroactively authorise an expiry in August.
+- **The expiry date does not drift** while a source stays out, so "how long has this been broken" stays answerable and a review date means something specific.
+- **`reviewed_on` cannot clear `dormant`.** A maintainer's standing statement is only undone by a maintainer; otherwise a routine review date would quietly resurrect a source somebody killed on purpose.
+
+Clearing the latch does not vouch for the data, it only removes the block — normal freshness rules then apply, so a source readmitted with 45-day-old evidence lands in Stale, not Active.
+
+Editing `reviewed_on` is a `sources.yaml` change and therefore restarts the RC burn-in clock. Deliberate: readmitting a source is a scoring change.
+
+### The leak that would have made all of this pointless
+
+`carried_observations` re-casts recent sightings for sources that missed a run, reading them **out of state rather than out of the fetch**. An expired source has sightings in state by definition. Dropping it at collection while leaving carry-forward alone would have achieved nothing — it would have kept voting from state for a further `ttl_days`.
+
+Expired sources are excluded from carry-forward explicitly, and there is a test for it. This is the kind of hole that would have looked fixed and not been.
+
+### Consequences
+
+- Feodo Tracker contributes nothing as of this change. Verified to move no published records.
+- A source that stops publishing now has a bounded life instead of an indefinite half-life.
+- An unreviewed expiry warns on **every run** — deliberately, unlike a dormant source. It is an open action item, not an accepted state, and a quiet expiry would reproduce exactly the thing this policy exists to stop.
+- Lifecycle states go from five to four, all driven by one number.
+- The `abusech` class now has only ThreatFox voting, so `botnet-c2` is `corroboration-only`: watched, and unpublishable on that evidence alone. See the open items — the 2026-09-01 cycle found no redistributable replacement, and ET botcc is a verbatim mirror of Feodo's five dead addresses.
+- `src/` and `sources.yaml` both changed. Folded into `rc.6`.

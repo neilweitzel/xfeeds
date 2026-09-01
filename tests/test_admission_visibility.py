@@ -84,6 +84,8 @@ def test_the_abusech_shape_is_reported_as_voting_only() -> None:
     )
     manifest = manifest_for(registry)
 
+    # threatfox still votes - it is licence-restricted, not expired - so the
+    # class is still a voting class. It simply can never admit.
     assert "abusech" in manifest["active_voting_classes"]
     assert "abusech" not in manifest["active_admitting_classes"]
     assert "abusech" in manifest["voting_only_classes"]
@@ -218,8 +220,14 @@ def test_a_stale_source_cannot_admit_this_run() -> None:
 # --------------------------------------------------------------------------
 
 
-def test_active_voting_classes_is_unchanged() -> None:
-    """Consumers read this field. It keeps its exact previous meaning."""
+def test_active_voting_classes_counts_only_classes_that_actually_vote() -> None:
+    """Dormant classes are no longer counted (ADR-059).
+
+    Under ADR-052 a dormant source voted at a damped weight, so it belonged here.
+    It now contributes nothing at all, so counting it would restate the
+    overstatement ADR-058 set out to fix, one field to the left. `beta` stays:
+    a non-redistributable source still votes, it just cannot admit.
+    """
     registry = registry_of(
         src("a", "alpha"),
         src("b", "beta", redistribute=False),
@@ -227,7 +235,9 @@ def test_active_voting_classes_is_unchanged() -> None:
         src("d", "delta", vote=False, weight=0.0),
         src("e", "epsilon", enabled=False),
     )
-    assert manifest_for(registry)["active_voting_classes"] == ["alpha", "beta", "gamma"]
+    manifest = manifest_for(registry)
+    assert manifest["active_voting_classes"] == ["alpha", "beta"]
+    assert manifest["active_admitting_classes"] == ["alpha"]
 
 
 def test_category_coverage_names_the_classes_that_can_admit() -> None:
@@ -241,6 +251,7 @@ def test_category_coverage_names_the_classes_that_can_admit() -> None:
         "voting_classes": 2,
         "admitting_classes": 1,
         "admitting_class_names": ["alpha"],
+        "status": "admitting",
     }
     assert coverage["brute-force"]["admitting_class_names"] == ["alpha"]
 
@@ -337,3 +348,21 @@ def test_homepage_omits_the_clause_when_every_class_admits() -> None:
     )
     assert "2 independent evidence classes that can publish a record" in html
     assert "further classes" not in html
+
+
+def test_category_status_distinguishes_uncovered_from_unpublishable() -> None:
+    """A zero has two very different causes and they must not read the same.
+
+    `botnet-c2` is not a blind spot — ThreatFox watches it and votes. What we
+    cannot do is publish an address on abuse.ch's authority, which is a licence
+    outcome, not a gap in visibility.
+    """
+    registry = registry_of(
+        src("threatfox", "abusech", ["botnet-c2"], redistribute=False),
+        src("cins_army", "cins", ["scanning"]),
+    )
+    coverage = manifest_for(registry)["category_coverage"]
+
+    assert coverage["botnet-c2"]["status"] == "corroboration-only"
+    assert coverage["botnet-c2"]["voting_classes"] == 1
+    assert coverage["scanning"]["status"] == "admitting"
