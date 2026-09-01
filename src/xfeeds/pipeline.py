@@ -9,9 +9,10 @@ still corroborate an indicator without its rows ever being published. Filtering
 happens last so nothing downstream can reintroduce an allowlisted address.
 """
 
+import ipaddress
 import json
 from dataclasses import dataclass, field
-from datetime import UTC, datetime
+from datetime import UTC, datetime, time
 from pathlib import Path
 from typing import Any
 
@@ -48,13 +49,21 @@ from xfeeds.insights import (
     build_spectrum,
     update_asn_history,
 )
-from xfeeds.models import Band, IndicatorRecord, Registry, ScoredIndicator, SourceConfig
+from xfeeds.models import (
+    Band,
+    IndicatorRecord,
+    IPOrNet,
+    Registry,
+    ScoredIndicator,
+    SourceConfig,
+)
 from xfeeds.score import (
     noncommercial_sources,
     open_sources,
     permissive_sources,
     score_indicators,
 )
+from xfeeds.sightings import SightingWindow
 from xfeeds.state import carried_observations, load_state, merge_with_state, save_state
 
 logger = structlog.get_logger(__name__)
@@ -137,6 +146,7 @@ def collect_all(
     observed_on: datetime,
     only: str | None = None,
     ledger: FreshnessLedger | None = None,
+    window: SightingWindow | None = None,
 ) -> tuple[list[IndicatorRecord], dict[str, dict[str, Any]], list[str], set[str]]:
     """Fetch and parse every enabled source.
 
@@ -217,6 +227,11 @@ def collect_all(
             source_records.extend(parsed)
             entry["records"] += len(parsed)
 
+        if window is not None and source.sighting_window_days and entry["status"] != "failed":
+            source_records += _recurring_sightings(
+                source, source_records, window, observed_on, entry
+            )
+
         state = _apply_freshness(source, entry, evidence, ledger, observed_on, warnings)
 
         if state.is_expired:
@@ -242,6 +257,55 @@ def collect_all(
             warnings.append(f"{source.name}: returned zero usable records")
 
     return records, status, warnings, expired
+
+
+def _recurring_sightings(
+    source: SourceConfig,
+    reported_today: list[IndicatorRecord],
+    window: SightingWindow,
+    observed_on: datetime,
+    entry: dict[str, Any],
+) -> list[IndicatorRecord]:
+    """Re-cast addresses this source saw repeatedly but did not report today.
+
+    Only for snapshot sources, which publish what they saw today and nothing
+    about last week (ADR-061). An address qualifies on two conditions together:
+    seen on ``sighting_min_days`` distinct days, and seen most recently within
+    ``ttl_days``. History says it is a repeat offender; the TTL says it still is.
+
+    The re-cast observations carry their real ``last_seen`` and are flagged
+    ``carried``, so ``recency_factor`` decays them and they cannot promote. They
+    are evidence from this source, just not from this morning.
+    """
+    today = {str(r.ip_or_cidr) for r in reported_today}
+    assert source.sighting_window_days is not None
+    window.record(source.name, today, observed_on, source.sighting_window_days)
+
+    qualifying = window.recurring(
+        source.name, source.sighting_min_days, source.ttl_days, observed_on
+    )
+    extra: list[IndicatorRecord] = []
+    for address, last_seen in sorted(qualifying.items()):
+        if address in today:
+            continue
+        try:
+            parsed: IPOrNet = ipaddress.ip_address(address)
+        except ValueError:
+            continue
+        extra.append(
+            IndicatorRecord(
+                ip_or_cidr=parsed,
+                source=source.name,
+                independence_class=source.independence_class,
+                first_seen=datetime.combine(last_seen, time(tzinfo=UTC)),
+                last_seen=datetime.combine(last_seen, time(tzinfo=UTC)),
+                categories=list(source.categories),
+                carried=True,
+            )
+        )
+    entry["recurring_sightings"] = len(extra)
+    entry["sighting_window_tracked"] = window.tracked(source.name)
+    return extra
 
 
 def _apply_freshness(
@@ -344,9 +408,13 @@ def run(
     # corrupt the committed one.
     ledger_path = feeds_dir / FRESHNESS_LEDGER_PATH.name
     ledger = FreshnessLedger.load(ledger_path)
+    # Unlike the freshness ledger this lives in .cache/, because losing it fails
+    # safe: the affected source falls back to today's snapshot and the window
+    # rebuilds. See src/xfeeds/sightings.py.
+    window = SightingWindow.load()
 
     records, status, warnings, expired = collect_all(
-        registry, observed_on, only=only, ledger=ledger
+        registry, observed_on, only=only, ledger=ledger, window=window
     )
     report.source_status = status
     report.warnings = warnings
@@ -417,6 +485,7 @@ def run(
     # leave the ledger claiming it saw bodies whose records were never published,
     # or the next run would date their evidence from an abandoned pass.
     ledger.save(ledger_path)
+    window.save()
 
     manifest = build_manifest(
         registry,

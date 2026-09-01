@@ -1291,3 +1291,53 @@ def test_insights_do_not_publish_a_registration_country() -> None:
     assert "top_countries" not in insights["networks"]
     for row in insights["networks"]["top_asns"]:
         assert "country" not in row
+
+
+# --------------------------------------------------------------------------
+# Repeat-sighting window end to end (ADR-061)
+# --------------------------------------------------------------------------
+
+
+def test_recast_sighting_upgrades_medium_to_high() -> None:
+    """The whole point of the Turris backfill.
+
+    Two open classes put a record in the feed at ``medium``. A restricted class
+    takes it to ``high``. The re-cast observation is dated in the past and
+    flagged ``carried``, and must still count for corroboration - that is the
+    entire benefit, 604 records on the 2026-09-01 feed.
+    """
+    reg = registry_of(
+        src("a", "alpha"),
+        src("b", "beta"),
+        src("t", "turris", redistribute=False, ttl_days=7),
+    )
+    without = score_indicators([obs("a", "alpha"), obs("b", "beta")], reg, NOW)
+    assert without[0].band is Band.MEDIUM
+
+    recast = obs("t", "turris")
+    recast.first_seen = recast.last_seen = NOW - timedelta(days=4)
+    recast.carried = True
+    with_recast = score_indicators([obs("a", "alpha"), obs("b", "beta"), recast], reg, NOW)
+    assert with_recast[0].band is Band.HIGH
+    assert with_recast[0].restricted_corroboration == 1
+    # The restricted source must not be named, and must not have leaked a date.
+    assert with_recast[0].sources == ["a", "b"]
+    assert with_recast[0].last_seen == NOW
+
+
+def test_recast_sighting_cannot_admit_on_its_own() -> None:
+    """A re-cast observation must never be half the basis for publishing.
+
+    Turris is ``redistribute: false`` so it cannot admit anyway, but the carried
+    flag is the second lock: history establishes a repeat offender, it does not
+    establish a new one.
+    """
+    recast = obs("t", "turris")
+    recast.last_seen = NOW - timedelta(days=4)
+    recast.carried = True
+    scored = score_indicators(
+        [obs("a", "alpha"), recast],
+        registry_of(src("a", "alpha"), src("t", "turris", redistribute=False)),
+        NOW,
+    )
+    assert scored[0].band is Band.WITHHELD

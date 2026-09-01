@@ -117,6 +117,24 @@ class SourceConfig(BaseModel):
     vote. Half-counting evidence from a threat we have already declared dead was
     a distinction without a defensible purpose.
     """
+    sighting_window_days: int | None = None
+    """Days of per-address sighting history to keep for this source.
+
+    Set only for sources that publish a daily snapshot of what they saw *today*
+    and nothing about last week. An address is then contributed if it is in
+    today's snapshot, or if it was seen on ``sighting_min_days`` distinct days
+    within this window and most recently within ``ttl_days`` (ADR-061).
+
+    Leave unset for sources that already publish their own history.
+    """
+    sighting_min_days: int = 2
+    """Distinct days an address must appear on before history alone contributes it.
+
+    Two, because one sighting is not corroboration — the same reason a single
+    source cannot admit a record. Measured: 49.5% of the Turris 30-day union
+    appears on exactly one day, and requiring two captures 95% of the available
+    upgrades while discarding all of them.
+    """
     expire_after_days: int | None = None
     """Days of stale evidence before this source's data is dropped entirely.
 

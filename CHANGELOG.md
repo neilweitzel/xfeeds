@@ -10,6 +10,41 @@ six hours by design. A consumer pinning a tag still fetches the same live URLs.
 
 ## [Unreleased]
 
+## [1.0.0-rc.7] - 2026-09-01
+
+Two fixes found during the rc.6 burn-in. No change to any published contract.
+
+### Added
+
+- **A daily-snapshot source now corroborates itself over time** (ADR-061). The
+  Turris greylist publishes what its sensors saw today and nothing about last
+  week; thirty daily snapshots hold 85,266 addresses against 10,041 in one. An
+  address now contributes if it is in today's snapshot, or if Turris saw it on at
+  least two distinct days in thirty *and* most recently within the source's own
+  `ttl_days`. Both halves matter: **49.5% of the thirty-day union appears on
+  exactly one day**, and a single sighting from four weeks ago is not
+  corroboration. Upgrades 604 records from medium to high. The published count
+  does not move — Turris is `redistribute: false` and cannot admit.
+- `scripts/backfill_sighting_window.py`, a one-time seed from the source's archive
+  so the window works on day one rather than a month after merge.
+- New `sources.yaml` keys `sighting_window_days` and `sighting_min_days`.
+
+### Changed
+
+- **The feed refresh is scheduled for the scheduler we have** (ADR-062, #50).
+  GitHub dropped enough slots that only one day in six saw all four runs and the
+  median gap reached 8.26h. The trigger now fires every three hours and a guard
+  stands most slots down before contacting any upstream, holding the actual rate
+  at four a day and at least four hours apart — stricter than AbuseIPDB's five
+  calls a day and Spamhaus's one-hour spacing. A dropped slot is now picked up in
+  three hours instead of six. Simulated: gaps over 12h fall from 25.1% to 9.4%.
+  Every published statement of cadence remains true.
+- The release checklist's manifest-freshness bound moves from eight hours to
+  twelve. Under the new schedule a random check finds the manifest under eight
+  hours old 86.5% of the time and under twelve 96.9%; eight was failing the
+  checklist on a healthy pipeline.
+
+
 ## [1.0.0-rc.6] — 2026-09-01
 
 Cut by the 1 September source review. **No published output changes.** The review
