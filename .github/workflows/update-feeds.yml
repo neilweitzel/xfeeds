@@ -1,16 +1,32 @@
 name: Update feeds
 
-# Every 6 hours, offset off the hour so we are not part of a thundering herd
-# hitting these upstreams on the hour. The cadence is set by the tightest
-# external constraint: AbuseIPDB allows 5 blacklist calls per day on the free
-# tier, and Spamhaus requires automated fetches at least an hour apart.
+# The target cadence is every 6 hours, set by the tightest external constraint:
+# AbuseIPDB allows 5 blacklist calls per day on the free tier, and Spamhaus
+# requires automated fetches at least an hour apart. Offset off the hour so we
+# are not part of a thundering herd hitting these upstreams on the hour.
+#
+# But the trigger fires every 3 hours, not every 6. GitHub's scheduler is
+# best-effort and drops slots under load: across 2026-08-27 to 2026-09-01 only
+# one day in six saw all four runs, the median gap stretched to 8.26h, and the
+# worst reached 13.79h (#50). A dropped 6-hourly slot meant waiting 12 hours.
+#
+# Firing every 3 hours lets a dropped slot be picked up 3 hours later instead of
+# 6. The extra slots do not mean extra fetches - the guard below stands most of
+# them down before any upstream is contacted, holding the *actual* refresh rate
+# at 4 per day and at least 4 hours apart. That is stricter than both external
+# limits, so a scheduler that misbehaves costs us freshness, never a rate limit
+# (ADR-062).
 on:
   schedule:
-    - cron: "17 */6 * * *"
+    - cron: "17 */3 * * *"
   workflow_dispatch:
     inputs:
       force:
         description: "Bypass the churn guard (use when a large change is expected)"
+        type: boolean
+        default: false
+      backfill_sightings:
+        description: "Re-seed the repeat-sighting window from source archives (ADR-061)"
         type: boolean
         default: false
 
@@ -63,8 +79,45 @@ jobs:
           restore-keys: |
             xfeeds-cache-
 
+      # Stand down unless a refresh is actually due. Reads the commit history of
+      # feeds/manifest.json rather than the Actions run list, because every
+      # successful refresh commits a new generated_at while a stood-down run
+      # commits nothing - so the history counts real refreshes, not triggers.
+      #
+      # Both bounds exist to protect a different upstream promise, and both are
+      # deliberately stricter than the promise itself:
+      #   * at most 4 in 24h  -> AbuseIPDB's free tier allows 5
+      #   * at least 4h apart -> Spamhaus asks for at least 1h
+      - name: Decide whether a refresh is due
+        id: due
+        if: github.event_name == 'schedule'
+        run: |
+          LAST=$(git log -1 --format=%ct -- feeds/manifest.json)
+          COUNT=$(git log --since='24 hours ago' --format=%ct -- feeds/manifest.json | wc -l)
+          NOW=$(date -u +%s)
+          AGE=$(( (NOW - LAST) / 60 ))
+          echo "Last refresh ${AGE} minutes ago; ${COUNT} in the last 24h."
+          if [ "$COUNT" -ge 4 ]; then
+            echo "::notice::Standing down - already 4 refreshes in the last 24h."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          elif [ "$AGE" -lt 240 ]; then
+            echo "::notice::Standing down - last refresh was ${AGE}m ago, minimum spacing is 240m."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # The sighting window lives in .cache and is rebuilt by accumulation, so a
+      # lost Actions cache silently costs a month of history (ADR-061). This is
+      # the recovery path, and the reason the script exists at all: without a way
+      # to run it where the cache lives, it could only ever help a local checkout.
+      - name: Re-seed the sighting window
+        if: inputs.backfill_sightings
+        run: uv run python scripts/backfill_sighting_window.py --source turris_greylist
+
       - name: Refresh feeds
         id: refresh
+        if: steps.due.outputs.skip != 'true'
         env:
           ABUSEIPDB_API_KEY: ${{ secrets.ABUSEIPDB_API_KEY }}
           THREATFOX_AUTH_KEY: ${{ secrets.THREATFOX_AUTH_KEY }}
@@ -78,7 +131,7 @@ jobs:
 
       - name: Commit refreshed feeds
         id: commit
-        if: steps.refresh.outputs.exit_code == '0'
+        if: steps.due.outputs.skip != 'true' && steps.refresh.outputs.exit_code == '0'
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -117,7 +170,7 @@ jobs:
       # A tripped churn guard (exit 2) means an upstream probably broke. Surface
       # it as an issue rather than failing silently in the Actions tab.
       - name: Report a problem
-        if: steps.refresh.outputs.exit_code != '0'
+        if: steps.due.outputs.skip != 'true' && steps.refresh.outputs.exit_code != '0'
         uses: actions/github-script@v7
         with:
           script: |
@@ -145,8 +198,8 @@ jobs:
               '</details>',
             ].join('\n');
 
-            // Update the existing open issue instead of opening a duplicate every
-            // 6 hours - a broken upstream would otherwise create four a day.
+            // Update the existing open issue instead of opening a duplicate on
+            // every refresh - a broken upstream would otherwise create four a day.
             const existing = await github.rest.issues.listForRepo({
               owner: context.repo.owner, repo: context.repo.repo,
               state: 'open', labels: 'automated',

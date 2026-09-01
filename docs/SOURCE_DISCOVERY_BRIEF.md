@@ -227,7 +227,8 @@ Include in the PR body:
 ## Step 6: After the PR merges
 
 - The pipeline picks up the new source on the next scheduled `Update feeds`
-  run (every 6 hours at `17 */6 * * *`).
+  run (target cadence every 6 hours; the trigger fires at `17 */3 * * *` and a
+  guard stands down the extra slots - see ADR-062).
 - Confirm the source appears in the manifest with `status: "ok"` and a
   non-zero record count after the first run.
 - If the source is stale on first run, the freshness gate will prevent it

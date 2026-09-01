@@ -23,7 +23,16 @@ Companion documents: [`CITABILITY.md`](CITABILITY.md) for why archival is sequen
 - [ ] CI is green on `main`.
 - [ ] The last four scheduled cycles each show Update feeds → Publish to Pages → Heartbeat all succeeding.
 - [ ] No open pull requests and no unresolved issues, including no open false-positive reports.
-- [ ] The live manifest at [neilweitzel.github.io/xfeeds/manifest.json](https://neilweitzel.github.io/xfeeds/manifest.json) has a `generated_at` within the last **eight** hours, and the committed manifest matches it.
+- [ ] The live manifest at [neilweitzel.github.io/xfeeds/manifest.json](https://neilweitzel.github.io/xfeeds/manifest.json) has a `generated_at` within the last **twelve** hours, and the committed manifest matches it.
+
+      Twelve, not eight. The eight-hour bound was set from gaps measured 2026-08-19
+      to 2026-08-24, when the median was 5.8h and the worst 7.17h. GitHub's
+      scheduler then began dropping slots (#50) and the median gap reached 8.26h,
+      so the gate started failing on a pipeline that was working correctly.
+      Simulated against the post-ADR-062 schedule at the observed drop rate, a
+      random check finds the manifest under eight hours old 86.5% of the time and
+      under twelve 96.9% of the time. Eight would fail this checklist roughly one
+      attempt in seven for no reason.
 
   Eight rather than six deliberately. `update-feeds.yml` is scheduled `17 */6 * * *`, so four runs a day is the intent, but GitHub's scheduled-workflow queue runs late under load: observed gaps between consecutive runs over 2026-08-19 to 2026-08-24 ranged from 5.03h to **7.17h**, median 5.8h. A six-hour bound would fail this check on a perfectly healthy pipeline.
 

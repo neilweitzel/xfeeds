@@ -276,8 +276,10 @@ Add the automation workflows. Read the Automation section of README.md and
 ADR-004. This task only touches .github/ — do not modify src/.
 
 Create .github/workflows/update-feeds.yml:
-- Triggers: schedule every 6 hours at :17 past the hour (offset to avoid the
-  thundering herd on upstream sources), plus workflow_dispatch.
+- Triggers: schedule at :17 past every 3rd hour (offset to avoid the thundering
+  herd on upstream sources), plus workflow_dispatch. A guard step holds the
+  actual refresh rate at 4 per day, at least 4h apart, so dropped scheduler
+  slots can be picked up without exceeding upstream rate limits (ADR-062).
 - Concurrency group so overlapping runs cancel.
 - Steps: checkout, astral-sh/setup-uv pinned, uv python install 3.13, uv sync,
   restore the HTTP cache via actions/cache, run `uv run xfeeds run`, then commit

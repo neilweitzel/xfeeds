@@ -1461,7 +1461,7 @@ of top-20 /24 subnets.
 - [x] **Email Spamhaus** for written confirmation that redistributing DROP inside a public aggregate is permitted. **Closed by policy 2026-09-01 (ADR-060).** Their Terms of Use §3.1 grant no IP licence while the blocklist page invites free use with credit; we publish on the second reading, state that reading in `sources.yaml`, and carry the required credit and date text. Spamhaus may object through the path in every feed header.
 - [x] Confirm AbuseIPDB redistribution terms in writing; flip `redistribute` if permitted. **Closed by policy 2026-09-01 (ADR-060).** Their terms grant no redistribution as written, so it stays `redistribute: false` and scoring-only. That is the reading; it does not need confirming to be acted on.
 - [x] Measure sefinek churn across several runs, then decide between enabling it upgrade-only or leaving it out (ADR-048/ADR-051). **Closed 2026-09-01, decided-no: ADR-057.** Measured across 140 upstream commits rather than several runs — the list is kept in git, so its whole history is readable directly. Zero removals in 32 days. Rejected under the all-time-list rule despite MIT licensing, the best independence measured anywhere (max Jaccard 0.0035), and 5,490 host-level IPv6 addresses. Do not re-survey without evidence of an upstream expiry policy.
-- [ ] Backfill the Turris archive. **Measured 2026-09-01 — see [`docs/turris-backfill-2026-09.md`](turris-backfill-2026-09.md). Recommended, with a condition; implementation deferred to after v1.0.0.** The 8.5× headline (10,041 → 85,266 over 30 days) is a trap: **49.5% of the union appears on exactly one day**. A "seen on at least two separate days" filter captures 693 of the 732 available medium→high upgrades — 95% of the benefit — while discarding 42,179 single-day transients. Published count does not move at all, because Turris cannot admit; only band composition shifts (high 6,952 → 7,645, +10.0%, well inside the 25% churn guard). Implement as a rolling 30-day sighting window in state, **not** by fetching 30 archive files per run against a volunteer sensor network.
+- [x] Backfill the Turris archive. **Done in ADR-061. Measured 2026-09-01 — see [`docs/turris-backfill-2026-09.md`](turris-backfill-2026-09.md). Recommended, with a condition; implementation deferred to after v1.0.0.** The 8.5× headline (10,041 → 85,266 over 30 days) is a trap: **49.5% of the union appears on exactly one day**. A "seen on at least two separate days" filter captures 693 of the 732 available medium→high upgrades — 95% of the benefit — while discarding 42,179 single-day transients. Published count does not move at all, because Turris cannot admit; only band composition shifts (high 6,952 → 7,645, +10.0%, well inside the 25% churn guard). Implement as a rolling 30-day sighting window in state, **not** by fetching 30 archive files per run against a volunteer sensor network.
 - [ ] Check the provenance of `threatview_CS_c2.rules` (752 Cobalt Strike C2). It is the only genuinely new Emerging Threats dataset, but it is third-party data inside ET's directory and its licence is not the ET BSD grant (ADR-050).
 - [x] **Ask StopForumSpam for a written No-Derivative-Works waiver.** **Closed by policy 2026-09-01 (ADR-060).** The ND clause is read as written, so the source stays scoring-only in both tiers and 54,710 addresses stay unpublished. Recorded rather than pursued; the original reasoning is kept below because it is the argument StopForumSpam would need to see if they ever revisit it. ~~Ask StopForumSpam for a written No-Derivative-Works waiver~~, which their Waiver clause explicitly allows ("Any of the above conditions can be waived if you get permission from the copyright holder"). This is worth more than it looks: their NonCommercial clause bars only resale and misattribution, not commercial use, so ND is the single clause blocking 54,710 addresses from both tiers. Also ask them to resolve the contradiction between the "To Share" grant and the ND clause, and to confirm that scripted fetching of their published download files is permitted, since read literally the ND clause forbids automated copying of any site data. Until then the source stays scoring-only in both tiers (ADR-050, re-reviewed 2026-08-15).
 - [ ] **Dead disclosure path in `emit._header`.** The "consulted for corroboration only" block can never render: `score.py` adds a source to `r.sources` only when it is redistributable, so `all_contributing - redistributable` is always empty. Verified against the live feeds - no tier header lists any scoring-only source. This publishes *less* than intended rather than more, so it is not a licence exposure, but it is a safeguard that looks present and is not. Either drive it from the registry instead of from the records, or delete it and rely on `restricted_corroboration`.
@@ -2101,3 +2101,152 @@ What changes is only who carries the ambiguity. The alternative — withholding 
 - The objection path has to be visible where a publisher would actually encounter the data, not only in the README — so it goes in the header of every published feed file alongside the false-positive line.
 - If a maintainer does object, the response is a `sources.yaml` change, which restarts the RC burn-in clock. Accepted: a licence correction is corrective work and takes priority over a release date.
 - This is a documentation and policy record. It changes no code behaviour on its own.
+
+## ADR-061 — A daily-snapshot source corroborates itself over time
+
+**Status:** accepted, 2026-09-01 · supersedes the Turris backfill open item in ADR-050
+
+### Context
+
+The Turris Sentinel greylist publishes what its sensor network saw *today* — about
+10,000 addresses — and nothing about what it saw last week. Thirty daily snapshots
+from the same archive hold 85,266. We already have the right to read that archive
+under the same CC BY-NC-SA terms assessed in ADR-050, and reading it needs no new
+endpoint and no new licence conversation. Eight times the evidence, apparently for
+free.
+
+ADR-050 recorded that as the highest-value open item but did not act, on the
+grounds that it "interacts with state and ageing so it needs its own measurement."
+That caution was right, and the measurement in
+[`docs/turris-backfill-2026-09.md`](turris-backfill-2026-09.md) says why.
+
+### The measurement
+
+**49.5% of the thirty-day union — 42,179 of 85,266 addresses — appears on exactly
+one day.** The headline is composed mostly of addresses the sensor network saw
+once and never again.
+
+Treating those as current corroboration is precisely the failure
+[`docs/staleness-analysis.md`](staleness-analysis.md) measured: reused addresses
+can sit in a blocklist as long as 44 days and reach as many as 78 legitimate
+users, and dynamically allocated addresses turn over in about three.
+
+Against the published feed of 2026-09-01:
+
+| Rule | Turris addresses | medium → high |
+|---|---|---|
+| today only (previous behaviour) | 10,041 | — |
+| naive 30-day union | 85,266 | 732 |
+| ≥2 distinct days | 45,150 | 694 |
+| **≥2 distinct days, last seen ≤ `ttl_days`** | **29,544** | **604** |
+
+### Decision
+
+**An address contributes if it is in today's snapshot, or if the source saw it on
+at least `sighting_min_days` distinct days within `sighting_window_days` *and*
+most recently within that source's own `ttl_days`.**
+
+Both halves are load-bearing, and neither is a tuning knob:
+
+- **Repeat.** One sighting is not corroboration. That is the entire premise of
+  this project applied inside a single source rather than across sources — an
+  address a sensor network saw once is exactly as thin as an address one feed
+  listed once, and we do not publish those either.
+- **Current.** History establishes that an address *was* a repeat offender. It
+  does not establish that it still is. Bounding on `ttl_days` rather than
+  inventing a second number means this can never assert freshness the source's
+  own configured TTL disagrees with.
+
+Re-cast observations carry their real `last_seen` and are flagged `carried`, so
+`recency_factor` decays them and they cannot promote. They are evidence from this
+source, just not from this morning.
+
+### Consequences
+
+- Turris is `redistribute: false`, so it cannot admit an address. **The published
+  count does not move at all**; only band composition shifts, high 6,952 → 7,556.
+  A ~9% move against a 25% churn guard.
+- 87% of the available benefit for half the addresses of an unbounded union, and
+  none of the single-day transients.
+- The window lives in `.cache/sighting-window.json` and is **not** committed,
+  which is the opposite of the ADR-059 freshness ledger. The difference is the
+  direction of failure. Losing the ledger releases expiry latches and makes a
+  frozen upstream look fresh — unsafe. Losing this window drops the history, the
+  source falls back to today's snapshot, and it rebuilds over the following
+  month — it under-reports confidence, which is the direction `state.py` already
+  chose for the same reason.
+- `scripts/backfill_sighting_window.py` seeds the window from the archive once, so
+  the feature works on day one instead of a month after merge. It is deliberately
+  not part of the pipeline: 30 archive fetches per run would be 120 requests a day
+  against a volunteer-run sensor network for data that changes daily.
+- Applies to Turris alone today. Any source publishing a daily snapshot of current
+  observations is a candidate; a source that already publishes its own history is
+  not.
+
+## ADR-062 — Schedule for the scheduler we have, not the one we want
+
+**Status:** accepted, 2026-09-01 · closes #50
+
+### Context
+
+`update-feeds.yml` ran at `17 */6 * * *`, four times a day. The cadence was not
+chosen for elegance: AbuseIPDB's free tier allows five blacklist calls a day, and
+Spamhaus asks that automated fetches be at least an hour apart. Four is what fits.
+
+GitHub's scheduled triggers are best-effort and get dropped under load. Measured
+across 2026-08-27 to 2026-09-01, only one day in six saw all four runs; the median
+gap between refreshes went from 6.02h to **8.26h**, and the worst reached 13.79h.
+Every run that fired succeeded, so nothing was broken — the runs simply never
+started.
+
+This also broke a promise we had published. `docs/RELEASE_CHECKLIST.md` required
+the live manifest to be under eight hours old, a bound set when the median gap was
+5.8h. With the median at 8.26h the gate had started failing on a healthy pipeline,
+on the checklist that gates `v1.0.0`.
+
+### The thing that does not work
+
+Firing more often. Eight runs a day would double the fetch load on every upstream,
+break AbuseIPDB's five-call limit outright, and answer a GitHub scheduling problem
+by spending other people's bandwidth — including a volunteer-run sensor network's.
+
+### Decision
+
+**Fire every three hours; stand most of those slots down before contacting any
+upstream.**
+
+A guard step reads the commit history of `feeds/manifest.json` — every successful
+refresh commits a new `generated_at`, and a stood-down run commits nothing, so the
+history counts real refreshes rather than triggers. It stands the run down if
+there have already been four refreshes in the last 24 hours, or if the last one
+was under four hours ago.
+
+Both bounds are deliberately stricter than the promise they protect: four a day
+against AbuseIPDB's five, four hours apart against Spamhaus's one.
+
+The effect is that a dropped slot is picked up three hours later instead of six,
+while the *actual* refresh rate is unchanged. Every existing statement of cadence
+— "every six hours", "four times a day", in the README, the dashboard, and every
+feed header — remains true.
+
+### Consequences
+
+Simulated over 2,000 days at the observed drop rate:
+
+| | current | with ADR-062 |
+|---|---|---|
+| median manifest age | 4.60h | 3.94h |
+| p95 manifest age | 17.56h | 10.84h |
+| gaps over 12h | 25.1% | 9.4% |
+| worst day's run count | 4 | 4 |
+
+- The release gate moves from eight hours to **twelve**. A random check finds the
+  manifest under eight hours old 86.5% of the time and under twelve 96.9%. Eight
+  would fail the checklist about one attempt in seven for no reason.
+- This does not fix the scheduler, and the tail is still long: a run of
+  consecutive dropped slots is beyond our reach from inside GitHub Actions. It
+  roughly halves the frequency of the pathological gaps and costs nothing
+  upstream, which is the best available trade without moving the trigger off
+  GitHub entirely.
+- Changing a workflow restarts the RC burn-in clock. Accepted: finding this during
+  the candidate period and fixing it is what the candidate period is for.
