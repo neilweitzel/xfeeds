@@ -56,6 +56,12 @@ now closes on or after **2026-10-01**.
   the left. The published value is unchanged today (13), because ThreatFox still
   votes for the `abusech` class.
 
+- **The dashboard no longer claims an expired source publishes.** Its Publication
+  column read the licence flag alone, so Feodo Tracker — which is CC0 — showed
+  "yes" next to a source supplying zero records. It now reads "not contributing",
+  and expired sources are styled apart from stale ones rather than sharing the
+  same amber: it is a different outcome, not a louder version of the same one.
+
 - `category_coverage` entries carry a `status` of `admitting` or
   `corroboration-only`. A bare `0` conflated two different situations: "we cannot
   see this category" and "we see it but may not republish on its authority".

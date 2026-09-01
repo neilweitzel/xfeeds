@@ -1494,6 +1494,8 @@ of top-20 /24 subnets.
 
 ## ADR-052 — Source lifecycle and discovery policy
 
+> **Partly superseded.** The freshness *implementation* described below was completed in ADR-056 (only step 2 of the three-step priority order had ever been written). The dormant-source *behaviour* — a damped, non-admitting vote — was replaced in ADR-059: dormant now means expired, and contributes nothing. The five-state model here is now four states. The discovery process is unchanged and still current.
+
 **Date:** 2026-08-18. **Status:** Accepted.
 
 ### Context
@@ -1560,6 +1562,8 @@ freshness, not on a calendar.
   `Last-Modified` provides. Tracked as an open item.
 
 ## ADR-053 — Unvouched evidence is non-admitting
+
+> **Partly superseded by ADR-059.** Still correct for *stale* sources. No longer correct for *dormant* ones: they are expired rather than non-admitting, so they cast no vote at all rather than a damped one.
 
 **Date:** 2026-08-19. **Status:** Accepted. **Amends:** ADR-052.
 

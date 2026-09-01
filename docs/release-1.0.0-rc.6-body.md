@@ -75,6 +75,8 @@ Expired sources are **still fetched**, on purpose. The fetch stops being a scori
 
 Lifecycle states go from five to four, all driven by one number.
 
+Surfaces updated to match: the source health table shows `expired` in its own colour and reads **not contributing** under Publication — it previously read the licence flag alone, so Feodo Tracker being CC0 printed "yes" next to a source supplying zero records. The README carries the three-state table, and ADR-052/053 now open with supersession notes so nobody follows the old dormant behaviour.
+
 #### Feodo Tracker, measured before it was dropped
 
 All 5 of its addresses were **already withheld**, and none appeared in the published feed. Dropping the source moved neither the high nor the medium count. Every mechanism built around it — the damped vote, the upgrade path, the suppressed warning — had been doing no work for months. The only thing keeping it alive was that nothing had a clock on it.

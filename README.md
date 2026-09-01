@@ -131,6 +131,22 @@ Only classes we are licensed to republish count toward the threshold that admits
 
 That split is what makes a restricted source safe to use, and ADR-048 measured the payoff: adding DataPlane and DShield left the published count **unchanged at 3,518** while upgrading 375 records from medium to high. Pure corroboration, zero new exposure.
 
+### A source that stops publishing eventually stops counting
+
+A successful fetch means the endpoint answered, not that anything behind it is current. Evidence age is taken from the source's own declared publication time where it has one, falling back to the HTTP `Last-Modified` header and then to a content hash — in that order, because [abuse.ch serves a `Last-Modified` that moves independently of its payload](docs/DECISIONS.md).
+
+Three states follow from that one number:
+
+| Evidence age | State | What it contributes |
+|---|---|---|
+| within `min(30 days, ttl_days)` | **Active** | full vote, can admit, can promote |
+| past that, up to 90 days | **Stale** | damped ×0.2, cannot admit, cannot promote |
+| past 90 days, or `dormant: true` | **Expired** | **nothing** — records dropped before scoring |
+
+Expired sources are still fetched. The fetch stops being a scoring input and becomes a review trigger: `evidence_age_days` falling in the manifest is what tells a maintainer the upstream is alive again.
+
+**They do not come back on their own.** Re-admission needs a `reviewed_on` date in `sources.yaml` on or after the expiry recorded in `feeds/source-freshness.json`, which is the point at which somebody re-checks the licence, the sensor method, and the content shape. Fresh data is the prompt to review, not the review. Full policy in [`docs/source-lifecycle.md`](docs/source-lifecycle.md).
+
 ### Voting is not admitting
 
 Those are two different rights, and the difference is larger than it looks. As of 2026-09-01 there are **13 voting classes and 6 admitting ones**. The other seven — `abusech`, `abuseipdb`, `dataplane`, `dshield`, `greensnow`, `stopforumspam`, `turris` — can strengthen a record that two live classes already admitted, and can never be one of those two, because their licence forbids redistribution or the upstream behind them has stopped publishing.
@@ -279,7 +295,7 @@ feeds, which firewalls parse.
 - **Churn guard.** A run that would add or remove more than 25% of the feed fails, opens an issue, and leaves the previous feed in place.
 - **Redistribution flags enforced in code.** Sources marked `redistribute: false` inform scoring and never reach an emitter.
 - **Provenance always.** No IP ships without a named source in `all.json`.
-- **Staleness detection.** A source whose last-updated header exceeds 30 days raises a warning, so a dead upstream is never mistaken for a quiet internet.
+- **Staleness detection.** A source whose own evidence exceeds 30 days is damped and stops counting toward admission, so a dead upstream is never mistaken for a quiet internet. Past 90 days it is dropped entirely and does not return without a recorded review — see below.
 
 ## What the dashboard shows
 

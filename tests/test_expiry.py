@@ -311,3 +311,49 @@ def test_a_healthy_source_is_untouched_by_any_of_this(
         assert expired == set(), day
         assert warnings == [], day
         assert len(records) == 1
+
+
+# --------------------------------------------------------------------------
+# What an operator actually sees.
+# --------------------------------------------------------------------------
+
+
+def test_dashboard_does_not_claim_an_expired_source_publishes() -> None:
+    """The Publication column asks what a source contributes, not what its
+    licence would allow.
+
+    Feodo Tracker is CC0, so reading the licence flag alone printed "yes" next to
+    a source supplying zero records. Expired sources are also styled apart from
+    stale ones: it is a different outcome, not a louder version of the same one.
+    """
+    from xfeeds.dashboard import _source_rows
+
+    html = _source_rows(
+        {
+            "sources": {
+                "feodo_tracker": {
+                    "status": "expired",
+                    "records": 0,
+                    "redistributable": True,
+                    "independence_class": "abusech",
+                },
+                "cins_army": {
+                    "status": "ok",
+                    "records": 15000,
+                    "redistributable": True,
+                    "independence_class": "cins",
+                },
+                "turris_greylist": {
+                    "status": "ok",
+                    "records": 10202,
+                    "redistributable": False,
+                    "independence_class": "turris",
+                },
+            }
+        }
+    )
+    assert "not contributing" in html
+    assert "status-expired" in html
+    assert "scoring only" in html
+    # The healthy CC0 source still reads "yes"; only the expired one changed.
+    assert html.count("yes") == 1
