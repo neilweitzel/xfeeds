@@ -131,6 +131,21 @@ Only classes we are licensed to republish count toward the threshold that admits
 
 That split is what makes a restricted source safe to use, and ADR-048 measured the payoff: adding DataPlane and DShield left the published count **unchanged at 3,518** while upgrading 375 records from medium to high. Pure corroboration, zero new exposure.
 
+### Voting is not admitting
+
+Those are two different rights, and the difference is larger than it looks. As of 2026-09-01 there are **13 voting classes and 6 admitting ones**. The other seven — `abusech`, `abuseipdb`, `dataplane`, `dshield`, `greensnow`, `stopforumspam`, `turris` — can strengthen a record that two live classes already admitted, and can never be one of those two, because their licence forbids redistribution or the upstream behind them has stopped publishing.
+
+`manifest.json` reports both, plus `voting_only_classes` and a per-category `category_coverage` block. Four categories currently have **no** admitting class at all:
+
+| Category | Voting | Admitting | Why |
+|---|---|---|---|
+| `botnet-c2` | 1 | 0 | Feodo Tracker dormant, ThreatFox non-redistributable |
+| `abuse` | 2 | 0 | StopForumSpam and DataPlane both non-redistributable |
+| `spam-source` | 2 | 0 | the same two |
+| `telnet-attack` | 1 | 0 | DataPlane only |
+
+This does not mean nothing in those categories is ever published — an address can still reach the feed on the strength of two other admitting classes that also saw it. It means no address is admitted on that category's evidence alone. See ADR-058.
+
 Measured against live data on 2026-08-11, of 54,241 unique candidate IPs:
 
 | Distinct classes | IPs | Share | Band |
@@ -165,7 +180,7 @@ near 5,000 requests/hour/IP and blocks the IP for 30 minutes when exceeded.
 | `nftables.conf` | both | `blocklist4` and `blocklist6` sets in one file. |
 | `iptables.ipset` | IPv4 | ipset restore format, set `xfeeds`. |
 | `iptables6.ipset` | IPv6 | ipset restore format, set `xfeeds6`. An ipset holds one family. |
-| `manifest.json` | — | Per-source status, licences, counts, deltas, per-family breakdown. Also `evidence_time`, `evidence_age_days`, and `evidence_basis` per source — how old the upstream's own data is, and which of the three mechanisms in [`docs/source-lifecycle.md`](docs/source-lifecycle.md#how-evidence-age-is-determined) established that. Distinct from `last_modified`, which is the raw HTTP header and is not always honest about the payload behind it. |
+| `manifest.json` | — | Per-source status, licences, counts, deltas, per-family breakdown. Carries both `active_voting_classes` and `active_admitting_classes` — see below, they are different numbers. Also `evidence_time`, `evidence_age_days`, and `evidence_basis` per source — how old the upstream's own data is, and which of the three mechanisms in [`docs/source-lifecycle.md`](docs/source-lifecycle.md#how-evidence-age-is-determined) established that. Distinct from `last_modified`, which is the raw HTTP header and is not always honest about the payload behind it. |
 | `source-freshness.json` | — | When each source's body last actually changed. Backs the content-hash arm of evidence ageing for sources that declare no timestamp. |
 | `history.json` | — | Rolling per-run history behind the charts. |
 

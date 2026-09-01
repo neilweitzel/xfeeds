@@ -24,7 +24,7 @@ from typing import Any
 import structlog
 
 from xfeeds.collectors.parsers import upstream_attribution
-from xfeeds.models import Band, IPNetwork, Registry, ScoredIndicator
+from xfeeds.models import Band, IPNetwork, Registry, ScoredIndicator, SourceConfig
 
 logger = structlog.get_logger(__name__)
 
@@ -559,6 +559,41 @@ def write_misp(path: Path, records: list[ScoredIndicator], generated_at: datetim
     )
 
 
+def _admission_block(
+    config: SourceConfig | None, status: dict[str, Any]
+) -> tuple[bool, str | None]:
+    """Can this source be one of the two classes that publish an address today?
+
+    Mirrors the ``publishable_source and evidence_vouched`` test in
+    :func:`xfeeds.score.score_indicators`. Kept as a separate reader rather than
+    imported from the scorer because the scorer decides per *observation* and this
+    describes a *source*, but the conditions must not drift apart - if the scorer's
+    admission rule changes, this changes with it.
+
+    Returns ``(admits, reason_it_cannot)``. The reason is the operator-facing half:
+    "votes but cannot admit" is a fact, "votes but cannot admit because its licence
+    forbids redistribution" is actionable.
+    """
+    if config is None:
+        return False, "not configured"
+    if not config.enabled:
+        return False, "disabled"
+    if not config.vote:
+        return False, "does not vote"
+    if config.weight <= 0:
+        return False, "zero weight"
+    if not config.redistribute:
+        return False, "licence forbids redistribution"
+    if config.dormant:
+        return False, "dormant: tracked threat reviewed and confirmed inactive"
+    if status.get("status") == "stale":
+        age = status.get("evidence_age_days")
+        return False, f"stale: upstream evidence is {age} days old"
+    if status.get("status") in {"failed", "skipped"}:
+        return False, f"no data this run ({status.get('status')})"
+    return True, None
+
+
 def build_manifest(
     registry: Registry,
     source_status: dict[str, dict[str, Any]],
@@ -578,16 +613,54 @@ def build_manifest(
     sources_block: dict[str, Any] = {}
     for name, status in sorted(source_status.items()):
         config = by_name.get(name)
+        admits, blocked_by = _admission_block(config, status)
         sources_block[name] = {
             **status,
             "independence_class": config.independence_class if config else None,
             "weight": config.weight if config else None,
             "votes": bool(config and config.vote and config.enabled),
+            "admits": admits,
+            "admitting_blocked_by": blocked_by,
             "redistributable": bool(config and config.redistribute),
             "license": config.license if config else None,
             "license_url": config.license_url if config else None,
             "license_risk": config.license_risk if config else None,
         }
+
+    # Voting and admitting are different rights, and only the first was ever
+    # published. A class can vote - contributing confidence to a record that
+    # already stands on live corroboration - while being structurally incapable of
+    # being one of the two classes that put an address into the feed. Reporting
+    # only the first overstates the corroboration base to anyone reading this file.
+    #
+    # The abusech class is the worked example. feodo_tracker is dormant, sslbl is
+    # retired and threatfox is redistribute:false, so the whole class votes and
+    # never admits - which means botnet-c2 has no admitting source at all. That was
+    # true for two weeks before anybody noticed, because the manifest said
+    # "active_voting_classes: [... abusech ...]" and nothing contradicted it.
+    voting_classes = {
+        s.independence_class for s in registry.sources if s.enabled and s.vote and s.weight > 0
+    }
+    admitting_classes = {
+        s.independence_class
+        for s in registry.sources
+        if s.enabled and s.vote and s.weight > 0 and s.redistribute and not s.dormant
+    }
+
+    # Per-category coverage, so a category losing its last admitting source is
+    # visible as a zero rather than as an absence. Computed from configuration
+    # rather than from this run, so a transient fetch failure does not read as a
+    # structural gap.
+    categories: dict[str, dict[str, Any]] = {}
+    for source in registry.sources:
+        if not (source.enabled and source.vote and source.weight > 0):
+            continue
+        can_admit = source.redistribute and not source.dormant
+        for category in source.categories:
+            entry = categories.setdefault(category, {"voting": set(), "admitting": set()})
+            entry["voting"].add(source.independence_class)
+            if can_admit:
+                entry["admitting"].add(source.independence_class)
 
     return {
         "generated_at": generated_at.isoformat(),
@@ -613,13 +686,19 @@ def build_manifest(
         },
         "filters": filter_stats,
         "sources": sources_block,
-        "active_voting_classes": sorted(
-            {
-                s.independence_class
-                for s in registry.sources
-                if s.enabled and s.vote and s.weight > 0
+        # Unchanged, and deliberately so - it is a published contract and consumers
+        # read it. It is now accompanied by the fields that make it honest.
+        "active_voting_classes": sorted(voting_classes),
+        "active_admitting_classes": sorted(admitting_classes),
+        "voting_only_classes": sorted(voting_classes - admitting_classes),
+        "category_coverage": {
+            name: {
+                "voting_classes": len(entry["voting"]),
+                "admitting_classes": len(entry["admitting"]),
+                "admitting_class_names": sorted(entry["admitting"]),
             }
-        ),
+            for name, entry in sorted(categories.items())
+        },
     }
 
 

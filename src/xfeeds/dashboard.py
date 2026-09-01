@@ -829,6 +829,32 @@ def _about_section(manifest: dict[str, Any]) -> str:
     # break the render.
     voting = manifest.get("active_voting_classes")
     classes = len(voting) if isinstance(voting, list) else _int(manifest, "active_voting_classes")
+
+    # The headline claim is about how many classes can put a record into the feed,
+    # which is a smaller number than how many can vote (ADR-058). Quoting the
+    # voting count here read as "13 independent evidence classes" when 6 could
+    # actually admit - an overstatement of the corroboration base on the most
+    # public surface the project has. Falls back to the voting count for manifests
+    # written before the field existed.
+    admitting_raw = manifest.get("active_admitting_classes")
+    admitting = len(admitting_raw) if isinstance(admitting_raw, list) else None
+    corroborating = (classes - admitting) if admitting is not None else 0
+    if admitting is None:
+        reach = (
+            f"<strong>{source_count} sources across {classes} independent evidence classes</strong>"
+        )
+    elif corroborating > 0:
+        reach = (
+            f"<strong>{source_count} sources across {admitting} independent evidence classes "
+            f"that can publish a record</strong>, plus {corroborating} further classes that "
+            "corroborate without ever admitting one \u2014 because their licence forbids "
+            "redistribution, or the upstream behind them has stopped publishing"
+        )
+    else:
+        reach = (
+            f"<strong>{source_count} sources across {admitting} independent evidence classes "
+            "that can publish a record</strong>"
+        )
     return (
         '<section class="about-band" aria-labelledby="about-title">'
         '<div class="shell about-grid">'
@@ -839,8 +865,7 @@ def _about_section(manifest: dict[str, Any]) -> str:
         "evidence — not by the number of source files that happen to repeat it. Widely-scoped "
         "prefixes and known cloud, CDN, and resolver space are held back rather than published "
         "as blocks.</p>"
-        f"<p>The corpus draws on <strong>{source_count} sources across {classes} independent "
-        "evidence classes</strong>, refreshed every six hours.</p>"
+        f"<p>The corpus draws on {reach}, refreshed every six hours.</p>"
         "</div>"
         '<div><div class="eyebrow">Why it matters</div>'
         "<h2>An open, auditable alternative to opaque blocklists.</h2>"

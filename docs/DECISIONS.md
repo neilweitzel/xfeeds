@@ -1480,7 +1480,9 @@ of top-20 /24 subnets.
 - [ ] Re-check DShield: independent and PGP-signed, but `block.txt` is only the top 20 /24 subnets, so it is not worth a collector at that volume.
 - [x] Parse feed-level timestamps from payload headers rather than relying on HTTP `Last-Modified` (promised in ADR-052's Consequences but never recorded here). **Closed 2026-09-01: ADR-056.** Also closed the larger half of the same defect — sources sending no `Last-Modified` were not freshness-checked at all.
 - [ ] **Do not use HoneyDB.** Evaluated 2026-09-01 with a live Community API key. The data is real and would have passed independence (11,499 hosts, max Jaccard 0.108 against `ipsum_l3`), but the Community tier states *"internal, non-commercial use only — no redistribution or embedding in products or services"*, and redistribution requires a paid Commercial/OEM licence. A public feed is exactly what that forbids, and the `redistribute: false` vote-only pattern does not rescue it, because embedding the data in the pipeline that produces public output is itself named in the prohibition. Recorded here because a distributed honeypot network would be a genuinely new independence class and the temptation to revisit it will recur. Separately it would not have helped: zero IPv6, and its `last_seen` was already 5 days behind with the `/24hours` endpoint returning empty. Revisit only if the terms change or a commercial licence is bought.
-- [ ] **Consider exposing admitting rights in the manifest, not just `active_voting_classes`.** The `botnet-c2` category currently has no admitting source at all — `feodo_tracker` is dormant, `sslbl` is retired, and `threatfox` is `redistribute: false` — so the whole `abusech` class can vote and can never be one of the two classes that publish an address. The manifest still lists `abusech` under `active_voting_classes`, which overstates the corroboration base to anyone reading it. Voting and admitting are different rights and only the first is published.
+- [x] **Expose admitting rights in the manifest, not just `active_voting_classes`.** **Closed 2026-09-01: ADR-058.** Measuring it turned out worse than the `botnet-c2` case that prompted it: 13 voting classes against 6 admitting, and four categories with no admitting source (`botnet-c2`, `abuse`, `spam-source`, `telnet-attack`). The dashboard homepage was quoting the voting count as "13 independent evidence classes". Manifest now carries `active_admitting_classes`, `voting_only_classes`, `category_coverage`, and per-source `admits` / `admitting_blocked_by`.
+- [ ] **Alert when a category *loses* its last admitting class.** ADR-058 exposes the zero but deliberately does not warn on it, because a warning that fires every run for a known condition is the alert fatigue ADR-052 avoided for dormant sources. The useful signal is the transition, not the state, and it needs a comparison against the previous run — `history.json` already retains 720 runs and could carry `category_coverage` to support it.
+- [ ] **`botnet-c2` has no admitting source and cannot get one from configuration.** `feodo_tracker` is dormant, `sslbl` retired, `threatfox` non-redistributable. It needs a redistributable C2 feed; the 2026-09-01 cycle surveyed and found none. Worth a targeted search next cycle rather than a general sweep — this is the coverage gap with a named shape.
 
 
 
@@ -1915,3 +1917,70 @@ If the coverage is ever wanted, the only defensible shape is ADR-035's: `vote: t
 - The clean tier stays at its current size. Volume was never a reason to admit a source that fails a hygiene gate, per the discovery policy.
 - The IPv6 host-source open item stays open after a second cycle. Two cycles have now failed to find a source that is host-level, redistributable, and hygienic at once.
 - `sources.yaml` changed, so this restarts the burn-in clock. Folded into the same `rc.6` as ADR-056 rather than cut separately.
+
+---
+
+## ADR-058 — Voting and admitting are different rights, and both are published
+
+**Date:** 2026-09-01
+**Status:** Accepted
+
+### Context
+
+`feeds/manifest.json` has always reported `active_voting_classes`, and the dashboard homepage rendered its length as "*N* independent evidence classes". Neither is a measure of corroboration capacity, and both were read as one.
+
+ADR-053 established the asymmetry: a class only counts toward *admission* if it is both redistributable and vouched for today. Licence-restricted and stale or dormant sources may upgrade a record that two live classes already admitted, but can never be one of those two. That distinction was enforced in `score.py` and reported nowhere.
+
+The 2026-09-01 source review found the consequence while re-checking the dormant sources. `feodo_tracker` is dormant, `sslbl` is retired, and `threatfox` is `redistribute: false`, so the whole `abusech` class votes and can never admit — which leaves `botnet-c2` with **no admitting source at all**. That had been true for two weeks. Nothing surfaced it, because the manifest listed `abusech` under `active_voting_classes` and no field contradicted it.
+
+Measuring the rest of the registry made the scale clear:
+
+| | Count |
+|---|---|
+| Voting classes | **13** |
+| Admitting classes | **6** |
+| Voting-only classes | 7 — `abusech`, `abuseipdb`, `dataplane`, `dshield`, `greensnow`, `stopforumspam`, `turris` |
+
+Every one of those seven is individually documented in `sources.yaml`. The aggregate — that the project advertised thirteen classes of corroboration while six could put an address into a feed — was visible nowhere, and was being stated as a headline number on the public homepage.
+
+Four categories have no admitting class:
+
+| Category | Voting | Admitting | Why |
+|---|---|---|---|
+| `botnet-c2` | 1 | **0** | `feodo_tracker` dormant, `threatfox` non-redistributable |
+| `abuse` | 2 | **0** | `stopforumspam_listed`, `dataplane_smtpgreet` both non-redistributable |
+| `spam-source` | 2 | **0** | same two |
+| `telnet-attack` | 1 | **0** | `dataplane_telnetlogin` non-redistributable |
+
+### Decision
+
+Publish admitting rights alongside voting rights, everywhere the latter already appears. Purely additive — `active_voting_classes` keeps its exact previous meaning and value, because consumers read it.
+
+Manifest gains:
+
+- **`active_admitting_classes`** — classes that can be one of the two that publish an address.
+- **`voting_only_classes`** — the difference, named rather than left to be derived. The gap is the finding; making a reader compute it is how it stayed hidden.
+- **`category_coverage`** — per category, voting and admitting class counts plus the admitting class names. A category losing its last admitting source now reads as an explicit `0` rather than as an absence.
+- **`admits`** and **`admitting_blocked_by`** per source. "Cannot admit" is a fact; "cannot admit because its licence forbids redistribution" is actionable.
+
+The dashboard headline now quotes the admitting count, with the voting-only classes described honestly rather than folded into the total.
+
+### Structural versus per-run, deliberately split
+
+`active_admitting_classes` and `category_coverage` are computed from **configuration** — enabled, voting, non-zero weight, redistributable, not dormant. Per-source `admits` additionally accounts for **this run**: a stale or failed source cannot admit today.
+
+The split is intentional. Dormancy is a maintainer's standing statement that a tracked threat is gone; staleness and fetch failures are weather. Folding a transient 500 into the structural list would make a network blip read as a coverage gap, and the per-source field already carries the per-run truth. The cost is that a class whose only source is stale for months shows as structurally admitting while never admitting in practice — accepted, because that source is also raising a staleness warning on every run, which is the louder signal.
+
+### What this does not do
+
+**No alerting.** A category dropping to zero admitting classes is exposed, not warned about. A warning that fires every run for a known and accepted condition is the alert fatigue that ADR-052 deliberately avoided when it suppressed the dormant-source warning. Turning this into an alert needs a comparison against the previous run — "this category *lost* its last admitting source" — which `history.json` could support and which is left as an open item.
+
+**No scoring change.** `score.py` already enforced all of this correctly. Published output is byte-for-byte unchanged; this ADR is entirely about reporting.
+
+**The four uncovered categories are not fixed.** They are consequences of licence terms and of a genuinely dismantled botnet, not of a bug. `botnet-c2` in particular cannot be fixed by configuration — it needs a redistributable C2 source, and the 2026-09-01 cycle found none.
+
+### Consequences
+
+- A consumer can now tell how many independent classes actually stand behind the feed, and which categories rest entirely on sources we may score with but not republish.
+- The next source-discovery cycle has a machine-readable statement of where coverage is thin, instead of relying on someone re-deriving it.
+- `src/` changed, so the RC burn-in clock restarts. Folded into the same `rc.6` as ADR-056 and ADR-057.

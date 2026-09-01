@@ -1,8 +1,8 @@
 ## xfeeds v1.0.0-rc.6
 
-Sixth release candidate, cut by the 1 September source review (#52). **No published output changes.** The review admitted no source; what restarted the burn-in clock is a latent defect it found in the freshness machinery while re-checking the dormant sources.
+Sixth release candidate, cut by the 1 September source review (#52). **No published output changes.** The review admitted no source. What restarted the burn-in clock is two reporting defects it found while re-checking the dormant sources: a freshness gate that could not see a frozen payload (ADR-056), and a manifest that overstated how many independent classes actually stand behind the feed (ADR-058).
 
-If you are consuming feeds, there is nothing to do. Feed paths, record schema, and existing manifest fields are unchanged from `rc.5`, and `rc.4`'s ADR-054 carry-forward fix remains the last change that altered published output. The manifest gains three fields and `feeds/` gains one file; both are additive.
+If you are consuming feeds, there is nothing to do. Feed paths, record schema, and every existing manifest field are unchanged from `rc.5`, and `rc.4`'s ADR-054 carry-forward fix remains the last change that altered published output. The manifest gains seven fields and `feeds/` gains one file; all additive.
 
 ### The defect
 
@@ -52,6 +52,28 @@ All 22 reachable sources, 2026-09-01:
 - `feeds/manifest.json` gains `evidence_time`, `evidence_age_days`, and `evidence_basis` per source, so which mechanism decided a staleness verdict is visible in the output. `last_modified` keeps its existing meaning as the raw transport signal and is reported alongside rather than instead — the two being conflated is what hid this in the first place.
 - `feeds/source-freshness.json` records when each source's body last changed. It is **committed** rather than cached, which is deliberate: a cold `actions/cache` would reset every source's change history to "changed just now", making a permanently frozen upstream look permanently fresh. That is the exact failure the content-hash step exists to catch, so its state cannot live somewhere that silently resets.
 
+### The manifest was overstating the corroboration base
+
+Found while writing up the coverage gaps, and fixed here rather than deferred (ADR-058).
+
+`active_voting_classes` was being read as a measure of corroboration capacity. It is not one. ADR-053 made a class count toward *admission* only when it is both redistributable and vouched for today — enforced in `score.py`, reported nowhere.
+
+The numbers are worse than the `botnet-c2` case that prompted the look:
+
+| | Count |
+|---|---|
+| Voting classes | **13** |
+| Admitting classes | **6** |
+| Voting-only | 7 — `abusech`, `abuseipdb`, `dataplane`, `dshield`, `greensnow`, `stopforumspam`, `turris` |
+
+Four categories have no admitting class at all — `botnet-c2`, `abuse`, `spam-source`, `telnet-attack`. Every one of those restrictions was already documented per-source in `sources.yaml`; the aggregate was visible nowhere, and the dashboard homepage was rendering "13 independent evidence classes" to anyone who visited.
+
+The manifest now carries `active_admitting_classes`, `voting_only_classes`, `category_coverage`, and per-source `admits` / `admitting_blocked_by`. `active_voting_classes` keeps its exact previous meaning and value — it is a published contract — and is simply no longer the only thing said. The homepage now quotes the admitting count.
+
+No scoring change and no output change: `score.py` already had all of this right.
+
+To be precise about what a zero means: it does not mean nothing in that category is published. An address can still reach the feed on two other admitting classes that also saw it. It means no address is admitted on that category's evidence alone.
+
 ### The source review itself
 
 Twelve further candidates surveyed, none admitted. Full report in #52. Two worth naming:
@@ -62,7 +84,7 @@ It is rejected under the all-time-list rule despite having the cleanest licence 
 
 **HoneyDB is not usable.** Evaluated with a live Community API key. The data is real and would have passed independence, and a distributed honeypot network would have been a genuinely new class. But the Community tier reads "internal, non-commercial use only — no redistribution or embedding in products or services", with redistribution reserved to a paid Commercial/OEM licence. A public feed is what that forbids. It also would not have helped: zero IPv6, and its `last_seen` was already five days behind.
 
-Two coverage gaps are recorded and left open: `botnet-c2` currently has no admitting source at all, and IPv6 still has exactly one independence class.
+Two coverage gaps remain open. `botnet-c2` has no admitting source at all, and cannot get one from configuration — it needs a redistributable C2 feed and this cycle found none. IPv6 still has exactly one independence class after a second cycle. Both are now machine-visible in `category_coverage` rather than living in an issue comment.
 
 ### Burn-in
 

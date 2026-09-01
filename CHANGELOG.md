@@ -52,6 +52,11 @@ now closes on or after **2026-10-01**.
   its URLs. Previously the last URL fetched silently overwrote the verdict of the
   earlier ones, which was arbitrary for `ipsum_levels` and its six files.
 
+- **The dashboard homepage no longer overstates the corroboration base.** It
+  rendered the voting-class count as "13 independent evidence classes", which was
+  the same overstatement as the manifest's, on the most public surface the project
+  has. It now quotes the admitting count and describes the voting-only classes for
+  what they are.
 
 - **`RELEASE_CHECKLIST.md` no longer contradicts `source-lifecycle.md` about what
   restarts the burn-in clock.** Step 3 claimed that any content in this file's
@@ -68,6 +73,27 @@ now closes on or after **2026-10-01**.
   the path list and gives the `git diff` invocation that settles it.
 
 ### Added
+
+- **The manifest now publishes admitting rights, not just voting rights
+  (ADR-058).** `active_voting_classes` was being read as a measure of
+  corroboration capacity and is not one. ADR-053 made a class count toward
+  *admission* only when it is both redistributable and vouched for today; that was
+  enforced in `score.py` and reported nowhere.
+
+  Measuring it was worse than the case that prompted it. There are **13 voting
+  classes and 6 admitting ones** — `abusech`, `abuseipdb`, `dataplane`, `dshield`,
+  `greensnow`, `stopforumspam` and `turris` can corroborate and can never publish
+  an address. Four categories have no admitting class at all: `botnet-c2`,
+  `abuse`, `spam-source`, `telnet-attack`. Each source's restriction was already
+  documented individually; the aggregate was visible nowhere.
+
+  Adds `active_admitting_classes`, `voting_only_classes`, and `category_coverage`
+  to the manifest, and `admits` / `admitting_blocked_by` per source.
+  `active_voting_classes` is unchanged in both meaning and value — consumers read
+  it — and is now accompanied by the fields that make it honest.
+
+  No scoring change. `score.py` already had this right; published output is
+  byte-for-byte unchanged.
 
 - `feeds/manifest.json` gains `evidence_time`, `evidence_age_days`, and
   `evidence_basis` per source, so which mechanism decided a staleness verdict is
