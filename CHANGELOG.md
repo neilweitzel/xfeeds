@@ -10,9 +10,94 @@ six hours by design. A consumer pinning a tag still fetches the same live URLs.
 
 ## [Unreleased]
 
+## [1.0.0-rc.6] — 2026-09-01
+
+Cut by the 1 September source review. **No published output changes.** The review
+admitted no source, and the one defect it found was latent rather than active — but
+it touches `src/` and `sources.yaml`, so the burn-in clock restarts and the window
+now closes on or after **2026-10-01**.
+
+### Fixed
+
+- **Evidence age is now determined by the payload first, then the HTTP header, then
+  a content hash (ADR-056).** `docs/source-lifecycle.md` has specified that priority
+  order since 2026-08-18 and only the middle step was ever implemented.
+
+  abuse.ch is why the order matters. It serves a `Last-Modified` that moves
+  independently of its payload: on 2026-09-01 both Feodo Tracker and SSLBL returned
+  `Last-Modified: Tue, 30 Jun 2026 04:53 GMT` while their payloads declared
+  2026-03-04 and 2025-01-02 — two feeds frozen fourteen months apart reporting
+  transport timestamps fourteen seconds apart. The manifest was recording Feodo's
+  evidence as 63 days old when the tracker itself said 180.
+
+  The larger half of the same defect: where no `Last-Modified` was sent, staleness
+  was not evaluated at all, because the whole check sat inside `if last_modified:`.
+  Three live sources (`abuseipdb_blacklist`, `ipsum_levels`, `threatfox`) send none,
+  so they had no freshness gate of any kind.
+
+  Nine payload formats are supported, every one taken from a real recorded response.
+  Two guards worth knowing: the scan stops at the first data line, because several
+  feeds carry per-row dates that a whole-file sweep would misread as the feed's own;
+  and a timestamp more than a day ahead of the run is discarded in favour of the next
+  priority, because a broken upstream clock must not manufacture freshness.
+
+  Verified against a live run of all 22 reachable sources. Feodo now reports basis
+  `payload` at 180 days; nine sources moved from the header to their own declared
+  timestamp; `ipsum_levels` is gated by content hash where it was previously ungated.
+  No source was newly marked stale and no new warnings were raised. **The fix is
+  protective, not corrective** — Feodo was already dormant and therefore already
+  non-admitting, and both the old and new ages exceed its 7-day threshold.
+
+- Staleness is now decided once per source, using the newest evidence across all of
+  its URLs. Previously the last URL fetched silently overwrote the verdict of the
+  earlier ones, which was arbitrary for `ipsum_levels` and its six files.
+
+
+- **`RELEASE_CHECKLIST.md` no longer contradicts `source-lifecycle.md` about what
+  restarts the burn-in clock.** Step 3 claimed that any content in this file's
+  `[Unreleased]` section meant the clock had restarted and the release should not
+  proceed. That is wrong. `source-lifecycle.md` is the authoritative statement and
+  explicitly excludes documentation, this changelog, citation metadata, and
+  `scripts/` — precisely the changes that collect in `[Unreleased]` during a
+  candidate window. Only `sources.yaml`, `src/`, and `.github/workflows/` restart
+  it.
+
+  The contradiction was live rather than hypothetical: ADR-055 (#49) landed an
+  hour after `rc.5` was tagged, touching none of the restarting paths, so step 1
+  read the clock as intact while step 3 read it as restarted. Step 3 now defers to
+  the path list and gives the `git diff` invocation that settles it.
+
+### Added
+
+- `feeds/manifest.json` gains `evidence_time`, `evidence_age_days`, and
+  `evidence_basis` per source, so which mechanism decided a staleness verdict is
+  visible in the published output. `last_modified` keeps its existing meaning as the
+  raw transport signal and is now reported alongside rather than instead — the two
+  being conflated is what hid the original defect.
+- `feeds/source-freshness.json`, recording when each source's body last changed.
+  Committed rather than cached: a cold `actions/cache` would otherwise reset every
+  source's change history to "changed just now", making a permanently frozen upstream
+  look permanently fresh.
+
 ### Changed
 
-- **One version number is now used everywhere, always (ADR-055).** Between
+- **`sefinek_malicious_ip` stays disabled, now on measured evidence (ADR-057).** The
+  ADR-048/051 open item asked for a churn measurement across several runs. The list
+  is published from a git repository, so its whole history was read directly instead:
+  across 140 upstream commits between 2026-08-01 and 2026-09-01, IPv4 grew
+  209,443 → 215,654 and IPv6 5,085 → 5,490 with **zero removals** on any daily
+  sample. Rejected under the all-time-list rule despite MIT licensing, the best
+  independence of any candidate measured (max Jaccard 0.0035 against a 0.5
+  threshold), and 5,490 host-level IPv6 addresses — which would have been the only
+  thing found in two cycles capable of closing the ADR-033 IPv6 item.
+- The 2026-09-01 discovery cycle surveyed twelve further candidates and admitted
+  none. Recorded in issue #52 and in the open items, so the same ground is not
+  re-covered. HoneyDB is called out specifically: its data would have passed
+  independence and a distributed honeypot network would be a genuinely new class, but
+  the Community tier forbids redistribution and embedding outright.
+
+- **One version number is now used everywhere, always (ADR-055).** Landed in #49
+  shortly after `rc.5` was tagged, so it ships in this candidate. Between
   `rc.3` and `rc.5` the repository carried two at once: `pyproject.toml` said
   `1.0.0rc5` while `CITATION.cff` said `1.0.0-rc.3`. That was deliberate and
   documented, and it was still wrong.
@@ -53,22 +138,6 @@ six hours by design. A consumer pinning a tag still fetches the same live URLs.
 - `docs/source-lifecycle.md` records that `scripts/` does not restart the burn-in
   clock: nothing in `src/` imports it and it runs only from CI or by hand, so it
   cannot change feed output.
-
-### Fixed
-
-- **`RELEASE_CHECKLIST.md` no longer contradicts `source-lifecycle.md` about what
-  restarts the burn-in clock.** Step 3 claimed that any content in this file's
-  `[Unreleased]` section meant the clock had restarted and the release should not
-  proceed. That is wrong. `source-lifecycle.md` is the authoritative statement and
-  explicitly excludes documentation, this changelog, citation metadata, and
-  `scripts/` — precisely the changes that collect in `[Unreleased]` during a
-  candidate window. Only `sources.yaml`, `src/`, and `.github/workflows/` restart
-  it.
-
-  The contradiction was live rather than hypothetical: ADR-055 (#49) landed an
-  hour after `rc.5` was tagged, touching none of the restarting paths, so step 1
-  read the clock as intact while step 3 read it as restarted. Step 3 now defers to
-  the path list and gives the `git diff` invocation that settles it.
 
 ## [1.0.0-rc.5] — 2026-08-24
 

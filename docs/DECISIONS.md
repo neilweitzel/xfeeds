@@ -1456,11 +1456,11 @@ of top-20 /24 subnets.
 
 ## Open items
 
-- [ ] **Find a second IPv6 source that reports individual hosts and permits redistribution.** This is the only change that would let IPv6 participate in independence scoring at all. Blocklist.de already supplies the host-level IPv6 volume (431/run) but has no licence, and nothing else surveyed is both host-level and redistributable. Everything conditional in the IPv6 work keys off this.
+- [ ] **Find a second IPv6 source that reports individual hosts and permits redistribution.** *Still open after the 2026-09-01 cycle, which specifically checked and eliminated four candidates: StopForumSpam publishes no IPv6 variant (404); Turris has 35 IPv6 hosts but is `redistribute: false`; Blocklist.de has 388 but still states no licence; sefinek has 5,490 under MIT but fails the churn gate (ADR-057). Licence availability is no longer the binding constraint here — data hygiene is.* This is the only change that would let IPv6 participate in independence scoring at all. Blocklist.de already supplies the host-level IPv6 volume (431/run) but has no licence, and nothing else surveyed is both host-level and redistributable. Everything conditional in the IPv6 work keys off this.
 - [ ] **Decide whether Blocklist.de's IPv6 hosts should ever publish.** They are withheld correctly today. If its licence gap is ever resolved and a second host-level source appears, this becomes a volume question and needs a churn measurement first.
 - [ ] **Email Spamhaus** for written confirmation that redistributing DROP inside a public aggregate is permitted. Their Terms of Use §3.1 grant no IP licence while the blocklist page invites free use with credit; we currently publish on the second reading. Highest-value open question in this document (ADR-048).
 - [ ] Confirm AbuseIPDB redistribution terms in writing; flip `redistribute` if permitted. Key is now configured and the source is live as a scoring input (ADR-048).
-- [ ] Measure sefinek churn across several runs, then decide between enabling it upgrade-only or leaving it out (ADR-048/ADR-051). It is now the single biggest lever on the clean tier: enabling it takes that tier from 23 to 223 entries, at the cost of pushing the primary feed outside its committed range.
+- [x] Measure sefinek churn across several runs, then decide between enabling it upgrade-only or leaving it out (ADR-048/ADR-051). **Closed 2026-09-01, decided-no: ADR-057.** Measured across 140 upstream commits rather than several runs — the list is kept in git, so its whole history is readable directly. Zero removals in 32 days. Rejected under the all-time-list rule despite MIT licensing, the best independence measured anywhere (max Jaccard 0.0035), and 5,490 host-level IPv6 addresses. Do not re-survey without evidence of an upstream expiry policy.
 - [ ] Backfill the Turris archive: 2,404 daily snapshots exist back to 2020, and a 30-day union is 75,454 unique addresses against 9,488 in one snapshot. Same licence, no new endpoint, but it interacts with state and ageing so it needs its own measurement (ADR-050).
 - [ ] Check the provenance of `threatview_CS_c2.rules` (752 Cobalt Strike C2). It is the only genuinely new Emerging Threats dataset, but it is third-party data inside ET's directory and its licence is not the ET BSD grant (ADR-050).
 - [ ] **Ask StopForumSpam for a written No-Derivative-Works waiver**, which their Waiver clause explicitly allows ("Any of the above conditions can be waived if you get permission from the copyright holder"). This is worth more than it looks: their NonCommercial clause bars only resale and misattribution, not commercial use, so ND is the single clause blocking 54,710 addresses from both tiers. Also ask them to resolve the contradiction between the "To Share" grant and the ND clause, and to confirm that scripted fetching of their published download files is permitted, since read literally the ND clause forbids automated copying of any site data. Until then the source stays scoring-only in both tiers (ADR-050, re-reviewed 2026-08-15).
@@ -1478,6 +1478,9 @@ of top-20 /24 subnets.
 - [x] Feodo Tracker has been stale for 43 days and its IP blocklist is nearly empty. It is our only CC0 promoting source now that ThreatFox cannot promote. If it stays dead, the abuse.ch promotion path is effectively gone and should be removed rather than left looking active. **Resolved 2026-08-18: ADR-052 establishes a freshness-gated promotion policy. Feodo moves to Dormant; its records cannot solo-promote while stale. See `docs/source-lifecycle.md`.**
 - [x] Confirm whether Binary Defense's terms permit redistribution — done, they do (ADR-039).
 - [ ] Re-check DShield: independent and PGP-signed, but `block.txt` is only the top 20 /24 subnets, so it is not worth a collector at that volume.
+- [x] Parse feed-level timestamps from payload headers rather than relying on HTTP `Last-Modified` (promised in ADR-052's Consequences but never recorded here). **Closed 2026-09-01: ADR-056.** Also closed the larger half of the same defect — sources sending no `Last-Modified` were not freshness-checked at all.
+- [ ] **Do not use HoneyDB.** Evaluated 2026-09-01 with a live Community API key. The data is real and would have passed independence (11,499 hosts, max Jaccard 0.108 against `ipsum_l3`), but the Community tier states *"internal, non-commercial use only — no redistribution or embedding in products or services"*, and redistribution requires a paid Commercial/OEM licence. A public feed is exactly what that forbids, and the `redistribute: false` vote-only pattern does not rescue it, because embedding the data in the pipeline that produces public output is itself named in the prohibition. Recorded here because a distributed honeypot network would be a genuinely new independence class and the temptation to revisit it will recur. Separately it would not have helped: zero IPv6, and its `last_seen` was already 5 days behind with the `/24hours` endpoint returning empty. Revisit only if the terms change or a commercial licence is bought.
+- [ ] **Consider exposing admitting rights in the manifest, not just `active_voting_classes`.** The `botnet-c2` category currently has no admitting source at all — `feodo_tracker` is dormant, `sslbl` is retired, and `threatfox` is `redistribute: false` — so the whole `abusech` class can vote and can never be one of the two classes that publish an address. The manifest still lists `abusech` under `active_voting_classes`, which overstates the corroboration base to anyone reading it. Voting and admitting are different rights and only the first is published.
 
 
 
@@ -1780,3 +1783,135 @@ It remains available for a specific case: if a paper or talk needs to cite an ex
 - The guard is strictly stronger. Previously it was inert during candidate windows; now a mismatch fails the build at any point in the cycle.
 - `rc.3`'s version DOI (`10.5281/zenodo.22045734`) is unaffected. It still exists, still resolves, and is still listed in `CITABILITY.md` and in the concept DOI's Zenodo version list. It is simply no longer asserted by a file describing a different version.
 - Not a pipeline change. `CITATION.cff` and `scripts/` are neither `sources.yaml`, `src/`, nor `.github/workflows/`, so this does **not** restart the burn-in clock. `rc.5` stands and the window still closes on or after 2026-09-24.
+
+---
+
+## ADR-056 — Evidence age comes from the payload, then the header, then a hash
+
+**Date:** 2026-09-01
+**Status:** Accepted
+**Supersedes:** the ADR-052 implementation note "New `evidence_stale` field on `IndicatorRecord`: set by the pipeline when a source's HTTP `Last-Modified` exceeds `min(STALENESS_DAYS, ttl_days)`."
+
+### Context
+
+ADR-052 established that **fetch time is not evidence time** and set a three-step priority order for determining a source's evidence age, written down in [`source-lifecycle.md`](source-lifecycle.md#how-evidence-age-is-determined):
+
+1. Feed-level timestamp in the payload
+2. HTTP `Last-Modified`
+3. Content-hash change
+
+Only step 2 was ever implemented. `pipeline.py` read `result.last_modified_header` and nothing else. ADR-052 acknowledged this at the time — its Consequences section closes with "Follow-up: parse feed-level timestamps from payload headers … Tracked as an open item" — but the item was never added to the open-items list, so it went quiet for two weeks.
+
+The 2026-09-01 source-discovery review found it, with evidence that the gap is not theoretical. abuse.ch serves a `Last-Modified` that moves independently of its payload:
+
+| Endpoint | HTTP `Last-Modified` | Payload `Last updated` | Real age |
+|---|---|---|---|
+| Feodo `ipblocklist.txt` | `Tue, 30 Jun 2026 04:53:05 GMT` | `2026-03-04 14:28:39 UTC` | 180 days |
+| SSLBL `sslipblacklist.txt` | `Tue, 30 Jun 2026 04:53:19 GMT` | `2025-01-02 01:09:06 UTC` | 607 days |
+
+Two feeds frozen fourteen months apart reported transport timestamps fourteen seconds apart. The manifest was recording Feodo's evidence as 63 days old when the tracker itself said 180.
+
+A second gap fell out of the same reading. Where no `Last-Modified` is sent, staleness was not evaluated **at all** — the entire check sat inside `if last_modified:`. Three live sources return no such header (`abuseipdb_blacklist`, `ipsum_levels`, `threatfox`), so they had no freshness gate of any kind and would have voted at full strength over indefinitely frozen evidence.
+
+### Decision
+
+Implement the priority order in full, in a new `src/xfeeds/freshness.py`.
+
+**Priority 1 — payload timestamp.** Nine formats, every one taken from a real recorded response rather than invented: abuse.ch's `# Last updated:`, DShield's `#    updated:` ISO stamp, the HTTP-date that Spamhaus and bruteforceblocker repeat inside a comment, Dataplane's reporting-window line, FireHOL's `This File Date`, AbuseIPDB's `meta.generatedAt`, and Spamhaus DROP's trailing newline-delimited `{"type": "metadata"}` record.
+
+**Priority 3 — content hash.** A per-source digest and the date it first appeared. When a body has not changed, the evidence age is the time since it last did.
+
+Two guards, both from things observed while measuring rather than anticipated:
+
+- **The scan stops at the first data line.** Several feeds carry per-row dates — bruteforceblocker puts a `# Last Reported` date on every row — and a whole-file regex sweep reports an arbitrary row's date as the feed's publication date.
+- **A timestamp more than a day ahead of the run is discarded**, and the next priority used. Not zero tolerance: observations are truncated to midnight UTC, so a feed published at midday legitimately carries a timestamp after `observed_on`, and Spamhaus's JSON metadata timestamp runs about half an hour ahead of the `Last-Modified` on its sibling text feed. A full day ahead is a broken clock, not evidence.
+
+### The ledger is committed, and that is the whole point
+
+The priority-3 history lives in `feeds/source-freshness.json`, alongside the published artifacts, **not** in `.cache/state.json`.
+
+This looks like the wrong side of the project's own "no database, state in `.cache`" habit, and it is deliberate. `.cache/state.json` is restored from an `actions/cache` entry that can and does go cold; `state.py` already documents reseeding from `feeds/all.json` when it does. A cold cache would reset every source's change history to "changed just now" — which would make a permanently frozen upstream look permanently fresh. That is the exact failure this ADR exists to close, so the mechanism that closes it cannot be the one thing that silently resets. In `feeds/` a reset is a diff.
+
+The ledger stores only a digest and the date it first appeared. A "last checked" field would move on every run even when nothing upstream did, which breaks the byte-identical-output rule and buries the one signal the file carries under four commits a day of noise.
+
+### Implementation
+
+- New `src/xfeeds/freshness.py`: `extract_feed_timestamp`, `determine_evidence_age`, `FreshnessLedger`, and `newest` for combining per-URL ages.
+- `collect_all` now decides staleness **once per source, after every URL has been fetched**, using the newest evidence across them. Previously the last level of a multi-URL source silently overwrote the verdict of the earlier ones — arbitrary for `ipsum_levels`, which fetches six files. A source that publishes several files is publishing if any one of them moved.
+- The manifest gains `evidence_time`, `evidence_age_days`, and `evidence_basis`. `last_modified` keeps its existing meaning as the raw transport signal, so nothing downstream breaks and the two stay visibly distinct — which is what would have made the original defect obvious.
+- `feeds/source-freshness.json` is picked up by the existing `git add feeds/` in `update-feeds.yml`. No workflow change.
+
+### Verified against a live run
+
+All 22 reachable sources, 2026-09-01:
+
+- `feodo_tracker` → basis `payload`, age **180 days**, against the 63 the header claimed. Its 5 records are marked `evidence_stale`.
+- Nine sources moved from the header to their own declared timestamp: bruteforceblocker, six Dataplane feeds, DShield, and both Spamhaus DROP families.
+- `ipsum_levels` → basis `content-hash`. Previously ungated entirely.
+- No source was newly marked stale, and no new warnings were raised.
+
+**Published output does not change.** Feodo was already stale and already dormant, so it was already non-admitting; both the old and new ages exceed its 7-day threshold. This fix is protective rather than corrective — it removes a way for a future frozen source to go unnoticed, and it does not alter today's feed.
+
+### Consequences
+
+- A source whose CDN refreshes `Last-Modified` faster than `min(30, ttl_days)` can no longer vote at full strength over frozen evidence.
+- Sources with no timestamp of any kind are now gated after one freshness window of observation. On first sight their age is zero, because with no history there is genuinely no evidence of freezing; the ledger builds the history over the following runs.
+- `src/` and `sources.yaml` both changed, so the RC burn-in clock restarts. Cut as `rc.6`.
+
+---
+
+## ADR-057 — sefinek is rejected on measured churn, not on licence
+
+**Date:** 2026-09-01
+**Status:** Accepted
+**Closes:** the ADR-048/ADR-051 open item "Measure sefinek churn across several runs, then decide between enabling it upgrade-only or leaving it out."
+
+### Context
+
+`sefinek_malicious_ip` has sat disabled since ADR-048 with the cleanest licence position of any candidate the project has surveyed — MIT, explicit, attached to a real LICENSE file — and the single best independence measurement. The blocker was its README: *"Entries are added continuously and are generally not removed."* Nobody had measured what "generally" meant, and the open item asked for a churn measurement across several runs.
+
+It was also, by the 2026-08 sizing, the largest available lever on the clean tier: 23 entries to 223.
+
+### The measurement
+
+Waiting several runs was unnecessary. The list is published from a git repository, so its entire publication history is already on disk and can be read directly instead of sampled forward. Across **140 upstream commits between 2026-08-01 and 2026-09-01**, sampled daily:
+
+| | 2026-08-01 | 2026-09-01 | Added | Removed |
+|---|---|---|---|---|
+| IPv4 | 209,443 | 215,654 | +6,211 | **0** |
+| IPv6 | 5,085 | 5,490 | +405 | **0** |
+
+Not one address was removed on any of the 32 daily samples, and no address present on 2026-08-01 is absent on 2026-09-01. The removal rate is not low. It is exactly zero. Growth is steady at roughly 200 addresses a day, so the list accumulates about 73,000 never-expiring entries a year.
+
+### Decision
+
+**sefinek stays disabled.** [`source-lifecycle.md`](source-lifecycle.md#admission-criteria) is unambiguous: *"All-time lists that never remove entries are rejected unless they document a verification step."* No verification or removal policy is documented anywhere in the repository.
+
+The open item is closed as decided-no rather than left open, and the reasoning is recorded in `sources.yaml` so a later sweep does not re-litigate it.
+
+### Why this one is worth writing down at length
+
+Because every gate except one says admit it, and the measured independence is not close:
+
+| vs | Jaccard | contains |
+|---|---|---|
+| our published feed | — | 2.3% |
+| `ipsum_l3` | 0.0035 | 5.5% |
+| `binary_defense` | 0.0006 | 7.8% |
+| `turris` | 0.0029 | 6.6% |
+| `greensnow` | 0.0014 | 7.1% |
+| `blocklist_de` | 0.0021 | 1.7% |
+| `cins_army` | 0.0008 | 1.3% |
+| `et_compromised` | 0.0000 | 0.4% |
+
+Max Jaccard 0.0035 against a 0.5 rejection threshold. It also carries **5,490 host-level IPv6 addresses under MIT** — the only candidate found across two discovery cycles that could close the ADR-033 IPv6 open item, which is the item everything conditional in the IPv6 work keys off.
+
+It is rejected anyway, because a source that never retracts means our TTL can never age out anything it asserts, and publication here is source-driven precisely so that an address leaves when the evidence for it does. IPv6 makes that worse rather than better: SLAAC privacy addresses rotate faster than IPv4 ones, so a permanent IPv6 assertion decays into a false positive sooner. Admitting records on the word of a list that never takes anything back is the failure this project exists to avoid, and a good licence does not make bad hygiene safe.
+
+If the coverage is ever wanted, the only defensible shape is ADR-035's: `vote: true`, non-admitting, upgrade-only, so it can strengthen a record two live classes already admitted and can never put one into the feed alone. That is a maintainer decision and deliberately not taken here.
+
+### Consequences
+
+- The clean tier stays at its current size. Volume was never a reason to admit a source that fails a hygiene gate, per the discovery policy.
+- The IPv6 host-source open item stays open after a second cycle. Two cycles have now failed to find a source that is host-level, redistributable, and hygienic at once.
+- `sources.yaml` changed, so this restarts the burn-in clock. Folded into the same `rc.6` as ADR-056 rather than cut separately.

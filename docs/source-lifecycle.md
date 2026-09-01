@@ -15,7 +15,15 @@ ADR conflict, the ADR is superseded — see the revision log at the bottom.
 
 A successful HTTP fetch means the endpoint answered. It does **not** mean the
 data is fresh. Feodo Tracker returns HTTP 200 with a `Last updated` header of
-2026-03-04 — the transport is live, the evidence is 166 days old.
+2026-03-04 — the transport is live, the evidence is 166 days old (180 as of
+2026-09-01).
+
+The transport can also lie about itself, which is a distinct problem from the
+transport merely being live. On 2026-09-01 both Feodo Tracker and SSLBL served
+`Last-Modified: Tue, 30 Jun 2026 04:53 GMT` over payloads declaring 2026-03-04
+and 2025-01-02 — two feeds frozen fourteen months apart reporting transport
+timestamps fourteen seconds apart. A source's own statement about when it
+published outranks anything its CDN says on its behalf.
 
 Published records must be supported by **fresh enough evidence**. The
 source-declared update time — feed header, `Last-Modified`, content hash
@@ -114,13 +122,42 @@ alerts.
 Priority order for determining a source's evidence age:
 
 1. **Feed-level timestamp in the payload** — e.g., Feodo's `Last updated`
-   header line, ThreatFox API response timestamp.
+   header line, AbuseIPDB's `meta.generatedAt`, Spamhaus DROP's trailing
+   `{"type": "metadata"}` record.
 2. **HTTP `Last-Modified` response header** — when the payload has no
    embedded timestamp.
 3. **Content hash change** — when neither is available, a hash of the
    fetched body compared to the previous run. If the hash is unchanged,
    the evidence age is the time since the last observed change, not the
    fetch time.
+
+All three are implemented in `src/xfeeds/freshness.py` as of ADR-056. Until
+then only step 2 existed, which understated Feodo's evidence age by 118 days
+and left the three sources that send no `Last-Modified` with no freshness
+gate at all. The order is absolute: a payload timestamp wins even when the
+HTTP header is newer, because that combination is the defect, not a tie.
+
+Two constraints on step 1 worth knowing before adding a format:
+
+- **Only the leading comment block is searched.** Several feeds carry
+  per-row dates, and a whole-file sweep reports one arbitrary row's date as
+  the feed's publication date.
+- **A timestamp more than a day ahead of the run is discarded** and the next
+  priority used. Observations are truncated to midnight UTC, so a feed
+  published at midday is legitimately "ahead" of the run; a full day ahead is
+  a broken clock.
+
+The step-3 history lives in `feeds/source-freshness.json`, which is
+**committed**, unlike `.cache/state.json`. A cache that goes cold would reset
+every source's change history to "changed just now", making a permanently
+frozen upstream look permanently fresh — the exact failure the step exists to
+catch. In `feeds/` a reset is visible in a diff.
+
+The manifest reports `evidence_time`, `evidence_age_days`, and
+`evidence_basis` per source, so which mechanism decided is observable in the
+published output. `last_modified` remains the raw transport signal and is
+deliberately reported separately — the two being conflated is what hid the
+original defect.
 
 ### Freshness threshold
 
@@ -309,3 +346,4 @@ action is the same: gate promotion on freshness, not on a calendar.
 | Date | Change |
 |---|---|
 | 2026-08-18 | Initial policy. Supersedes the Feodo "wait a month" note from the 2026-08-15 DECISIONS.md pass. Adds stale-source lifecycle, freshness-gated promotion, and source discovery process. |
+| 2026-09-01 | Freshness priority order is now implemented in full (ADR-056), not just step 2. Documents the payload-beats-header rule, the header-block and future-timestamp guards, the committed step-3 ledger, and the new manifest fields. Records that the 2026-09-01 discovery cycle admitted nothing and closed the sefinek churn item as decided-no (ADR-057). |

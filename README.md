@@ -165,7 +165,8 @@ near 5,000 requests/hour/IP and blocks the IP for 30 minutes when exceeded.
 | `nftables.conf` | both | `blocklist4` and `blocklist6` sets in one file. |
 | `iptables.ipset` | IPv4 | ipset restore format, set `xfeeds`. |
 | `iptables6.ipset` | IPv6 | ipset restore format, set `xfeeds6`. An ipset holds one family. |
-| `manifest.json` | — | Per-source status, licences, counts, deltas, per-family breakdown. |
+| `manifest.json` | — | Per-source status, licences, counts, deltas, per-family breakdown. Also `evidence_time`, `evidence_age_days`, and `evidence_basis` per source — how old the upstream's own data is, and which of the three mechanisms in [`docs/source-lifecycle.md`](docs/source-lifecycle.md#how-evidence-age-is-determined) established that. Distinct from `last_modified`, which is the raw HTTP header and is not always honest about the payload behind it. |
+| `source-freshness.json` | — | When each source's body last actually changed. Backs the content-hash arm of evidence ageing for sources that declare no timestamp. |
 | `history.json` | — | Rolling per-run history behind the charts. |
 
 The combined files carry both address families and are unchanged — existing
@@ -424,15 +425,18 @@ hours. Feed URLs are stable and served from GitHub Pages, so pinning a tag does 
 change what a consumer fetches; it only tells you which pipeline produced the
 contracts you are integrating against.
 
-`v1.0.0-rc.5` is a release candidate under a roughly one-month burn-in window. If it
+`v1.0.0-rc.6` is a release candidate under a roughly one-month burn-in window. If it
 needs no corrective work it will be promoted to `v1.0.0` unchanged. Corrective
 pipeline, source-configuration, or workflow changes cut a new candidate and restart
 the window; routine refresh commits and documentation do not.
 
-That is not hypothetical. `rc.4` exists because the `rc.3` window surfaced a
-carry-forward defect (ADR-054) that had been demoting corroborated records on three
-refreshes out of every four. `rc.5` followed the same day, when a pre-promotion audit
-of the release path touched a workflow file. The window did its job.
+That is not hypothetical, and it has now happened three times. `rc.4` exists because
+the `rc.3` window surfaced a carry-forward defect (ADR-054) that had been demoting
+corroborated records on three refreshes out of every four. `rc.5` followed the same
+day, when a pre-promotion audit of the release path touched a workflow file. `rc.6`
+exists because the 1 September source review found that only one of the three
+evidence-age mechanisms the freshness policy specifies had ever been implemented
+(ADR-056). The window did its job.
 
 The promotion steps are enumerated in
 [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md).

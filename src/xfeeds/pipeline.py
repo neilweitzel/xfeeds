@@ -11,7 +11,7 @@ happens last so nothing downstream can reintroduce an allowlisted address.
 
 import json
 from dataclasses import dataclass, field
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -30,6 +30,14 @@ from xfeeds.emit import (
 )
 from xfeeds.enrich import load_asn_index
 from xfeeds.filters import apply_filters
+from xfeeds.freshness import (
+    FRESHNESS_LEDGER_PATH,
+    EvidenceAge,
+    FreshnessLedger,
+    determine_evidence_age,
+    newest,
+    parse_http_date,
+)
 from xfeeds.greynoise import benign_addresses, cap_benign_scanners
 from xfeeds.insights import (
     ASN_HISTORY_PATH,
@@ -38,7 +46,7 @@ from xfeeds.insights import (
     build_spectrum,
     update_asn_history,
 )
-from xfeeds.models import Band, IndicatorRecord, Registry, ScoredIndicator
+from xfeeds.models import Band, IndicatorRecord, Registry, ScoredIndicator, SourceConfig
 from xfeeds.score import (
     noncommercial_sources,
     open_sources,
@@ -104,25 +112,20 @@ class RunReport:
         return "\n".join(lines)
 
 
-def _parse_last_modified(value: str | None) -> datetime | None:
-    if not value:
-        return None
-    from email.utils import parsedate_to_datetime
-
-    try:
-        parsed = parsedate_to_datetime(value)
-    except (TypeError, ValueError):
-        return None
-    return parsed if parsed.tzinfo else parsed.replace(tzinfo=UTC)
-
-
 def collect_all(
-    registry: Registry, observed_on: datetime, only: str | None = None
+    registry: Registry,
+    observed_on: datetime,
+    only: str | None = None,
+    ledger: FreshnessLedger | None = None,
 ) -> tuple[list[IndicatorRecord], dict[str, dict[str, Any]], list[str]]:
     """Fetch and parse every enabled source.
 
     A failing source is recorded and skipped. It never aborts the run - one dead
     upstream must not cost us the other eleven.
+
+    ``ledger`` carries the content-hash history that backs priority-3 evidence
+    ageing. It is mutated in place and saved by the caller, so a dry run can
+    measure freshness without writing anything.
     """
     records: list[IndicatorRecord] = []
     status: dict[str, dict[str, Any]] = {}
@@ -136,6 +139,12 @@ def collect_all(
 
         entry: dict[str, Any] = {"status": "ok", "records": 0, "error": None, "cached": False}
         status[source.name] = entry
+
+        # Records are held back until every URL for this source has been fetched.
+        # Staleness is a property of the source, not of one file within it, so it
+        # cannot be decided until the newest evidence across all of them is known.
+        source_records: list[IndicatorRecord] = []
+        evidence: EvidenceAge | None = None
 
         levels: list[int | None] = list(source.levels) if source.levels else [None]
         for level in levels:
@@ -156,31 +165,25 @@ def collect_all(
                 continue
 
             entry["cached"] = result.cached
-            last_modified = _parse_last_modified(result.last_modified_header)
-            source_is_stale = False
-            if last_modified:
-                entry["last_modified"] = last_modified.isoformat()
-                # ADR-052: freshness threshold is the shorter of the global ceiling
-                # and the source's own TTL. A source whose evidence age exceeds this
-                # cannot solo-promote, even when the fetch succeeded.
-                freshness_days = min(STALENESS_DAYS, source.ttl_days)
-                if observed_on - last_modified > timedelta(days=freshness_days):
-                    age = (observed_on - last_modified).days
-                    source_is_stale = True
-                    entry["status"] = "stale"
-                    if source.dormant:
-                        # Reviewed-stale: the threat is confirmed inactive.
-                        # Log quietly rather than raising a recurring warning.
-                        logger.info(
-                            "source_dormant_stale",
-                            source=source.name,
-                            age_days=age,
-                        )
-                    else:
-                        warnings.append(
-                            f"{source.name}: upstream last updated {age} days ago - "
-                            "a dead feed is not the same as a quiet internet"
-                        )
+            if result.last_modified_header:
+                # Kept as the raw transport signal it has always been. It is no
+                # longer what decides staleness, and the manifest now reports the
+                # two apart so the difference between them stays visible.
+                header_time = parse_http_date(result.last_modified_header)
+                if header_time:
+                    entry["last_modified"] = header_time.isoformat()
+
+            ledger_key = f"{source.name}#{level}" if level is not None else source.name
+            evidence = newest(
+                evidence,
+                determine_evidence_age(
+                    result.content,
+                    result.last_modified_header,
+                    ledger,
+                    ledger_key,
+                    observed_on,
+                ),
+            )
 
             parser = PARSERS.get(source.parser)
             if parser is None:
@@ -190,21 +193,69 @@ def collect_all(
 
             kwargs = {"level": level} if source.parser == "ipsum_levels" else {}
             parsed = list(parser(result.content, probe, observed_on, **kwargs))
-            # Mark observations from a stale-evidence source so the scorer can
-            # gate promotion (ADR-052). The records are still valid evidence
-            # for corroboration; they just cannot put IPs into the feed on their
-            # own while the upstream is frozen.
-            if source_is_stale:
-                for record in parsed:
-                    record.evidence_stale = True
-            records.extend(parsed)
+            source_records.extend(parsed)
             entry["records"] += len(parsed)
+
+        source_is_stale = _apply_freshness(source, entry, evidence, observed_on, warnings)
+        # Mark observations from a stale-evidence source so the scorer can gate
+        # promotion (ADR-052). The records are still valid evidence for
+        # corroboration; they just cannot put IPs into the feed on their own
+        # while the upstream is frozen.
+        if source_is_stale:
+            for record in source_records:
+                record.evidence_stale = True
+        records.extend(source_records)
 
         if entry["status"] == "ok" and entry["records"] == 0:
             entry["status"] = "empty"
             warnings.append(f"{source.name}: returned zero usable records")
 
     return records, status, warnings
+
+
+def _apply_freshness(
+    source: SourceConfig,
+    entry: dict[str, Any],
+    evidence: EvidenceAge | None,
+    observed_on: datetime,
+    warnings: list[str],
+) -> bool:
+    """Record evidence age on the manifest entry and decide whether it is stale.
+
+    Returns True when the source's evidence exceeds its freshness threshold.
+    An unknown age is not stale: with no evidence either way, inventing one
+    would make the gate fire on sources nobody has measured.
+    """
+    if evidence is None:
+        return False
+
+    entry["evidence_basis"] = evidence.basis
+    if not evidence.known:
+        return False
+
+    assert evidence.timestamp is not None
+    age = evidence.age_days(observed_on)
+    assert age is not None
+    entry["evidence_time"] = evidence.timestamp.isoformat()
+    entry["evidence_age_days"] = age
+
+    # ADR-052: the freshness threshold is the shorter of the global ceiling and
+    # the source's own TTL. A source whose evidence age exceeds it cannot
+    # solo-promote and cannot admit, even when the fetch succeeded.
+    if age <= min(STALENESS_DAYS, source.ttl_days):
+        return False
+
+    entry["status"] = "stale"
+    if source.dormant:
+        # Reviewed-stale: the threat is confirmed inactive. Log quietly rather
+        # than raising a recurring warning.
+        logger.info("source_dormant_stale", source=source.name, age_days=age, basis=evidence.basis)
+    else:
+        warnings.append(
+            f"{source.name}: upstream last updated {age} days ago "
+            f"(by {evidence.basis}) - a dead feed is not the same as a quiet internet"
+        )
+    return True
 
 
 def check_churn(new_high: int, previous_high: int, force: bool) -> None:
@@ -242,7 +293,13 @@ def run(
     # work only to discover we cannot safely publish the result.
     allowlist = build_allowlist(registry.allowlist_sources, registry.defaults)
 
-    records, status, warnings = collect_all(registry, observed_on, only=only)
+    # The freshness ledger is loaded from, and written back to, the feeds
+    # directory being produced, so a run against a scratch directory cannot
+    # corrupt the committed one.
+    ledger_path = feeds_dir / FRESHNESS_LEDGER_PATH.name
+    ledger = FreshnessLedger.load(ledger_path)
+
+    records, status, warnings = collect_all(registry, observed_on, only=only, ledger=ledger)
     report.source_status = status
     report.warnings = warnings
 
@@ -307,6 +364,11 @@ def run(
         return report
 
     check_churn(high_count, previous_high, force)
+
+    # Written only once the churn guard has passed. A run that aborts must not
+    # leave the ledger claiming it saw bodies whose records were never published,
+    # or the next run would date their evidence from an abandoned pass.
+    ledger.save(ledger_path)
 
     manifest = build_manifest(
         registry,

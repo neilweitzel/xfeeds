@@ -732,9 +732,26 @@ sources:
       Contrast dataplane+dshield in the same experiment: published unchanged at 3,518
       with 375 records upgraded medium -> high. That is what a good corroborating
       source looks like.
-      To enable: measure churn across several runs first, and consider capping its
-      contribution to upgrade-only (vote true, cannot admit) the way ADR-035 handles
-      restricted classes.
+      CHURN MEASURED 2026-09-01, and the answer is zero (ADR-056). The list is kept in
+      git, so the whole publication history is inspectable rather than needing several
+      runs to sample: across 140 upstream commits between 2026-08-01 and 2026-09-01,
+      sampled daily, IPv4 went 209,443 -> 215,654 and IPv6 5,085 -> 5,490 with NOT ONE
+      address removed on any sample, and nothing present on 01-08 absent on 01-09.
+      "Generally not removed" is literally true: the removal rate is exactly 0, and the
+      list gains roughly 200 never-expiring addresses a day.
+      docs/source-lifecycle.md rejects all-time lists that never remove entries unless
+      they document a verification step, and none is documented. STAYS DISABLED, and
+      this is now a decided question rather than an open one - do not re-survey it
+      without evidence that upstream has adopted an expiry or verification policy.
+      Re-measured independence is still the best of any candidate seen: max Jaccard
+      0.0035 against any existing source, against a 0.5 rejection threshold. It also
+      carries 5,490 host-level IPv6 addresses under MIT, which is the only thing found
+      in two discovery cycles that could close the ADR-033 IPv6 open item. It is being
+      rejected on hygiene, not licence or independence, and IPv6 makes the no-expiry
+      problem worse rather than better because SLAAC privacy addresses rotate faster
+      than IPv4 ones.
+      If the coverage is ever wanted, the only safe shape is ADR-035's: vote true,
+      non-admitting, upgrade-only. That is a maintainer decision, not a discovery one.
 
   - name: duggytuxy_data_shield
     url: https://raw.githubusercontent.com/duggytuxy/Data-Shield_IPv4_Blocklist/main/prod_critical_data-shield_ipv4_blocklist.txt

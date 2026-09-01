@@ -8,11 +8,12 @@ Companion documents: [`CITABILITY.md`](CITABILITY.md) for why archival is sequen
 
 ## 1. Confirm the burn-in window closed cleanly
 
-- [ ] At least one month has elapsed since the current candidate was tagged. `v1.0.0-rc.5` was tagged **2026-08-24**, so the window closes on or after **2026-09-24**.
+- [ ] At least one month has elapsed since the current candidate was tagged. `v1.0.0-rc.6` was tagged **2026-09-01**, so the window closes on or after **2026-10-01**.
 
-  Earlier candidates, for context: `rc.3` was tagged 2026-08-19 and its window was cut short by ADR-054, a scoring fix for a carry-forward defect that had been demoting records on three runs out of every four. Finding that during burn-in is the window working as intended, not a setback.
+  Earlier candidates, for context: `rc.3` was tagged 2026-08-19 and its window was cut short by ADR-054, a scoring fix for a carry-forward defect that had been demoting records on three runs out of every four. `rc.6` replaced `rc.5` for the same reason — the 1 September source review found that only one of the three evidence-age mechanisms the freshness policy specifies had ever been implemented (ADR-056). Finding these during burn-in is the window working as intended, not a setback.
 - [ ] Nothing has landed since the candidate was cut that restarts the clock. [`source-lifecycle.md`](source-lifecycle.md#what-restarts-the-rc-burn-in-clock) is the authoritative list: `sources.yaml`, anything under `src/`, and anything under `.github/workflows/` all restart it, corrective or not. Documentation, citation metadata, and routine refresh commits do not.
-- [ ] `git log v1.0.0-rc.5..main --oneline` shows only routine `chore(feeds): refresh` commits, plus any docs-only commits.
+- [ ] `git log v1.0.0-rc.6..main --oneline` shows only routine `chore(feeds): refresh` commits, plus any docs-only commits.
+- [ ] `feeds/source-freshness.json` is present and moving. New in `rc.6`. It should gain an entry per source on the first run after the tag and thereafter change only when an upstream body actually changes — so a diff on every single refresh means the digest is picking up something volatile, and a file that never appears at all means `git add feeds/` is not catching it and the content-hash arm of evidence ageing is silently dead.
 - [ ] CI is green on `main`.
 - [ ] The last four scheduled cycles each show Update feeds → Publish to Pages → Heartbeat all succeeding.
 - [ ] No open pull requests and no unresolved issues, including no open false-positive reports.
@@ -20,11 +21,19 @@ Companion documents: [`CITABILITY.md`](CITABILITY.md) for why archival is sequen
 
   Eight rather than six deliberately. `update-feeds.yml` is scheduled `17 */6 * * *`, so four runs a day is the intent, but GitHub's scheduled-workflow queue runs late under load: observed gaps between consecutive runs over 2026-08-19 to 2026-08-24 ranged from 5.03h to **7.17h**, median 5.8h. A six-hour bound would fail this check on a perfectly healthy pipeline.
 
-If any box fails, fix the cause and cut `rc.6` rather than releasing.
+If any box fails, fix the cause and cut `rc.7` rather than releasing.
 
-### The 1 September source review falls inside this window
+### The 1 September source review has already run — and it cut this candidate
 
-`source-review.yml` opens a review issue on the first of each month during burn-in. For the `rc.5` window that lands on **2026-09-01**, a little over three weeks before the window closes.
+Recorded here rather than deleted, because the reasoning is what the next review should follow.
+
+The review (issue #52) admitted **no source**, so the "hold admissions until after promotion" default below was never tested. What restarted the clock was a defect the review found while re-checking the dormant sources: `docs/source-lifecycle.md` specifies three mechanisms for determining evidence age and only one had ever been implemented (ADR-056). That is not an admission, so the table below did not cover it — the nearest rule is the corrective-fix exception, and it applies. A freshness gate that cannot see a frozen payload is a gate that lets a dead source keep voting, which is squarely the "source admitting bad data" case even though no bad data had reached the feed yet.
+
+The published output did not change. `rc.6` was still cut, because the burn-in rule keys off the paths a commit touches and not off whether output moved — that is the whole point of not making the judgement under release pressure.
+
+The next review falls on **2026-10-01**, which is the day the `rc.6` window closes. The guidance below applies to it unchanged.
+
+`source-review.yml` opens a review issue on the first of each month during burn-in.
 
 Opening the issue is harmless — the workflow does not auto-enable anything, it only prompts a human review. The decision point is what gets merged afterward:
 
@@ -41,17 +50,19 @@ One exception: if the review finds a source *admitting bad data* — repeated fa
 
 The review report template already requires a statement of whether the clock restarts, so record the decision there.
 
+One refinement learned from the September cycle: the table above is written entirely in terms of source admissions, and the finding that mattered was a code defect in the freshness machinery. A review that re-checks dormant sources properly will sometimes find that the *gating* is wrong rather than that a *source* is wrong. Treat that as corrective, fix it, and accept the slip — the same way you would for a source admitting bad data.
+
 ## 2. Bump every version reference together
 
 Per [ADR-055](DECISIONS.md) there is **one** version number for the project, and every file naming a version names that one. There is no release-candidate exemption, so if you have been cutting candidates correctly these are already in step and this section is a formality.
 
-- [ ] `pyproject.toml` → `version = "1.0.0"` (currently `1.0.0rc5`)
-- [ ] `CITATION.cff` → `version: 1.0.0` (currently `1.0.0-rc.5`)
+- [ ] `pyproject.toml` → `version = "1.0.0"` (currently `1.0.0rc6`)
+- [ ] `CITATION.cff` → `version: 1.0.0` (currently `1.0.0-rc.6`)
 - [ ] `CITATION.cff` → `date-released: "YYYY-MM-DD"`, set to the actual release date
 - [ ] The git tag itself → `v1.0.0`
 - [ ] The `version` field in the **Zenodo API metadata payload** at step 6. This is the one that ends up permanently in the archived record, and it is the only one CI cannot check for you.
 
-Two spellings of the one version are expected and are not a mismatch: PEP 440 requires `1.0.0rc5` in `pyproject.toml`, while `CITATION.cff` and the git tag use `1.0.0-rc.5`. CI compares them on a canonical form. At a final release there is no suffix and the spellings coincide anyway.
+Two spellings of the one version are expected and are not a mismatch: PEP 440 requires `1.0.0rc6` in `pyproject.toml`, while `CITATION.cff` and the git tag use `1.0.0-rc.6`. CI compares them on a canonical form. At a final release there is no suffix and the spellings coincide anyway.
 
 ### Adding the version DOI back at promotion
 
@@ -86,18 +97,18 @@ That last script is also a CI gate, so a version mismatch fails the build rather
 
 ## 3. Update stale prose
 
-- [ ] `README.md` — the Releases section names the current candidate as being under burn-in, and explains why `rc.4` and `rc.5` were cut. Update it to describe `v1.0.0` as released, and drop the burn-in sentences.
+- [ ] `README.md` — the Releases section names the current candidate as being under burn-in, and explains why `rc.4`, `rc.5` and `rc.6` were cut. Update it to describe `v1.0.0` as released, and drop the burn-in sentences.
 - [ ] `README.md` — the `## Citation` section carries an interim repository citation naming the current candidate version. Replace it with the resolved DOI citation once minted (step 6).
-- [ ] `CHANGELOG.md` — add a `## [1.0.0] — YYYY-MM-DD` section above `## [1.0.0-rc.5]`.
+- [ ] `CHANGELOG.md` — add a `## [1.0.0] — YYYY-MM-DD` section above `## [1.0.0-rc.6]`.
 
-  `[Unreleased]` currently holds the ADR-055 entry from #49, which landed shortly after `rc.5` was tagged. Move it into the `[1.0.0]` section. Where `rc.5` was promoted unchanged, the `[1.0.0]` entry should say so and point at the `[1.0.0-rc.5]` section rather than duplicating it.
+  `[Unreleased]` is currently empty — the ADR-055 entry from #49 was folded into `[1.0.0-rc.6]`, which is the candidate that actually ships it. Where `rc.6` is promoted unchanged, the `[1.0.0]` entry should say so and point at the `[1.0.0-rc.6]` section rather than duplicating it.
 
   **Content in `[Unreleased]` is not by itself evidence that the burn-in clock restarted.** An earlier version of this step said it was, which contradicted [`source-lifecycle.md`](source-lifecycle.md#what-restarts-the-rc-burn-in-clock) — the authoritative statement, which this checklist defers to and which explicitly excludes documentation, `CHANGELOG.md`, citation metadata, and `scripts/` from restarting the clock. Those are exactly the changes that accumulate in `[Unreleased]` during a candidate window, so a non-empty `[Unreleased]` is the normal case, not an alarm.
 
   Determine the clock from the paths a commit touched, never from whether the changelog has entries:
 
   ```bash
-  git diff --name-only v1.0.0-rc.5..main -- sources.yaml src/ .github/workflows/
+  git diff --name-only v1.0.0-rc.6..main -- sources.yaml src/ .github/workflows/
   ```
 
   Empty output means the clock is intact. Any output means cut a new candidate instead of releasing. The corresponding item in §1 is the authoritative gate; this step concerns only the prose.
