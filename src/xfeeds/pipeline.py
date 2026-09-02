@@ -117,10 +117,16 @@ class RunReport:
         """Human-readable summary for logs and PR bodies."""
         ok = sum(1 for s in self.source_status.values() if s["status"] == "ok")
         skipped = sum(1 for s in self.source_status.values() if s["status"] == "skipped")
-        configured = len(self.source_status) - skipped
+        expired = sum(1 for s in self.source_status.values() if s["status"] == "expired")
+        # Acknowledged-expired (dormant, ADR-059) sources are excluded from the
+        # active denominator: they are deliberately not failing. They stay enabled
+        # only as a review trigger, so they are reported separately rather than
+        # counting against the ok/configured health ratio.
+        configured = len(self.source_status) - skipped - expired
         lines = [
             f"xfeeds run {self.generated_at.isoformat()}",
             f"  sources:   {ok}/{configured} ok"
+            + (f" ({expired} dormant)" if expired else "")
             + (f" ({skipped} skipped, no API key)" if skipped else ""),
             (
                 f"  published: {self.counts.get('published', 0)}"
