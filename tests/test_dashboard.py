@@ -203,6 +203,45 @@ def _overflow_classes(page: str) -> set[str]:
     return set(re.findall(r"\.([\w-]+)[^{]*\{[^}]*overflow(?:-x)?:\s*auto", page))
 
 
+def test_status_strip_treats_acknowledged_expired_sources_as_dormant_not_missing() -> None:
+    """A deliberately dormant (ADR-059) source must not read as a missing source.
+
+    It is excluded from the active denominator and the "needs review" list, and
+    shown instead as an acknowledged dormant source. A genuinely stale source
+    still counts as needing review.
+    """
+    manifest = {
+        "generated_at": "2026-09-01T13:07:00+00:00",
+        "sources": {
+            "spamhaus_drop_v4": {"status": "ok", "records": 1710},
+            "blocklist_de": {"status": "ok", "records": 30714},
+            "feodo_tracker": {"status": "expired", "records": 0},
+        },
+    }
+    strip = dashboard._status_strip(manifest)
+    # Active denominator excludes the expired source: 2/2 active sources OK.
+    assert "2/2</strong> active sources OK" in strip
+    assert "needs review" not in strip
+    # The expired source is surfaced as acknowledged dormant, not missing.
+    assert "dormant: feodo_tracker" in strip
+    assert "acknowledged" in strip
+
+
+def test_status_strip_still_flags_stale_sources_as_needing_review() -> None:
+    """Only acknowledged-expired sources are excused; stale sources still count."""
+    manifest = {
+        "generated_at": "2026-09-01T13:07:00+00:00",
+        "sources": {
+            "spamhaus_drop_v4": {"status": "ok", "records": 1710},
+            "feodo_tracker": {"status": "stale", "records": 5},
+        },
+    }
+    strip = dashboard._status_strip(manifest)
+    assert "1/2</strong> active sources OK" in strip
+    assert "1 needs review: feodo_tracker" in strip
+    assert "dormant" not in strip
+
+
 def test_both_surfaces_have_the_direction_a_structure() -> None:
     """Keep the concise operator flow separate from the analytical audit trail."""
     console, analysis = _pages()

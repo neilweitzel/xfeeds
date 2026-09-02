@@ -41,6 +41,7 @@ from xfeeds.models import (
     ScoredIndicator,
     SourceConfig,
 )
+from xfeeds.pipeline import RunReport
 from xfeeds.score import (
     CATEGORY_SEVERITY,
     STALE_EVIDENCE_FACTOR,
@@ -336,6 +337,58 @@ def test_history_is_capped_so_it_cannot_grow_forever(tmp_path: Path) -> None:
         history = append_history(path, manifest, limit=5)
     assert len(history) == 5
     assert json.loads(path.read_text())[-1]["published"] == 11
+
+
+def test_history_excludes_acknowledged_expired_sources_from_the_denominator(tmp_path: Path) -> None:
+    """A dormant (ADR-059) source is not failing, so it must not count as missing.
+
+    It stays enabled as a review trigger and contributes nothing to scoring.
+    Excluding it from sources_total means the dashboard reads 0 missing when the
+    only non-ok source is one a maintainer has already retired, while the expired
+    count is still carried for transparency.
+    """
+    path = tmp_path / "history.json"
+    manifest = {
+        "generated_at": "2026-09-01T00:00:00+00:00",
+        "counts": {"published": 8787, "high": 7104, "medium": 1683},
+        "deltas": {"added": 122, "removed": 49},
+        "sources": {
+            "spamhaus_drop_v4": {"status": "ok", "records": 1710},
+            "feodo_tracker": {"status": "expired", "records": 0},
+            "blocklist_de": {"status": "ok", "records": 30714},
+        },
+    }
+    history = append_history(path, manifest)
+    entry = history[-1]
+    assert entry["sources_ok"] == 2
+    assert entry["sources_expired"] == 1
+    # Denominator excludes the expired source, so ok == total -> 0 missing.
+    assert entry["sources_total"] == 2
+    assert entry["sources_total"] - entry["sources_ok"] == 0
+
+
+def test_run_report_summary_excludes_expired_sources_from_configured_denominator() -> None:
+    """The run report must not read a deliberately dormant source as a failure.
+
+    An expired source is reported as "N dormant" alongside the ok/configured
+    ratio rather than dragging the configured denominator above the ok count.
+    """
+    report = RunReport(
+        generated_at=datetime(2026, 9, 1, tzinfo=UTC),
+        source_status={
+            "spamhaus_drop_v4": {"status": "ok", "records": 1710, "error": None},
+            "blocklist_de": {"status": "ok", "records": 30714, "error": None},
+            "feodo_tracker": {"status": "expired", "records": 0, "error": None},
+        },
+    )
+    summary = report.summary()
+    # 2 of 2 active sources ok; the expired source is named as dormant, not missing.
+    assert "2/2 ok" in summary
+    assert "1 dormant" in summary
+    assert "3/2 ok" not in summary
+    # The expired source still appears by name in the per-source detail lines.
+    assert "feodo_tracker" in summary
+    assert "expired" in summary
 
 
 def test_compromised_host_is_not_promoted_by_abusech_alone() -> None:

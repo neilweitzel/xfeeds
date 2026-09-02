@@ -732,6 +732,13 @@ def append_history(path: Path, manifest: dict[str, Any], limit: int = 720) -> li
         except (json.JSONDecodeError, OSError):
             history = []
 
+    statuses = [s.get("status") for s in manifest["sources"].values()]
+    # Acknowledged-expired sources (ADR-059) are deliberately dormant: they stay
+    # enabled only as a review trigger and contribute nothing to scoring. They are
+    # not failing, so they are excluded from the source-health denominator and
+    # reported separately so the dashboard reads 0 missing when the only non-ok
+    # source is one a maintainer has already retired.
+    expired = sum(1 for st in statuses if st == "expired")
     entry = {
         "generated_at": manifest["generated_at"],
         "published": manifest["counts"]["published"],
@@ -739,8 +746,9 @@ def append_history(path: Path, manifest: dict[str, Any], limit: int = 720) -> li
         "medium": manifest["counts"]["medium"],
         "added": manifest["deltas"]["added"],
         "removed": manifest["deltas"]["removed"],
-        "sources_ok": sum(1 for s in manifest["sources"].values() if s.get("status") == "ok"),
-        "sources_total": len(manifest["sources"]),
+        "sources_ok": sum(1 for st in statuses if st == "ok"),
+        "sources_expired": expired,
+        "sources_total": len(statuses) - expired,
         "by_class": {
             name: info.get("records", 0)
             for name, info in manifest["sources"].items()
