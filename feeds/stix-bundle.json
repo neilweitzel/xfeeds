@@ -100,39 +100,6 @@
       "valid_from": "2026-08-17T00:00:00Z"
     },
     {
-      "confidence": 77,
-      "created": "2026-09-09T00:00:00Z",
-      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
-      "external_references": [
-        {
-          "description": "blocklist_de",
-          "source_name": "xfeeds",
-          "url": "https://github.com/neilweitzel/xfeeds"
-        },
-        {
-          "description": "cins_army",
-          "source_name": "xfeeds",
-          "url": "https://github.com/neilweitzel/xfeeds"
-        }
-      ],
-      "id": "indicator--6810496c-9cb5-ce3e-cd35-4cab9cda8292",
-      "indicator_types": [
-        "malicious-activity"
-      ],
-      "labels": [
-        "brute-force",
-        "scanning",
-        "web-attack"
-      ],
-      "modified": "2026-09-13T00:00:00Z",
-      "name": "Malicious IP 1.24.16.133",
-      "pattern": "[ipv4-addr:value = '1.24.16.133']",
-      "pattern_type": "stix",
-      "spec_version": "2.1",
-      "type": "indicator",
-      "valid_from": "2026-09-09T00:00:00Z"
-    },
-    {
       "confidence": 93,
       "created": "2026-08-12T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
@@ -2253,7 +2220,7 @@
       "valid_from": "2026-08-22T00:00:00Z"
     },
     {
-      "confidence": 92,
+      "confidence": 93,
       "created": "2026-08-30T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -2435,7 +2402,7 @@
       "valid_from": "2026-08-24T00:00:00Z"
     },
     {
-      "confidence": 89,
+      "confidence": 92,
       "created": "2026-08-17T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -3441,7 +3408,7 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
-      "confidence": 87,
+      "confidence": 88,
       "created": "2026-08-25T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -3465,7 +3432,7 @@
         "scanning",
         "web-attack"
       ],
-      "modified": "2026-09-12T00:00:00Z",
+      "modified": "2026-09-13T00:00:00Z",
       "name": "Malicious IP 3.208.27.95",
       "pattern": "[ipv4-addr:value = '3.208.27.95']",
       "pattern_type": "stix",
@@ -4284,6 +4251,46 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
+      "confidence": 94,
+      "created": "2026-09-02T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "blocklist_de",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipsum_levels",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipthreat",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--adb5c9a1-2b16-66a8-5d31-5e33f452bbd9",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "aggregate",
+        "brute-force",
+        "reported-abuse",
+        "scanning",
+        "web-attack"
+      ],
+      "modified": "2026-09-13T00:00:00Z",
+      "name": "Malicious IP 5.128.98.108",
+      "pattern": "[ipv4-addr:value = '5.128.98.108']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-09-02T00:00:00Z"
+    },
+    {
       "confidence": 92,
       "created": "2026-08-19T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
@@ -4904,6 +4911,33 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
+      "confidence": 90,
+      "created": "2026-09-13T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "spamhaus_drop_v4",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--316517c0-f203-81e7-0997-52231da14f57",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "criminal-hosting",
+        "hijacked-netblock"
+      ],
+      "modified": "2026-09-13T00:00:00Z",
+      "name": "Malicious IP 5.252.155.0/24",
+      "pattern": "[ipv4-addr:value = '5.252.155.0/24']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-09-13T00:00:00Z"
+    },
+    {
       "confidence": 93,
       "created": "2026-08-31T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
@@ -5134,7 +5168,7 @@
       "valid_from": "2026-09-07T00:00:00Z"
     },
     {
-      "confidence": 91,
+      "confidence": 93,
       "created": "2026-08-23T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -5675,6 +5709,39 @@
       "valid_from": "2026-08-26T00:00:00Z"
     },
     {
+      "confidence": 81,
+      "created": "2026-09-13T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "blocklist_de",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "cins_army",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--775d04a3-f7aa-6f43-941e-05b507aad2ec",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "brute-force",
+        "scanning",
+        "web-attack"
+      ],
+      "modified": "2026-09-13T00:00:00Z",
+      "name": "Malicious IP 8.209.235.71",
+      "pattern": "[ipv4-addr:value = '8.209.235.71']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-09-13T00:00:00Z"
+    },
+    {
       "confidence": 75,
       "created": "2026-08-12T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
@@ -5903,7 +5970,7 @@
       "valid_from": "2026-09-13T00:00:00Z"
     },
     {
-      "confidence": 84,
+      "confidence": 85,
       "created": "2026-08-20T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -5927,7 +5994,7 @@
         "scanning",
         "web-attack"
       ],
-      "modified": "2026-09-12T00:00:00Z",
+      "modified": "2026-09-13T00:00:00Z",
       "name": "Malicious IP 8.215.69.55",
       "pattern": "[ipv4-addr:value = '8.215.69.55']",
       "pattern_type": "stix",
@@ -7634,6 +7701,39 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
+      "confidence": 72,
+      "created": "2026-09-04T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "blocklist_de",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "cins_army",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--4c7f1b01-b6a7-73de-3a70-edc663f08d58",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "brute-force",
+        "scanning",
+        "web-attack"
+      ],
+      "modified": "2026-09-13T00:00:00Z",
+      "name": "Malicious IP 14.22.114.83",
+      "pattern": "[ipv4-addr:value = '14.22.114.83']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-09-04T00:00:00Z"
+    },
+    {
       "confidence": 93,
       "created": "2026-08-12T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
@@ -9124,7 +9224,7 @@
       "valid_from": "2026-08-28T00:00:00Z"
     },
     {
-      "confidence": 90,
+      "confidence": 91,
       "created": "2026-09-02T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -9976,7 +10076,7 @@
       "valid_from": "2026-08-17T00:00:00Z"
     },
     {
-      "confidence": 88,
+      "confidence": 89,
       "created": "2026-08-22T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -10016,7 +10116,7 @@
       "valid_from": "2026-08-22T00:00:00Z"
     },
     {
-      "confidence": 81,
+      "confidence": 82,
       "created": "2026-09-10T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -10748,7 +10848,7 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
-      "confidence": 81,
+      "confidence": 82,
       "created": "2026-09-07T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -14336,7 +14436,7 @@
       "valid_from": "2026-08-18T00:00:00Z"
     },
     {
-      "confidence": 89,
+      "confidence": 90,
       "created": "2026-09-02T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -15751,40 +15851,6 @@
       "spec_version": "2.1",
       "type": "indicator",
       "valid_from": "2026-09-10T00:00:00Z"
-    },
-    {
-      "confidence": 66,
-      "created": "2026-09-04T00:00:00Z",
-      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
-      "external_references": [
-        {
-          "description": "blocklist_de",
-          "source_name": "xfeeds",
-          "url": "https://github.com/neilweitzel/xfeeds"
-        },
-        {
-          "description": "ipthreat",
-          "source_name": "xfeeds",
-          "url": "https://github.com/neilweitzel/xfeeds"
-        }
-      ],
-      "id": "indicator--dfae7c61-dda0-69d5-1cde-3e68258b6a4a",
-      "indicator_types": [
-        "malicious-activity"
-      ],
-      "labels": [
-        "brute-force",
-        "reported-abuse",
-        "scanning",
-        "web-attack"
-      ],
-      "modified": "2026-09-13T00:00:00Z",
-      "name": "Malicious IP 27.79.41.32",
-      "pattern": "[ipv4-addr:value = '27.79.41.32']",
-      "pattern_type": "stix",
-      "spec_version": "2.1",
-      "type": "indicator",
-      "valid_from": "2026-09-04T00:00:00Z"
     },
     {
       "confidence": 84,
@@ -18892,7 +18958,7 @@
       "valid_from": "2026-08-30T00:00:00Z"
     },
     {
-      "confidence": 85,
+      "confidence": 87,
       "created": "2026-08-13T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -18917,7 +18983,7 @@
         "scanning",
         "web-attack"
       ],
-      "modified": "2026-09-10T00:00:00Z",
+      "modified": "2026-09-13T00:00:00Z",
       "name": "Malicious IP 31.173.66.222",
       "pattern": "[ipv4-addr:value = '31.173.66.222']",
       "pattern_type": "stix",
@@ -20321,7 +20387,7 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
-      "confidence": 87,
+      "confidence": 88,
       "created": "2026-09-06T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -20894,7 +20960,7 @@
       "valid_from": "2026-08-31T00:00:00Z"
     },
     {
-      "confidence": 93,
+      "confidence": 94,
       "created": "2026-08-12T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -23926,7 +23992,7 @@
       "valid_from": "2026-08-31T00:00:00Z"
     },
     {
-      "confidence": 97,
+      "confidence": 98,
       "created": "2026-09-04T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -24563,7 +24629,7 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
-      "confidence": 77,
+      "confidence": 80,
       "created": "2026-09-11T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -24896,6 +24962,45 @@
       "valid_from": "2026-09-10T00:00:00Z"
     },
     {
+      "confidence": 83,
+      "created": "2026-09-13T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "binary_defense",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "cins_army",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipsum_levels",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--de74060f-8cf2-07bf-6be2-e8adf6d0e200",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "aggregate",
+        "brute-force",
+        "malware-infrastructure",
+        "scanning"
+      ],
+      "modified": "2026-09-13T00:00:00Z",
+      "name": "Malicious IP 39.61.48.179",
+      "pattern": "[ipv4-addr:value = '39.61.48.179']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-09-13T00:00:00Z"
+    },
+    {
       "confidence": 85,
       "created": "2026-08-29T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
@@ -25081,7 +25186,7 @@
       "valid_from": "2026-09-06T00:00:00Z"
     },
     {
-      "confidence": 65,
+      "confidence": 71,
       "created": "2026-09-05T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -25105,7 +25210,7 @@
         "scanning",
         "web-attack"
       ],
-      "modified": "2026-09-10T00:00:00Z",
+      "modified": "2026-09-13T00:00:00Z",
       "name": "Malicious IP 39.105.163.168",
       "pattern": "[ipv4-addr:value = '39.105.163.168']",
       "pattern_type": "stix",
@@ -26056,7 +26161,7 @@
       "valid_from": "2026-08-22T00:00:00Z"
     },
     {
-      "confidence": 87,
+      "confidence": 88,
       "created": "2026-08-12T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -26081,7 +26186,7 @@
         "scanning",
         "web-attack"
       ],
-      "modified": "2026-09-11T00:00:00Z",
+      "modified": "2026-09-13T00:00:00Z",
       "name": "Malicious IP 41.59.202.241",
       "pattern": "[ipv4-addr:value = '41.59.202.241']",
       "pattern_type": "stix",
@@ -33313,7 +33418,7 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
-      "confidence": 96,
+      "confidence": 97,
       "created": "2026-08-21T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -37686,7 +37791,7 @@
       "valid_from": "2026-08-26T00:00:00Z"
     },
     {
-      "confidence": 91,
+      "confidence": 92,
       "created": "2026-08-28T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -38880,7 +38985,7 @@
       "valid_from": "2026-09-03T00:00:00Z"
     },
     {
-      "confidence": 77,
+      "confidence": 80,
       "created": "2026-08-24T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -39073,7 +39178,7 @@
       "valid_from": "2026-08-31T00:00:00Z"
     },
     {
-      "confidence": 90,
+      "confidence": 91,
       "created": "2026-08-12T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -41682,7 +41787,7 @@
       "valid_from": "2026-09-12T00:00:00Z"
     },
     {
-      "confidence": 85,
+      "confidence": 91,
       "created": "2026-09-02T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -42046,39 +42151,6 @@
       "spec_version": "2.1",
       "type": "indicator",
       "valid_from": "2026-08-15T00:00:00Z"
-    },
-    {
-      "confidence": 76,
-      "created": "2026-09-09T00:00:00Z",
-      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
-      "external_references": [
-        {
-          "description": "blocklist_de",
-          "source_name": "xfeeds",
-          "url": "https://github.com/neilweitzel/xfeeds"
-        },
-        {
-          "description": "cins_army",
-          "source_name": "xfeeds",
-          "url": "https://github.com/neilweitzel/xfeeds"
-        }
-      ],
-      "id": "indicator--7e7c7071-b591-ae13-7c5f-8f6607b9ba33",
-      "indicator_types": [
-        "malicious-activity"
-      ],
-      "labels": [
-        "brute-force",
-        "scanning",
-        "web-attack"
-      ],
-      "modified": "2026-09-13T00:00:00Z",
-      "name": "Malicious IP 47.95.248.1",
-      "pattern": "[ipv4-addr:value = '47.95.248.1']",
-      "pattern_type": "stix",
-      "spec_version": "2.1",
-      "type": "indicator",
-      "valid_from": "2026-09-09T00:00:00Z"
     },
     {
       "confidence": 78,
@@ -42823,6 +42895,39 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
+      "confidence": 84,
+      "created": "2026-08-19T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "blocklist_de",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "cins_army",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--78505112-8549-5015-5664-198f18584a58",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "brute-force",
+        "scanning",
+        "web-attack"
+      ],
+      "modified": "2026-09-13T00:00:00Z",
+      "name": "Malicious IP 47.236.48.30",
+      "pattern": "[ipv4-addr:value = '47.236.48.30']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-08-19T00:00:00Z"
+    },
+    {
       "confidence": 92,
       "created": "2026-09-01T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
@@ -42862,7 +42967,7 @@
       "valid_from": "2026-09-01T00:00:00Z"
     },
     {
-      "confidence": 92,
+      "confidence": 93,
       "created": "2026-09-08T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -43111,7 +43216,7 @@
       "valid_from": "2026-09-08T00:00:00Z"
     },
     {
-      "confidence": 83,
+      "confidence": 89,
       "created": "2026-09-06T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -45247,7 +45352,7 @@
       "valid_from": "2026-09-02T00:00:00Z"
     },
     {
-      "confidence": 86,
+      "confidence": 90,
       "created": "2026-09-07T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -45627,7 +45732,7 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
-      "confidence": 93,
+      "confidence": 96,
       "created": "2026-08-18T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -51172,6 +51277,46 @@
     },
     {
       "confidence": 94,
+      "created": "2026-08-14T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "blocklist_de",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipsum_levels",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipthreat",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--a59cfd38-5660-bfe5-1615-d50e7d2bcb48",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "aggregate",
+        "brute-force",
+        "reported-abuse",
+        "scanning",
+        "web-attack"
+      ],
+      "modified": "2026-09-13T00:00:00Z",
+      "name": "Malicious IP 58.69.56.44",
+      "pattern": "[ipv4-addr:value = '58.69.56.44']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-08-14T00:00:00Z"
+    },
+    {
+      "confidence": 94,
       "created": "2026-08-27T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -51705,7 +51850,7 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
-      "confidence": 92,
+      "confidence": 93,
       "created": "2026-08-17T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -52160,7 +52305,7 @@
       "valid_from": "2026-09-02T00:00:00Z"
     },
     {
-      "confidence": 83,
+      "confidence": 85,
       "created": "2026-09-06T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -52185,7 +52330,7 @@
         "scanning",
         "web-attack"
       ],
-      "modified": "2026-09-11T00:00:00Z",
+      "modified": "2026-09-13T00:00:00Z",
       "name": "Malicious IP 59.8.20.6",
       "pattern": "[ipv4-addr:value = '59.8.20.6']",
       "pattern_type": "stix",
@@ -55821,7 +55966,7 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
-      "confidence": 90,
+      "confidence": 93,
       "created": "2026-08-12T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -57947,7 +58092,7 @@
       "valid_from": "2026-09-02T00:00:00Z"
     },
     {
-      "confidence": 84,
+      "confidence": 88,
       "created": "2026-09-06T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -58775,40 +58920,6 @@
       "spec_version": "2.1",
       "type": "indicator",
       "valid_from": "2026-08-20T00:00:00Z"
-    },
-    {
-      "confidence": 85,
-      "created": "2026-08-27T00:00:00Z",
-      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
-      "external_references": [
-        {
-          "description": "blocklist_de",
-          "source_name": "xfeeds",
-          "url": "https://github.com/neilweitzel/xfeeds"
-        },
-        {
-          "description": "ipthreat",
-          "source_name": "xfeeds",
-          "url": "https://github.com/neilweitzel/xfeeds"
-        }
-      ],
-      "id": "indicator--a9808f79-ad7d-b52e-0324-89e3e2cb4a05",
-      "indicator_types": [
-        "malicious-activity"
-      ],
-      "labels": [
-        "brute-force",
-        "reported-abuse",
-        "scanning",
-        "web-attack"
-      ],
-      "modified": "2026-09-13T00:00:00Z",
-      "name": "Malicious IP 62.60.130.210",
-      "pattern": "[ipv4-addr:value = '62.60.130.210']",
-      "pattern_type": "stix",
-      "spec_version": "2.1",
-      "type": "indicator",
-      "valid_from": "2026-08-27T00:00:00Z"
     },
     {
       "confidence": 98,
@@ -62461,7 +62572,7 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
-      "confidence": 90,
+      "confidence": 93,
       "created": "2026-08-12T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -62495,7 +62606,7 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
-      "confidence": 87,
+      "confidence": 91,
       "created": "2026-08-12T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -63843,7 +63954,7 @@
       "valid_from": "2026-09-11T00:00:00Z"
     },
     {
-      "confidence": 91,
+      "confidence": 92,
       "created": "2026-08-31T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -63989,7 +64100,7 @@
       "valid_from": "2026-08-27T00:00:00Z"
     },
     {
-      "confidence": 87,
+      "confidence": 88,
       "created": "2026-09-05T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -64014,7 +64125,7 @@
         "scanning",
         "web-attack"
       ],
-      "modified": "2026-09-12T00:00:00Z",
+      "modified": "2026-09-13T00:00:00Z",
       "name": "Malicious IP 66.216.19.50",
       "pattern": "[ipv4-addr:value = '66.216.19.50']",
       "pattern_type": "stix",
@@ -64068,7 +64179,7 @@
       "valid_from": "2026-08-21T00:00:00Z"
     },
     {
-      "confidence": 94,
+      "confidence": 95,
       "created": "2026-08-14T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -64623,6 +64734,39 @@
       "valid_from": "2026-08-28T00:00:00Z"
     },
     {
+      "confidence": 81,
+      "created": "2026-09-06T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "blocklist_de",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "cins_army",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--434ef53e-21c1-5556-44eb-46307493a867",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "brute-force",
+        "scanning",
+        "web-attack"
+      ],
+      "modified": "2026-09-13T00:00:00Z",
+      "name": "Malicious IP 67.207.83.69",
+      "pattern": "[ipv4-addr:value = '67.207.83.69']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-09-06T00:00:00Z"
+    },
+    {
       "confidence": 86,
       "created": "2026-08-31T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
@@ -65152,6 +65296,39 @@
       "spec_version": "2.1",
       "type": "indicator",
       "valid_from": "2026-08-28T00:00:00Z"
+    },
+    {
+      "confidence": 81,
+      "created": "2026-08-23T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "blocklist_de",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "cins_army",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--405f654d-51fb-bda1-6276-7dface97934f",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "brute-force",
+        "scanning",
+        "web-attack"
+      ],
+      "modified": "2026-09-13T00:00:00Z",
+      "name": "Malicious IP 68.183.6.66",
+      "pattern": "[ipv4-addr:value = '68.183.6.66']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-08-23T00:00:00Z"
     },
     {
       "confidence": 88,
@@ -67579,7 +67756,7 @@
       "valid_from": "2026-09-01T00:00:00Z"
     },
     {
-      "confidence": 92,
+      "confidence": 93,
       "created": "2026-09-02T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -68001,7 +68178,7 @@
       "valid_from": "2026-09-02T00:00:00Z"
     },
     {
-      "confidence": 92,
+      "confidence": 93,
       "created": "2026-09-02T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -72289,7 +72466,7 @@
       "valid_from": "2026-08-19T00:00:00Z"
     },
     {
-      "confidence": 89,
+      "confidence": 90,
       "created": "2026-08-28T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -72395,6 +72572,46 @@
       "spec_version": "2.1",
       "type": "indicator",
       "valid_from": "2026-08-30T00:00:00Z"
+    },
+    {
+      "confidence": 93,
+      "created": "2026-08-28T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "blocklist_de",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipsum_levels",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipthreat",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--4842dc63-424e-9233-9506-2a81301751df",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "aggregate",
+        "brute-force",
+        "reported-abuse",
+        "scanning",
+        "web-attack"
+      ],
+      "modified": "2026-09-13T00:00:00Z",
+      "name": "Malicious IP 72.215.33.71",
+      "pattern": "[ipv4-addr:value = '72.215.33.71']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-08-28T00:00:00Z"
     },
     {
       "confidence": 87,
@@ -72755,6 +72972,45 @@
       "valid_from": "2026-08-24T00:00:00Z"
     },
     {
+      "confidence": 93,
+      "created": "2026-08-26T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "blocklist_de",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "cins_army",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipsum_levels",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--8798ac80-f2c9-e17b-821d-ed1962f54d5a",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "aggregate",
+        "brute-force",
+        "scanning",
+        "web-attack"
+      ],
+      "modified": "2026-09-13T00:00:00Z",
+      "name": "Malicious IP 72.217.109.13",
+      "pattern": "[ipv4-addr:value = '72.217.109.13']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-08-26T00:00:00Z"
+    },
+    {
       "confidence": 91,
       "created": "2026-08-27T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
@@ -72795,7 +73051,7 @@
       "valid_from": "2026-08-27T00:00:00Z"
     },
     {
-      "confidence": 91,
+      "confidence": 92,
       "created": "2026-09-04T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -73203,7 +73459,7 @@
       "valid_from": "2026-08-19T00:00:00Z"
     },
     {
-      "confidence": 79,
+      "confidence": 81,
       "created": "2026-09-09T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -74165,6 +74421,40 @@
       "spec_version": "2.1",
       "type": "indicator",
       "valid_from": "2026-08-20T00:00:00Z"
+    },
+    {
+      "confidence": 91,
+      "created": "2026-09-08T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "blocklist_de",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "bruteforceblocker",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--c8f0fb0f-a187-bb76-ae27-aec1d96d64b0",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "brute-force",
+        "scanning",
+        "ssh-attack",
+        "web-attack"
+      ],
+      "modified": "2026-09-13T00:00:00Z",
+      "name": "Malicious IP 77.22.70.198",
+      "pattern": "[ipv4-addr:value = '77.22.70.198']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-09-08T00:00:00Z"
     },
     {
       "confidence": 90,
@@ -76818,6 +77108,40 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
+      "confidence": 83,
+      "created": "2026-09-13T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "blocklist_de",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipthreat",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--348f6dba-c9bc-3b06-f748-10a745cf71bf",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "brute-force",
+        "reported-abuse",
+        "scanning",
+        "web-attack"
+      ],
+      "modified": "2026-09-13T00:00:00Z",
+      "name": "Malicious IP 78.155.213.21",
+      "pattern": "[ipv4-addr:value = '78.155.213.21']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-09-13T00:00:00Z"
+    },
+    {
       "confidence": 96,
       "created": "2026-08-12T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
@@ -78022,6 +78346,46 @@
       "valid_from": "2026-08-31T00:00:00Z"
     },
     {
+      "confidence": 90,
+      "created": "2026-08-13T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "blocklist_de",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipsum_levels",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipthreat",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--ea1b2592-8be6-574f-5b0b-b160a10cddc8",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "aggregate",
+        "brute-force",
+        "reported-abuse",
+        "scanning",
+        "web-attack"
+      ],
+      "modified": "2026-09-13T00:00:00Z",
+      "name": "Malicious IP 80.66.66.31",
+      "pattern": "[ipv4-addr:value = '80.66.66.31']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-08-13T00:00:00Z"
+    },
+    {
       "confidence": 91,
       "created": "2026-08-12T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
@@ -78920,7 +79284,7 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
-      "confidence": 87,
+      "confidence": 92,
       "created": "2026-09-08T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -79497,6 +79861,46 @@
       "spec_version": "2.1",
       "type": "indicator",
       "valid_from": "2026-09-08T00:00:00Z"
+    },
+    {
+      "confidence": 88,
+      "created": "2026-08-12T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "blocklist_de",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipsum_levels",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipthreat",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--58a64fd3-7198-8804-89a5-702b153e9113",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "aggregate",
+        "brute-force",
+        "reported-abuse",
+        "scanning",
+        "web-attack"
+      ],
+      "modified": "2026-09-13T00:00:00Z",
+      "name": "Malicious IP 80.227.147.94",
+      "pattern": "[ipv4-addr:value = '80.227.147.94']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-08-12T00:00:00Z"
     },
     {
       "confidence": 88,
@@ -80972,39 +81376,6 @@
       "spec_version": "2.1",
       "type": "indicator",
       "valid_from": "2026-09-03T00:00:00Z"
-    },
-    {
-      "confidence": 80,
-      "created": "2026-09-11T00:00:00Z",
-      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
-      "external_references": [
-        {
-          "description": "blocklist_de",
-          "source_name": "xfeeds",
-          "url": "https://github.com/neilweitzel/xfeeds"
-        },
-        {
-          "description": "cins_army",
-          "source_name": "xfeeds",
-          "url": "https://github.com/neilweitzel/xfeeds"
-        }
-      ],
-      "id": "indicator--973ca62c-40f4-ce2c-b292-74855e5ecbb2",
-      "indicator_types": [
-        "malicious-activity"
-      ],
-      "labels": [
-        "brute-force",
-        "scanning",
-        "web-attack"
-      ],
-      "modified": "2026-09-13T00:00:00Z",
-      "name": "Malicious IP 81.163.23.111",
-      "pattern": "[ipv4-addr:value = '81.163.23.111']",
-      "pattern_type": "stix",
-      "spec_version": "2.1",
-      "type": "indicator",
-      "valid_from": "2026-09-11T00:00:00Z"
     },
     {
       "confidence": 86,
@@ -82494,7 +82865,7 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
-      "confidence": 90,
+      "confidence": 91,
       "created": "2026-09-04T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -82524,7 +82895,7 @@
         "scanning",
         "web-attack"
       ],
-      "modified": "2026-09-12T00:00:00Z",
+      "modified": "2026-09-13T00:00:00Z",
       "name": "Malicious IP 82.129.237.3",
       "pattern": "[ipv4-addr:value = '82.129.237.3']",
       "pattern_type": "stix",
@@ -83665,7 +84036,7 @@
       "valid_from": "2026-08-31T00:00:00Z"
     },
     {
-      "confidence": 91,
+      "confidence": 92,
       "created": "2026-08-31T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -86008,6 +86379,40 @@
       "spec_version": "2.1",
       "type": "indicator",
       "valid_from": "2026-08-12T00:00:00Z"
+    },
+    {
+      "confidence": 91,
+      "created": "2026-08-31T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "blocklist_de",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipthreat",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--8c8a5efe-47fa-9f3d-b034-a51cb9d9f233",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "brute-force",
+        "reported-abuse",
+        "scanning",
+        "web-attack"
+      ],
+      "modified": "2026-09-13T00:00:00Z",
+      "name": "Malicious IP 85.116.125.191",
+      "pattern": "[ipv4-addr:value = '85.116.125.191']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-08-31T00:00:00Z"
     },
     {
       "confidence": 90,
@@ -89791,39 +90196,6 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
-      "confidence": 69,
-      "created": "2026-09-05T00:00:00Z",
-      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
-      "external_references": [
-        {
-          "description": "blocklist_de",
-          "source_name": "xfeeds",
-          "url": "https://github.com/neilweitzel/xfeeds"
-        },
-        {
-          "description": "cins_army",
-          "source_name": "xfeeds",
-          "url": "https://github.com/neilweitzel/xfeeds"
-        }
-      ],
-      "id": "indicator--e781ef19-8f43-eed6-5c9a-75894987d968",
-      "indicator_types": [
-        "malicious-activity"
-      ],
-      "labels": [
-        "brute-force",
-        "scanning",
-        "web-attack"
-      ],
-      "modified": "2026-09-10T00:00:00Z",
-      "name": "Malicious IP 89.22.165.2",
-      "pattern": "[ipv4-addr:value = '89.22.165.2']",
-      "pattern_type": "stix",
-      "spec_version": "2.1",
-      "type": "indicator",
-      "valid_from": "2026-09-05T00:00:00Z"
-    },
-    {
       "confidence": 90,
       "created": "2026-08-12T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
@@ -90985,7 +91357,7 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
-      "confidence": 83,
+      "confidence": 89,
       "created": "2026-09-10T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -92995,74 +93367,6 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
-      "confidence": 78,
-      "created": "2026-08-12T00:00:00Z",
-      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
-      "external_references": [
-        {
-          "description": "blocklist_de",
-          "source_name": "xfeeds",
-          "url": "https://github.com/neilweitzel/xfeeds"
-        },
-        {
-          "description": "ipthreat",
-          "source_name": "xfeeds",
-          "url": "https://github.com/neilweitzel/xfeeds"
-        }
-      ],
-      "id": "indicator--d154f1f7-2a5a-d546-f3b0-0bffe32e22c8",
-      "indicator_types": [
-        "malicious-activity"
-      ],
-      "labels": [
-        "brute-force",
-        "reported-abuse",
-        "scanning",
-        "web-attack"
-      ],
-      "modified": "2026-09-08T00:00:00Z",
-      "name": "Malicious IP 91.92.42.133",
-      "pattern": "[ipv4-addr:value = '91.92.42.133']",
-      "pattern_type": "stix",
-      "spec_version": "2.1",
-      "type": "indicator",
-      "valid_from": "2026-08-12T00:00:00Z"
-    },
-    {
-      "confidence": 80,
-      "created": "2026-08-12T00:00:00Z",
-      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
-      "external_references": [
-        {
-          "description": "blocklist_de",
-          "source_name": "xfeeds",
-          "url": "https://github.com/neilweitzel/xfeeds"
-        },
-        {
-          "description": "ipthreat",
-          "source_name": "xfeeds",
-          "url": "https://github.com/neilweitzel/xfeeds"
-        }
-      ],
-      "id": "indicator--b886241b-4e53-8f0a-2c0a-e195718adf0a",
-      "indicator_types": [
-        "malicious-activity"
-      ],
-      "labels": [
-        "brute-force",
-        "reported-abuse",
-        "scanning",
-        "web-attack"
-      ],
-      "modified": "2026-09-07T00:00:00Z",
-      "name": "Malicious IP 91.92.42.147",
-      "pattern": "[ipv4-addr:value = '91.92.42.147']",
-      "pattern_type": "stix",
-      "spec_version": "2.1",
-      "type": "indicator",
-      "valid_from": "2026-08-12T00:00:00Z"
-    },
-    {
       "confidence": 86,
       "created": "2026-08-12T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
@@ -93722,40 +94026,6 @@
       "spec_version": "2.1",
       "type": "indicator",
       "valid_from": "2026-08-28T00:00:00Z"
-    },
-    {
-      "confidence": 68,
-      "created": "2026-08-12T00:00:00Z",
-      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
-      "external_references": [
-        {
-          "description": "blocklist_de",
-          "source_name": "xfeeds",
-          "url": "https://github.com/neilweitzel/xfeeds"
-        },
-        {
-          "description": "ipthreat",
-          "source_name": "xfeeds",
-          "url": "https://github.com/neilweitzel/xfeeds"
-        }
-      ],
-      "id": "indicator--d9e42dcb-d2c1-4c21-120c-bfb6661ae4f2",
-      "indicator_types": [
-        "malicious-activity"
-      ],
-      "labels": [
-        "brute-force",
-        "reported-abuse",
-        "scanning",
-        "web-attack"
-      ],
-      "modified": "2026-09-07T00:00:00Z",
-      "name": "Malicious IP 91.92.47.208",
-      "pattern": "[ipv4-addr:value = '91.92.47.208']",
-      "pattern_type": "stix",
-      "spec_version": "2.1",
-      "type": "indicator",
-      "valid_from": "2026-08-12T00:00:00Z"
     },
     {
       "confidence": 91,
@@ -96765,7 +97035,7 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
-      "confidence": 94,
+      "confidence": 95,
       "created": "2026-08-12T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -98786,7 +99056,7 @@
       "valid_from": "2026-09-07T00:00:00Z"
     },
     {
-      "confidence": 82,
+      "confidence": 85,
       "created": "2026-09-07T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -99002,7 +99272,7 @@
       "valid_from": "2026-09-07T00:00:00Z"
     },
     {
-      "confidence": 78,
+      "confidence": 79,
       "created": "2026-09-07T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -101714,7 +101984,7 @@
       "valid_from": "2026-08-31T00:00:00Z"
     },
     {
-      "confidence": 92,
+      "confidence": 95,
       "created": "2026-08-12T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -103683,7 +103953,7 @@
       "valid_from": "2026-08-31T00:00:00Z"
     },
     {
-      "confidence": 90,
+      "confidence": 91,
       "created": "2026-08-31T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -104725,7 +104995,7 @@
       "valid_from": "2026-08-31T00:00:00Z"
     },
     {
-      "confidence": 90,
+      "confidence": 92,
       "created": "2026-08-22T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -104873,7 +105143,7 @@
       "valid_from": "2026-08-22T00:00:00Z"
     },
     {
-      "confidence": 87,
+      "confidence": 91,
       "created": "2026-08-30T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -106980,39 +107250,6 @@
       "valid_from": "2026-08-23T00:00:00Z"
     },
     {
-      "confidence": 80,
-      "created": "2026-09-09T00:00:00Z",
-      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
-      "external_references": [
-        {
-          "description": "cins_army",
-          "source_name": "xfeeds",
-          "url": "https://github.com/neilweitzel/xfeeds"
-        },
-        {
-          "description": "ipthreat",
-          "source_name": "xfeeds",
-          "url": "https://github.com/neilweitzel/xfeeds"
-        }
-      ],
-      "id": "indicator--056255c6-bd1a-957c-bfc8-ad08ee5ffaf4",
-      "indicator_types": [
-        "malicious-activity"
-      ],
-      "labels": [
-        "brute-force",
-        "reported-abuse",
-        "scanning"
-      ],
-      "modified": "2026-09-13T00:00:00Z",
-      "name": "Malicious IP 101.43.5.247",
-      "pattern": "[ipv4-addr:value = '101.43.5.247']",
-      "pattern_type": "stix",
-      "spec_version": "2.1",
-      "type": "indicator",
-      "valid_from": "2026-09-09T00:00:00Z"
-    },
-    {
       "confidence": 75,
       "created": "2026-08-23T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
@@ -107362,7 +107599,7 @@
       "valid_from": "2026-09-09T00:00:00Z"
     },
     {
-      "confidence": 77,
+      "confidence": 78,
       "created": "2026-09-07T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -107401,7 +107638,7 @@
       "valid_from": "2026-09-07T00:00:00Z"
     },
     {
-      "confidence": 80,
+      "confidence": 81,
       "created": "2026-08-24T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -116119,6 +116356,33 @@
     },
     {
       "confidence": 90,
+      "created": "2026-09-13T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "spamhaus_drop_v4",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--84fa3606-8476-ca6e-5ddd-6771f594e25f",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "criminal-hosting",
+        "hijacked-netblock"
+      ],
+      "modified": "2026-09-13T00:00:00Z",
+      "name": "Malicious IP 103.118.196.0/22",
+      "pattern": "[ipv4-addr:value = '103.118.196.0/22']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-09-13T00:00:00Z"
+    },
+    {
+      "confidence": 90,
       "created": "2026-08-12T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -117521,7 +117785,7 @@
       "valid_from": "2026-09-10T00:00:00Z"
     },
     {
-      "confidence": 92,
+      "confidence": 94,
       "created": "2026-08-26T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -120514,7 +120778,7 @@
       "valid_from": "2026-08-28T00:00:00Z"
     },
     {
-      "confidence": 92,
+      "confidence": 93,
       "created": "2026-08-12T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -121345,7 +121609,7 @@
       "valid_from": "2026-09-01T00:00:00Z"
     },
     {
-      "confidence": 89,
+      "confidence": 91,
       "created": "2026-08-20T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -121404,7 +121668,7 @@
         "scanning",
         "web-attack"
       ],
-      "modified": "2026-09-12T00:00:00Z",
+      "modified": "2026-09-13T00:00:00Z",
       "name": "Malicious IP 103.215.75.19",
       "pattern": "[ipv4-addr:value = '103.215.75.19']",
       "pattern_type": "stix",
@@ -122840,40 +123104,6 @@
       "spec_version": "2.1",
       "type": "indicator",
       "valid_from": "2026-08-12T00:00:00Z"
-    },
-    {
-      "confidence": 81,
-      "created": "2026-09-06T00:00:00Z",
-      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
-      "external_references": [
-        {
-          "description": "blocklist_de",
-          "source_name": "xfeeds",
-          "url": "https://github.com/neilweitzel/xfeeds"
-        },
-        {
-          "description": "ipthreat",
-          "source_name": "xfeeds",
-          "url": "https://github.com/neilweitzel/xfeeds"
-        }
-      ],
-      "id": "indicator--610b916c-2765-0f47-c3d2-2e68398ed067",
-      "indicator_types": [
-        "malicious-activity"
-      ],
-      "labels": [
-        "brute-force",
-        "reported-abuse",
-        "scanning",
-        "web-attack"
-      ],
-      "modified": "2026-09-13T00:00:00Z",
-      "name": "Malicious IP 103.253.27.251",
-      "pattern": "[ipv4-addr:value = '103.253.27.251']",
-      "pattern_type": "stix",
-      "spec_version": "2.1",
-      "type": "indicator",
-      "valid_from": "2026-09-06T00:00:00Z"
     },
     {
       "confidence": 88,
@@ -124536,7 +124766,7 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
-      "confidence": 78,
+      "confidence": 79,
       "created": "2026-09-04T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -125441,6 +125671,45 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
+      "confidence": 92,
+      "created": "2026-09-07T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "cins_army",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipsum_levels",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipthreat",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--f457cdb7-474a-5544-f5e7-0aed5f7a3074",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "aggregate",
+        "brute-force",
+        "reported-abuse",
+        "scanning"
+      ],
+      "modified": "2026-09-13T00:00:00Z",
+      "name": "Malicious IP 106.51.22.217",
+      "pattern": "[ipv4-addr:value = '106.51.22.217']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-09-07T00:00:00Z"
+    },
+    {
       "confidence": 95,
       "created": "2026-09-02T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
@@ -125815,7 +126084,7 @@
       "valid_from": "2026-08-23T00:00:00Z"
     },
     {
-      "confidence": 85,
+      "confidence": 86,
       "created": "2026-09-11T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -125840,7 +126109,7 @@
         "scanning",
         "web-attack"
       ],
-      "modified": "2026-09-12T00:00:00Z",
+      "modified": "2026-09-13T00:00:00Z",
       "name": "Malicious IP 106.89.58.117",
       "pattern": "[ipv4-addr:value = '106.89.58.117']",
       "pattern_type": "stix",
@@ -127175,7 +127444,7 @@
       "valid_from": "2026-09-07T00:00:00Z"
     },
     {
-      "confidence": 91,
+      "confidence": 92,
       "created": "2026-09-07T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -128189,7 +128458,7 @@
       "valid_from": "2026-08-31T00:00:00Z"
     },
     {
-      "confidence": 80,
+      "confidence": 81,
       "created": "2026-09-12T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -128603,7 +128872,7 @@
       "valid_from": "2026-09-07T00:00:00Z"
     },
     {
-      "confidence": 91,
+      "confidence": 94,
       "created": "2026-09-06T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -129631,7 +129900,7 @@
       "valid_from": "2026-09-02T00:00:00Z"
     },
     {
-      "confidence": 78,
+      "confidence": 79,
       "created": "2026-09-06T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -130171,7 +130440,7 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
-      "confidence": 87,
+      "confidence": 90,
       "created": "2026-09-07T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -132676,7 +132945,7 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
-      "confidence": 86,
+      "confidence": 90,
       "created": "2026-09-01T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -134137,6 +134406,40 @@
       "valid_from": "2026-08-15T00:00:00Z"
     },
     {
+      "confidence": 83,
+      "created": "2026-09-13T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "blocklist_de",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipthreat",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--bf4ab8c3-43a3-4b45-320e-b0a97c93cfb0",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "brute-force",
+        "reported-abuse",
+        "scanning",
+        "web-attack"
+      ],
+      "modified": "2026-09-13T00:00:00Z",
+      "name": "Malicious IP 111.70.11.237",
+      "pattern": "[ipv4-addr:value = '111.70.11.237']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-09-13T00:00:00Z"
+    },
+    {
       "confidence": 91,
       "created": "2026-08-31T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
@@ -134397,6 +134700,40 @@
       "spec_version": "2.1",
       "type": "indicator",
       "valid_from": "2026-08-31T00:00:00Z"
+    },
+    {
+      "confidence": 83,
+      "created": "2026-09-13T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "blocklist_de",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipthreat",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--aa1186c0-418e-0544-0a51-f6e7825d8f6f",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "brute-force",
+        "reported-abuse",
+        "scanning",
+        "web-attack"
+      ],
+      "modified": "2026-09-13T00:00:00Z",
+      "name": "Malicious IP 111.70.20.166",
+      "pattern": "[ipv4-addr:value = '111.70.20.166']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-09-13T00:00:00Z"
     },
     {
       "confidence": 89,
@@ -135872,7 +136209,7 @@
       "valid_from": "2026-08-19T00:00:00Z"
     },
     {
-      "confidence": 91,
+      "confidence": 92,
       "created": "2026-09-04T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -137326,7 +137663,7 @@
       "valid_from": "2026-08-22T00:00:00Z"
     },
     {
-      "confidence": 88,
+      "confidence": 91,
       "created": "2026-08-31T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -138146,7 +138483,7 @@
       "valid_from": "2026-09-05T00:00:00Z"
     },
     {
-      "confidence": 85,
+      "confidence": 88,
       "created": "2026-09-06T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -138476,7 +138813,7 @@
       "valid_from": "2026-08-29T00:00:00Z"
     },
     {
-      "confidence": 87,
+      "confidence": 88,
       "created": "2026-08-28T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -140189,7 +140526,7 @@
       "valid_from": "2026-09-13T00:00:00Z"
     },
     {
-      "confidence": 89,
+      "confidence": 92,
       "created": "2026-08-12T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -141184,7 +141521,7 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
-      "confidence": 92,
+      "confidence": 94,
       "created": "2026-08-12T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -141544,7 +141881,7 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
-      "confidence": 84,
+      "confidence": 85,
       "created": "2026-08-24T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -141568,7 +141905,7 @@
         "scanning",
         "web-attack"
       ],
-      "modified": "2026-09-12T00:00:00Z",
+      "modified": "2026-09-13T00:00:00Z",
       "name": "Malicious IP 115.29.34.90",
       "pattern": "[ipv4-addr:value = '115.29.34.90']",
       "pattern_type": "stix",
@@ -143698,39 +144035,6 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
-      "confidence": 80,
-      "created": "2026-09-11T00:00:00Z",
-      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
-      "external_references": [
-        {
-          "description": "cins_army",
-          "source_name": "xfeeds",
-          "url": "https://github.com/neilweitzel/xfeeds"
-        },
-        {
-          "description": "ipthreat",
-          "source_name": "xfeeds",
-          "url": "https://github.com/neilweitzel/xfeeds"
-        }
-      ],
-      "id": "indicator--30a664ca-1c49-8d45-f646-24797002db0a",
-      "indicator_types": [
-        "malicious-activity"
-      ],
-      "labels": [
-        "brute-force",
-        "reported-abuse",
-        "scanning"
-      ],
-      "modified": "2026-09-13T00:00:00Z",
-      "name": "Malicious IP 116.55.229.234",
-      "pattern": "[ipv4-addr:value = '116.55.229.234']",
-      "pattern_type": "stix",
-      "spec_version": "2.1",
-      "type": "indicator",
-      "valid_from": "2026-09-11T00:00:00Z"
-    },
-    {
       "confidence": 70,
       "created": "2026-09-08T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
@@ -144385,6 +144689,40 @@
       "valid_from": "2026-09-07T00:00:00Z"
     },
     {
+      "confidence": 88,
+      "created": "2026-09-13T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "blocklist_de",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "bruteforceblocker",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--98c6c299-2953-6bea-c6db-ea52d386dcae",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "brute-force",
+        "scanning",
+        "ssh-attack",
+        "web-attack"
+      ],
+      "modified": "2026-09-13T00:00:00Z",
+      "name": "Malicious IP 116.110.21.251",
+      "pattern": "[ipv4-addr:value = '116.110.21.251']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-09-13T00:00:00Z"
+    },
+    {
       "confidence": 75,
       "created": "2026-09-05T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
@@ -144417,6 +144755,40 @@
       "spec_version": "2.1",
       "type": "indicator",
       "valid_from": "2026-09-05T00:00:00Z"
+    },
+    {
+      "confidence": 78,
+      "created": "2026-09-13T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "blocklist_de",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "bruteforceblocker",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--e00ac800-46fa-4b90-2d9a-7b88d9281e65",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "brute-force",
+        "scanning",
+        "ssh-attack",
+        "web-attack"
+      ],
+      "modified": "2026-09-13T00:00:00Z",
+      "name": "Malicious IP 116.110.217.246",
+      "pattern": "[ipv4-addr:value = '116.110.217.246']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-09-13T00:00:00Z"
     },
     {
       "confidence": 93,
@@ -144510,7 +144882,7 @@
       "valid_from": "2026-08-13T00:00:00Z"
     },
     {
-      "confidence": 95,
+      "confidence": 96,
       "created": "2026-08-12T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -144677,6 +145049,39 @@
       "spec_version": "2.1",
       "type": "indicator",
       "valid_from": "2026-08-28T00:00:00Z"
+    },
+    {
+      "confidence": 83,
+      "created": "2026-09-12T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "blocklist_de",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "cins_army",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--2e44c085-6dfe-ec70-d512-d7903b61e745",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "brute-force",
+        "scanning",
+        "web-attack"
+      ],
+      "modified": "2026-09-13T00:00:00Z",
+      "name": "Malicious IP 116.168.104.84",
+      "pattern": "[ipv4-addr:value = '116.168.104.84']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-09-12T00:00:00Z"
     },
     {
       "confidence": 89,
@@ -145954,7 +146359,7 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
-      "confidence": 94,
+      "confidence": 96,
       "created": "2026-08-12T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -147861,6 +148266,45 @@
       "valid_from": "2026-08-24T00:00:00Z"
     },
     {
+      "confidence": 93,
+      "created": "2026-08-21T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "blocklist_de",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "cins_army",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipsum_levels",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--bfdd4eb1-065d-52ab-3b4f-47bed026ba16",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "aggregate",
+        "brute-force",
+        "scanning",
+        "web-attack"
+      ],
+      "modified": "2026-09-13T00:00:00Z",
+      "name": "Malicious IP 118.26.104.212",
+      "pattern": "[ipv4-addr:value = '118.26.104.212']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-08-21T00:00:00Z"
+    },
+    {
       "confidence": 86,
       "created": "2026-08-23T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
@@ -148798,7 +149242,7 @@
       "valid_from": "2026-09-05T00:00:00Z"
     },
     {
-      "confidence": 88,
+      "confidence": 90,
       "created": "2026-08-31T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -148832,7 +149276,7 @@
       "valid_from": "2026-08-31T00:00:00Z"
     },
     {
-      "confidence": 84,
+      "confidence": 88,
       "created": "2026-09-05T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -148866,7 +149310,7 @@
       "valid_from": "2026-09-05T00:00:00Z"
     },
     {
-      "confidence": 87,
+      "confidence": 88,
       "created": "2026-09-03T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -149220,7 +149664,7 @@
       "valid_from": "2026-08-24T00:00:00Z"
     },
     {
-      "confidence": 93,
+      "confidence": 94,
       "created": "2026-08-12T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -149298,7 +149742,7 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
-      "confidence": 90,
+      "confidence": 93,
       "created": "2026-09-08T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -150638,7 +151082,7 @@
       "valid_from": "2026-09-04T00:00:00Z"
     },
     {
-      "confidence": 71,
+      "confidence": 73,
       "created": "2026-09-04T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -152107,7 +152551,7 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
-      "confidence": 87,
+      "confidence": 90,
       "created": "2026-09-06T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -152145,39 +152589,6 @@
       "spec_version": "2.1",
       "type": "indicator",
       "valid_from": "2026-09-06T00:00:00Z"
-    },
-    {
-      "confidence": 74,
-      "created": "2026-09-10T00:00:00Z",
-      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
-      "external_references": [
-        {
-          "description": "blocklist_de",
-          "source_name": "xfeeds",
-          "url": "https://github.com/neilweitzel/xfeeds"
-        },
-        {
-          "description": "cins_army",
-          "source_name": "xfeeds",
-          "url": "https://github.com/neilweitzel/xfeeds"
-        }
-      ],
-      "id": "indicator--327c8b9f-cb5a-3d8b-8e75-71ca99778b9b",
-      "indicator_types": [
-        "malicious-activity"
-      ],
-      "labels": [
-        "brute-force",
-        "scanning",
-        "web-attack"
-      ],
-      "modified": "2026-09-11T00:00:00Z",
-      "name": "Malicious IP 119.145.29.72",
-      "pattern": "[ipv4-addr:value = '119.145.29.72']",
-      "pattern_type": "stix",
-      "spec_version": "2.1",
-      "type": "indicator",
-      "valid_from": "2026-09-10T00:00:00Z"
     },
     {
       "confidence": 92,
@@ -153929,7 +154340,7 @@
       "valid_from": "2026-09-01T00:00:00Z"
     },
     {
-      "confidence": 84,
+      "confidence": 88,
       "created": "2026-09-07T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -153953,7 +154364,7 @@
         "scanning",
         "web-attack"
       ],
-      "modified": "2026-09-10T00:00:00Z",
+      "modified": "2026-09-13T00:00:00Z",
       "name": "Malicious IP 120.26.63.170",
       "pattern": "[ipv4-addr:value = '120.26.63.170']",
       "pattern_type": "stix",
@@ -156212,7 +156623,7 @@
       "valid_from": "2026-08-22T00:00:00Z"
     },
     {
-      "confidence": 87,
+      "confidence": 88,
       "created": "2026-09-09T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -157190,7 +157601,7 @@
       "valid_from": "2026-08-21T00:00:00Z"
     },
     {
-      "confidence": 82,
+      "confidence": 83,
       "created": "2026-08-31T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -157215,7 +157626,7 @@
         "scanning",
         "web-attack"
       ],
-      "modified": "2026-09-12T00:00:00Z",
+      "modified": "2026-09-13T00:00:00Z",
       "name": "Malicious IP 121.165.36.99",
       "pattern": "[ipv4-addr:value = '121.165.36.99']",
       "pattern_type": "stix",
@@ -157746,7 +158157,7 @@
       "valid_from": "2026-08-29T00:00:00Z"
     },
     {
-      "confidence": 86,
+      "confidence": 87,
       "created": "2026-09-08T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -158138,7 +158549,7 @@
       "valid_from": "2026-09-11T00:00:00Z"
     },
     {
-      "confidence": 85,
+      "confidence": 87,
       "created": "2026-08-27T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -158163,7 +158574,7 @@
         "scanning",
         "web-attack"
       ],
-      "modified": "2026-09-12T00:00:00Z",
+      "modified": "2026-09-13T00:00:00Z",
       "name": "Malicious IP 121.188.193.96",
       "pattern": "[ipv4-addr:value = '121.188.193.96']",
       "pattern_type": "stix",
@@ -158206,7 +158617,7 @@
       "valid_from": "2026-08-25T00:00:00Z"
     },
     {
-      "confidence": 84,
+      "confidence": 85,
       "created": "2026-08-27T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -158416,7 +158827,7 @@
       "valid_from": "2026-09-05T00:00:00Z"
     },
     {
-      "confidence": 81,
+      "confidence": 82,
       "created": "2026-09-06T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -158441,7 +158852,7 @@
         "scanning",
         "web-attack"
       ],
-      "modified": "2026-09-12T00:00:00Z",
+      "modified": "2026-09-13T00:00:00Z",
       "name": "Malicious IP 121.188.249.31",
       "pattern": "[ipv4-addr:value = '121.188.249.31']",
       "pattern_type": "stix",
@@ -158543,7 +158954,7 @@
         "scanning",
         "web-attack"
       ],
-      "modified": "2026-09-12T00:00:00Z",
+      "modified": "2026-09-13T00:00:00Z",
       "name": "Malicious IP 121.189.87.247",
       "pattern": "[ipv4-addr:value = '121.189.87.247']",
       "pattern_type": "stix",
@@ -161214,7 +161625,7 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
-      "confidence": 90,
+      "confidence": 91,
       "created": "2026-08-31T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -162532,7 +162943,7 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
-      "confidence": 94,
+      "confidence": 95,
       "created": "2026-08-12T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -163078,40 +163489,6 @@
       "spec_version": "2.1",
       "type": "indicator",
       "valid_from": "2026-08-12T00:00:00Z"
-    },
-    {
-      "confidence": 85,
-      "created": "2026-09-09T00:00:00Z",
-      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
-      "external_references": [
-        {
-          "description": "blocklist_de",
-          "source_name": "xfeeds",
-          "url": "https://github.com/neilweitzel/xfeeds"
-        },
-        {
-          "description": "ipthreat",
-          "source_name": "xfeeds",
-          "url": "https://github.com/neilweitzel/xfeeds"
-        }
-      ],
-      "id": "indicator--15c75199-461f-049e-d8c6-0d2f4bc6f6ab",
-      "indicator_types": [
-        "malicious-activity"
-      ],
-      "labels": [
-        "brute-force",
-        "reported-abuse",
-        "scanning",
-        "web-attack"
-      ],
-      "modified": "2026-09-13T00:00:00Z",
-      "name": "Malicious IP 122.187.230.215",
-      "pattern": "[ipv4-addr:value = '122.187.230.215']",
-      "pattern_type": "stix",
-      "spec_version": "2.1",
-      "type": "indicator",
-      "valid_from": "2026-09-09T00:00:00Z"
     },
     {
       "confidence": 95,
@@ -165309,7 +165686,7 @@
       "valid_from": "2026-09-07T00:00:00Z"
     },
     {
-      "confidence": 95,
+      "confidence": 96,
       "created": "2026-08-12T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -166114,7 +166491,7 @@
       "valid_from": "2026-09-07T00:00:00Z"
     },
     {
-      "confidence": 86,
+      "confidence": 87,
       "created": "2026-09-08T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -166906,7 +167283,7 @@
       "valid_from": "2026-08-30T00:00:00Z"
     },
     {
-      "confidence": 92,
+      "confidence": 93,
       "created": "2026-08-12T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -168174,7 +168551,7 @@
       "valid_from": "2026-08-31T00:00:00Z"
     },
     {
-      "confidence": 92,
+      "confidence": 93,
       "created": "2026-08-12T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -173616,40 +173993,6 @@
       "valid_from": "2026-09-02T00:00:00Z"
     },
     {
-      "confidence": 76,
-      "created": "2026-08-25T00:00:00Z",
-      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
-      "external_references": [
-        {
-          "description": "blocklist_de",
-          "source_name": "xfeeds",
-          "url": "https://github.com/neilweitzel/xfeeds"
-        },
-        {
-          "description": "ipthreat",
-          "source_name": "xfeeds",
-          "url": "https://github.com/neilweitzel/xfeeds"
-        }
-      ],
-      "id": "indicator--6280bad1-d6f1-d711-68cc-69cd266db6f5",
-      "indicator_types": [
-        "malicious-activity"
-      ],
-      "labels": [
-        "brute-force",
-        "reported-abuse",
-        "scanning",
-        "web-attack"
-      ],
-      "modified": "2026-09-13T00:00:00Z",
-      "name": "Malicious IP 136.228.168.12",
-      "pattern": "[ipv4-addr:value = '136.228.168.12']",
-      "pattern_type": "stix",
-      "spec_version": "2.1",
-      "type": "indicator",
-      "valid_from": "2026-08-25T00:00:00Z"
-    },
-    {
       "confidence": 90,
       "created": "2026-08-12T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
@@ -177323,7 +177666,7 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
-      "confidence": 83,
+      "confidence": 85,
       "created": "2026-08-31T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -177348,7 +177691,7 @@
         "scanning",
         "web-attack"
       ],
-      "modified": "2026-09-11T00:00:00Z",
+      "modified": "2026-09-13T00:00:00Z",
       "name": "Malicious IP 142.129.217.217",
       "pattern": "[ipv4-addr:value = '142.129.217.217']",
       "pattern_type": "stix",
@@ -177679,7 +178022,7 @@
       "valid_from": "2026-08-31T00:00:00Z"
     },
     {
-      "confidence": 79,
+      "confidence": 87,
       "created": "2026-09-05T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -178014,6 +178357,40 @@
       "spec_version": "2.1",
       "type": "indicator",
       "valid_from": "2026-09-01T00:00:00Z"
+    },
+    {
+      "confidence": 81,
+      "created": "2026-09-11T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "blocklist_de",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipthreat",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--901a6318-c650-a427-33dc-9326591377a0",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "brute-force",
+        "reported-abuse",
+        "scanning",
+        "web-attack"
+      ],
+      "modified": "2026-09-13T00:00:00Z",
+      "name": "Malicious IP 144.123.153.214",
+      "pattern": "[ipv4-addr:value = '144.123.153.214']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-09-11T00:00:00Z"
     },
     {
       "confidence": 83,
@@ -178909,7 +179286,7 @@
       "valid_from": "2026-09-06T00:00:00Z"
     },
     {
-      "confidence": 88,
+      "confidence": 89,
       "created": "2026-09-12T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -178943,6 +179320,40 @@
       "modified": "2026-09-13T00:00:00Z",
       "name": "Malicious IP 146.70.194.220",
       "pattern": "[ipv4-addr:value = '146.70.194.220']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-09-12T00:00:00Z"
+    },
+    {
+      "confidence": 89,
+      "created": "2026-09-12T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "blocklist_de",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipthreat",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--ae96c361-0f77-e891-75cd-163834e51b89",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "brute-force",
+        "reported-abuse",
+        "scanning",
+        "web-attack"
+      ],
+      "modified": "2026-09-13T00:00:00Z",
+      "name": "Malicious IP 146.70.194.230",
+      "pattern": "[ipv4-addr:value = '146.70.194.230']",
       "pattern_type": "stix",
       "spec_version": "2.1",
       "type": "indicator",
@@ -180352,6 +180763,45 @@
       "spec_version": "2.1",
       "type": "indicator",
       "valid_from": "2026-08-12T00:00:00Z"
+    },
+    {
+      "confidence": 94,
+      "created": "2026-09-11T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "blocklist_de",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "cins_army",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipsum_levels",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--3f36b815-cab3-6a19-39c3-915dbf5081d1",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "aggregate",
+        "brute-force",
+        "scanning",
+        "web-attack"
+      ],
+      "modified": "2026-09-13T00:00:00Z",
+      "name": "Malicious IP 149.50.101.31",
+      "pattern": "[ipv4-addr:value = '149.50.101.31']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-09-11T00:00:00Z"
     },
     {
       "confidence": 90,
@@ -185092,6 +185542,45 @@
       "valid_from": "2026-09-02T00:00:00Z"
     },
     {
+      "confidence": 90,
+      "created": "2026-09-08T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "blocklist_de",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "cins_army",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipsum_levels",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--cb6d9e55-66c5-065d-32fb-baa56b66664e",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "aggregate",
+        "brute-force",
+        "scanning",
+        "web-attack"
+      ],
+      "modified": "2026-09-13T00:00:00Z",
+      "name": "Malicious IP 152.32.245.170",
+      "pattern": "[ipv4-addr:value = '152.32.245.170']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-09-08T00:00:00Z"
+    },
+    {
       "confidence": 92,
       "created": "2026-08-23T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
@@ -186046,6 +186535,39 @@
       "spec_version": "2.1",
       "type": "indicator",
       "valid_from": "2026-09-10T00:00:00Z"
+    },
+    {
+      "confidence": 90,
+      "created": "2026-09-13T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "blocklist_de",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "cins_army",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--9c818941-572e-afd8-df78-bb76a04faf2f",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "brute-force",
+        "scanning",
+        "web-attack"
+      ],
+      "modified": "2026-09-13T00:00:00Z",
+      "name": "Malicious IP 153.75.249.211",
+      "pattern": "[ipv4-addr:value = '153.75.249.211']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-09-13T00:00:00Z"
     },
     {
       "confidence": 88,
@@ -193490,7 +194012,7 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
-      "confidence": 81,
+      "confidence": 82,
       "created": "2026-09-10T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -197165,7 +197687,7 @@
       "valid_from": "2026-09-10T00:00:00Z"
     },
     {
-      "confidence": 90,
+      "confidence": 91,
       "created": "2026-08-12T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -199007,6 +199529,46 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
+      "confidence": 94,
+      "created": "2026-09-11T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "blocklist_de",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipsum_levels",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipthreat",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--a5a14ee4-14ed-835e-ef67-7676a820899c",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "aggregate",
+        "brute-force",
+        "reported-abuse",
+        "scanning",
+        "web-attack"
+      ],
+      "modified": "2026-09-13T00:00:00Z",
+      "name": "Malicious IP 165.232.70.97",
+      "pattern": "[ipv4-addr:value = '165.232.70.97']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-09-11T00:00:00Z"
+    },
+    {
       "confidence": 49,
       "created": "2026-09-01T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
@@ -200314,6 +200876,45 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
+      "confidence": 95,
+      "created": "2026-09-12T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "blocklist_de",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "cins_army",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipsum_levels",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--1d46d845-4cf5-2c82-26b9-fbdb687b068b",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "aggregate",
+        "brute-force",
+        "scanning",
+        "web-attack"
+      ],
+      "modified": "2026-09-13T00:00:00Z",
+      "name": "Malicious IP 167.233.164.13",
+      "pattern": "[ipv4-addr:value = '167.233.164.13']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-09-12T00:00:00Z"
+    },
+    {
       "confidence": 94,
       "created": "2026-08-27T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
@@ -200790,7 +201391,7 @@
       "valid_from": "2026-09-01T00:00:00Z"
     },
     {
-      "confidence": 72,
+      "confidence": 74,
       "created": "2026-09-05T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -200814,7 +201415,7 @@
         "scanning",
         "web-attack"
       ],
-      "modified": "2026-09-12T00:00:00Z",
+      "modified": "2026-09-13T00:00:00Z",
       "name": "Malicious IP 168.144.41.188",
       "pattern": "[ipv4-addr:value = '168.144.41.188']",
       "pattern_type": "stix",
@@ -203486,7 +204087,7 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
-      "confidence": 93,
+      "confidence": 94,
       "created": "2026-08-12T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -204913,6 +205514,46 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
+      "confidence": 95,
+      "created": "2026-08-19T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "blocklist_de",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "bruteforceblocker",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipsum_levels",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--8b03c7dd-86a2-af7e-643c-1e82fa9660ea",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "aggregate",
+        "brute-force",
+        "scanning",
+        "ssh-attack",
+        "web-attack"
+      ],
+      "modified": "2026-09-13T00:00:00Z",
+      "name": "Malicious IP 172.105.69.26",
+      "pattern": "[ipv4-addr:value = '172.105.69.26']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-08-19T00:00:00Z"
+    },
+    {
       "confidence": 83,
       "created": "2026-09-02T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
@@ -205846,7 +206487,7 @@
       "valid_from": "2026-09-08T00:00:00Z"
     },
     {
-      "confidence": 89,
+      "confidence": 90,
       "created": "2026-08-19T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -207150,40 +207791,6 @@
       "valid_from": "2026-09-04T00:00:00Z"
     },
     {
-      "confidence": 74,
-      "created": "2026-09-02T00:00:00Z",
-      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
-      "external_references": [
-        {
-          "description": "blocklist_de",
-          "source_name": "xfeeds",
-          "url": "https://github.com/neilweitzel/xfeeds"
-        },
-        {
-          "description": "ipthreat",
-          "source_name": "xfeeds",
-          "url": "https://github.com/neilweitzel/xfeeds"
-        }
-      ],
-      "id": "indicator--8f7719c8-a281-80d5-3d2f-68197f7100a6",
-      "indicator_types": [
-        "malicious-activity"
-      ],
-      "labels": [
-        "brute-force",
-        "reported-abuse",
-        "scanning",
-        "web-attack"
-      ],
-      "modified": "2026-09-09T00:00:00Z",
-      "name": "Malicious IP 175.20.107.43",
-      "pattern": "[ipv4-addr:value = '175.20.107.43']",
-      "pattern_type": "stix",
-      "spec_version": "2.1",
-      "type": "indicator",
-      "valid_from": "2026-09-02T00:00:00Z"
-    },
-    {
       "confidence": 83,
       "created": "2026-09-13T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
@@ -207218,7 +207825,7 @@
       "valid_from": "2026-09-13T00:00:00Z"
     },
     {
-      "confidence": 63,
+      "confidence": 72,
       "created": "2026-09-04T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -217605,7 +218212,7 @@
       "valid_from": "2026-08-28T00:00:00Z"
     },
     {
-      "confidence": 87,
+      "confidence": 88,
       "created": "2026-08-19T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -219053,7 +219660,7 @@
       "valid_from": "2026-08-19T00:00:00Z"
     },
     {
-      "confidence": 91,
+      "confidence": 92,
       "created": "2026-08-16T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -219715,7 +220322,7 @@
       "valid_from": "2026-08-31T00:00:00Z"
     },
     {
-      "confidence": 91,
+      "confidence": 92,
       "created": "2026-08-18T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -221100,7 +221707,7 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
-      "confidence": 87,
+      "confidence": 88,
       "created": "2026-08-31T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -221125,7 +221732,7 @@
         "scanning",
         "web-attack"
       ],
-      "modified": "2026-09-12T00:00:00Z",
+      "modified": "2026-09-13T00:00:00Z",
       "name": "Malicious IP 183.171.41.89",
       "pattern": "[ipv4-addr:value = '183.171.41.89']",
       "pattern_type": "stix",
@@ -221338,7 +221945,7 @@
       "valid_from": "2026-09-07T00:00:00Z"
     },
     {
-      "confidence": 75,
+      "confidence": 76,
       "created": "2026-08-29T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -221363,7 +221970,7 @@
         "scanning",
         "web-attack"
       ],
-      "modified": "2026-09-12T00:00:00Z",
+      "modified": "2026-09-13T00:00:00Z",
       "name": "Malicious IP 183.171.49.158",
       "pattern": "[ipv4-addr:value = '183.171.49.158']",
       "pattern_type": "stix",
@@ -222870,7 +223477,7 @@
       "valid_from": "2026-08-22T00:00:00Z"
     },
     {
-      "confidence": 90,
+      "confidence": 91,
       "created": "2026-08-24T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -223576,7 +224183,7 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
-      "confidence": 74,
+      "confidence": 75,
       "created": "2026-09-02T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -223600,7 +224207,7 @@
         "scanning",
         "web-attack"
       ],
-      "modified": "2026-09-12T00:00:00Z",
+      "modified": "2026-09-13T00:00:00Z",
       "name": "Malicious IP 185.38.148.135",
       "pattern": "[ipv4-addr:value = '185.38.148.135']",
       "pattern_type": "stix",
@@ -226179,7 +226786,7 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
-      "confidence": 88,
+      "confidence": 89,
       "created": "2026-08-12T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -226219,7 +226826,7 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
-      "confidence": 79,
+      "confidence": 81,
       "created": "2026-08-25T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -226920,7 +227527,7 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
-      "confidence": 87,
+      "confidence": 89,
       "created": "2026-09-07T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -233810,7 +234417,7 @@
       "valid_from": "2026-09-03T00:00:00Z"
     },
     {
-      "confidence": 91,
+      "confidence": 92,
       "created": "2026-08-12T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -241478,7 +242085,7 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
-      "confidence": 90,
+      "confidence": 91,
       "created": "2026-09-05T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -242441,40 +243048,6 @@
       "spec_version": "2.1",
       "type": "indicator",
       "valid_from": "2026-09-04T00:00:00Z"
-    },
-    {
-      "confidence": 63,
-      "created": "2026-09-02T00:00:00Z",
-      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
-      "external_references": [
-        {
-          "description": "blocklist_de",
-          "source_name": "xfeeds",
-          "url": "https://github.com/neilweitzel/xfeeds"
-        },
-        {
-          "description": "ipthreat",
-          "source_name": "xfeeds",
-          "url": "https://github.com/neilweitzel/xfeeds"
-        }
-      ],
-      "id": "indicator--08985639-b74c-8615-befa-f9fb3551a57b",
-      "indicator_types": [
-        "malicious-activity"
-      ],
-      "labels": [
-        "brute-force",
-        "reported-abuse",
-        "scanning",
-        "web-attack"
-      ],
-      "modified": "2026-09-13T00:00:00Z",
-      "name": "Malicious IP 194.180.48.18",
-      "pattern": "[ipv4-addr:value = '194.180.48.18']",
-      "pattern_type": "stix",
-      "spec_version": "2.1",
-      "type": "indicator",
-      "valid_from": "2026-09-02T00:00:00Z"
     },
     {
       "confidence": 90,
@@ -243838,7 +244411,7 @@
       "valid_from": "2026-09-01T00:00:00Z"
     },
     {
-      "confidence": 94,
+      "confidence": 95,
       "created": "2026-08-12T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -245649,7 +246222,7 @@
       "valid_from": "2026-08-28T00:00:00Z"
     },
     {
-      "confidence": 67,
+      "confidence": 76,
       "created": "2026-09-03T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -246122,7 +246695,7 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
-      "confidence": 80,
+      "confidence": 86,
       "created": "2026-08-16T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -246705,7 +247278,7 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
-      "confidence": 90,
+      "confidence": 91,
       "created": "2026-08-27T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -247553,7 +248126,7 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
-      "confidence": 90,
+      "confidence": 93,
       "created": "2026-08-12T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -248390,40 +248963,6 @@
       "spec_version": "2.1",
       "type": "indicator",
       "valid_from": "2026-08-15T00:00:00Z"
-    },
-    {
-      "confidence": 64,
-      "created": "2026-08-31T00:00:00Z",
-      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
-      "external_references": [
-        {
-          "description": "blocklist_de",
-          "source_name": "xfeeds",
-          "url": "https://github.com/neilweitzel/xfeeds"
-        },
-        {
-          "description": "ipthreat",
-          "source_name": "xfeeds",
-          "url": "https://github.com/neilweitzel/xfeeds"
-        }
-      ],
-      "id": "indicator--fa075579-25d0-c021-fda9-b5a48d09d194",
-      "indicator_types": [
-        "malicious-activity"
-      ],
-      "labels": [
-        "brute-force",
-        "reported-abuse",
-        "scanning",
-        "web-attack"
-      ],
-      "modified": "2026-09-09T00:00:00Z",
-      "name": "Malicious IP 197.255.196.21",
-      "pattern": "[ipv4-addr:value = '197.255.196.21']",
-      "pattern_type": "stix",
-      "spec_version": "2.1",
-      "type": "indicator",
-      "valid_from": "2026-08-31T00:00:00Z"
     },
     {
       "confidence": 88,
@@ -256716,7 +257255,7 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
-      "confidence": 91,
+      "confidence": 92,
       "created": "2026-08-12T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -270469,7 +271008,7 @@
       "valid_from": "2026-08-31T00:00:00Z"
     },
     {
-      "confidence": 93,
+      "confidence": 94,
       "created": "2026-08-19T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -271550,7 +272089,7 @@
       "valid_from": "2026-08-31T00:00:00Z"
     },
     {
-      "confidence": 87,
+      "confidence": 88,
       "created": "2026-09-07T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -273198,7 +273737,7 @@
       "valid_from": "2026-08-15T00:00:00Z"
     },
     {
-      "confidence": 81,
+      "confidence": 83,
       "created": "2026-09-07T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -273784,7 +274323,7 @@
       "valid_from": "2026-08-31T00:00:00Z"
     },
     {
-      "confidence": 81,
+      "confidence": 82,
       "created": "2026-09-06T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -273809,7 +274348,7 @@
         "scanning",
         "web-attack"
       ],
-      "modified": "2026-09-12T00:00:00Z",
+      "modified": "2026-09-13T00:00:00Z",
       "name": "Malicious IP 211.54.230.131",
       "pattern": "[ipv4-addr:value = '211.54.230.131']",
       "pattern_type": "stix",
@@ -274463,7 +275002,7 @@
       "valid_from": "2026-08-28T00:00:00Z"
     },
     {
-      "confidence": 86,
+      "confidence": 87,
       "created": "2026-08-26T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -274599,7 +275138,7 @@
       "valid_from": "2026-09-03T00:00:00Z"
     },
     {
-      "confidence": 82,
+      "confidence": 83,
       "created": "2026-09-08T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -274624,7 +275163,7 @@
         "scanning",
         "web-attack"
       ],
-      "modified": "2026-09-12T00:00:00Z",
+      "modified": "2026-09-13T00:00:00Z",
       "name": "Malicious IP 211.115.191.84",
       "pattern": "[ipv4-addr:value = '211.115.191.84']",
       "pattern_type": "stix",
@@ -275978,7 +276517,7 @@
       "valid_from": "2026-09-03T00:00:00Z"
     },
     {
-      "confidence": 86,
+      "confidence": 87,
       "created": "2026-09-05T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -276283,6 +276822,40 @@
       "spec_version": "2.1",
       "type": "indicator",
       "valid_from": "2026-08-30T00:00:00Z"
+    },
+    {
+      "confidence": 78,
+      "created": "2026-09-13T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "blocklist_de",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipthreat",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--c4345709-417f-06c8-a30b-7a87e68ce7e7",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "brute-force",
+        "reported-abuse",
+        "scanning",
+        "web-attack"
+      ],
+      "modified": "2026-09-13T00:00:00Z",
+      "name": "Malicious IP 211.246.160.21",
+      "pattern": "[ipv4-addr:value = '211.246.160.21']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-09-13T00:00:00Z"
     },
     {
       "confidence": 83,
@@ -278923,7 +279496,7 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
-      "confidence": 86,
+      "confidence": 91,
       "created": "2026-09-02T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -280865,7 +281438,7 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
-      "confidence": 86,
+      "confidence": 87,
       "created": "2026-09-06T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -281518,7 +282091,7 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
-      "confidence": 81,
+      "confidence": 82,
       "created": "2026-09-09T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -282948,6 +283521,45 @@
       "spec_version": "2.1",
       "type": "indicator",
       "valid_from": "2026-08-30T00:00:00Z"
+    },
+    {
+      "confidence": 94,
+      "created": "2026-09-11T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "blocklist_de",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "cins_army",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipsum_levels",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--11c3b264-9995-1c1d-1957-a2b005803561",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "aggregate",
+        "brute-force",
+        "scanning",
+        "web-attack"
+      ],
+      "modified": "2026-09-13T00:00:00Z",
+      "name": "Malicious IP 218.57.37.106",
+      "pattern": "[ipv4-addr:value = '218.57.37.106']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-09-11T00:00:00Z"
     },
     {
       "confidence": 92,
@@ -284753,7 +285365,7 @@
       "valid_from": "2026-09-08T00:00:00Z"
     },
     {
-      "confidence": 92,
+      "confidence": 93,
       "created": "2026-08-21T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -285661,7 +286273,7 @@
       "valid_from": "2026-08-29T00:00:00Z"
     },
     {
-      "confidence": 75,
+      "confidence": 81,
       "created": "2026-08-27T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -285686,7 +286298,7 @@
         "scanning",
         "web-attack"
       ],
-      "modified": "2026-09-12T00:00:00Z",
+      "modified": "2026-09-13T00:00:00Z",
       "name": "Malicious IP 220.80.246.94",
       "pattern": "[ipv4-addr:value = '220.80.246.94']",
       "pattern_type": "stix",
@@ -285996,7 +286608,7 @@
       "valid_from": "2026-09-11T00:00:00Z"
     },
     {
-      "confidence": 86,
+      "confidence": 89,
       "created": "2026-08-24T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -286020,7 +286632,7 @@
         "scanning",
         "web-attack"
       ],
-      "modified": "2026-09-11T00:00:00Z",
+      "modified": "2026-09-13T00:00:00Z",
       "name": "Malicious IP 220.95.208.142",
       "pattern": "[ipv4-addr:value = '220.95.208.142']",
       "pattern_type": "stix",
@@ -286518,41 +287130,7 @@
       "valid_from": "2026-09-11T00:00:00Z"
     },
     {
-      "confidence": 63,
-      "created": "2026-08-30T00:00:00Z",
-      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
-      "external_references": [
-        {
-          "description": "blocklist_de",
-          "source_name": "xfeeds",
-          "url": "https://github.com/neilweitzel/xfeeds"
-        },
-        {
-          "description": "ipthreat",
-          "source_name": "xfeeds",
-          "url": "https://github.com/neilweitzel/xfeeds"
-        }
-      ],
-      "id": "indicator--e06e9602-dd3e-a57f-2844-f99d2c249cb1",
-      "indicator_types": [
-        "malicious-activity"
-      ],
-      "labels": [
-        "brute-force",
-        "reported-abuse",
-        "scanning",
-        "web-attack"
-      ],
-      "modified": "2026-09-09T00:00:00Z",
-      "name": "Malicious IP 220.124.246.169",
-      "pattern": "[ipv4-addr:value = '220.124.246.169']",
-      "pattern_type": "stix",
-      "spec_version": "2.1",
-      "type": "indicator",
-      "valid_from": "2026-08-30T00:00:00Z"
-    },
-    {
-      "confidence": 80,
+      "confidence": 82,
       "created": "2026-09-07T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -287737,7 +288315,7 @@
       "valid_from": "2026-08-30T00:00:00Z"
     },
     {
-      "confidence": 92,
+      "confidence": 93,
       "created": "2026-08-31T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -288705,7 +289283,7 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
-      "confidence": 82,
+      "confidence": 84,
       "created": "2026-09-01T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -288730,7 +289308,7 @@
         "scanning",
         "web-attack"
       ],
-      "modified": "2026-09-11T00:00:00Z",
+      "modified": "2026-09-13T00:00:00Z",
       "name": "Malicious IP 221.8.22.30",
       "pattern": "[ipv4-addr:value = '221.8.22.30']",
       "pattern_type": "stix",
@@ -290097,7 +290675,7 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
-      "confidence": 86,
+      "confidence": 91,
       "created": "2026-09-07T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -290177,7 +290755,7 @@
       "valid_from": "2026-08-12T00:00:00Z"
     },
     {
-      "confidence": 95,
+      "confidence": 96,
       "created": "2026-08-15T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -290578,7 +291156,7 @@
       "valid_from": "2026-08-30T00:00:00Z"
     },
     {
-      "confidence": 83,
+      "confidence": 88,
       "created": "2026-08-13T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -290651,7 +291229,7 @@
       "valid_from": "2026-08-30T00:00:00Z"
     },
     {
-      "confidence": 91,
+      "confidence": 92,
       "created": "2026-08-12T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
@@ -291607,6 +292185,40 @@
       "valid_from": "2026-09-01T00:00:00Z"
     },
     {
+      "confidence": 86,
+      "created": "2026-09-04T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "blocklist_de",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipthreat",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--10d555b7-2afb-d816-65e1-b6e5d13ab794",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "brute-force",
+        "reported-abuse",
+        "scanning",
+        "web-attack"
+      ],
+      "modified": "2026-09-13T00:00:00Z",
+      "name": "Malicious IP 222.116.19.141",
+      "pattern": "[ipv4-addr:value = '222.116.19.141']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-09-04T00:00:00Z"
+    },
+    {
       "confidence": 89,
       "created": "2026-08-25T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
@@ -291789,7 +292401,7 @@
       "valid_from": "2026-08-28T00:00:00Z"
     },
     {
-      "confidence": 85,
+      "confidence": 86,
       "created": "2026-09-05T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
