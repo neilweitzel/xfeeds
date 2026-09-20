@@ -684,6 +684,38 @@
       "valid_from": "2026-09-14T00:00:00Z"
     },
     {
+      "confidence": 95,
+      "created": "2026-09-14T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "et_compromised",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipthreat",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--d1d902ce-395a-3a19-3904-765d6a848569",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "reported-abuse",
+        "scanning"
+      ],
+      "modified": "2026-09-20T00:00:00Z",
+      "name": "Malicious IP 45.171.124.21",
+      "pattern": "[ipv4-addr:value = '45.171.124.21']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-09-14T00:00:00Z"
+    },
+    {
       "confidence": 94,
       "created": "2026-09-11T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
@@ -5676,7 +5708,7 @@
       "valid_from": "2026-08-27T00:00:00Z"
     },
     {
-      "confidence": 95,
+      "confidence": 96,
       "created": "2026-08-12T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
       "external_references": [
