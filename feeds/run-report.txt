@@ -1,30 +1,31 @@
-xfeeds run 2026-09-21T12:50:17.341422+00:00
-  sources:   23/23 ok (1 dormant)
-  published: 10884 (high 8852, medium 2032)
-  withheld:  43715 single-source
-  deltas:    +323 / -352
+xfeeds run 2026-09-21T20:00:12.223644+00:00
+  sources:   22/23 ok (1 dormant)
+  published: 10944 (high 8914, medium 2030)
+  withheld:  43220 single-source
+  deltas:    +112 / -52
     abuseipdb_blacklist      10000 records
     binary_defense           5197 records
-    blocklist_de             25776 records
-    blocklist_de_strongips   372 records
-    bruteforceblocker        705 records
+    blocklist_de             25382 records
+    blocklist_de_strongips   371 records
+    bruteforceblocker        707 records
     cins_army                15000 records
-    dataplane_proto41        53709 records
-    dataplane_smtpgreet      9131 records
-    dataplane_sshclient      29619 records
-    dataplane_sshpwauth      19485 records
-    dataplane_telnetlogin    43613 records
-    dataplane_vncrfb         2061 records
+    dataplane_proto41        53687 records
+    dataplane_smtpgreet      9216 records
+    dataplane_sshclient      29575 records
+    dataplane_sshpwauth      19400 records
+    dataplane_telnetlogin    43598 records
+    dataplane_vncrfb         2145 records
     dshield_block            20 records
-    et_compromised           675 records
+    et_compromised           690 records
     feodo_tracker            expired
-    greensnow                4902 records
+    greensnow                failed (HTTP 503)
     ipsum_levels             40156 records
-    ipthreat                 5897 records
+    ipthreat                 5867 records
     spamhaus_drop_v4         1716 records
     spamhaus_drop_v6         92 records
     stopforumspam_listed     54437 records
-    threatfox                1286 records
-    tor_exits                1376 records
+    threatfox                1276 records
+    tor_exits                1374 records
     turris_greylist          9097 records
-  ! 1617 records capped high -> medium as benign scanners
+  ! greensnow: HTTP 503
+  ! 1625 records capped high -> medium as benign scanners
