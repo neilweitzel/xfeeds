@@ -5260,6 +5260,38 @@
       "valid_from": "2026-08-23T00:00:00Z"
     },
     {
+      "confidence": 95,
+      "created": "2026-09-17T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "et_compromised",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipthreat",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--3e50b5cd-619f-9440-393f-42847b96646d",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "reported-abuse",
+        "scanning"
+      ],
+      "modified": "2026-09-26T00:00:00Z",
+      "name": "Malicious IP 189.254.200.132",
+      "pattern": "[ipv4-addr:value = '189.254.200.132']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-09-17T00:00:00Z"
+    },
+    {
       "confidence": 97,
       "created": "2026-09-10T00:00:00Z",
       "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
@@ -6218,6 +6250,38 @@
       "spec_version": "2.1",
       "type": "indicator",
       "valid_from": "2026-08-28T00:00:00Z"
+    },
+    {
+      "confidence": 96,
+      "created": "2026-09-16T00:00:00Z",
+      "created_by_ref": "identity--9f2b1a6c-6a3e-5c8e-9e3a-0b7c4d5e6f70",
+      "external_references": [
+        {
+          "description": "et_compromised",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        },
+        {
+          "description": "ipthreat",
+          "source_name": "xfeeds",
+          "url": "https://github.com/neilweitzel/xfeeds"
+        }
+      ],
+      "id": "indicator--ced8aeb4-5bbe-81ff-95f6-695cceb70c82",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "labels": [
+        "reported-abuse",
+        "scanning"
+      ],
+      "modified": "2026-09-26T00:00:00Z",
+      "name": "Malicious IP 213.205.68.170",
+      "pattern": "[ipv4-addr:value = '213.205.68.170']",
+      "pattern_type": "stix",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "valid_from": "2026-09-16T00:00:00Z"
     },
     {
       "confidence": 98,
