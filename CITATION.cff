@@ -36,8 +36,8 @@ abstract: >-
   false confidence because many public lists mirror or re-derive one another,
   xfeeds models source dependency explicitly. Sources are assigned independence
   classes and only the strongest contribution within a class counts toward
-  corroboration, while freshness gating prevents dormant observations from
-  independently promoting an indicator. Redistribution rights are enforced
+  corroboration. Stale evidence cannot admit an indicator, and expired or
+  dormant evidence casts no vote. Redistribution rights are enforced
   structurally: restricted sources may raise confidence without appearing in
   published records, and separate non-commercial and clean-provenance feed
   tiers carry distinct redistribution promises.
@@ -51,8 +51,6 @@ keywords:
   - open data
   - network security
 license: MIT
-# Must equal pyproject.toml's version. PEP 440 requires `1.0.0rc6` there and the
-# git tag uses `v1.0.0-rc.6`; these are the same version in two mandated
-# spellings, and CI compares them on a canonical form rather than as strings.
-version: 1.0.0-rc.7
-date-released: "2026-09-01"
+# Must equal pyproject.toml's version and the release tag.
+version: 1.0.0
+date-released: "2026-10-05"
