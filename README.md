@@ -446,9 +446,11 @@ GitHub disables scheduled workflows in a public repository after 60 days without
 repository activity. Healthy operation commits about four times a day, so that clock
 never gets near expiring. The failure it guards against is the compounding one:
 `update-feeds.yml` only commits when a run *succeeds*, so a persistently failing
-pipeline stops committing, and 60 days later the cron is disabled too — turning
+pipeline could stop committing, and 60 days later the cron could be disabled too, turning
 "broken and retrying" into "broken and not even trying", which needs a manual
-re-enable to recover from. If no commit has landed in 14 days, this commits a
+re-enable to recover from. v1.0.1 also commits quota reservations before attempts;
+the heartbeat still measures the actual manifest, not those reservation commits.
+If no commit has landed in 14 days, keepalive commits a
 timestamp to `.github/keepalive.txt` and opens an issue making clear that it
 protected the schedule and fixed nothing.
 
@@ -552,7 +554,13 @@ Cite the **concept DOI** in prose; it always resolves to the latest published ve
 
 > Weitzel, N. (2026). *xfeeds: an independence-aware public threat intelligence feed*. Zenodo. https://doi.org/10.5281/zenodo.22045733
 
-Cite the **version DOI** where exact reproducibility matters — the most recent archived version is `v1.0.0-rc.3` at [10.5281/zenodo.22045734](https://doi.org/10.5281/zenodo.22045734). Later candidates are not archived individually; `v1.0.0` will be. When `v1.0.0` is promoted it will be archived as a new version under the same concept DOI.
+Cite the **version DOI** where exact reproducibility matters: the stable
+`v1.0.0` software archive is
+[10.5281/zenodo.23163156](https://doi.org/10.5281/zenodo.23163156), published
+2026-10-05 under the same concept DOI. It contains the exact tagged software,
+excluding generated feeds, legacy data, and upstream-response fixture payloads.
+Use the GitHub tag for the complete fixture-based test suite. The operational
+patch `v1.0.1` is available as a GitHub release, not mislabeled as that archive.
 
 If you are citing feed *contents* rather than the pipeline, cite the `generated_at` timestamp from the relevant [`feeds/manifest.json`](feeds/manifest.json) as well — feeds are regenerated every six hours and are not themselves versioned by tag.
 

@@ -19,6 +19,9 @@ separate patch rather than being represented as burned-in code.
 
 [Release evidence and work items](https://github.com/neilweitzel/xfeeds/blob/main/docs/RELEASE_2026-10-05.md)
 and [changelog](https://github.com/neilweitzel/xfeeds/blob/main/CHANGELOG.md).
-Zenodo archival under concept DOI
-[10.5281/zenodo.22045733](https://doi.org/10.5281/zenodo.22045733) is a separate,
-approval-gated step; publication will be recorded when complete.
+The approved software archive is published at
+[10.5281/zenodo.23163156](https://doi.org/10.5281/zenodo.23163156), under the
+existing concept DOI
+[10.5281/zenodo.22045733](https://doi.org/10.5281/zenodo.22045733).
+It excludes generated feeds, legacy data, and upstream-response fixture payloads;
+the complete fixture-based test suite remains available at the GitHub tag.
