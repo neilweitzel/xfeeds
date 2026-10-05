@@ -315,6 +315,38 @@ def test_two_runs_over_identical_input_are_byte_identical(tmp_path: Path) -> Non
         assert (tmp_path / "one" / name).read_bytes() == (tmp_path / "two" / name).read_bytes()
 
 
+def test_emitted_band_is_authoritative_despite_cross_band_score_inversion(tmp_path: Path) -> None:
+    """Consumers must not derive the policy band from a global score threshold."""
+    reg = registry_of(
+        src("weak_a", "a", weight=0.2),
+        src("weak_b", "b", weight=0.2),
+        src("private", "private_class", weight=0.2, redistribute=False),
+        src("strong_a", "c", weight=1.0),
+        src("strong_b", "d", weight=1.0),
+    )
+    high_ip, medium_ip = "45.33.1.1", "45.33.1.2"
+    observations = [
+        obs("weak_a", "a", high_ip),
+        obs("weak_b", "b", high_ip),
+        obs("private", "private_class", high_ip),
+        obs("strong_a", "c", medium_ip),
+        obs("strong_b", "d", medium_ip),
+    ]
+    records = score_indicators(observations, reg, NOW)
+    manifest = build_manifest(reg, {}, records, [], [], NOW, {})
+    emit_all(records, reg, manifest, NOW, feeds_dir=tmp_path)
+    published = json.loads((tmp_path / "all.json").read_text())
+    high, medium = published["indicators"]
+    assert high["band"] == "high"
+    assert medium["band"] == "medium"
+    assert high["score"] < medium["score"]
+    assert "private" not in high["sources"]
+    assert "private_class" not in high["independence_classes"]
+    high_feed = (tmp_path / "high-confidence.txt").read_text()
+    assert high_ip in high_feed
+    assert medium_ip not in high_feed
+
+
 def test_feed_header_separates_redistributed_from_scoring_only(tmp_path: Path) -> None:
     """The header must never imply non-redistributable data is in the file."""
     reg = registry_of(src("open", "alpha"), src("closed", "beta", redistribute=False))

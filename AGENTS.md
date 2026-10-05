@@ -14,7 +14,7 @@ These were decided with measured evidence. If you believe one is wrong, **say so
 
 - **Python 3.13** target, 3.11 floor. The Jules VM ships 3.12 by default — the setup script installs 3.13 via `uv`. Do not downgrade the project to 3.12 to avoid the setup step.
 - **uv** for packaging, with `pyproject.toml` and a committed `uv.lock`.
-- **Dependencies are deliberately few**: `httpx`, `pydantic` v2, `tenacity`, `typer`, `structlog`, `pyyaml`, `stix2`. Dev: `ruff`, `mypy`, `pytest`, `pytest-httpx`.
+- **Dependencies are deliberately few**: `httpx`, `pydantic` v2, `tenacity`, `typer`, `structlog`, `pyyaml`. Dev: `ruff`, `mypy`, `pytest`, `pytest-httpx`. STIX 2.1 uses a deterministic, hand-built emitter.
 - **Do not add** `netaddr`, `orjson`, `pandas`, `polars`, `requests`, `aiohttp`, or any database. Standard-library `ipaddress` and `json` are sufficient and intentional. Adding a dependency requires a new ADR entry.
 - **`httpx` is used synchronously.** Do not introduce `asyncio`. Twelve sources do not need an event loop.
 - **No TAXII server.** STIX 2.1 is emitted as static bundles.
@@ -33,6 +33,18 @@ Three states, one axis, and the difference matters (ADR-059). **Stale** is a dam
 An expired source does not come back on its own. Re-admission needs a `reviewed_on` date in `sources.yaml` on or after the expiry recorded in `feeds/source-freshness.json`. Do not add an automatic-reactivation path.
 
 ## Hard rules
+
+### Read these contracts first
+
+- [Consumer contract](README.md#consumer-contract): band is policy-authoritative;
+  score is a within-band ordering signal, not a cross-band threshold.
+- [ADR-040](docs/DECISIONS.md#two-sources-we-should-not-have-been-republishing-adr-040):
+  restricted sources are scoring-only.
+- [ADR-053](docs/DECISIONS.md#adr-053--unvouched-evidence-is-non-admitting):
+  freshness gates admitting classes and promotion.
+- ADR-055 in [DECISIONS.md](docs/DECISIONS.md): package, citation, and release versions agree.
+- ADR-059 in [DECISIONS.md](docs/DECISIONS.md): expired evidence casts no vote and requires review
+  before reactivation.
 
 1. **No network access in unit tests.** Ever. Real recorded responses live in `tests/fixtures/sources/`. Use `pytest-httpx` to serve them. A test that reaches the internet is a broken test — it fails in CI and it makes the suite non-deterministic.
 2. **`redistribute: false` is enforced in code, not documentation.** Sources with that flag may influence scoring but must never appear in any file under `feeds/`. This is a licensing obligation. There must be a test for it.

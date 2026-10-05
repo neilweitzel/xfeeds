@@ -10,6 +10,19 @@ six hours by design. A consumer pinning a tag still fetches the same live URLs.
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-10-05
+
+First stable release. Promotes rc.7 plus PR #55, with no new pipeline or source
+behavior. The reporting correction excludes acknowledged-expired sources from
+the active-source denominator and displays them separately as dormant.
+
+- Records completion of burn-in and the scoped PR #55 disposition in
+  `docs/RELEASE_2026-10-05.md`.
+- Documents the policy-authoritative band contract with regression coverage.
+- Corrects dependency/reviewer guidance and synchronizes release metadata.
+- Scheduler hardening is a separately tested post-promotion patch, not described
+  as having passed the September burn-in.
+
 ## [1.0.0-rc.7] - 2026-09-01
 
 Two fixes found during the rc.6 burn-in. No change to any published contract.

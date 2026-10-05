@@ -7,7 +7,10 @@ scattered across chat threads, task links, or external notes.
 
 ## Ground rule
 
-**Nothing in this file is worked on before the rc.7 burn-in window closes.**
+**The initial burn-in is complete.** See the
+[October 2026 release record](RELEASE_2026-10-05.md) for promotion evidence,
+the scoped PR #55 disposition, and the separately tagged scheduler patch.
+Items not explicitly included there remain backlog, not release blockers.
 
 Per [`docs/source-lifecycle.md`](source-lifecycle.md), the burn-in clock is
 restarted by any change to `sources.yaml`, `src/`, or `.github/workflows/`.
@@ -85,8 +88,10 @@ and fixture strategy. The items below are the durable, accepted follow-ups.
      lower score than a two-class MEDIUM-band record is legal.
   4. Path-scoped diff check confirms no in-scope files touched by the docs
      portion; test-only portion clearly separated in its own commit.
-- **Status.** `backlog`.
-- **Execution.** _tracking issue TBD post-2026-10-01_.
+- **Status.** `done`.
+- **Execution.** October 2026 release: README consumer contract, AGENTS cross-link,
+  and `test_emitted_band_is_authoritative_despite_cross_band_score_inversion`
+  assert on emitted JSON and the high-confidence feed. No `src/` change.
 
 ### 1.2 Replace hardcoded Spamhaus solo promotion with `solo_promote` config
 
@@ -156,9 +161,9 @@ and fixture strategy. The items below are the durable, accepted follow-ups.
 - **Acceptance criteria.**
   1. `AGENTS.md` no longer lists `stix2`.
   2. A grep for `stix2` in the tree returns no live-code references.
-- **Status.** `backlog`. Safe to ship as a docs-only PR any time; deferred
-  to post-promotion to keep the reviewer window clean.
-- **Execution.** _tracking issue TBD_.
+- **Status.** `done`.
+- **Execution.** October 2026 release documentation removes the nonexistent
+  dependency from AGENTS and the README technology table.
 
 ### 1.5 Correct `MEDIUM_CONFIDENCE_CLASSES` docstring drift
 
@@ -191,8 +196,8 @@ and fixture strategy. The items below are the durable, accepted follow-ups.
      path.
   2. A new reviewer can locate band-vs-score semantics from
      `AGENTS.md` in one hop.
-- **Status.** `backlog`.
-- **Execution.** _tracking issue TBD_.
+- **Status.** `done`.
+- **Execution.** October 2026 release: AGENTS reviewer contract links.
 
 ## 2. Dashboard restructure
 
@@ -313,6 +318,11 @@ retrospective triggered by the Spur miss.
 ---
 
 ## Decision log
+
+- **2026-10-05.** Initial burn-in completed. Items 1.1, 1.4, and 1.6 are
+  included in stable-release preparation. Scheduler repairs and quarterly review
+  cadence are a separately tagged operational patch; remaining research, source,
+  and scoring work is not silently added to the release.
 
 - **2026-09-17.** Backlog file created after the Muse review and the Spur
   discussion produced follow-ups scattered across chat threads and an

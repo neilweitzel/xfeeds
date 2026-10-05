@@ -300,6 +300,13 @@ dormant, reactivate) or adds a new source must include:
 
 ### What restarts the RC burn-in clock
 
+For the completed v1.0.0 window, the owner confirmed that PR #55's reporting-only
+correction preserves early-October promotion. The exact code had also run
+unchanged from 2026-09-02 through 2026-10-05. This scoped disposition is recorded
+in [the release record](RELEASE_2026-10-05.md); it does not create a blanket
+exception for future dashboard or workflow changes. New operational fixes are
+released separately after the v1.0.0 tag.
+
 This is the authoritative statement; [`RELEASE_CHECKLIST.md`](RELEASE_CHECKLIST.md)
 defers to it.
 

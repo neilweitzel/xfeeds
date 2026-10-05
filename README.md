@@ -39,7 +39,7 @@ Full rationale, alternatives considered, and measurements in [`docs/DECISIONS.md
 | Validation | **pydantic v2** | Publishes a JSON Schema for consumers for free |
 | Retries | **tenacity** | Policy for 429/5xx that transport-level retry doesn't cover |
 | CLI / logs / config | **typer**, **structlog** (JSON), **pyyaml** | Boring, stable, SIEM-ingestible logs |
-| Interop | **stix2** (OASIS) | Actively maintained; the price of admission to real TIPs |
+| Interop | **STIX 2.1** | Deterministic, hand-built emitter; no `stix2` dependency |
 | Quality | **ruff**, **mypy --strict**, **pytest** + **pytest-httpx** | One linter binary; no unit test touches the network |
 | State | `feeds/all.json` — no database | Self-contained repo, every state change reviewable in a diff |
 
@@ -458,21 +458,29 @@ hours. Feed URLs are stable and served from GitHub Pages, so pinning a tag does 
 change what a consumer fetches; it only tells you which pipeline produced the
 contracts you are integrating against.
 
-`v1.0.0-rc.6` is a release candidate under a roughly one-month burn-in window. If it
-needs no corrective work it will be promoted to `v1.0.0` unchanged. Corrective
-pipeline, source-configuration, or workflow changes cut a new candidate and restart
-the window; routine refresh commits and documentation do not.
-
-That is not hypothetical, and it has now happened three times. `rc.4` exists because
-the `rc.3` window surfaced a carry-forward defect (ADR-054) that had been demoting
-corroborated records on three refreshes out of every four. `rc.5` followed the same
-day, when a pre-promotion audit of the release path touched a workflow file. `rc.6`
-exists because the 1 September source review found that only one of the three
-evidence-age mechanisms the freshness policy specifies had ever been implemented
-(ADR-056). The window did its job.
+`v1.0.0` is the first stable release, dated 2026-10-05. It promotes the rc.7
+pipeline with the reporting-only correction in PR #55, observed unchanged since
+2026-09-02. No source admission, scoring, expiry, or licensing behavior changes
+as part of promotion. The release evidence and separately versioned operational
+follow-up are recorded in [`docs/RELEASE_2026-10-05.md`](docs/RELEASE_2026-10-05.md).
 
 The promotion steps are enumerated in
 [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md).
+
+### Consumer contract
+
+`band` is authoritative for policy decisions: use `high` for your high-confidence
+policy and `medium` for monitoring or your chosen lower-confidence policy.
+`score` ranks evidence strength within a band; it is not a threshold across bands.
+Do not replace the band with a rule such as `score >= 80`.
+
+For example, an indicator admitted by two fresh redistributable classes can be
+upgraded to `high` by a third, restricted class. Its numerical score can still be
+lower than a `medium` indicator supported by two higher-weight classes. That
+inversion is intentional: corroboration structure determines the band, while
+weights and recency affect the score. Restricted evidence cannot admit a record
+or expose its source identity in published records. See ADR-040 and ADR-053 in
+[`docs/DECISIONS.md`](docs/DECISIONS.md).
 
 ---
 
