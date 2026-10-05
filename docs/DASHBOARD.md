@@ -34,7 +34,7 @@ Five cards, computed from the current run's `manifest.json`.
 | safe to block | High-confidence entries. Corroborated across independent source families, or promoted by a single high-precision source. |
 | worth challenging | Medium-confidence entries. Two independent sources. Challenge or rate-limit rather than drop. |
 | rejected as uncorroborated | Share of everything seen this run that was withheld from publication. A high number is the filter working, not a fault. |
-| sources healthy | Sources that returned usable data this run, over sources configured and not skipped. Skipped means "needs an API key we do not have". |
+| sources healthy | Sources with `status: ok`, over configured active sources. Acknowledged expired sources are shown separately; stale, failed, and skipped sources still count as missing. |
 | changed this run | Addresses added and removed versus the previous run. |
 
 What the cards deliberately do **not** count: anything withheld for licence reasons,
@@ -48,12 +48,15 @@ published record.
 
 **High confidence** means one of two things:
 
-- Independent corroboration. Two or more *independence classes* reported the address
-  (see below), or
+- Independent corroboration. At least three distinct voting classes support the
+  address, including at least two fresh redistributable admitting classes. A
+  non-admitting class can supply the third vote but cannot admit a record, or
 - Single-source promotion. Exactly one source reported it, but that source is
-  high-precision by nature: Spamhaus DROP hijacked netblocks, and active abuse.ch
-  command-and-control servers. These do not need a second opinion — a hijacked
-  netblock is a matter of registry record, not of judgement.
+  high-precision by policy. Spamhaus DROP is the currently active promotion
+  family. The scorer also supports fresh, redistributable abuse.ch observations
+  excluding compromised hosts, but the current registry makes none of those an
+  active admitting source. Carried, stale, restricted, and expired evidence
+  cannot independently promote.
 
 **Medium confidence** means two independent sources agreed but the evidence does not
 clear the bar for unconditional blocking. The intended action is to challenge or
