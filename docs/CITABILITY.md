@@ -26,12 +26,13 @@ Without it, the Zenodo GitHub integration derives its author list from repositor
 
 ## Archived releases
 
-The project has two DOIs:
+The project has one concept DOI and version-specific archive DOIs:
 
 | DOI | Meaning |
 |---|---|
 | [10.5281/zenodo.22045733](https://doi.org/10.5281/zenodo.22045733) | **Concept DOI.** Always resolves to the newest published version. Cite this in prose. |
 | [10.5281/zenodo.22045734](https://doi.org/10.5281/zenodo.22045734) | **Version DOI** for `v1.0.0-rc.3`. Cite where exact reproducibility matters. |
+| [10.5281/zenodo.23163156](https://doi.org/10.5281/zenodo.23163156) | **Version DOI** for stable `v1.0.0`, published 2026-10-05. |
 
 ### Where to find a version DOI
 
@@ -44,11 +45,37 @@ Every version DOI is also discoverable from the concept DOI's Zenodo version lis
 | `v1.0.0-rc.3` | 2026-08-21 | [10.5281/zenodo.22045734](https://doi.org/10.5281/zenodo.22045734) |
 | `v1.0.0-rc.4` | not deposited | — |
 | `v1.0.0-rc.5` | not deposited | — |
-| `v1.0.0` | pending | pending |
+| `v1.0.0` | 2026-10-05 | [10.5281/zenodo.23163156](https://doi.org/10.5281/zenodo.23163156) |
+| `v1.0.1` | GitHub release only | Not deposited; operational patch |
 
-Release candidates are not deposited by default: a candidate does not need a permanent identifier, and a DOI per candidate would add four unciteable entries to the record for every one that matters. The exception is deliberate — if a paper or talk needs to cite an exact pre-release snapshot, deposit that candidate on purpose and add its version DOI to `CITATION.cff`, which will then agree with the version field. At `v1.0.0` the version DOI is added back permanently.
+Release candidates are not deposited by default. A version DOI may be added to
+`CITATION.cff` only while its version matches that archive. Main now describes
+v1.0.1, so it retains the concept DOI and records the v1.0.0 version DOI here
+rather than implying that v1.0.1 was archived.
 
-`rc.3` was archived on 2026-08-21 through the Zenodo REST API rather than the GitHub webhook, because the webhook path was blocked by a two-factor authentication challenge that could not be cleared through automation. Consequence: this record cannot be bound to Zenodo's GitHub integration later, so the `v1.0.0` archive will also be created by API rather than fired automatically by a release.
+### Verified v1.0.0 deposit
+
+The owner approved publication on 2026-10-05. The published record contains
+one file, `xfeeds-1.0.0.tar.gz` (408,658 bytes), from tag `v1.0.0` at
+`b65cf654f0fcb027c3ccd4eb868f13314dc6b833`. The archive excludes generated
+`feeds/`, `legacy/`, and `tests/fixtures/sources/` payloads; it archives software,
+not an upstream feed dataset. For the full fixture-based test suite use the
+GitHub tag. The GitHub tag itself was not changed to remove these directories.
+
+SHA-256: `44fbc5cdb36add0972f94ee2420d0f352e9bd2cdd0ef7c78286ec1291558af18`.
+The uploaded MD5 matches `0d9d250925aada0d76a182cda4c87254`.
+Zenodo confirms one creator (Neil Weitzel with ORCID), MIT software licence,
+version 1.0.0, and the existing concept record
+([published record](https://zenodo.org/records/23163156)).
+DataCite reports the DOI as `findable` with the same version and ORCID
+([DOI metadata](https://api.datacite.org/dois/10.5281/zenodo.23163156)).
+The [ORCID public record](https://orcid.org/0009-0007-2546-2331) now includes
+`10.5281/zenodo.23163156` with DataCite as its source, verified through the public
+Works API on 2026-10-05. No work was added manually.
+
+`rc.3` was archived on 2026-08-21 through the Zenodo REST API rather than the
+GitHub webhook. v1.0.0 was likewise archived by API; GitHub release publication
+did not automatically create the deposit.
 
 Release candidates were originally deferred, on the reasoning that a permanent identifier on a snapshot expected to change is the wrong artifact. That reasoning still holds for the version DOI, which is deliberately not being cited as the primary identifier. It does not hold for the concept DOI, which is version-agnostic and updated automatically when `v1.0.0` is archived. Publishing early therefore costs nothing that the concept-DOI abstraction does not already recover.
 
