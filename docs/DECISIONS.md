@@ -2183,6 +2183,40 @@ source, just not from this morning.
   observations is a candidate; a source that already publishes its own history is
   not.
 
+## ADR-063: GitHub-only scheduling with UTC quota and jitter tolerance
+
+**Status:** accepted, 2026-10-05; ships after stable promotion in v1.0.1.
+
+The October 5 05:41 UTC run had waited 336 minutes, but the rolling-day cap
+counted four previous refresh commits and refused to fetch
+([run](https://github.com/neilweitzel/xfeeds/actions/runs/37268920567)).
+AbuseIPDB's APIv2 daily limiter resets at 00:00 UTC
+([FAQ](https://www.abuseipdb.com/faq.html)). The rolling window was needlessly
+strict. GitHub's best-effort scheduler then left a publication gap.
+
+The owner requires self-contained GitHub operation, explicitly declining an
+external scheduler or recurring Computer task. Therefore:
+
+- Offer hourly triggers at `:17`, still off the hourly boundary.
+- Allow four attempts per UTC calendar day, minimum 5h30 apart. That is a
+  half-hour tolerance around the six-hour target. Keeping the old four-hour
+  spacing with hourly triggers would exhaust quota early and create a regular
+  overnight gap.
+- Apply the same guard to scheduled and manual runs, including churn-force runs.
+- Commit `feeds/refresh-attempts.json` before fetching. Preserve failed attempts
+  and two days of recent state; bootstrap from generated-at history once.
+  Missing/corrupt bootstrap data or corrupt existing state fails closed.
+- Serialize without cancelling active refreshes, check out current main, and
+  refuse to fetch if the reservation push fails. A subsequent trigger retries
+  safely from fresh main.
+- Keep the existing heartbeat and publication fallback. No claim of guaranteed
+  timing: GitHub can delay every workflow on the platform.
+
+This is an operational patch, not a scorer/source change. v1.0.0 preserves the
+observed baseline; v1.0.1 contains this change with replay and failure-mode tests.
+The attempt cap does not count individual collector HTTP retries; upstream
+responses and existing collector caching/retry behavior still apply.
+
 ## ADR-062 — Schedule for the scheduler we have, not the one we want
 
 **Status:** accepted, 2026-09-01 · closes #50

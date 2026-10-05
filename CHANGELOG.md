@@ -10,6 +10,23 @@ six hours by design. A consumer pinning a tag still fetches the same live URLs.
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-10-05
+
+GitHub-only operational patch following the burned-in v1.0.0 baseline.
+
+- Hourly trigger opportunities replace three-hourly ones. Actual refresh attempts
+  remain capped at four per UTC calendar day, with minimum spacing 5h30 to avoid
+  front-loading four attempts early in a day.
+- Scheduled, manual, and churn-force runs share the quota guard. A committed
+  attempt reservation protects the cap after failed runs or cache loss; a failed
+  reservation push aborts before fetching.
+- Active refreshes are not cancelled by newer triggers, and queued executions
+  check out current main.
+- Regression tests replay October 5's skipped run and cover quota boundaries,
+  midnight, timezone conversion, duplicates, failed attempts, and corrupt state.
+- Source reviews now run quarterly on January/April/July/October 8.
+- No outside scheduler or Computer automation. No source/scoring changes.
+
 ## [1.0.0] - 2026-10-05
 
 First stable release. Promotes rc.7 plus PR #55, with no new pipeline or source
