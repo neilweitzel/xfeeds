@@ -6,8 +6,7 @@ name: Source discovery review
 # and open PRs for any that pass.
 #
 # Cadence:
-#   - Monthly during the RC burn-in window (the first quarter after v1.0.0)
-#   - Quarterly after v1.0.0 is promoted
+#   - Quarterly following v1.0.0 promotion
 #   - Manually triggered when a source is retired, a threat ecosystem is
 #     disrupted, or a coverage gap is identified
 #
@@ -16,19 +15,8 @@ name: Source discovery review
 
 on:
   schedule:
-    # Eighth of every month at 09:00 UTC during the RC burn-in period.
-    #
-    # The 8th, not the 1st. A candidate tagged on the 1st has its burn-in window
-    # close on the 1st of the following month, which is exactly when a review
-    # opened on the 1st would land - and a review that merges a sources.yaml
-    # change restarts the clock. Running the review on the closing date means
-    # every promotion is decided in the same hour as a review that might defer
-    # it. A week of clearance lets a release be promoted first and reviewed
-    # after, which is the order docs/RELEASE_CHECKLIST.md asks for anyway.
-    #
-    # After v1.0.0 promotion, switch this to quarterly:
-    #   cron: "0 9 8 */3 *"
-    - cron: "0 9 8 * *"
+    # January, April, July, October 8 at 09:00 UTC; October 8 remains in scope.
+    - cron: "0 9 8 1,4,7,10 *"
   workflow_dispatch:
     inputs:
       reason:

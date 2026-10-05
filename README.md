@@ -382,13 +382,25 @@ xfeeds/
 
 `update-feeds.yml`:
 
-- Triggers: `schedule` every 6 hours (offset off the hour) and `workflow_dispatch`.
-- Steps: checkout → `astral-sh/setup-uv` at a pinned version → restore HTTP cache → `xfeeds run` → validate → churn guard → commit `chore(feeds): refresh <ISO8601> (+N/-M)` → push → deploy Pages.
+- Triggers: hourly at `:17` and `workflow_dispatch`, entirely inside GitHub.
+  Both use the same guard: at most four attempts per UTC calendar day and at
+  least 5h30 between attempts, a 30-minute tolerance around the six-hour target.
+- Steps: checkout latest main, restore dependencies/cache, evaluate guard, commit
+  a quota reservation, then run the pipeline, commit feed output, and deploy Pages.
+  A failed attempt still consumes its reserved slot; a rejected reservation push
+  aborts before any feed is fetched. `force` bypasses churn only, not the guard.
 - Secrets, all optional — absent keys degrade to unauthenticated sources rather than failing: `ABUSEIPDB_API_KEY`, `THREATFOX_AUTH_KEY`, `GREYNOISE_API_KEY`. All three are configured; GreyNoise is enrichment only and a failed lookup caps nothing (ADR-049).
-- Concurrency group so overlapping runs cancel.
+- One concurrency group serializes refreshes without cancelling an active run.
 - On failure or churn trip: open/update an issue with the run report.
 
 The 6-hour cadence is set by the tightest external constraint: AbuseIPDB allows **5 blacklist calls/day** on the free tier, and Spamhaus requires automated fetches at least an hour apart.
+
+AbuseIPDB [resets its APIv2 quota at 00:00 UTC](https://www.abuseipdb.com/faq.html),
+not on a rolling 24-hour window. `feeds/refresh-attempts.json` persists the recent
+attempt reservations so failed refreshes and lost caches cannot reset the guard.
+The cap is on pipeline attempts, not individual HTTP retries inside a collector.
+More trigger opportunities do not guarantee punctual refreshes: GitHub can still
+delay or drop scheduled jobs. No external scheduler or paid monitor is required.
 
 ### How publishing actually reaches Pages
 
@@ -463,6 +475,10 @@ pipeline with the reporting-only correction in PR #55, observed unchanged since
 2026-09-02. No source admission, scoring, expiry, or licensing behavior changes
 as part of promotion. The release evidence and separately versioned operational
 follow-up are recorded in [`docs/RELEASE_2026-10-05.md`](docs/RELEASE_2026-10-05.md).
+
+`v1.0.1` is the current operational patch: GitHub-only scheduling hardening and
+quarterly source reviews. It does not change source admission or scoring, and
+does not claim the new scheduler completed the September burn-in.
 
 The promotion steps are enumerated in
 [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md).
