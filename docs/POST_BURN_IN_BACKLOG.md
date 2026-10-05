@@ -1,9 +1,8 @@
 # Post-burn-in backlog
 
-Canonical, single-source-of-truth backlog for work that is **deferred until the
-current release-candidate burn-in window closes**. This file exists so planned
-work is durable, reviewable, and discoverable in the repository rather than
-scattered across chat threads, task links, or external notes.
+Canonical, single-source-of-truth backlog for work after the initial stable
+release. Plans stay in this repository rather than scattered across chat
+threads, task links, or external notes.
 
 ## Ground rule
 
@@ -12,33 +11,37 @@ scattered across chat threads, task links, or external notes.
 the scoped PR #55 disposition, and the separately tagged scheduler patch.
 Items not explicitly included there remain backlog, not release blockers.
 
-Per [`docs/source-lifecycle.md`](source-lifecycle.md), the burn-in clock is
-restarted by any change to `sources.yaml`, `src/`, or `.github/workflows/`.
-This document, and any planning-only follow-ups added to it, live under
-`docs/` and therefore do not restart the clock.
+`v1.0.0` and `v1.0.1` are published. They are not made prereleases again by
+later work. The "burn-in impact" entries below retain the original planning
+classification: changes during a future candidate window must follow
+[`source-lifecycle.md`](source-lifecycle.md), not move existing stable tags.
 
-Stable-release eligibility: on or after **2026-10-01**, subject to the
-release checklist and the path-scoped diff check.
+The next source-review issue is scheduled for **2026-10-08 at 09:00 UTC
+(5:00 AM EDT)**, subject to GitHub scheduling. This opens a review, not a source
+promotion: the workflow neither researches nor enables candidates automatically.
+Every admission still needs evidence, an independently reviewable PR, tests, and
+an explicit decision.
 
-The next source review opens **2026-10-08**, deliberately after the eligibility
-date so admission work cannot restart the release window on promotion day.
+## Proposed next minor: v1.1.0
 
-### What is allowed before burn-in closes
+No candidate tag or release date is set yet. Preserve v1.0.1 production behavior
+while the first post-patch automatic refresh completes and the October 8 review
+collects evidence. The detailed quality audit is in
+[`RELEASE_AUDIT_2026-10-05.md`](RELEASE_AUDIT_2026-10-05.md).
 
-- Editing this document.
-- Read-only measurements that do not touch `sources.yaml`, `src/`, or
-  `.github/workflows/` (for example, cloning the repository and measuring
-  pack size or clone time from a scratch checkout).
-- Opening tracking issues that describe post-burn-in work without changing
-  in-scope files.
+| Priority | Work | Release handling |
+|---|---|---|
+| First | Complete post-patch automatic reservation/fetch/publish observation | Current-release verification, not a feature |
+| October 8 | Discovery lanes and candidate register (3.2/3.3), Spur evaluation (3.1), AbuseIPDB expansion evaluation (4.2), second IPv6 admitting source search | Review and private measurements before admission; no purchase or automatic enablement |
+| Next minor foundation | Retention telemetry (4.1) | Observe for 30 days before proposing expiry changes; does not reopen v1.0.0 burn-in |
+| Separate small PR | Promotion configuration and scorer documentation (1.2/1.5) | Preserve all existing behavior, including the abuse.ch branch; prove fixture equivalence |
+| Independent work | Repository-growth measurement (1.3) and dashboard scope reconciliation (2.1) | Measure first; do not mix source admission, scoring refactor, and dashboard redesign into one unreviewable change |
 
-### What is not allowed before burn-in closes
-
-- Any change under `sources.yaml`, `src/`, or `.github/workflows/`, for any
-  reason. Even a "docs-only" edit inside a `src/` file (for example, a
-  docstring correction) is a `src/` change and restarts the window.
-- Admitting, retiring, or reweighting any source.
-- Merging or opening a PR whose diff touches the paths above.
+Before the October 8 review, reconcile discovery instructions: the current brief,
+lifecycle table, and issue-template summary still prefer free access, while 3.2
+explicitly accepts credentialed/commercial scoring-only evaluation. Update them
+together as part of 3.2. Do not reject a candidate solely because it is paid, and
+do not treat this planning decision as permission to buy a subscription.
 
 ## How to use this backlog
 
@@ -96,7 +99,10 @@ and fixture strategy. The items below are the durable, accepted follow-ups.
 ### 1.2 Replace hardcoded Spamhaus solo promotion with `solo_promote` config
 
 - **Rationale.** `src/xfeeds/score.py` currently identifies Spamhaus DROP by
-  hardcoded source IDs as the sole feed permitted to promote by itself.
+  hardcoded source IDs, and also permits fresh redistributable `abusech`
+  observations that are not tagged `compromised-host`, to promote by themselves.
+  Spamhaus is the only currently active admitting promotion family; that does
+  not mean the abuse.ch code path is absent.
   The docstring warns the scorer is "the easiest thing to get subtly wrong,"
   and yet source identity is baked into the scorer rather than declared in
   `sources.yaml`. Adding a per-source `solo_promote: true` flag follows the
@@ -104,21 +110,23 @@ and fixture strategy. The items below are the durable, accepted follow-ups.
   source ever documents an active verification step.
 - **Scope.** Add a `solo_promote` field to the source config schema; move
   Spamhaus DROP v4 and v6 to `solo_promote: true` in `sources.yaml`; replace
-  the hardcoded identifier check in `score.py` with a lookup against the
-  config; adjust or add scoring tests to cover the flag.
+  the hardcoded identifier check with a config lookup. Explicitly represent
+  existing abuse.ch eligibility too, without enabling any dormant, disabled,
+  or restricted source, and preserve the compromised-host exclusion.
 - **Burn-in impact.** **Restarts burn-in.** Touches `sources.yaml` and
   `src/`, and changes voting/promotion behaviour. This must batch with other
   scorer-adjacent post-burn-in work, not ship alone.
 - **Acceptance criteria.**
   1. `sources.yaml` schema documents `solo_promote`, default `false`.
-  2. Spamhaus DROP v4 and v6 carry `solo_promote: true`; no other source
-     does.
+  2. Active Spamhaus DROP v4/v6 retain promotion. Existing abuse.ch policy
+     remains equivalent under dormant/disabled/restricted configurations.
   3. `score.py` no longer references source IDs for promotion behaviour.
-  4. Scoring tests cover: unflagged single-source → not promoted; flagged
-     single-source → promoted; flag interaction with restricted evidence.
+  4. Tests cover unflagged/flagged sources, restricted/stale/carried evidence,
+     the abuse.ch branch, and compromised hosts. Replay fixtures before and
+     after to demonstrate no policy drift.
   5. Manifest and run-report unchanged in shape.
 - **Status.** `backlog`.
-- **Dependencies.** rc.7 promotion; batching decision with 1.5 below.
+- **Dependencies.** Stable promotion complete; batching decision with 1.5 below.
 - **Execution.** _new RC will be cut when this batch lands_.
 
 ### 1.3 Repository / distribution growth measurement study
@@ -268,7 +276,8 @@ retrospective triggered by the Spur miss.
   4. Decision to keep, reweight, expand to residential, or retire, with
      rationale.
 - **Status.** `backlog`.
-- **Dependencies.** rc.7 promotion; source review 2026-10-08 or later.
+- **Dependencies.** Stable promotion complete; source review 2026-10-08 or later;
+  verified trial terms and approved access before any fetch.
 - **Execution.** _tracking issue and PR TBD_.
 
 ### 3.2 Add a commercial credentialed scoring-only discovery lane
@@ -317,7 +326,52 @@ retrospective triggered by the Spur miss.
 
 ---
 
+## 4. Measurement-first follow-ups
+
+### 4.1 Retention observability before dynamic-host expiry
+
+- **Rationale.** Recovered from the September 3 planning decision: determine
+  whether growth is healthy net-new intelligence or insufficient retirement.
+  The earlier conversation drafted an issue, but the live repository has no
+  corresponding issue; this backlog entry is the durable tracking record.
+- **Scope.** Track qualifying fresh observations separately from collection
+  time; distinguish host IPs, IPv4 prefixes, and IPv6 prefixes. Publish safe
+  aggregates for age buckets, confidence bands, support counts, additions,
+  removals, and net change. Keep restricted per-record provenance private.
+- **Acceptance criteria.** Buckets reconcile to totals; unchanged fetches do
+  not reset evidence age; deterministic outputs; no admission/scoring change;
+  existing URLs and schemas remain compatible. Measure for at least 30 days.
+- **Decision gate.** Only then consider targeted expiry for aging dynamic hosts.
+  No universal maximum age for curated netblocks. Enforcement requires its own
+  ADR, tests, candidate/release decision, and separately reviewed PR.
+- **Status.** `backlog`; proposed v1.1.0 measurement work, not a v1 release blocker.
+- **Execution.** Not started.
+
+### 4.2 AbuseIPDB Basic expansion experiment
+
+- **Rationale.** Recovered from the September 3 decision to evaluate Basic after
+  initial burn-in, rather than automatically adopting a larger feed.
+- **Scope.** Subject to approved subscription/access, use one account/token and
+  one response with identical query parameters to compare ranks 1–10,000 against
+  10,001–100,000. Confirm current plan caps and terms before starting; the
+  comparison is a proposed experiment, not a claim of current entitlement.
+- **Acceptance criteria.** Measure incremental fresh coverage, independent
+  corroboration, false-positive exposure, churn, and safe output impact.
+  Preserve `redistribute: false`; no raw trial rows in public artifacts.
+  Record keep/revert/expand decision from evidence, not gross list size.
+- **Dependencies.** October 8 review or later; explicit purchase approval and
+  source-configuration review. No subscription bought or production limit raised.
+- **Status.** `backlog`; private evaluation first, production change only after
+  the experiment supports it.
+- **Execution.** Not started.
+
 ## Decision log
+
+- **2026-10-05, quality audit.** Verified published tags, build/test health, live
+  feed integrity, and immutable archive. Removed obsolete pre-release timing,
+  corrected the promotion-refactor scope to preserve abuse.ch behavior, and
+  restored retention and AbuseIPDB plans omitted from the canonical backlog.
+  October 8 is discovery/review, not automatic source promotion.
 
 - **2026-10-05.** Initial burn-in completed. Items 1.1, 1.4, and 1.6 are
   included in stable-release preparation. Scheduler repairs and quarterly review
