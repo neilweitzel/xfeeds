@@ -69,8 +69,9 @@ version 1.0.0, and the existing concept record
 ([published record](https://zenodo.org/records/23163156)).
 DataCite reports the DOI as `findable` with the same version and ORCID
 ([DOI metadata](https://api.datacite.org/dois/10.5281/zenodo.23163156)).
-The new version's appearance on the ORCID Works page was not yet confirmed;
-do not add it manually or equate DOI registration with ORCID propagation.
+The [ORCID public record](https://orcid.org/0009-0007-2546-2331) now includes
+`10.5281/zenodo.23163156` with DataCite as its source, verified through the public
+Works API on 2026-10-05. No work was added manually.
 
 `rc.3` was archived on 2026-08-21 through the Zenodo REST API rather than the
 GitHub webhook. v1.0.0 was likewise archived by API; GitHub release publication

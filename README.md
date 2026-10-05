@@ -445,8 +445,8 @@ recovery**; an alert that never clears is one you learn to ignore.
 GitHub disables scheduled workflows in a public repository after 60 days without
 repository activity. Healthy operation commits about four times a day, so that clock
 never gets near expiring. The failure it guards against is the compounding one:
-`update-feeds.yml` only commits when a run *succeeds*, so a persistently failing
-pipeline could stop committing, and 60 days later the cron could be disabled too, turning
+historically, `update-feeds.yml` committed only when a run succeeded, so a persistently
+failing pipeline could stop committing and eventually have its schedule disabled, turning
 "broken and retrying" into "broken and not even trying", which needs a manual
 re-enable to recover from. v1.0.1 also commits quota reservations before attempts;
 the heartbeat still measures the actual manifest, not those reservation commits.
