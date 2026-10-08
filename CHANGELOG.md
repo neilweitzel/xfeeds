@@ -10,6 +10,14 @@ six hours by design. A consumer pinning a tag still fetches the same live URLs.
 
 ## [Unreleased]
 
+### Documentation
+
+- October 2026 source discovery review (#62): lane-structured report in
+  `docs/source-discovery-2026-10.md` and a persistent candidate register in
+  `docs/SOURCE_CANDIDATES.md`. The discovery brief and lifecycle policy now
+  survey by lane and accept paid or credentialed access for scoring-only
+  sources. No source, scoring, or workflow change.
+
 ## [1.0.1] - 2026-10-05
 
 GitHub-only operational patch following the burned-in v1.0.0 baseline.
