@@ -79,6 +79,12 @@ restricted corroboration.
 | GreenSnow | `greensnow` | "Reproduction or republication strictly prohibited" | 0.6 / 10d | 6,908 | 1,963 |
 | DShield block list | `dshield` | CC BY-NC-SA: admits in the non-commercial tier only; 20 /24s | 0.5 / 3d | 22 | 19 |
 
+### Admitted in v1.1.0 (burn-in)
+
+| Source | Class | How it is used | Tiers | Weight / TTL | PR |
+|---|---|---|---|---|---|
+| Sblam | `sblam` | Scoring-only third vote for `spam-source`; never admits, never republished | none (scoring only) | 0.5 / 7d | ADR-065 |
+
 ### Non-voting roles
 
 | Source | Role | Effect this run |
@@ -105,7 +111,6 @@ restricted corroboration.
 |---|---|---|---|---|---|---|
 | Spur Anonymous feed | proxy, ipv6, commercial | researching | Ongoing paid subscription (feeds are not in the free plan) | 2026-10-08 | Blocked only on a subscription. Terms read as written: `redistribute: false`, daily feed, conservative weight (backlog 3.1) | [2026-10 addendum](source-discovery-2026-10.md#addendum-second-pass) |
 | ReportedIP blacklist | abuse, spam, fraud, ipv6 | ready | Free, ongoing, CC BY 4.0 public dataset | 2026-10-08 | Admit in v1.1.0. Not a vendor trial: the earlier "30-day shadow" was our own observation window after its 2026-09-28 method change | [2026-10](source-discovery-2026-10.md) |
-| Sblam blacklist | spam | ready | Free, ongoing | 2026-10-08 | Admit scoring-only in v1.1.0 as class `sblam`: an independent web-form spam sensor. 72.5% corroborated by StopForumSpam, 24.9% seen by nobody else | [2026-10 addendum](source-discovery-2026-10.md#addendum-second-pass) |
 | SANS ISC API `sources/attacks` | existing | ready | Free, ongoing | 2026-10-08 | Augment `dshield` class from 20 /24s to ~9,200 fresh hosts; keep the ISC "not a blocklist" caveat in its notes | [2026-10](source-discovery-2026-10.md) |
 | SANS ISC research-scanner labels | fp | ready | Free, ongoing | 2026-10-08 | Cap input alongside GreyNoise: 789 published records carry one, 46 high | [2026-10](source-discovery-2026-10.md) |
 | jacobrakai honeypot | abuse | ready | Free, ongoing, CC0 | 2026-10-08 | Admit with ReportedIP; churn measured (250 of 416 removed in 30 days) | [2026-10 addendum](source-discovery-2026-10.md#addendum-second-pass) |

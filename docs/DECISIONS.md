@@ -2340,3 +2340,29 @@ the removed class is the only difference. It is aggregate-only, like the rest of
   Jaccard 0.953), not by an independent sensor seeing the same attackers.
 - Cost measured on a live keyless run: about one second.
 - `src/` changes, so this belongs to a release-candidate window.
+
+## ADR-065 — Sblam: a third, independent spam-source vote
+
+**Date:** 2026-10-08. **Status:** Accepted for v1.1.0. **Source review:** #62.
+
+**Source.** `https://sblam.com/blacklist.txt`: web-form (comment and forum) spam
+sources that sent Sblam! the most spam during the last month, rebuilt daily.
+No licence is stated for the list; the service says it "can be used freely, even
+on commercial websites". Read as written (ADR-060): use, not republication.
+
+**Independence.** Measured 2026-10-08 against every public configured source:
+max Jaccard 0.084 (tor). 72.5% of its 1,239 hosts are also in StopForumSpam.
+That is two independent spam sensors seeing the same spammers, which is
+corroboration (ADR-064), not copying: Sblam's list is built from spam submitted
+to its own classifier. 309 hosts (24.9%) are seen by no configured source.
+
+**Role.** New class `sblam`, `redistribute: false` in both tiers, weight 0.5
+(StopForumSpam's weight, same evidence type), `ttl_days: 7` against a daily
+rebuild, categories `spam-source` and `abuse`. `spam-source` had two voting
+classes and no admitting class; this makes a third vote. It can raise a record
+two admitting classes already published; it cannot admit one. Its unique hosts
+stay withheld until a redistributable source corroborates them.
+
+**Freshness.** `Last-Modified` (its `# Generated` line carries no timezone).
+
+**Burn-in.** `sources.yaml` changes; part of the v1.1.0 candidate window.

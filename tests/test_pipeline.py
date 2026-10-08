@@ -1492,3 +1492,39 @@ def test_contribution_report_contains_no_address() -> None:
     scored = score_indicators(records, reg, NOW)
     block = build_class_contribution(records, scored, scored, reg, NOW)
     assert "45.33.32.156" not in json.dumps(block)
+
+
+# --------------------------------------------------------------------------
+# v1.1.0 admissions, scored with their real sources.yaml entries
+# --------------------------------------------------------------------------
+
+
+def _real(*names: str) -> Registry:
+    from xfeeds.config import load_registry
+
+    by_name = {s.name: s for s in load_registry(Path("sources.yaml")).sources}
+    return registry_of(*(by_name[n] for n in names))
+
+
+def _real_obs(reg: Registry, name: str, ip: str = "45.33.32.156") -> IndicatorRecord:
+    config = next(s for s in reg.sources if s.name == name)
+    return obs(name, config.independence_class, ip=ip, categories=list(config.categories))
+
+
+def test_sblam_upgrades_but_never_admits() -> None:
+    reg = _real("sblam", "stopforumspam_listed", "blocklist_de", "cins_army")
+    alone = score_indicators(
+        [_real_obs(reg, "sblam"), _real_obs(reg, "stopforumspam_listed")], reg, NOW
+    )[0]
+    assert alone.band is Band.WITHHELD, "two restricted classes must not admit"
+    base = score_indicators(
+        [_real_obs(reg, "blocklist_de"), _real_obs(reg, "cins_army")], reg, NOW
+    )[0]
+    more = score_indicators(
+        [_real_obs(reg, "blocklist_de"), _real_obs(reg, "cins_army"), _real_obs(reg, "sblam")],
+        reg,
+        NOW,
+    )[0]
+    assert more.score > base.score
+    assert "sblam" not in more.sources, "a restricted source is never named on a record"
+    assert more.restricted_corroboration == base.restricted_corroboration + 1
