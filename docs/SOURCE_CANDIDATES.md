@@ -83,6 +83,7 @@ restricted corroboration.
 
 | Source | Class | How it is used | Tiers | Weight / TTL | PR |
 |---|---|---|---|---|---|
+| SANS ISC `sources/attacks` | `dshield` | Second member of the existing class: about 9,200 dated hosts instead of 20 /24s. Voting-only everywhere | none (scoring only) | 0.5 / 3d, rows ≤2d | ADR-068 |
 | ReportedIP | `reportedip` | Admitting community-report vote (web, CMS, brute force); IPv6 hosts; clean-tier grant | primary, NC, clean | 0.7 / 7d | ADR-067 |
 | jacobrakai honeypot | `jacobrakai` | Admitting honeypot vote; first admitting class for `telnet-attack`; clean-tier grant | primary, NC, clean | 0.6 / 7d | ADR-066 |
 | Sblam | `sblam` | Scoring-only third vote for `spam-source`; never admits, never republished | none (scoring only) | 0.5 / 7d | ADR-065 |
@@ -112,7 +113,6 @@ restricted corroboration.
 | Candidate | Lane | Status | Access | Last reviewed | Next step | Evidence |
 |---|---|---|---|---|---|---|
 | Spur Anonymous feed | proxy, ipv6, commercial | researching | Ongoing paid subscription (feeds are not in the free plan) | 2026-10-08 | Blocked only on a subscription. Terms read as written: `redistribute: false`, daily feed, conservative weight (backlog 3.1) | [2026-10 addendum](source-discovery-2026-10.md#addendum-second-pass) |
-| SANS ISC API `sources/attacks` | existing | ready | Free, ongoing | 2026-10-08 | Augment `dshield` class from 20 /24s to ~9,200 fresh hosts; keep the ISC "not a blocklist" caveat in its notes | [2026-10](source-discovery-2026-10.md) |
 | SANS ISC research-scanner labels | fp | ready | Free, ongoing | 2026-10-08 | Cap input alongside GreyNoise: 789 published records carry one, 46 high | [2026-10](source-discovery-2026-10.md) |
 | Carpathian | abuse | ready | Free, ongoing, CC BY 4.0 | 2026-10-08 | Admit in v1.1.0. Read as written: no third-party data, so `threat_intel` rows are first-party; per-row `last_seen` bounds stale permabans | [2026-10 addendum](source-discovery-2026-10.md#addendum-second-pass) |
 | IPSpamList (NoVirusThanks) | abuse, ipv6, commercial | new | Ongoing yearly subscription | 2026-10-08 | Paid yearly key, no named licence: scoring-only if subscribed. Honeypots since 2016, 15-day expiry, IPv6 feed | [2026-10 addendum](source-discovery-2026-10.md#addendum-second-pass) |

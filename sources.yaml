@@ -871,6 +871,37 @@ sources:
       comes from the content-hash ledger. The first redistributable,
       expiring, host-level IPv6 source.
 
+  - name: dshield_attacks
+    credit: "SANS Internet Storm Center / DShield top attacking sources - isc.sans.edu (CC BY-NC-SA 4.0)"
+    url: https://isc.sans.edu/api/sources/attacks/10000?json
+    parser: dshield_api
+    independence_class: dshield   # same publisher and sensor network as dshield_block
+    weight: 0.5
+    categories: [scanning, reported-abuse]
+    ttl_days: 3
+    max_row_age_days: 2
+    redistribute: false
+    redistribute_noncommercial: false
+    noncommercial_compatible: false
+    attribution_required: true
+    license: "CC BY-NC-SA 4.0 per the ISC API page; the endpoint itself says DO NOT USE AS A BLOCKLIST"
+    license_url: https://isc.sans.edu/api/
+    license_risk: medium
+    min_interval_seconds: 3600
+    notes: >
+      ADMITTED in v1.1.0 (ADR-068) inside the existing dshield class, so it adds
+      no new vote: one class, at most one vote, max of the two members. It turns
+      that vote from 20 /24 blocks into about 9,200 individual hosts with a
+      per-row lastseen. Measured 2026-10-08: 87% of its hosts seen by no other
+      configured source, max Jaccard 0.011 (cins). VOTING-ONLY IN EVERY TIER,
+      stricter than dshield_block: the API documentation describes this data as
+      unfiltered reports that may include false positives and says "DO NOT USE AS
+      A BLOCKLIST". Read as written, it may corroborate a record other classes
+      admitted and must never be the reason a record is published anywhere,
+      including feeds/noncommercial/. Rows not seen in the last 2 days are
+      dropped (max_row_age_days). The top of the list includes research
+      scanners; the ISC scanner-label cap (ADR-070) and GreyNoise handle those.
+
   - name: tor_exits
     credit: "Tor exit relay list - The Tor Project, torproject.org"
     attribution_required: true

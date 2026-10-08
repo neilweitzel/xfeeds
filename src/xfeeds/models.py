@@ -30,6 +30,7 @@ VALID_PARSERS = {
     "cloudflare_json",
     "dataplane",
     "dshield",
+    "dshield_api",
     "github_meta",
     "google_json",
     "ipsum_levels",
@@ -116,6 +117,14 @@ class SourceConfig(BaseModel):
     Superseded ADR-052/053 behaviour, where dormant meant a damped, non-admitting
     vote. Half-counting evidence from a threat we have already declared dead was
     a distinction without a defensible purpose.
+    """
+    max_row_age_days: int | None = None
+    """Drop rows whose own last-seen date is older than this many days.
+
+    For sources that publish a per-row date and keep rows long after the activity
+    stopped. The file-level timestamp says the list is fresh; it says nothing
+    about each row, and a fresh file full of months-old rows is stale evidence
+    presented as current. Unset means no per-row filter.
     """
     sighting_window_days: int | None = None
     """Days of per-address sighting history to keep for this source.

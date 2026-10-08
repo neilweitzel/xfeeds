@@ -793,3 +793,44 @@ def test_reportedip_fixture_parses_both_families() -> None:
     assert len(records) == 32
     assert sum(1 for r in records if r.ip_or_cidr.version == 6) == 2
     assert config.attribution_required is True and config.explicit_grant is True
+
+
+def test_dshield_api_parses_the_recorded_response() -> None:
+    from xfeeds.collectors.parsers import dshield_api
+    from xfeeds.config import load_registry
+
+    config = next(
+        s for s in load_registry(Path("sources.yaml")).sources if s.name == "dshield_attacks"
+    )
+    content = Path("tests/fixtures/sources/dshield_attacks.json").read_bytes()
+    records = list(dshield_api(content, config, datetime(2026, 10, 8, tzinfo=UTC)))
+    assert len(records) == 30
+    assert records[0].source_last_reported == datetime(2026, 10, 8, tzinfo=UTC)
+    assert config.redistribute is False and config.redistribute_noncommercial is False
+
+
+def test_dshield_api_drops_rows_older_than_max_row_age() -> None:
+    from xfeeds.collectors.parsers import dshield_api
+
+    content = json.dumps(
+        [
+            {"ip": "45.33.32.1", "lastseen": "2026-10-08"},
+            {"ip": "45.33.32.2", "lastseen": "2026-10-06"},
+            {"ip": "45.33.32.3", "lastseen": "2026-10-05"},
+            {"ip": "10.0.0.1", "lastseen": "2026-10-08"},
+            {"ip": "not-an-ip", "lastseen": "2026-10-08"},
+            "garbage",
+        ]
+    ).encode()
+    config = get_mock_config(name="d", parser="dshield_api", max_row_age_days=2)
+    records = list(dshield_api(content, config, datetime(2026, 10, 8, tzinfo=UTC)))
+    assert [str(r.ip_or_cidr) for r in records] == ["45.33.32.1", "45.33.32.2"]
+
+
+def test_dshield_api_rejects_a_non_array_body() -> None:
+    from xfeeds.collectors.parsers import dshield_api
+
+    config = get_mock_config(name="d", parser="dshield_api")
+    now = datetime(2026, 10, 8, tzinfo=UTC)
+    assert list(dshield_api(b'{"error": "rate limited"}', config, now)) == []
+    assert list(dshield_api(b"<html>", config, now)) == []

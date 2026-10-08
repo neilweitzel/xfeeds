@@ -12,6 +12,9 @@ six hours by design. A consumer pinning a tag still fetches the same live URLs.
 
 ### Added
 
+- SANS ISC `sources/attacks` admitted inside the existing `dshield` class
+  (ADR-068): about 9,200 dated hosts, voting-only in every tier, new `dshield_api`
+  parser and per-row `max_row_age_days` filter.
 - ReportedIP admitted as an admitting class (ADR-067): CC BY 4.0 community reports
   with documented decay, 82 IPv6 hosts, eligible for `feeds/clean/`.
 - jacobrakai honeypot admitted as an admitting class (ADR-066): CC0, self-operated

@@ -1557,3 +1557,32 @@ def test_reportedip_admits_with_a_second_class_including_ipv6() -> None:
     alone = score_indicators([_real_obs(reg, "reportedip", ip=v6)], reg, NOW)[0]
     assert alone.band is Band.WITHHELD
     assert "reportedip" in permissive_sources(reg)
+
+
+def test_dshield_attacks_shares_the_dshield_vote_and_never_admits() -> None:
+    reg = _real("dshield_block", "dshield_attacks", "blocklist_de", "cins_army")
+    one = score_indicators(
+        [
+            _real_obs(reg, "blocklist_de"),
+            _real_obs(reg, "cins_army"),
+            _real_obs(reg, "dshield_block"),
+        ],
+        reg,
+        NOW,
+    )[0]
+    both = score_indicators(
+        [
+            _real_obs(reg, "blocklist_de"),
+            _real_obs(reg, "cins_army"),
+            _real_obs(reg, "dshield_block"),
+            _real_obs(reg, "dshield_attacks"),
+        ],
+        reg,
+        NOW,
+    )[0]
+    assert both.score == one.score, "two members of one class are one vote"
+    pair = score_indicators(
+        [_real_obs(reg, "dshield_attacks"), _real_obs(reg, "blocklist_de")], reg, NOW
+    )[0]
+    assert pair.band is Band.WITHHELD, "voting-only: it cannot be the second admitting class"
+    assert "dshield_attacks" not in noncommercial_sources(reg)
