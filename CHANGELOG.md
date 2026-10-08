@@ -10,6 +10,13 @@ six hours by design. A consumer pinning a tag still fetches the same live URLs.
 
 ## [Unreleased]
 
+## [1.1.0-rc.1] - 2026-10-08
+
+First v1.1.0 candidate. Opens the release window: six sources from the October
+source review (#62) and a per-class contribution report. Feed paths, record
+schema, and every existing manifest field are unchanged; the manifest gains
+`research_scanners_capped` and `insights.json` gains `class_contribution`.
+
 ### Added
 
 - SANS ISC research-scanner labels added as a benign-scanner cap (ADR-070),
@@ -655,7 +662,8 @@ to `1.0.0` unchanged.
   by manual review get a regression test.
 - No unit test touches the network.
 
-[Unreleased]: https://github.com/neilweitzel/xfeeds/compare/v1.0.0-rc.3...HEAD
+[Unreleased]: https://github.com/neilweitzel/xfeeds/compare/v1.1.0-rc.1...HEAD
+[1.1.0-rc.1]: https://github.com/neilweitzel/xfeeds/releases/tag/v1.1.0-rc.1
 [1.0.0-rc.3]: https://github.com/neilweitzel/xfeeds/releases/tag/v1.0.0-rc.3
 [1.0.0-rc.2]: https://github.com/neilweitzel/xfeeds/releases/tag/v1.0.0-rc.2
 [1.0.0-rc.1]: https://github.com/neilweitzel/xfeeds/releases/tag/v1.0.0-rc.1

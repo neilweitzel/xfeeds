@@ -354,7 +354,7 @@ retrospective triggered by the Spur miss.
 - **Burn-in impact.** Touches `src/`; v1.1.0 window.
 - **Acceptance criteria.** Aggregate only; restricted classes show zero
   `would_be_withheld_without_it`; computed every run; panel rendered and tested.
-- **Status.** `active`.
+- **Status.** `done` (v1.1.0-rc.1).
 - **Execution.** PR #65 (code), register production section (docs).
 
 ### 3.5 Ongoing access only
@@ -412,6 +412,10 @@ retrospective triggered by the Spur miss.
   `limit: 100000` once the account is on Basic.
 
 ## Decision log
+
+- **2026-10-08, v1.1.0-rc.1 cut.** Six admissions (#68-#73) and contribution
+  reporting (#65) merged; `v1.1.0-rc.1` tagged. Item 3.4 done. The candidate window
+  starts with the first scheduled refresh on rc.1.
 
 - **2026-10-08, v1.1.0 window opened.** Licences are read as written with
   objections through issues or PRs (ADR-060); no permission or clarification
