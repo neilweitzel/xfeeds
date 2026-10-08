@@ -17,6 +17,10 @@ six hours by design. A consumer pinning a tag still fetches the same live URLs.
   `docs/SOURCE_CANDIDATES.md`. The discovery brief and lifecycle policy now
   survey by lane and accept paid or credentialed access for scoring-only
   sources. No source, scoring, or workflow change.
+- Source review addendum: containment is now measured alongside Jaccard in
+  the independence gate, and the register adds Carpathian, IPSpamList,
+  FraudGuard, Stratosphere AIP, DigitalSide, and five rejections. No source,
+  scoring, or workflow change.
 
 ## [1.0.1] - 2026-10-05
 
