@@ -83,9 +83,11 @@ a finding, not an omission.
 | `existing` | Higher-volume or better endpoints from publishers already configured |
 
 **Paid or authenticated access is not a disqualifier.** Evaluate it under
-`redistribute: false`. Record price, quota, and trial terms, but do not buy,
-start a trial, or create an account; list what access the maintainer would
-need instead.
+`redistribute: false`. Record price, quota, and terms, but do not buy or
+create an account; list what access the maintainer would need instead.
+**A time-limited trial or evaluation licence is not a path to a source.** It
+cannot contribute to the long-term dataset, so evaluate the ongoing plan or
+reject the candidate as trial-only.
 
 Search in:
 
@@ -139,20 +141,21 @@ recorded with the reason.
 - If overlap > 0.5 with any single existing source, the candidate shares
   that source's independence class and cannot add a vote. Record the
   measurement and reject.
-- Also compute **containment**, because Jaccard cannot see a subset. A
-  1,500-address list wholly inside a 25,000-address source scores a Jaccard
-  near 0.06 and still adds nothing:
+- Also compute **containment**, because Jaccard cannot see a subset:
 
   ```python
   containment = len(candidate_ips & source_ips) / len(candidate_ips)
   ```
 
-  If containment > 0.5 in any single existing source, presume the candidate
-  is derived from that source and assign it that source's class, unless the
-  publisher documents independent collection. Rutgers' attacker list
-  (2026-10, 93.7% inside Blocklist.de, which its own page names as an input)
-  is the worked example. Report containment against aggregates such as IPsum
-  for context only; an aggregate is not an independence class.
+  Record it; do not reject on it. Overlap between independent sensors is
+  corroboration, which is what xfeeds measures and publishes (ADR-064). High
+  containment is a prompt to check provenance: the candidate shares the
+  other source's class only if the publisher says it ingests that source or
+  the sets are near-identical. Rutgers' attacker list (93.7% inside
+  Blocklist.de, and its status page names a Blocklist.de listing as a trigger)
+  is derived. Sblam (72.5% inside StopForumSpam, collected from spam submitted
+  to its own classifier) is corroborating. Report containment against
+  aggregates such as IPsum for context only.
 - If overlap is low, assign a new `independence_class` name.
 
 ### Sensor method
@@ -175,8 +178,8 @@ recorded with the reason.
 
 - Is the URL stable, or is it an ad-hoc paste?
 - What access does it need? A free key is fine. Paid or credentialed access is
-  acceptable for a `redistribute: false` source, but any purchase or trial is a
-  separate maintainer decision.
+  acceptable for a `redistribute: false` source on an ongoing basis; any
+  purchase is a separate maintainer decision. Trial-only access is a rejection.
 
 ### Volume and churn
 
@@ -207,7 +210,8 @@ new `docs/source-discovery-YYYY-MM.md` file if no issue exists). Include:
 - For each candidate recommended for admission: a summary of why it
   passes every gate.
 - One section per lane from Step 2, including lanes with no viable candidate.
-- The access the maintainer would need to provide (accounts, trials, tokens).
+- The access the maintainer would need to provide (accounts, subscriptions,
+  tokens).
 
 Then update [`docs/SOURCE_CANDIDATES.md`](SOURCE_CANDIDATES.md): add every new
 candidate, update the status and last-reviewed date of every candidate
