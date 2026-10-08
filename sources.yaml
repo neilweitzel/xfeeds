@@ -902,6 +902,36 @@ sources:
       dropped (max_row_age_days). The top of the list includes research
       scanners; the ISC scanner-label cap (ADR-070) and GreyNoise handle those.
 
+  - name: carpathian
+    credit: "Carpathian Threat Intelligence - Carpathian, LLC, https://carpathian.ai/threat-intelligence (CC BY 4.0)"
+    url: https://api.carpathian.ai/public/threat-intel/blocklist.json
+    parser: carpathian_json
+    independence_class: carpathian
+    weight: 0.6
+    categories: [scanning, brute-force, web-attack]
+    ttl_days: 7
+    max_row_age_days: 30
+    license: "CC BY 4.0. Commercial use and redistribution permitted with credit to Carpathian and a link to the source page"
+    license_url: https://carpathian.ai/threat-intelligence
+    license_risk: low
+    attribution_required: true
+    explicit_grant: true   # CC BY 4.0 - stated on the page and in every file header
+    redistribute: true
+    min_interval_seconds: 3600
+    notes: >
+      ADMITTED in v1.1.0 (ADR-069). Addresses blocked on Carpathian's own
+      hardware: IDS bans, permanent SSH gateway bans, web-edge error bursts, and
+      honeypot hits, rebuilt hourly. Read as written (ADR-060): the page says it
+      does not buy, scrape, or resell anyone else's data, so every row,
+      including those marked sources=threat_intel, is first-party. Permanent bans
+      are never removed upstream (251 of 1,233 rows last seen more than 90 days
+      ago on 2026-10-08), so only rows whose own last_seen is within 30 days are
+      used: 683 hosts on that date. Measured: max Jaccard 0.035, 57.4% seen by no
+      configured source. 70.5% sit in datacenter ranges, which is a hosting
+      provider being scanned from cloud VMs; recycled cloud addresses are the
+      false-positive risk, held down by the 30-day row limit, a 7-day TTL, the
+      two-class publication rule, and the allowlist. IPv4 only today.
+
   - name: tor_exits
     credit: "Tor exit relay list - The Tor Project, torproject.org"
     attribution_required: true

@@ -692,6 +692,65 @@ def dshield_api(
     _log_skips(config.name, malformed_count, non_global_count)
 
 
+def carpathian_json(
+    content: bytes, config: SourceConfig, fetch_time: datetime
+) -> Iterator[IndicatorRecord]:
+    """Parse Carpathian's ``blocklist.json``: ``{"generated_at", "entries": [...]}``.
+
+    Each entry carries ``ip_address`` and its own ``first_seen``/``last_seen``.
+    Permanent bans are never removed upstream, so the file is fresh while many
+    rows are months old; ``max_row_age_days`` on the row's ``last_seen`` is what
+    keeps those out. ``last_seen`` is upstream-local and unzoned, so only the
+    date is used, as for every other per-row date here.
+    """
+    try:
+        payload = json.loads(content.decode("utf-8", "replace"))
+    except json.JSONDecodeError as e:
+        logger.warning("carpathian_bad_json", source=config.name, error=str(e))
+        return
+    entries = payload.get("entries") if isinstance(payload, dict) else None
+    if not isinstance(entries, list):
+        logger.warning("carpathian_no_entries", source=config.name)
+        return
+
+    malformed_count = 0
+    non_global_count = 0
+    too_old = 0
+    for entry in entries:
+        if not isinstance(entry, dict):
+            malformed_count += 1
+            continue
+        try:
+            ip_obj: IPOrNet = ipaddress.ip_address(str(entry.get("ip_address", "")).strip())
+        except ValueError:
+            malformed_count += 1
+            continue
+        if not _is_global(ip_obj):
+            non_global_count += 1
+            continue
+        seen = _parse_reported_date(str(entry.get("last_seen") or ""))
+        if config.max_row_age_days is not None and seen is None:
+            # A row with no date cannot be shown to be recent, and the whole
+            # point of the filter is that this file keeps old rows.
+            too_old += 1
+            continue
+        if _row_too_old(seen, config, fetch_time):
+            too_old += 1
+            continue
+        yield IndicatorRecord(
+            ip_or_cidr=ip_obj,
+            source=config.name,
+            independence_class=config.independence_class,
+            first_seen=fetch_time,
+            last_seen=fetch_time,
+            categories=list(config.categories),
+            source_last_reported=seen,
+        )
+    if too_old:
+        logger.info("rows_older_than_max_age", source=config.name, dropped=too_old)
+    _log_skips(config.name, malformed_count, non_global_count)
+
+
 def dataplane(
     content: bytes, config: SourceConfig, fetch_time: datetime
 ) -> Iterator[IndicatorRecord]:
@@ -774,6 +833,7 @@ _IMPLEMENTED = [
     abuseipdb,
     dataplane,
     dshield_api,
+    carpathian_json,
 ]
 
 PARSERS = {}

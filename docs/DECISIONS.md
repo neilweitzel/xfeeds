@@ -2452,3 +2452,33 @@ fresh file can still carry old rows. `lastseen` is kept as
 `source_last_reported`.
 
 **Burn-in.** `sources.yaml` and `src/` change; part of the v1.1.0 window.
+
+## ADR-069 — Carpathian: first-party infrastructure bans, bounded by row age
+
+**Date:** 2026-10-08. **Status:** Accepted for v1.1.0. **Source review:** #62.
+
+**Source.** `https://api.carpathian.ai/public/threat-intel/blocklist.json`,
+rebuilt hourly. CC BY 4.0 with an explicit grant for commercial use and
+redistribution, credit "Carpathian, LLC" with a link. Clean-tier eligible.
+
+**Reading, as written (ADR-060).** The page states Carpathian runs its own
+hardware and does not buy, scrape, or resell anyone else's data. Rows labelled
+`sources: threat_intel` are therefore treated as first-party. We did not ask;
+if that reading is wrong, the objection path in every feed header applies.
+
+**Method.** IDS bans, permanent SSH gateway bans, web-edge error bursts, and
+honeypot hits against its own infrastructure.
+
+**Stale rows.** Permanent bans never expire upstream: on 2026-10-08, 251 of
+1,233 rows had a `last_seen` more than 90 days old. The new `carpathian_json`
+parser applies `max_row_age_days: 30` to each row's own `last_seen`, keeping 683.
+
+**Independence and risk.** Max Jaccard 0.035; 57.4% of hosts seen by no
+configured source. 70.5% are in datacenter ranges, consistent with a hosting
+provider scanned from cloud VMs. Recycled cloud addresses are the known FP risk;
+the 30-day row limit, 7-day TTL, two-class publication rule, and allowlist bound
+it, and ADR-064's contribution report will show what it is decisive for.
+
+**Role.** Class `carpathian`, admitting, weight 0.6, no solo promotion.
+
+**Burn-in.** `sources.yaml` and `src/` change; part of the v1.1.0 window.

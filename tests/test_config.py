@@ -17,7 +17,7 @@ def test_load_real_sources_yaml() -> None:
     # redistribute:false, so they can upgrade a band and never admit a record -
     # see test_pipeline. abuseipdb joined when its key landed; dshield and
     # dataplane joined in ADR-048 after the licence re-read.
-    assert len(active_classes) == 16
+    assert len(active_classes) == 17
     for expected in ("abuseipdb", "dshield", "dataplane"):
         assert expected in active_classes
 
@@ -227,7 +227,7 @@ def test_xfeeds_validate_from_other_dir(tmp_path: Path, monkeypatch: pytest.Monk
     result = runner.invoke(app, ["validate"])
     assert result.exit_code == 0
     assert "Successfully loaded" in result.stdout
-    assert "Active voting classes: 16" in result.stdout
+    assert "Active voting classes: 17" in result.stdout
 
 
 def test_multi_report_sources_are_class_pinned_to_one_vote() -> None:
