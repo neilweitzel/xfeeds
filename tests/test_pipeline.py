@@ -11,6 +11,7 @@ import json
 import math
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -1426,3 +1427,68 @@ def test_recast_sighting_cannot_admit_on_its_own() -> None:
         NOW,
     )
     assert scored[0].band is Band.WITHHELD
+
+
+# --------------------------------------------------------------------------
+# Class contribution: what each class stands behind, and what it is decisive for
+# --------------------------------------------------------------------------
+
+
+def _contribution(records: list[IndicatorRecord], reg: Registry) -> dict[str, dict[str, Any]]:
+    from xfeeds.insights import build_class_contribution
+
+    scored = score_indicators(records, reg, NOW)
+    published = [r for r in scored if r.band is not Band.WITHHELD]
+    block = build_class_contribution(records, scored, published, reg, NOW)
+    return {row["independence_class"]: row for row in block["classes"]}
+
+
+def test_contribution_counts_a_class_decisive_when_removing_it_withholds_a_record() -> None:
+    reg = registry_of(src("a", "alpha"), src("b", "beta"))
+    rows = _contribution([obs("a", "alpha"), obs("b", "beta")], reg)
+    for name in ("alpha", "beta"):
+        assert rows[name]["supports_published"] == 1
+        assert rows[name]["would_be_withheld_without_it"] == 1
+
+
+def test_contribution_restricted_class_upgrades_but_never_admits() -> None:
+    """The ADR-035/053 asymmetry, seen from the contribution report."""
+    reg = registry_of(
+        src("a", "alpha"), src("b", "beta"), src("r", "restricted", redistribute=False)
+    )
+    rows = _contribution([obs("a", "alpha"), obs("b", "beta"), obs("r", "restricted")], reg)
+    assert rows["restricted"]["admitting"] is False
+    assert rows["restricted"]["would_be_withheld_without_it"] == 0
+    assert rows["restricted"]["would_lose_high_without_it"] == 1
+    assert rows["alpha"]["would_be_withheld_without_it"] == 1
+
+
+def test_contribution_mirror_in_the_same_class_is_one_class_not_two() -> None:
+    reg = registry_of(src("a1", "alpha"), src("a2", "alpha"), src("b", "beta"))
+    rows = _contribution([obs("a1", "alpha"), obs("a2", "alpha"), obs("b", "beta")], reg)
+    assert rows["alpha"]["sources"] == ["a1", "a2"]
+    assert rows["alpha"]["addresses_observed"] == 1
+    # Removing the class removes both mirrors, so the record falls to one class.
+    assert rows["alpha"]["would_be_withheld_without_it"] == 1
+
+
+def test_contribution_containment_is_asymmetric() -> None:
+    """A small list inside a big one: Jaccard is low, containment is total."""
+    reg = registry_of(src("big", "big"), src("small", "small"))
+    big = [obs("big", "big", ip=f"45.33.32.{n}") for n in range(1, 11)]
+    small = [obs("small", "small", ip="45.33.32.1")]
+    rows = _contribution(big + small, reg)
+    assert rows["small"]["containment"]["big"] == 1.0
+    assert rows["big"]["containment"]["small"] == 0.1
+    assert rows["small"]["most_contained_in"] == {"class": "big", "share": 1.0}
+    assert rows["big"]["observed_only_by_this_class"] == 9
+
+
+def test_contribution_report_contains_no_address() -> None:
+    reg = registry_of(src("a", "alpha"), src("b", "beta"))
+    from xfeeds.insights import build_class_contribution
+
+    records = [obs("a", "alpha"), obs("b", "beta")]
+    scored = score_indicators(records, reg, NOW)
+    block = build_class_contribution(records, scored, scored, reg, NOW)
+    assert "45.33.32.156" not in json.dumps(block)

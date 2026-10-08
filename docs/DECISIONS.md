@@ -2284,3 +2284,59 @@ Simulated over 2,000 days at the observed drop rate:
   GitHub entirely.
 - Changing a workflow restarts the RC burn-in clock. Accepted: finding this during
   the candidate period and fixing it is what the candidate period is for.
+
+## ADR-064 — Overlap is corroboration; contribution is reported per class
+
+**Date:** 2026-10-08. **Status:** Proposed for the v1.1.0 window.
+**Extends:** ADR-044 (aggregate statistics as a first-class artifact).
+
+### Context
+
+The product's claim is that it publishes what independent sources agree on.
+Agreement between independent sensors is not a defect to be minimised: it is
+the evidence the score is built from. Independence classes (ADR-010) already
+stop copies from voting twice. What the outputs did not show is how each class
+in production is used and what it is worth:
+
+- `class_overlap` reports the 20 highest pairwise Jaccard values. Jaccard is
+  symmetric, so it cannot show that a small class sits almost entirely inside a
+  large one, or that a large class contains a small one.
+- `sources[].reported_only_by_this_source` counts exclusivity in the observed
+  corpus, not in what was published.
+- Nothing said how many published records a class stands behind, or whether
+  any of them would disappear without it.
+
+The 2026-10-08 source review also showed the cost of that gap: a containment
+measurement was briefly written into the admission gate as evidence of
+copying, when containment between independent sensors is corroboration.
+
+### Decision
+
+Every run adds `insights.json` → `class_contribution`, and the analysis page
+renders it as **What each class contributes**. Per independence class:
+
+| Field | Meaning |
+|---|---|
+| `admitting` | At least one member is redistributable in the primary feed |
+| `addresses_observed`, `observed_only_by_this_class` | Corpus reach and exclusivity |
+| `supports_published`, `supports_high` | Published records the class observed |
+| `would_be_withheld_without_it` | Published records that fall to withheld on leave-one-class-out rescoring |
+| `would_lose_high_without_it` | High records that drop below high on the same rescoring |
+| `containment` | Share of this class's addresses each other class also observed (asymmetric) |
+
+The counterfactual is computed at the scoring stage over the published records
+the class observed, keeping every other record (including non-voting tags), so
+the removed class is the only difference. It is aggregate-only, like the rest of
+`insights.json`.
+
+### Consequences
+
+- A production source's role is now measured, not asserted. A class that stands
+  behind nothing published, or is decisive for nothing, is visible as such.
+- The ADR-035/053 asymmetry becomes observable: a restricted class must show
+  `would_be_withheld_without_it == 0`. A non-zero value is a scoring defect.
+- Containment is reported, never used to reject. Copying is established by the
+  publisher's own description or near-identical sets (ET compromised-ips at
+  Jaccard 0.953), not by an independent sensor seeing the same attackers.
+- Cost measured on a live keyless run: about one second.
+- `src/` changes, so this belongs to a release-candidate window.

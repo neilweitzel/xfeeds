@@ -709,3 +709,46 @@ def test_project_story_is_reachable_after_the_data() -> None:
         assert phrase.lower() in console.lower(), f"console page missing: {phrase}"
     # And the story sits below the downloads in source order.
     assert console.find('id="about-title"') > console.find('id="feeds-title"')
+
+
+def test_class_contribution_panel_renders_roles_and_decisiveness() -> None:
+    from xfeeds.dashboard import _class_contribution_panel
+
+    html = _class_contribution_panel(
+        {
+            "class_contribution": {
+                "classes": [
+                    {
+                        "independence_class": "turris",
+                        "admitting": False,
+                        "addresses_observed": 10,
+                        "observed_only_by_this_class": 2,
+                        "supports_published": 5,
+                        "would_be_withheld_without_it": 0,
+                        "would_lose_high_without_it": 3,
+                        "most_contained_in": {"class": "cins", "share": 0.4},
+                    },
+                    {
+                        "independence_class": "blocklist_de",
+                        "admitting": True,
+                        "addresses_observed": 20,
+                        "observed_only_by_this_class": 9,
+                        "supports_published": 8,
+                        "would_be_withheld_without_it": 4,
+                        "would_lose_high_without_it": 1,
+                        "most_contained_in": None,
+                    },
+                ]
+            }
+        }
+    )
+    assert "What each class contributes" in html
+    assert html.index("blocklist_de") < html.index("turris")  # ordered by support
+    assert "voting only" in html and "admitting" in html
+    assert "cins 40%" in html
+
+
+def test_class_contribution_panel_is_absent_without_data() -> None:
+    from xfeeds.dashboard import _class_contribution_panel
+
+    assert _class_contribution_panel({}) == ""
