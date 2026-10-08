@@ -21,6 +21,11 @@ six hours by design. A consumer pinning a tag still fetches the same live URLs.
   the independence gate, and the register adds Carpathian, IPSpamList,
   FraudGuard, Stratosphere AIP, DigitalSide, and five rejections. No source,
   scoring, or workflow change.
+- Source register rebuilt: production sources with role and contribution,
+  every candidate, and every historical rejection in one place. Containment is
+  recorded as corroboration rather than presumed copying (corrects the entry
+  above). Time-limited trials are no longer a path to a source. Sblam is now a
+  scoring-only candidate. No source, scoring, or workflow change.
 
 ## [1.0.1] - 2026-10-05
 

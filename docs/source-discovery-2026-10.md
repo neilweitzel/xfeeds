@@ -277,11 +277,17 @@ four-provider cloud set above. No figure above changes. Nothing is admitted.
 ### Method finding: Jaccard misses subsets
 
 Rutgers' attacker list (`report.rutgers.edu/DROP/attackers`, 1,498 hosts)
-scores a maximum Jaccard of 0.077 and would pass the 0.5 gate. But **93.7% of
-it is inside Blocklist.de**, and Rutgers' own status page names a Blocklist.de
-listing as one of its block triggers. Only 35 addresses (2.3%) are new to
-xfeeds. The brief and the lifecycle gate now require containment alongside
-Jaccard, with >0.5 in one source presumed derived.
+scores a maximum Jaccard of 0.077, but **93.7% of it is inside Blocklist.de**.
+Containment is now measured alongside Jaccard.
+
+> **Correction (same day, #66).** #64 wrote containment into the gate
+> as a presumption of copying. That was wrong: independent sensors seeing the
+> same attackers is the corroboration xfeeds exists to measure. Rutgers is
+> derived because its own status page names a Blocklist.de listing as a block
+> trigger, not because of the containment figure. Sblam's 72.5% containment in
+> StopForumSpam is corroboration between two independent spam sensors. The
+> gate now records containment and requires provenance evidence before
+> assigning a shared class (ADR-064).
 
 ### New candidates
 
@@ -289,7 +295,7 @@ Jaccard, with >0.5 in one source presumed derived.
 |---|---:|---|---|---:|---:|---|
 | Carpathian (CC BY 4.0) | 1,233 | 0.035 (tor) | 26.6% (ipthreat) | 57.4% | 70.5% | Researching |
 | Rutgers DROP attackers | 1,498 | 0.077 (ipsum_l5) | **93.7% (blocklist_de)** | 2.3% | 29.4% | Rejected: derived |
-| Sblam | 1,239 | 0.084 (tor) | **72.5% (stopforumspam)** | 24.9% | 61.7% | Rejected: licence |
+| Sblam | 1,239 | 0.084 (tor) | 72.5% (stopforumspam) | 24.9% | 61.7% | Ready: scoring-only (see correction) |
 | myip.ms (full) | 212,320 | 0.010 (ipsum_l1) | 1.6% | 99.2% | 37.0% | Rejected (already): entries back to 2013 |
 
 **Carpathian** publishes
@@ -357,3 +363,33 @@ without consent. ThreatFox is already `redistribute: false` and xfeeds is a
 not-for-profit project, so no state change. Recorded as a watch item: if xfeeds
 were ever offered commercially, ThreatFox's scoring role would need a Spamhaus
 subscription.
+
+### Correction: Sblam is a scoring-only candidate
+
+Sblam collects from spam submitted to its own web-form classifier, so its
+overlap with StopForumSpam is two independent sensors agreeing. Measured
+2026-10-08: 1,239 hosts, 898 also in StopForumSpam, 309 (24.9%) seen by no
+configured source, 15.4% Tor exits (already tagged and capped). It publishes
+the list for blocking use and states that the service "can be used freely,
+even on commercial websites"; it states no licence for redistribution. Read as
+written, that is use without redistribution: `redistribute: false`, class
+`sblam`, category `spam-source`.
+
+What it adds: `spam-source` has two voting classes today (StopForumSpam and
+DataPlane `smtpgreet`) and no admitting class. Sblam becomes a third
+independent vote. Its 309 unique addresses cannot publish alone, which is
+correct, but they enter the observed corpus and the aggregates, and any of them
+becomes publishable the day a redistributable source corroborates it. Freshness
+comes from `Last-Modified` (its `# Generated` line has no timezone). The list
+covers the previous month, rebuilt daily, so `ttl_days` should be no more than
+30.
+
+### Correction: trial-only access is not a source
+
+A source reachable only through a time-limited trial or evaluation licence
+cannot contribute to the long-term dataset, so it is not a candidate. ELLIO
+MAX/ONE (14 days) and the Spamhaus Intelligence API developer licence
+(6 months, evaluation) move to rejected as trial-only. Spur and AbuseIPDB
+Basic are evaluated as ongoing subscriptions. ReportedIP is unaffected: it is
+a free, ongoing CC BY 4.0 dataset, and the "30-day shadow" above was an
+internal observation period, not a vendor trial.

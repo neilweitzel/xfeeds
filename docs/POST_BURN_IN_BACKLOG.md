@@ -244,7 +244,7 @@ Source: `docs/DASHBOARD.md` planning and the direction-A revision brief.
 Source: this project's source-review workflow and the discovery lane
 retrospective triggered by the Spur miss.
 
-### 3.1 Trial Spur as a private, redistribute-false scoring source
+### 3.1 Add Spur as a private, redistribute-false scoring source
 
 - **Rationale.** Spur covers anonymous VPNs, datacenter and ISP proxies,
   residential and malware proxies, peer-to-peer / blockchain proxies, ZTNA,
@@ -262,9 +262,15 @@ retrospective triggered by the Spur miss.
   - Publish a source note naming Spur, its credentialed scoring-only role,
     non-redistribution behaviour, and a GitHub issue/PR contact path for
     correction or removal requests.
-  - Measure 14–30 days of overlap, incremental detections, high/medium
-    movement, churn, and allowlist/false-positive reports before any
-    reweighting or considering the residential feed.
+  - Access is an **ongoing subscription**, not a time-limited trial: a trial
+    cannot contribute to the long-term dataset. The first 14–30 days of the
+    subscription are the measurement window for overlap, incremental
+    detections, high/medium movement, churn, and allowlist/false-positive
+    reports before any reweighting or considering the residential feed.
+  - Spur's terms make free data evaluation-only and prohibit derivative works
+    "except as explicitly authorized", so the subscription must include written
+    authorization to use the feed as a non-redistributed corroboration input to
+    a public feed.
 - **Burn-in impact.** **Restarts burn-in.** Requires `sources.yaml`
   admission and probably `src/` and `.github/workflows/` changes. Post
   rc.7 promotion, through the normal source-admission PR path.
@@ -277,10 +283,10 @@ retrospective triggered by the Spur miss.
      rationale.
 - **Status.** `backlog`.
 - **Dependencies.** Stable promotion complete; source review 2026-10-08 or later;
-  verified trial terms and approved access before any fetch.
+  written authorization and an approved ongoing subscription before any fetch.
 - **Execution.** 2026-10-08 review: Spur's free Community plan includes no feeds
-  (250 manual lookups); feed tiers are sales-quoted. Next step is a feed trial
-  request. See [`source-discovery-2026-10.md`](source-discovery-2026-10.md).
+  (250 manual lookups); feed tiers are sales-quoted. Next step is a pricing and
+  authorization request for the daily Anonymous feed as an ongoing subscription. See [`source-discovery-2026-10.md`](source-discovery-2026-10.md).
 
 ### 3.2 Add a commercial credentialed scoring-only discovery lane
 
@@ -336,6 +342,30 @@ retrospective triggered by the Spur miss.
 
 ---
 
+### 3.4 Report how every production source is used and what it contributes
+
+- **Rationale.** Identifying overlap and expressing confidence is the product.
+  `class_overlap` showed symmetric Jaccard for 20 pairs, and nothing showed
+  which published records a source stands behind or is decisive for.
+- **Scope.** `insights.json` → `class_contribution` and an analysis-page panel:
+  per class, published and high records supported, leave-one-class-out
+  withheld and lose-high counts, and asymmetric containment (ADR-064). The
+  register's production section documents each source's role.
+- **Burn-in impact.** Touches `src/`; v1.1.0 window.
+- **Acceptance criteria.** Aggregate only; restricted classes show zero
+  `would_be_withheld_without_it`; computed every run; panel rendered and tested.
+- **Status.** `active`.
+- **Execution.** PR #65 (code), register production section (docs).
+
+### 3.5 Ongoing access only
+
+- **Decision.** A time-limited trial or evaluation licence is not a source.
+  Paid sources are evaluated on an ongoing subscription; purchases stay a
+  maintainer decision. Recorded in the brief, lifecycle gate, and register.
+- **Status.** `done` (2026-10-08).
+
+---
+
 ## 4. Measurement-first follow-ups
 
 ### 4.1 Retention observability before dynamic-host expiry
@@ -363,8 +393,9 @@ retrospective triggered by the Spur miss.
   initial burn-in, rather than automatically adopting a larger feed.
 - **Scope.** Subject to approved subscription/access, use one account/token and
   one response with identical query parameters to compare ranks 1–10,000 against
-  10,001–100,000. Confirm current plan caps and terms before starting; the
-  comparison is a proposed experiment, not a claim of current entitlement.
+  10,001–100,000. AbuseIPDB is already in production on the free tier; this
+  item only applies if the account moves to Basic as a kept plan, since a
+  trial-only expansion would not contribute to the long-term dataset.
 - **Acceptance criteria.** Measure incremental fresh coverage, independent
   corroboration, false-positive exposure, churn, and safe output impact.
   Preserve `redistribute: false`; no raw trial rows in public artifacts.
@@ -375,10 +406,19 @@ retrospective triggered by the Spur miss.
   the experiment supports it.
 - **Execution.** Not started. 2026-10-08 review: AbuseIPDB lists Basic at
   $25/month with 100 blacklist requests/day up to 100,000 IPs, and states that
-  all plans include a free 30-day trial, so the experiment can run inside the
-  trial on the existing account and token.
+  all plans include a free 30-day trial. Per the ongoing-access rule (2026-10-08
+  decision log) the trial alone is not a reason to run it; the config change is
+  `limit: 100000` once the account is on Basic.
 
 ## Decision log
+
+- **2026-10-08, second pass.** Overlap is corroboration: containment is
+  recorded, never a rejection reason (ADR-064; corrects #64). Ongoing access
+  only: trial-only sources are rejected (3.5). The register now covers
+  production sources, every candidate, and every historical rejection. Ready
+  for v1.1.0: ReportedIP, Sblam (scoring-only), jacobrakai, ISC
+  `sources/attacks`, ISC scanner labels, plus contribution reporting (3.4).
+  Spur and AbuseIPDB Basic proceed only as ongoing subscriptions.
 
 - **2026-10-08, source review (#62).** Lane-structured review recorded in
   [`source-discovery-2026-10.md`](source-discovery-2026-10.md); 3.2 and 3.3 done
