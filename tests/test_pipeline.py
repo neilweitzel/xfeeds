@@ -1542,3 +1542,18 @@ def test_jacobrakai_admits_with_a_second_class_and_reaches_the_clean_tier() -> N
     assert pair.band is Band.MEDIUM
     assert "jacobrakai_honeypot" in pair.sources
     assert "jacobrakai_honeypot" in permissive_sources(reg)
+
+
+def test_reportedip_admits_with_a_second_class_including_ipv6() -> None:
+    from xfeeds.score import permissive_sources
+
+    reg = _real("reportedip", "blocklist_de")
+    v6 = "2a01:4f8:c17:1::1"
+    pair = score_indicators(
+        [_real_obs(reg, "reportedip", ip=v6), _real_obs(reg, "blocklist_de", ip=v6)], reg, NOW
+    )[0]
+    assert pair.band is Band.MEDIUM
+    assert "reportedip" in pair.sources
+    alone = score_indicators([_real_obs(reg, "reportedip", ip=v6)], reg, NOW)[0]
+    assert alone.band is Band.WITHHELD
+    assert "reportedip" in permissive_sources(reg)

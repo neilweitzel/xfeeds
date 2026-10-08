@@ -12,6 +12,8 @@ six hours by design. A consumer pinning a tag still fetches the same live URLs.
 
 ### Added
 
+- ReportedIP admitted as an admitting class (ADR-067): CC BY 4.0 community reports
+  with documented decay, 82 IPv6 hosts, eligible for `feeds/clean/`.
 - jacobrakai honeypot admitted as an admitting class (ADR-066): CC0, self-operated
   sensors, 30-day age-off. Eligible for `feeds/clean/`; first admitting class for
   `telnet-attack`.

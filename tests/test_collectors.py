@@ -781,3 +781,15 @@ def test_jacobrakai_fixture_parses_with_header_skipped() -> None:
     records = list(plain_text(content, config, datetime(2026, 10, 8, tzinfo=UTC)))
     assert len(records) == 30
     assert config.explicit_grant is True and config.redistribute is True
+
+
+def test_reportedip_fixture_parses_both_families() -> None:
+    from xfeeds.collectors.parsers import plain_text
+    from xfeeds.config import load_registry
+
+    config = next(s for s in load_registry(Path("sources.yaml")).sources if s.name == "reportedip")
+    content = Path("tests/fixtures/sources/reportedip.txt").read_bytes()
+    records = list(plain_text(content, config, datetime(2026, 10, 8, tzinfo=UTC)))
+    assert len(records) == 32
+    assert sum(1 for r in records if r.ip_or_cidr.version == 6) == 2
+    assert config.attribution_required is True and config.explicit_grant is True
