@@ -83,6 +83,7 @@ restricted corroboration.
 
 | Source | Class | How it is used | Tiers | Weight / TTL | PR |
 |---|---|---|---|---|---|
+| jacobrakai honeypot | `jacobrakai` | Admitting honeypot vote; first admitting class for `telnet-attack`; clean-tier grant | primary, NC, clean | 0.6 / 7d | ADR-066 |
 | Sblam | `sblam` | Scoring-only third vote for `spam-source`; never admits, never republished | none (scoring only) | 0.5 / 7d | ADR-065 |
 
 ### Non-voting roles
@@ -113,7 +114,6 @@ restricted corroboration.
 | ReportedIP blacklist | abuse, spam, fraud, ipv6 | ready | Free, ongoing, CC BY 4.0 public dataset | 2026-10-08 | Admit in v1.1.0. Not a vendor trial: the earlier "30-day shadow" was our own observation window after its 2026-09-28 method change | [2026-10](source-discovery-2026-10.md) |
 | SANS ISC API `sources/attacks` | existing | ready | Free, ongoing | 2026-10-08 | Augment `dshield` class from 20 /24s to ~9,200 fresh hosts; keep the ISC "not a blocklist" caveat in its notes | [2026-10](source-discovery-2026-10.md) |
 | SANS ISC research-scanner labels | fp | ready | Free, ongoing | 2026-10-08 | Cap input alongside GreyNoise: 789 published records carry one, 46 high | [2026-10](source-discovery-2026-10.md) |
-| jacobrakai honeypot | abuse | ready | Free, ongoing, CC0 | 2026-10-08 | Admit with ReportedIP; churn measured (250 of 416 removed in 30 days) | [2026-10 addendum](source-discovery-2026-10.md#addendum-second-pass) |
 | Carpathian | abuse | ready | Free, ongoing, CC BY 4.0 | 2026-10-08 | Admit in v1.1.0. Read as written: no third-party data, so `threat_intel` rows are first-party; per-row `last_seen` bounds stale permabans | [2026-10 addendum](source-discovery-2026-10.md#addendum-second-pass) |
 | IPSpamList (NoVirusThanks) | abuse, ipv6, commercial | new | Ongoing yearly subscription | 2026-10-08 | Paid yearly key, no named licence: scoring-only if subscribed. Honeypots since 2016, 15-day expiry, IPv6 feed | [2026-10 addendum](source-discovery-2026-10.md#addendum-second-pass) |
 | Original xfeeds honeypot | abuse, ipv6 | new | Self-operated | 2026-10-08 | ADR-033 growth direction 2: a class nobody else has. Not yet scoped | [ADR-033](DECISIONS.md) |

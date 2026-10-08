@@ -1528,3 +1528,17 @@ def test_sblam_upgrades_but_never_admits() -> None:
     assert more.score > base.score
     assert "sblam" not in more.sources, "a restricted source is never named on a record"
     assert more.restricted_corroboration == base.restricted_corroboration + 1
+
+
+def test_jacobrakai_admits_with_a_second_class_and_reaches_the_clean_tier() -> None:
+    from xfeeds.score import permissive_sources
+
+    reg = _real("jacobrakai_honeypot", "blocklist_de", "ipthreat")
+    alone = score_indicators([_real_obs(reg, "jacobrakai_honeypot")], reg, NOW)[0]
+    assert alone.band is Band.WITHHELD, "one class never publishes"
+    pair = score_indicators(
+        [_real_obs(reg, "jacobrakai_honeypot"), _real_obs(reg, "blocklist_de")], reg, NOW
+    )[0]
+    assert pair.band is Band.MEDIUM
+    assert "jacobrakai_honeypot" in pair.sources
+    assert "jacobrakai_honeypot" in permissive_sources(reg)

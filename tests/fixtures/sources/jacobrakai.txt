@@ -1,0 +1,60 @@
+#
+# jacobrakai-honeypot-blocklist
+#
+# Description : IP addresses observed attacking live honeypot sensors
+#               (SSH, FTP, telnet, MySQL, VNC). Honeypot-confirmed from
+#               my own logs, not inferred from third-party data.
+# Maintainer  : jacobrakai
+# Homepage    : https://jacobrakai.org/feed/
+# Contact     : jacob@jacobrakai.org (delisting / false-positive reports)
+# Inclusion   : three tiers, all requiring attack activity within the
+#               last 30 days (entries age out automatically):
+#               - credential (356 IPs): connected to a decoy service and
+#                 submitted login credentials repeatedly (50+ attempts).
+#               - scanner (127 IPs): submitted no credentials but probed
+#                 at abusive volume — 1000+ connection events in-window
+#                 (~33+/day sustained; the measured casual-scanner tail
+#                 tops out well under half that threshold).
+#               - loader (21 IPs): fetched a file into a honeypot session
+#                 (wget/curl dropper) or uploaded one over SFTP/SCP. No
+#                 volume floor: one captured payload is the evidence.
+# Exclusions  : private/reserved ranges and known benign internet-survey
+#               scanners (Censys, Rapid7 Sonar, Shadowserver, Shodan,
+#               BinaryEdge) are filtered out before publication — from
+#               ALL tiers.
+# Entries     : 504 (356 credential, 127 scanner, 21 loader)
+# Updated     : 2026-10-08T19:00:01Z (refreshed hourly)
+# License     : CC0 1.0 Universal (public domain) — use freely
+# Warranty    : none; provided as-is. Entries may involve dynamic or
+#               reassigned IPs and age out after 30 days of inactivity.
+#
+1.213.214.233
+1.214.29.155
+1.238.106.229
+3.129.187.38
+3.130.168.2
+4.150.201.26
+4.182.219.135
+4.246.61.185
+5.39.254.238
+5.88.119.21
+5.165.19.3
+5.196.63.130
+8.39.235.18
+8.134.124.8
+8.210.181.190
+12.17.116.74
+14.33.48.192
+14.47.200.242
+14.225.206.171
+14.225.218.99
+18.116.101.220
+18.218.118.203
+20.40.44.6
+20.77.26.9
+20.96.179.87
+20.157.117.15
+20.193.141.133
+23.88.47.15
+23.94.122.169
+23.94.122.195

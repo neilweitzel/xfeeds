@@ -768,3 +768,16 @@ def test_sblam_fixture_parses_with_header_skipped() -> None:
     assert len(records) == 30
     assert all(r.independence_class == "sblam" for r in records)
     assert config.redistribute is False and config.redistribute_noncommercial is False
+
+
+def test_jacobrakai_fixture_parses_with_header_skipped() -> None:
+    from xfeeds.collectors.parsers import plain_text
+    from xfeeds.config import load_registry
+
+    config = next(
+        s for s in load_registry(Path("sources.yaml")).sources if s.name == "jacobrakai_honeypot"
+    )
+    content = Path("tests/fixtures/sources/jacobrakai.txt").read_bytes()
+    records = list(plain_text(content, config, datetime(2026, 10, 8, tzinfo=UTC)))
+    assert len(records) == 30
+    assert config.explicit_grant is True and config.redistribute is True
