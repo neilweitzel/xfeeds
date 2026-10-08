@@ -10,6 +10,13 @@ six hours by design. A consumer pinning a tag still fetches the same live URLs.
 
 ## [Unreleased]
 
+### Added
+
+- Per-class contribution report (ADR-064): `insights.json` gains
+  `class_contribution` with published-record support, leave-one-class-out
+  decisiveness, and asymmetric containment for every independence class, and the
+  analysis page gains a "What each class contributes" panel. Aggregate only.
+
 ### Documentation
 
 - October 2026 source discovery review (#62): lane-structured report in

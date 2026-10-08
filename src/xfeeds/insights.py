@@ -39,6 +39,7 @@ import structlog
 
 from xfeeds.enrich import AsnIndex
 from xfeeds.models import Band, IndicatorRecord, Registry, ScoredIndicator
+from xfeeds.score import open_sources, score_indicators
 
 logger = structlog.get_logger(__name__)
 
@@ -705,3 +706,122 @@ def asn_windows(
         windows[f"last_{size}_days"] = window(size)
         windows[f"last_{size}_days_complete"] = span_days >= size
     return windows
+
+
+def build_class_contribution(
+    observations: list[IndicatorRecord],
+    scored: list[ScoredIndicator],
+    published: list[ScoredIndicator],
+    registry: Registry,
+    scored_at: datetime,
+) -> dict[str, Any]:
+    """Say, per independence class, what the published feed would lose without it.
+
+    Pairwise Jaccard (``class_overlap``) answers "how alike are two classes". It
+    cannot answer the questions a reader actually has about a source in
+    production: how much of the feed it stands behind, whether anything is
+    published *because* of it, and whether its overlap with another class is
+    corroboration or containment. Overlap between independent sensors is the
+    product working - it is the agreement the score is built on - so it is
+    reported, not penalised.
+
+    Decisiveness is a leave-one-class-out rescoring of only the published records
+    a class observed. It is measured at the scoring stage, so the allowlist and
+    GreyNoise capping, which only ever remove confidence, are not re-applied.
+    Restricted classes may upgrade but never admit (ADR-035/053); their
+    ``would_be_withheld`` is therefore expected to be zero, and a non-zero value
+    would be a scoring defect worth investigating rather than a contribution.
+
+    Aggregate counts only. No address leaves this function.
+    """
+    by_source = {s.name: s for s in registry.sources}
+    redistributable = open_sources(registry)
+
+    records_by_key: dict[str, list[IndicatorRecord]] = defaultdict(list)
+    keys_by_class: dict[str, set[str]] = defaultdict(set)
+    sources_by_class: dict[str, set[str]] = defaultdict(set)
+    for observation in observations:
+        config = by_source.get(observation.source)
+        if config is None:
+            continue
+        key = str(observation.ip_or_cidr)
+        # Every record is kept for rescoring, voting or not, so the only thing that
+        # differs in the counterfactual is the class being removed. A Tor tag, for
+        # example, still caps the record exactly as it did in the real run.
+        records_by_key[key].append(observation)
+        if not config.vote:
+            continue
+        keys_by_class[config.independence_class].add(key)
+        sources_by_class[config.independence_class].add(observation.source)
+
+    scored_band = {str(r.ip_or_cidr): r.band for r in scored}
+    published_band = {str(r.ip_or_cidr): r.band for r in published}
+    published_keys = set(published_band)
+    high_keys = {k for k, band in published_band.items() if band is Band.HIGH}
+
+    class_names = sorted(keys_by_class)
+    classes: list[dict[str, Any]] = []
+    for name in class_names:
+        keys = keys_by_class[name]
+        others = {k for other in class_names if other != name for k in keys_by_class[other]}
+        affected = sorted(keys & published_keys)
+
+        remaining = [
+            record
+            for key in affected
+            for record in records_by_key[key]
+            if by_source[record.source].independence_class != name
+        ]
+        alternative = {
+            str(r.ip_or_cidr): r.band for r in score_indicators(remaining, registry, scored_at)
+        }
+        would_be_withheld = 0
+        would_lose_high = 0
+        for key in affected:
+            before = scored_band.get(key, Band.WITHHELD)
+            after = alternative.get(key, Band.WITHHELD)
+            if before is not Band.WITHHELD and after is Band.WITHHELD:
+                would_be_withheld += 1
+            if before is Band.HIGH and after is not Band.HIGH:
+                would_lose_high += 1
+
+        containment = {
+            other: round(len(keys & keys_by_class[other]) / len(keys), 4)
+            for other in class_names
+            if other != name and keys
+        }
+        most_contained_in = max(
+            sorted(containment), key=lambda other: containment[other], default=None
+        )
+        members = sorted(sources_by_class[name])
+        classes.append(
+            {
+                "independence_class": name,
+                "sources": members,
+                "admitting": any(s in redistributable for s in members),
+                "addresses_observed": len(keys),
+                "observed_only_by_this_class": len(keys - others),
+                "supports_published": len(affected),
+                "supports_high": len(keys & high_keys),
+                "would_be_withheld_without_it": would_be_withheld,
+                "would_lose_high_without_it": would_lose_high,
+                "most_contained_in": (
+                    {"class": most_contained_in, "share": containment[most_contained_in]}
+                    if most_contained_in is not None
+                    else None
+                ),
+                "containment": containment,
+            }
+        )
+
+    return {
+        "what_this_is": (
+            "Per independence class: what it observed, how many published records it "
+            "supports, and how many would be withheld or lose high confidence if the "
+            "class were removed (leave-one-class-out rescoring at the scoring stage). "
+            "containment[x] is the share of this class's addresses that class x also "
+            "observed; it is asymmetric, unlike Jaccard. Aggregate counts only."
+        ),
+        "published_records": len(published_keys),
+        "classes": classes,
+    }

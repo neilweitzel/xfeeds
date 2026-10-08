@@ -45,6 +45,7 @@ from xfeeds.greynoise import benign_addresses, cap_benign_scanners
 from xfeeds.insights import (
     ASN_HISTORY_PATH,
     asn_windows,
+    build_class_contribution,
     build_insights,
     build_spectrum,
     update_asn_history,
@@ -635,6 +636,9 @@ def run(
         )
 
         insights = build_insights(observations, scored, registry, now, asn_index)
+        insights["class_contribution"] = build_class_contribution(
+            observations, scored, publishable, registry, observed_on
+        )
         insights["spectrum"] = build_spectrum(observations)
         insights["asn_windows"] = asn_windows(asn_history, asn_index, now)
         (feeds_dir / "insights.json").write_text(
