@@ -1586,3 +1586,15 @@ def test_dshield_attacks_shares_the_dshield_vote_and_never_admits() -> None:
     )[0]
     assert pair.band is Band.WITHHELD, "voting-only: it cannot be the second admitting class"
     assert "dshield_attacks" not in noncommercial_sources(reg)
+
+
+def test_carpathian_admits_with_a_second_class() -> None:
+    from xfeeds.score import permissive_sources
+
+    reg = _real("carpathian", "cins_army")
+    pair = score_indicators([_real_obs(reg, "carpathian"), _real_obs(reg, "cins_army")], reg, NOW)[
+        0
+    ]
+    assert pair.band is Band.MEDIUM
+    assert score_indicators([_real_obs(reg, "carpathian")], reg, NOW)[0].band is Band.WITHHELD
+    assert "carpathian" in permissive_sources(reg)

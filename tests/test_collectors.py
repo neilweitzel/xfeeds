@@ -834,3 +834,41 @@ def test_dshield_api_rejects_a_non_array_body() -> None:
     now = datetime(2026, 10, 8, tzinfo=UTC)
     assert list(dshield_api(b'{"error": "rate limited"}', config, now)) == []
     assert list(dshield_api(b"<html>", config, now)) == []
+
+
+def test_carpathian_parses_the_recorded_response_and_limits_row_age() -> None:
+    from xfeeds.collectors.parsers import carpathian_json
+    from xfeeds.config import load_registry
+
+    config = next(s for s in load_registry(Path("sources.yaml")).sources if s.name == "carpathian")
+    content = Path("tests/fixtures/sources/carpathian.json").read_bytes()
+    now = datetime(2026, 10, 8, tzinfo=UTC)
+    records = list(carpathian_json(content, config, now))
+    payload = json.loads(content)
+    recent = [
+        e
+        for e in payload["entries"]
+        if (now - datetime.fromisoformat(e["last_seen"][:10]).replace(tzinfo=UTC)).days <= 30
+    ]
+    assert len(records) == len(recent)
+    assert 0 < len(records) < len(payload["entries"]), "fixture must exercise the age filter"
+    assert config.explicit_grant is True and config.attribution_required is True
+
+
+def test_carpathian_drops_undated_rows_when_age_limited() -> None:
+    from xfeeds.collectors.parsers import carpathian_json
+
+    content = json.dumps(
+        {
+            "entries": [
+                {"ip_address": "45.33.32.1", "last_seen": "2026-10-07T11:00:00"},
+                {"ip_address": "45.33.32.2", "last_seen": ""},
+                {"ip_address": "45.33.32.3", "last_seen": "2026-06-01T00:00:00"},
+                {"ip_address": "192.168.1.1", "last_seen": "2026-10-07T11:00:00"},
+            ]
+        }
+    ).encode()
+    config = get_mock_config(name="c", parser="carpathian_json", max_row_age_days=30)
+    records = list(carpathian_json(content, config, datetime(2026, 10, 8, tzinfo=UTC)))
+    assert [str(r.ip_or_cidr) for r in records] == ["45.33.32.1"]
+    assert list(carpathian_json(b"[]", config, datetime(2026, 10, 8, tzinfo=UTC))) == []

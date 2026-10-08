@@ -83,6 +83,7 @@ restricted corroboration.
 
 | Source | Class | How it is used | Tiers | Weight / TTL | PR |
 |---|---|---|---|---|---|
+| Carpathian | `carpathian` | Admitting first-party infrastructure vote; rows limited to last 30 days; clean-tier grant | primary, NC, clean | 0.6 / 7d, rows ≤30d | ADR-069 |
 | SANS ISC `sources/attacks` | `dshield` | Second member of the existing class: about 9,200 dated hosts instead of 20 /24s. Voting-only everywhere | none (scoring only) | 0.5 / 3d, rows ≤2d | ADR-068 |
 | ReportedIP | `reportedip` | Admitting community-report vote (web, CMS, brute force); IPv6 hosts; clean-tier grant | primary, NC, clean | 0.7 / 7d | ADR-067 |
 | jacobrakai honeypot | `jacobrakai` | Admitting honeypot vote; first admitting class for `telnet-attack`; clean-tier grant | primary, NC, clean | 0.6 / 7d | ADR-066 |
@@ -114,7 +115,6 @@ restricted corroboration.
 |---|---|---|---|---|---|---|
 | Spur Anonymous feed | proxy, ipv6, commercial | researching | Ongoing paid subscription (feeds are not in the free plan) | 2026-10-08 | Blocked only on a subscription. Terms read as written: `redistribute: false`, daily feed, conservative weight (backlog 3.1) | [2026-10 addendum](source-discovery-2026-10.md#addendum-second-pass) |
 | SANS ISC research-scanner labels | fp | ready | Free, ongoing | 2026-10-08 | Cap input alongside GreyNoise: 789 published records carry one, 46 high | [2026-10](source-discovery-2026-10.md) |
-| Carpathian | abuse | ready | Free, ongoing, CC BY 4.0 | 2026-10-08 | Admit in v1.1.0. Read as written: no third-party data, so `threat_intel` rows are first-party; per-row `last_seen` bounds stale permabans | [2026-10 addendum](source-discovery-2026-10.md#addendum-second-pass) |
 | IPSpamList (NoVirusThanks) | abuse, ipv6, commercial | new | Ongoing yearly subscription | 2026-10-08 | Paid yearly key, no named licence: scoring-only if subscribed. Honeypots since 2016, 15-day expiry, IPv6 feed | [2026-10 addendum](source-discovery-2026-10.md#addendum-second-pass) |
 | Original xfeeds honeypot | abuse, ipv6 | new | Self-operated | 2026-10-08 | ADR-033 growth direction 2: a class nobody else has. Not yet scoped | [ADR-033](DECISIONS.md) |
 | Blocklist.de or CINS dated variants | existing | new | Free | 2026-10-08 | Open item: per-row dates would make recency decay real | [DECISIONS open items](DECISIONS.md) |

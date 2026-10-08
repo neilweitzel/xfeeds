@@ -27,6 +27,7 @@ class Band(str, Enum):
 VALID_PARSERS = {
     "abuseipdb",
     "bruteforceblocker",
+    "carpathian_json",
     "cloudflare_json",
     "dataplane",
     "dshield",
