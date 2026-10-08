@@ -12,6 +12,8 @@ six hours by design. A consumer pinning a tag still fetches the same live URLs.
 
 ### Added
 
+- Sblam admitted as a scoring-only `spam-source` class (ADR-065). Votes and
+  raises confidence; never admits a record and never appears in a feed file.
 - Per-class contribution report (ADR-064): `insights.json` gains
   `class_contribution` with published-record support, leave-one-class-out
   decisiveness, and asymmetric containment for every independence class, and the

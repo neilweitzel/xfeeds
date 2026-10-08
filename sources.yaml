@@ -790,6 +790,31 @@ sources:
       not perfect either.
 
   # ---------------------------------------------------- annotation, not blocks
+  - name: sblam
+    credit: "Sblam! - sblam.com, used for scoring only, not republished"
+    url: https://sblam.com/blacklist.txt
+    parser: plain_text
+    independence_class: sblam
+    weight: 0.5
+    categories: [spam-source, abuse]
+    ttl_days: 7
+    license: "No licence stated for the list. The service \"can be used freely, even on commercial websites\"; the list is published for blocking use"
+    license_url: https://sblam.com/en.html
+    license_risk: medium
+    redistribute: false
+    redistribute_noncommercial: false
+    noncommercial_compatible: false
+    notes: >
+      ADMITTED in v1.1.0 (ADR-065) as a scoring-only class. Sblam is a web-form
+      spam classifier; the list is the IPs it received the most spam from during
+      the last month, rebuilt daily (sblam.com/czarnalista.html). Its own
+      collection, not a mirror: measured 2026-10-08, 1,239 hosts, 72.5% also in
+      StopForumSpam (two independent spam sensors agreeing, which is
+      corroboration), 24.9% seen by no configured source, 15.4% Tor exits
+      (tagged and capped by tor_exits). No redistribution grant is stated, so
+      read as written (ADR-060) it is use without republication. The "# Generated"
+      header has no timezone, so evidence age comes from Last-Modified.
+
   - name: tor_exits
     credit: "Tor exit relay list - The Tor Project, torproject.org"
     attribution_required: true

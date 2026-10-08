@@ -756,3 +756,15 @@ def test_dataplane_reads_the_timestamp_from_the_end_for_six_column_proto41() -> 
     assert [str(r.ip_or_cidr) for r in records] == ["45.33.32.5", "45.33.32.6"]
     # Both must resolve to the 14th - the lastseen column - not proto41's firstseen.
     assert all(r.source_last_reported == datetime(2026, 8, 14, tzinfo=UTC) for r in records)
+
+
+def test_sblam_fixture_parses_with_header_skipped() -> None:
+    from xfeeds.collectors.parsers import plain_text
+    from xfeeds.config import load_registry
+
+    config = next(s for s in load_registry(Path("sources.yaml")).sources if s.name == "sblam")
+    content = Path("tests/fixtures/sources/sblam.txt").read_bytes()
+    records = list(plain_text(content, config, datetime(2026, 10, 8, tzinfo=UTC)))
+    assert len(records) == 30
+    assert all(r.independence_class == "sblam" for r in records)
+    assert config.redistribute is False and config.redistribute_noncommercial is False
