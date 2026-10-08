@@ -265,3 +265,95 @@ versus feeds_doc question does not arise.
 | AbuseIPDB 4.2 | Start the Basic trial on the existing account so the same token gets Basic limits | Account action |
 | Spur 3.1 | Free Community account, then a feed trial request through Spur sales | Account action and trial terms |
 | IP2Proxy LITE (optional) | Free IP2Location LITE account for a download token, stored as an Actions secret | Only if the context lane is pursued |
+
+## Addendum: second pass
+
+A second, independent pass on 2026-10-08 (17:00 to 17:45 UTC) used the same
+fetch-and-compare method plus two additions: **containment** (share of a
+candidate's hosts present in each single source) and a datacenter share
+measured against X4BNet's `datacenter/ipv4.txt`, which is broader than the
+four-provider cloud set above. No figure above changes. Nothing is admitted.
+
+### Method finding: Jaccard misses subsets
+
+Rutgers' attacker list (`report.rutgers.edu/DROP/attackers`, 1,498 hosts)
+scores a maximum Jaccard of 0.077 and would pass the 0.5 gate. But **93.7% of
+it is inside Blocklist.de**, and Rutgers' own status page names a Blocklist.de
+listing as one of its block triggers. Only 35 addresses (2.3%) are new to
+xfeeds. The brief and the lifecycle gate now require containment alongside
+Jaccard, with >0.5 in one source presumed derived.
+
+### New candidates
+
+| Candidate | Hosts | Max Jaccard (source) | Max single-source containment | Novel vs all raw sources | Datacenter (X4B) | Verdict |
+|---|---:|---|---|---:|---:|---|
+| Carpathian (CC BY 4.0) | 1,233 | 0.035 (tor) | 26.6% (ipthreat) | 57.4% | 70.5% | Researching |
+| Rutgers DROP attackers | 1,498 | 0.077 (ipsum_l5) | **93.7% (blocklist_de)** | 2.3% | 29.4% | Rejected: derived |
+| Sblam | 1,239 | 0.084 (tor) | **72.5% (stopforumspam)** | 24.9% | 61.7% | Rejected: licence |
+| myip.ms (full) | 212,320 | 0.010 (ipsum_l1) | 1.6% | 99.2% | 37.0% | Rejected (already): entries back to 2013 |
+
+**Carpathian** publishes
+[CC BY 4.0 files from its own infrastructure](https://carpathian.ai/threat-intelligence)
+(IDS bans, SSH gateway permabans, web-edge error bursts), rebuilt hourly, with
+`generated_at` and per-row `first_seen`/`last_seen`. It is independent and the
+licence is clean-tier eligible. Three things block a PR:
+
+- **Provenance.** 312 rows carry `sources: threat_intel`. The page says
+  Carpathian buys and resells no one else's data but does not define the
+  value. Ask before treating it as first-party.
+- **No expiry on permabans.** 1,027 rows are `permaban`. 251 rows have a
+  `last_seen` older than 90 days. A parser must use per-row `last_seen` as
+  evidence time, not the file timestamp. Filtering to 30 days leaves 683 hosts.
+- **Cloud-heavy vantage.** 70.5% sit in X4B datacenter ranges, consistent with
+  a hosting provider being scanned from cloud VMs. That is real abuse, but
+  recycled addresses are the high-FP case in the gate.
+
+Upper bound on new primary records if it were admitting: 202 at 30 days
+(257 unfiltered). IPv4 only; the nftables file declares an IPv6 set but it is
+empty.
+
+**GPF Comics DNSBL** is listed in FireHOL and ip-db.com as CC BY-SA 4.0. That
+is FireHOL's licence for its own repository. GPF's site says: "No content on
+this site may be copied, redistributed, and/or derived without explicit written
+permission." Rejected, and recorded so an aggregator's licence label is not
+mistaken for the publisher's grant again.
+
+**Stratosphere AIP** (Aposemat IoT honeypots, CTU Prague) is a credible sensor
+network, but its `Todays-Blacklists` files were last modified 2026-08-05 and
+no licence is stated. Deferred.
+
+### jacobrakai churn, measured
+
+The canonical `https://jacobrakai.org/feed/blocklist.txt` sends
+`Last-Modified`, so evidence age works without new parsing. Git history of
+the hourly snapshot, daily samples 2026-09-09 to 2026-10-08: 416 to 507
+hosts, 250 of the 416 starting addresses removed. The 30-day age-off is real.
+Its `# Updated : …Z` header is not matched by the current `updated:` pattern
+(space before the colon), so the HTTP header is what would be used. No change
+to the deferred verdict: still batch with ReportedIP.
+
+### Commercial lane additions
+
+- **Spur terms, read as written.** Free website data is "for evaluation
+  purposes only", Context API data is "for non-commercial use only", and the
+  terms prohibit derivative works "except as explicitly authorized". A feed
+  trial request for backlog 3.1 should therefore ask, in writing, for
+  authorization to use the Anonymous feed as a non-redistributed
+  corroboration input to a public feed. Without that, a trial is evaluation
+  only and cannot touch production scoring.
+- **IPSpamList** (NoVirusThanks): honeypots and spam traps since 2016, hourly
+  regeneration, removal 15 days after last detection, and a dedicated
+  `last-15-days-ipv6` feed (3,000 to 5,000 addresses). Paid yearly key and no
+  named licence, so at best `redistribute: false`. It cannot close the IPv6
+  open item, which needs a redistributable second source.
+- **FraudGuard:** threat feeds start at the $299/month Business plan; the
+  14-day trial excludes feeds.
+
+### Existing-source terms
+
+abuse.ch's current [Terms of Use](https://abuse.ch/terms-of-use/) limit
+authenticated use to "not-for-profit purposes" and prohibit derivative works
+without consent. ThreatFox is already `redistribute: false` and xfeeds is a
+not-for-profit project, so no state change. Recorded as a watch item: if xfeeds
+were ever offered commercially, ThreatFox's scoring role would need a Spamhaus
+subscription.

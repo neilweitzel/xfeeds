@@ -139,6 +139,20 @@ recorded with the reason.
 - If overlap > 0.5 with any single existing source, the candidate shares
   that source's independence class and cannot add a vote. Record the
   measurement and reject.
+- Also compute **containment**, because Jaccard cannot see a subset. A
+  1,500-address list wholly inside a 25,000-address source scores a Jaccard
+  near 0.06 and still adds nothing:
+
+  ```python
+  containment = len(candidate_ips & source_ips) / len(candidate_ips)
+  ```
+
+  If containment > 0.5 in any single existing source, presume the candidate
+  is derived from that source and assign it that source's class, unless the
+  publisher documents independent collection. Rutgers' attacker list
+  (2026-10, 93.7% inside Blocklist.de, which its own page names as an input)
+  is the worked example. Report containment against aggregates such as IPsum
+  for context only; an aggregate is not an independence class.
 - If overlap is low, assign a new `independence_class` name.
 
 ### Sensor method
