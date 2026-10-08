@@ -37,7 +37,12 @@ review: 2027-01-08.
    redistribution is evaluated as `redistribute: false`: it votes, raises
    confidence, and appears in aggregates, but never admits a record and never
    appears in a feed file.
-4. A `rejected` entry reopens only when its stated reason changes.
+4. **Licences are read as written** (ADR-060). We interpret each source's terms
+   as best we can and act on that reading; we do not ask publishers for
+   permission or clarification. Every feed header carries an issue/PR path, and
+   any objection or correction is reviewed. Mistakes are possible and are fixed
+   when reported.
+5. A `rejected` entry reopens only when its stated reason changes.
 
 ## In production
 
@@ -98,15 +103,14 @@ restricted corroboration.
 
 | Candidate | Lane | Status | Access | Last reviewed | Next step | Evidence |
 |---|---|---|---|---|---|---|
-| Spur Anonymous feed | proxy, ipv6, commercial | researching | Ongoing paid subscription | 2026-10-08 | Get pricing and written authorization for corroboration-only use in a public feed; then admit `redistribute: false`, daily feed, conservative weight (backlog 3.1) | [2026-10 addendum](source-discovery-2026-10.md#addendum-second-pass) |
-| AbuseIPDB Basic (expansion of a production source) | existing, commercial | researching | Ongoing Basic plan | 2026-10-08 | Only as a kept plan: raise `limit` to 100,000 and compare ranks 1 to 10,000 with 10,001 to 100,000 privately (backlog 4.2) | [backlog 4.2](POST_BURN_IN_BACKLOG.md) |
+| Spur Anonymous feed | proxy, ipv6, commercial | researching | Ongoing paid subscription (feeds are not in the free plan) | 2026-10-08 | Blocked only on a subscription. Terms read as written: `redistribute: false`, daily feed, conservative weight (backlog 3.1) | [2026-10 addendum](source-discovery-2026-10.md#addendum-second-pass) |
 | ReportedIP blacklist | abuse, spam, fraud, ipv6 | ready | Free, ongoing, CC BY 4.0 public dataset | 2026-10-08 | Admit in v1.1.0. Not a vendor trial: the earlier "30-day shadow" was our own observation window after its 2026-09-28 method change | [2026-10](source-discovery-2026-10.md) |
 | Sblam blacklist | spam | ready | Free, ongoing | 2026-10-08 | Admit scoring-only in v1.1.0 as class `sblam`: an independent web-form spam sensor. 72.5% corroborated by StopForumSpam, 24.9% seen by nobody else | [2026-10 addendum](source-discovery-2026-10.md#addendum-second-pass) |
 | SANS ISC API `sources/attacks` | existing | ready | Free, ongoing | 2026-10-08 | Augment `dshield` class from 20 /24s to ~9,200 fresh hosts; keep the ISC "not a blocklist" caveat in its notes | [2026-10](source-discovery-2026-10.md) |
 | SANS ISC research-scanner labels | fp | ready | Free, ongoing | 2026-10-08 | Cap input alongside GreyNoise: 789 published records carry one, 46 high | [2026-10](source-discovery-2026-10.md) |
 | jacobrakai honeypot | abuse | ready | Free, ongoing, CC0 | 2026-10-08 | Admit with ReportedIP; churn measured (250 of 416 removed in 30 days) | [2026-10 addendum](source-discovery-2026-10.md#addendum-second-pass) |
-| Carpathian | abuse | researching | Free, ongoing, CC BY 4.0 | 2026-10-08 | Ask the operator about `threat_intel` rows, permaban expiry, and the IPv6 file; parser must use per-row `last_seen` | [2026-10 addendum](source-discovery-2026-10.md#addendum-second-pass) |
-| IPSpamList (NoVirusThanks) | abuse, ipv6, commercial | new | Ongoing yearly subscription | 2026-10-08 | Get terms and price; honeypots since 2016, 15-day expiry, IPv6 feed | [2026-10 addendum](source-discovery-2026-10.md#addendum-second-pass) |
+| Carpathian | abuse | ready | Free, ongoing, CC BY 4.0 | 2026-10-08 | Admit in v1.1.0. Read as written: no third-party data, so `threat_intel` rows are first-party; per-row `last_seen` bounds stale permabans | [2026-10 addendum](source-discovery-2026-10.md#addendum-second-pass) |
+| IPSpamList (NoVirusThanks) | abuse, ipv6, commercial | new | Ongoing yearly subscription | 2026-10-08 | Paid yearly key, no named licence: scoring-only if subscribed. Honeypots since 2016, 15-day expiry, IPv6 feed | [2026-10 addendum](source-discovery-2026-10.md#addendum-second-pass) |
 | Original xfeeds honeypot | abuse, ipv6 | new | Self-operated | 2026-10-08 | ADR-033 growth direction 2: a class nobody else has. Not yet scoped | [ADR-033](DECISIONS.md) |
 | Blocklist.de or CINS dated variants | existing | new | Free | 2026-10-08 | Open item: per-row dates would make recency decay real | [DECISIONS open items](DECISIONS.md) |
 | `threatview_CS_c2.rules` | c2 | researching | Free | 2026-08-14 | Provenance check still open (ADR-050) | [ADR-050](DECISIONS.md) |
@@ -127,6 +131,7 @@ restricted corroboration.
 
 | Candidate | Lane | Last reviewed | Reason | Revisit when |
 |---|---|---|---|---|
+| AbuseIPDB Basic expansion | commercial | 2026-10-08 | Not paying; AbuseIPDB stays in production on the free tier | Purchase decision changes |
 | ELLIO Threat List MAX/ONE | commercial | 2026-10-08 | Trial-only access (14 days) | Ongoing plan considered |
 | Spamhaus Intelligence API developer licence | c2, commercial | 2026-10-08 | Evaluation-only licence, 6 months | Commercial subscription approved |
 | Silent Push Community | commercial | 2026-10-08 | Not for production use | Terms change |

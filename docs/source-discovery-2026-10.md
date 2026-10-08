@@ -340,13 +340,11 @@ to the deferred verdict: still batch with ReportedIP.
 
 ### Commercial lane additions
 
-- **Spur terms, read as written.** Free website data is "for evaluation
-  purposes only", Context API data is "for non-commercial use only", and the
-  terms prohibit derivative works "except as explicitly authorized". A feed
-  trial request for backlog 3.1 should therefore ask, in writing, for
-  authorization to use the Anonymous feed as a non-redistributed
-  corroboration input to a public feed. Without that, a trial is evaluation
-  only and cannot touch production scoring.
+- **Spur.** Feeds are not in the free Community plan, so admission waits on an
+  ongoing subscription. Terms are read as written under ADR-060
+  (`redistribute: false`, issue/PR objection path); no permission request.
+  *(Revised 2026-10-08: an earlier draft of this line proposed asking Spur for
+  written authorization, which is not how this project handles licences.)*
 - **IPSpamList** (NoVirusThanks): honeypots and spam traps since 2016, hourly
   regeneration, removal 15 days after last detection, and a dedicated
   `last-15-days-ipv6` feed (3,000 to 5,000 addresses). Paid yearly key and no

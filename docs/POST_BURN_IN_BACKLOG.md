@@ -267,10 +267,9 @@ retrospective triggered by the Spur miss.
     subscription are the measurement window for overlap, incremental
     detections, high/medium movement, churn, and allowlist/false-positive
     reports before any reweighting or considering the residential feed.
-  - Spur's terms make free data evaluation-only and prohibit derivative works
-    "except as explicitly authorized", so the subscription must include written
-    authorization to use the feed as a non-redistributed corroboration input to
-    a public feed.
+  - Terms are read as written under ADR-060, as for every source: no
+    redistribution, so `redistribute: false`, with the standard issue/PR
+    objection path. No permission request is part of the plan.
 - **Burn-in impact.** **Restarts burn-in.** Requires `sources.yaml`
   admission and probably `src/` and `.github/workflows/` changes. Post
   rc.7 promotion, through the normal source-admission PR path.
@@ -283,10 +282,11 @@ retrospective triggered by the Spur miss.
      rationale.
 - **Status.** `backlog`.
 - **Dependencies.** Stable promotion complete; source review 2026-10-08 or later;
-  written authorization and an approved ongoing subscription before any fetch.
+  an approved ongoing subscription before any fetch. Feeds are not in the free
+  Community plan, so a $0 path does not exist today.
 - **Execution.** 2026-10-08 review: Spur's free Community plan includes no feeds
-  (250 manual lookups); feed tiers are sales-quoted. Next step is a pricing and
-  authorization request for the daily Anonymous feed as an ongoing subscription. See [`source-discovery-2026-10.md`](source-discovery-2026-10.md).
+  (250 manual lookups); feed tiers are sales-quoted. Blocked only on a
+  subscription decision; the config and parser can follow the day one exists. See [`source-discovery-2026-10.md`](source-discovery-2026-10.md).
 
 ### 3.2 Add a commercial credentialed scoring-only discovery lane
 
@@ -402,8 +402,9 @@ retrospective triggered by the Spur miss.
   Record keep/revert/expand decision from evidence, not gross list size.
 - **Dependencies.** October 8 review or later; explicit purchase approval and
   source-configuration review. No subscription bought or production limit raised.
-- **Status.** `backlog`; private evaluation first, production change only after
-  the experiment supports it.
+- **Status.** `rejected` (2026-10-08). The maintainer is not paying for
+  AbuseIPDB; it stays in production on the free tier (10,000 rows, confidence
+  100). Reopen only if that decision changes.
 - **Execution.** Not started. 2026-10-08 review: AbuseIPDB lists Basic at
   $25/month with 100 blacklist requests/day up to 100,000 IPs, and states that
   all plans include a free 30-day trial. Per the ongoing-access rule (2026-10-08
@@ -411,6 +412,13 @@ retrospective triggered by the Spur miss.
   `limit: 100000` once the account is on Basic.
 
 ## Decision log
+
+- **2026-10-08, v1.1.0 window opened.** Licences are read as written with
+  objections through issues or PRs (ADR-060); no permission or clarification
+  requests to publishers are part of any source plan. AbuseIPDB stays on the free
+  tier (4.2 rejected). Carpathian is read as written: its page says it buys and
+  resells no one else's data, so its rows are first-party, and stale permabans are
+  handled by per-row `last_seen`. It joins the v1.1.0 batch.
 
 - **2026-10-08, second pass.** Overlap is corroboration: containment is
   recorded, never a rejection reason (ADR-064; corrects #64). Ongoing access
