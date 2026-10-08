@@ -12,6 +12,9 @@ six hours by design. A consumer pinning a tag still fetches the same live URLs.
 
 ### Added
 
+- jacobrakai honeypot admitted as an admitting class (ADR-066): CC0, self-operated
+  sensors, 30-day age-off. Eligible for `feeds/clean/`; first admitting class for
+  `telnet-attack`.
 - Sblam admitted as a scoring-only `spam-source` class (ADR-065). Votes and
   raises confidence; never admits a record and never appears in a feed file.
 - Per-class contribution report (ADR-064): `insights.json` gains

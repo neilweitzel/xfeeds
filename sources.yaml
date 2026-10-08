@@ -815,6 +815,32 @@ sources:
       read as written (ADR-060) it is use without republication. The "# Generated"
       header has no timezone, so evidence age comes from Last-Modified.
 
+  - name: jacobrakai_honeypot
+    credit: "jacobrakai honeypot blocklist - Jacob Durham, jacobrakai.org (CC0 1.0)"
+    url: https://jacobrakai.org/feed/blocklist.txt
+    parser: plain_text
+    independence_class: jacobrakai
+    weight: 0.6
+    categories: [brute-force, ssh-attack, telnet-attack, scanning]
+    ttl_days: 7
+    license: "CC0 1.0 Universal (public domain dedication)"
+    license_url: https://github.com/jacobyoby/honeypot-blocklist/blob/main/LICENSE
+    license_risk: low
+    explicit_grant: true   # CC0 1.0 - LICENSE in jacobyoby/honeypot-blocklist and the feed header
+    redistribute: true
+    min_interval_seconds: 3600
+    notes: >
+      ADMITTED in v1.1.0 (ADR-066). Self-operated Cowrie/Heralding sensors (SSH,
+      FTP, telnet, MySQL, VNC). Three inclusion tiers, all requiring attack
+      activity in the last 30 days: credential (50+ login attempts), scanner
+      (1000+ connection events), loader (fetched or uploaded a payload). Published
+      research scanners (Censys, Rapid7 Sonar, Shadowserver, Shodan, BinaryEdge)
+      are excluded upstream. Hourly; Last-Modified is sent. Measured 2026-10-08:
+      507 hosts, max Jaccard 0.035, 26.8% seen by no configured source; git
+      history shows 250 of 416 addresses removed over 30 days, so the age-off is
+      real. GitHub reports NOASSERTION, but the LICENSE text is a CC0 dedication.
+      First admitting class for telnet-attack.
+
   - name: tor_exits
     credit: "Tor exit relay list - The Tor Project, torproject.org"
     attribution_required: true

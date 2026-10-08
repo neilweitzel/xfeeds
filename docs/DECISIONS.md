@@ -2366,3 +2366,30 @@ stay withheld until a redistributable source corroborates them.
 **Freshness.** `Last-Modified` (its `# Generated` line carries no timezone).
 
 **Burn-in.** `sources.yaml` changes; part of the v1.1.0 candidate window.
+
+## ADR-066 — jacobrakai: a small, first-party, CC0 honeypot class
+
+**Date:** 2026-10-08. **Status:** Accepted for v1.1.0. **Source review:** #62.
+
+**Source.** `https://jacobrakai.org/feed/blocklist.txt`, regenerated hourly.
+CC0 1.0 (the repository LICENSE is a CC0 dedication although GitHub reports
+`NOASSERTION`), so `explicit_grant: true` and eligible for `feeds/clean/`.
+
+**Sensor method.** Self-operated Cowrie/Heralding honeypots. Inclusion needs
+attack activity inside 30 days and one of: 50+ credential attempts, 1000+
+connection events, or a fetched/uploaded payload. Known research scanners are
+excluded upstream.
+
+**Independence.** Max Jaccard 0.035 (ipsum_l5, an aggregate) and 0.032
+against the nearest independent class (greensnow); 26.8% of 507 hosts seen by no
+configured source. Its overlap with DataPlane and Blocklist.de is sensors
+agreeing (ADR-064).
+
+**Churn.** Daily samples of the hourly snapshot, 2026-09-09 to 2026-10-08: 416
+to 507 hosts, 250 of the starting 416 removed. The documented age-off holds.
+
+**Role.** Class `jacobrakai`, admitting, weight 0.6 (single vantage point, same
+as Binary Defense and bruteforceblocker), `ttl_days: 7`, no solo promotion.
+First admitting class for `telnet-attack`.
+
+**Burn-in.** `sources.yaml` changes; part of the v1.1.0 candidate window.
