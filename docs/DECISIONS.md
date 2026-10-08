@@ -2425,3 +2425,30 @@ host-level IPv6 source; only 2 match a Blocklist.de IPv6 host today, so the
 ADR-033 IPv6 open item narrows but does not close.
 
 **Burn-in.** `sources.yaml` changes; part of the v1.1.0 candidate window.
+
+## ADR-068 — SANS ISC `sources/attacks`: more of an existing class, voting-only
+
+**Date:** 2026-10-08. **Status:** Accepted for v1.1.0. **Source review:** #62.
+
+**Source.** `https://isc.sans.edu/api/sources/attacks/10000?json`: the top
+10,000 attacking sources across the DShield sensor network, each with
+`attacks`, `count`, `firstseen`, and `lastseen`.
+
+**Class.** Same publisher and sensor network as `dshield_block`, so it joins
+class `dshield`. That class still casts at most one vote; this member makes the
+vote cover about 9,200 hosts instead of 20 /24 blocks. Measured 2026-10-08: 87%
+of its hosts are seen by no other configured source (max Jaccard 0.011, cins).
+
+**Licence, read as written.** The API page gives CC BY-NC-SA 4.0 and, for this
+endpoint, "This data summarizes unfiltered reports and may include false
+positives. DO NOT USE AS A BLOCKLIST." So it is voting-only in **every** tier,
+stricter than `dshield_block`, which admits in `feeds/noncommercial/`. It may
+raise confidence in a record other classes admitted; it is never the reason a
+record is published.
+
+**Implementation.** New `dshield_api` parser; new `SourceConfig.max_row_age_days`
+drops rows whose own `lastseen` is older than the limit (2 days here), because a
+fresh file can still carry old rows. `lastseen` is kept as
+`source_last_reported`.
+
+**Burn-in.** `sources.yaml` and `src/` change; part of the v1.1.0 window.

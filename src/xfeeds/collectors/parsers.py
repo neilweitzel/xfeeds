@@ -629,6 +629,69 @@ def abuseipdb(
     _log_skips(config.name, malformed_count, non_global_count)
 
 
+def _row_too_old(seen: datetime | None, config: SourceConfig, fetch_time: datetime) -> bool:
+    """True when a row's own date is older than ``max_row_age_days`` allows."""
+    if config.max_row_age_days is None or seen is None:
+        return False
+    return (fetch_time - seen).days > config.max_row_age_days
+
+
+def dshield_api(
+    content: bytes, config: SourceConfig, fetch_time: datetime
+) -> Iterator[IndicatorRecord]:
+    """Parse the SANS ISC ``/api/sources/attacks/N?json`` array.
+
+    Shape is ``[{"ip", "attacks", "count", "firstseen", "lastseen"}, ...]``,
+    ordered by attack count. The ISC page says this "summarizes unfiltered
+    reports and may include false positives" and "DO NOT USE AS A BLOCKLIST",
+    which is why the source is voting-only in every tier: it can corroborate a
+    record other classes admitted, never put one into a feed.
+
+    ``lastseen`` is carried as ``source_last_reported`` and, with
+    ``max_row_age_days``, drops rows the sensor network has not seen recently.
+    """
+    try:
+        payload = json.loads(content.decode("utf-8", "replace"))
+    except json.JSONDecodeError as e:
+        logger.warning("dshield_api_bad_json", source=config.name, error=str(e))
+        return
+    if not isinstance(payload, list):
+        logger.warning("dshield_api_unexpected_payload", source=config.name)
+        return
+
+    malformed_count = 0
+    non_global_count = 0
+    too_old = 0
+    for entry in payload:
+        if not isinstance(entry, dict):
+            malformed_count += 1
+            continue
+        try:
+            ip_obj: IPOrNet = ipaddress.ip_address(str(entry.get("ip", "")).strip())
+        except ValueError:
+            malformed_count += 1
+            continue
+        if not _is_global(ip_obj):
+            non_global_count += 1
+            continue
+        seen = _parse_reported_date(str(entry.get("lastseen") or ""))
+        if _row_too_old(seen, config, fetch_time):
+            too_old += 1
+            continue
+        yield IndicatorRecord(
+            ip_or_cidr=ip_obj,
+            source=config.name,
+            independence_class=config.independence_class,
+            first_seen=fetch_time,
+            last_seen=fetch_time,
+            categories=list(config.categories),
+            source_last_reported=seen,
+        )
+    if too_old:
+        logger.info("rows_older_than_max_age", source=config.name, dropped=too_old)
+    _log_skips(config.name, malformed_count, non_global_count)
+
+
 def dataplane(
     content: bytes, config: SourceConfig, fetch_time: datetime
 ) -> Iterator[IndicatorRecord]:
@@ -710,6 +773,7 @@ _IMPLEMENTED = [
     ipthreat,
     abuseipdb,
     dataplane,
+    dshield_api,
 ]
 
 PARSERS = {}
