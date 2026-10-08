@@ -841,6 +841,36 @@ sources:
       real. GitHub reports NOASSERTION, but the LICENSE text is a CC0 dedication.
       First admitting class for telnet-attack.
 
+  - name: reportedip
+    credit: "ReportedIP (reportedip.com) - CC BY 4.0"
+    url: https://raw.githubusercontent.com/reportedip/reportedip-blacklist/main/blacklist-all.txt
+    parser: plain_text
+    independence_class: reportedip
+    weight: 0.7
+    categories: [web-attack, brute-force, reported-abuse]
+    ttl_days: 7
+    license: "CC BY 4.0. Share and adapt with credit to ReportedIP (reportedip.com)"
+    license_url: https://github.com/reportedip/reportedip-blacklist/blob/main/LICENSE
+    license_risk: low
+    attribution_required: true
+    explicit_grant: true   # CC BY 4.0 - LICENSE file in reportedip/reportedip-blacklist
+    redistribute: true
+    min_interval_seconds: 3600
+    notes: >
+      ADMITTED in v1.1.0 (ADR-067). Daily snapshot (about 04:20 UTC) of the
+      addresses the ReportedIP reputation engine scores 75 or higher, from
+      reports by its WordPress plugin, Linux agent, and operator honeypots,
+      weighted by report count, reporter diversity, severity, recency and
+      honeypot evidence, with anti-poisoning caps. New addresses appear 48 hours
+      after first report; scores halve every 30 days after two quiet weeks.
+      Measured 2026-10-08: 12,803 hosts including 82 IPv6 hosts, max Jaccard
+      0.236 (ipsum_l3, an aggregate) and 0.130 against the nearest independent
+      class; real daily removals (394-1,350/day). Its method changed on
+      2026-09-28 (32,621 to 7,011 to about 12,800); the shape has been stable
+      since 2026-10-01. Raw GitHub sends no Last-Modified, so evidence age
+      comes from the content-hash ledger. The first redistributable,
+      expiring, host-level IPv6 source.
+
   - name: tor_exits
     credit: "Tor exit relay list - The Tor Project, torproject.org"
     attribution_required: true

@@ -2393,3 +2393,35 @@ as Binary Defense and bruteforceblocker), `ttl_days: 7`, no solo promotion.
 First admitting class for `telnet-attack`.
 
 **Burn-in.** `sources.yaml` changes; part of the v1.1.0 candidate window.
+
+## ADR-067 — ReportedIP: an admitting community-report class with IPv6 hosts
+
+**Date:** 2026-10-08. **Status:** Accepted for v1.1.0. **Source review:** #62.
+
+**Source.** `reportedip/reportedip-blacklist` `blacklist-all.txt`, a daily
+snapshot. CC BY 4.0 with a real LICENSE file, credit "ReportedIP
+(reportedip.com)". Free and ongoing: not a trial. Clean-tier eligible.
+
+**Method.** The ReportedIP engine lists addresses scoring 75 or higher, from
+reports by its WordPress plugin, Linux agent and operator honeypots, weighted
+by reports, reporter diversity, severity, recency, and honeypot evidence, with
+documented anti-poisoning caps. No third-party import is stated.
+
+**Independence.** Max Jaccard 0.130 against an independent class (greensnow)
+and 0.236 against IPsum L3. 26 to 32% of hosts are seen by no configured source.
+
+**Churn.** Real removals every day (394 to 1,350). Its method changed on
+2026-09-28; the list has held about 12,800 hosts since 2026-10-01. That change
+is recorded rather than treated as a reason to wait: the v1.1.0 window is the
+observation period, and ADR-064's contribution report measures what it adds.
+
+**Expected effect.** Upper bound from the review: up to about 4,384 new primary
+records, mostly medium, and about 701 medium-to-high upgrades (8.6% of high,
+inside the 25% churn guard). Both bounds ignore the allowlist and GreyNoise.
+
+**Role.** Class `reportedip`, admitting, weight 0.7, `ttl_days: 7`, no solo
+promotion. 82 IPv6 hosts make it the first redistributable, expiring,
+host-level IPv6 source; only 2 match a Blocklist.de IPv6 host today, so the
+ADR-033 IPv6 open item narrows but does not close.
+
+**Burn-in.** `sources.yaml` changes; part of the v1.1.0 candidate window.
