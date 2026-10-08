@@ -278,7 +278,9 @@ retrospective triggered by the Spur miss.
 - **Status.** `backlog`.
 - **Dependencies.** Stable promotion complete; source review 2026-10-08 or later;
   verified trial terms and approved access before any fetch.
-- **Execution.** _tracking issue and PR TBD_.
+- **Execution.** 2026-10-08 review: Spur's free Community plan includes no feeds
+  (250 manual lookups); feed tiers are sales-quoted. Next step is a feed trial
+  request. See [`source-discovery-2026-10.md`](source-discovery-2026-10.md).
 
 ### 3.2 Add a commercial credentialed scoring-only discovery lane
 
@@ -305,8 +307,12 @@ retrospective triggered by the Spur miss.
 - **Acceptance criteria.**
   1. Discovery brief documents the lane taxonomy.
   2. Next review uses the lane taxonomy and records exclusion reasons.
-- **Status.** `backlog`.
-- **Execution.** _tracking issue TBD_.
+- **Status.** `done` (docs). The issue-template checklist in
+  `source-review.yml` still says "free auth acceptable"; that one line moves with
+  the next batched workflow change rather than on its own.
+- **Execution.** 2026-10-08 review: lane taxonomy and the paid-access rule in
+  `SOURCE_DISCOVERY_BRIEF.md` and `source-lifecycle.md`; first lane-structured
+  report in [`source-discovery-2026-10.md`](source-discovery-2026-10.md) (issue #62).
 
 ### 3.3 Maintain a persistent candidate backlog
 
@@ -321,8 +327,12 @@ retrospective triggered by the Spur miss.
 - **Acceptance criteria.**
   1. Register exists with the current known candidates, including Spur.
   2. Review workflow references it.
-- **Status.** `backlog`.
-- **Execution.** _tracking issue TBD_.
+- **Status.** `done`. Criterion 2 is met through the brief, which the review
+  issue links; a direct link in the issue template batches with the 3.2 workflow
+  line.
+- **Execution.** [`SOURCE_CANDIDATES.md`](SOURCE_CANDIDATES.md), created in the
+  2026-10-08 review with Spur, AbuseIPDB, every candidate from that cycle, and
+  the earlier ADR rejections.
 
 ---
 
@@ -363,9 +373,18 @@ retrospective triggered by the Spur miss.
   source-configuration review. No subscription bought or production limit raised.
 - **Status.** `backlog`; private evaluation first, production change only after
   the experiment supports it.
-- **Execution.** Not started.
+- **Execution.** Not started. 2026-10-08 review: AbuseIPDB lists Basic at
+  $25/month with 100 blacklist requests/day up to 100,000 IPs, and states that
+  all plans include a free 30-day trial, so the experiment can run inside the
+  trial on the existing account and token.
 
 ## Decision log
+
+- **2026-10-08, source review (#62).** Lane-structured review recorded in
+  [`source-discovery-2026-10.md`](source-discovery-2026-10.md); 3.2 and 3.3 done
+  as docs. Three no-cost candidates are ready for a next-minor window: a
+  ReportedIP shadow trial, a DShield API upgrade inside the existing class, and
+  ISC research-scanner labels as a benign cap. No source enabled.
 
 - **2026-10-05, quality audit.** Verified published tags, build/test health, live
   feed integrity, and immutable archive. Removed obsolete pre-release timing,

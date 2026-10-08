@@ -34,6 +34,10 @@ Before looking for new candidates, read these to avoid re-covering ground:
    — what each current source documents about its sensor method and scoring.
 4. **[`tests/fixtures/sources/MANIFEST.json`](../tests/fixtures/sources/MANIFEST.json)**
    — the real responses recorded for each source, with origin URLs.
+5. **[`docs/SOURCE_CANDIDATES.md`](SOURCE_CANDIDATES.md)** — the persistent
+   candidate register: every candidate considered, its status, and the
+   condition under which a rejected or deferred one should be revisited.
+   Update it at the end of every review.
 
 A candidate rejected in ADR-033 or a later ADR should not be re-surveyed
 unless the rejection reason has changed (e.g., a source gained a licence
@@ -62,20 +66,49 @@ Look for:
 
 ## Step 2: Survey candidates
 
-Search for candidate feeds that match the gaps. Look in:
+Survey by **lane**, not by search query. Each lane gets its own table, a short
+"top candidates considered" list, and a reason for every exclusion, including
+"not evaluated" with the reason it was not. A lane with no viable candidate is
+a finding, not an omission.
+
+| Lane | What it covers |
+|---|---|
+| `c2` | Malware distribution and command-and-control infrastructure |
+| `abuse` | Botnet, brute-force, scanning, and exploitation sensors (honeypots, community reports) |
+| `proxy` | Proxy and anonymization infrastructure (VPN, residential, open proxies) |
+| `fraud` | Spam, forum abuse, and fraud infrastructure |
+| `ipv6` | Host-level IPv6 sources, the standing ADR-033 gap |
+| `commercial` | Credentialed or paid sources evaluated as `redistribute: false` scoring-only |
+| `fp` | False-positive controls: benign-scanner and known-good inputs that cap or exclude |
+| `existing` | Higher-volume or better endpoints from publishers already configured |
+
+**Paid or authenticated access is not a disqualifier.** Evaluate it under
+`redistribute: false`. Record price, quota, and trial terms, but do not buy,
+start a trial, or create an account; list what access the maintainer would
+need instead.
+
+Search in:
 
 - **GitHub** — search for repositories with IP blocklists, threat feeds,
-  or IOC collections. Check the licence file before anything else.
+  or IOC collections. Check the licence file before anything else, and read
+  the git history: it measures churn and removals directly (ADR-057).
 - **Abuse.ch and similar platforms** — check for new endpoints from
   publishers already in the source list.
 - **Security vendor community feeds** — free tiers with usable terms.
+- **Commercial vendors** — scoring-only candidates for the `commercial` lane.
 - **Academic or research projects** — honeypot networks, scanner
   observatories.
+- **Aggregator source lists** — aggregators are rejected as sources, but
+  their published input lists are a cheap way to find primary publishers.
 
 For each candidate, record in a table:
 
 | Candidate | URL | Volume | Licence | Independence | Sensor method | Verdict |
 |---|---|---|---|---|---|---|
+
+For each candidate that survives to a recommendation, add an **incremental
+coverage hypothesis**: the gap it fills, expected overlap, expected
+false-positive risk, and the measured outcome that would justify keeping it.
 
 ## Step 3: Evaluate against admission criteria
 
@@ -127,7 +160,9 @@ recorded with the reason.
 ### Endpoint stability
 
 - Is the URL stable, or is it an ad-hoc paste?
-- Are auth requirements acceptable (free API key is fine; paid-only is not)?
+- What access does it need? A free key is fine. Paid or credentialed access is
+  acceptable for a `redistribute: false` source, but any purchase or trial is a
+  separate maintainer decision.
 
 ### Volume and churn
 
@@ -157,6 +192,13 @@ new `docs/source-discovery-YYYY-MM.md` file if no issue exists). Include:
 - For each rejection: the candidate, the gate it failed, and the evidence.
 - For each candidate recommended for admission: a summary of why it
   passes every gate.
+- One section per lane from Step 2, including lanes with no viable candidate.
+- The access the maintainer would need to provide (accounts, trials, tokens).
+
+Then update [`docs/SOURCE_CANDIDATES.md`](SOURCE_CANDIDATES.md): add every new
+candidate, update the status and last-reviewed date of every candidate
+re-checked, and set the revisit condition. The register is the durable state;
+the dated report is the evidence.
 
 ## Step 5: Open PRs for admitted sources
 

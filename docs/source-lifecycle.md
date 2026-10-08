@@ -250,7 +250,8 @@ updates `sources.yaml`, `DECISIONS.md`, and the test suite.
    documented each rejection.
 2. **Evaluate each candidate** against the admission criteria below.
 3. **Produce a report** (GitHub issue or `docs/source-discovery-YYYY-MM.md`)
-   listing candidates, evaluations, and recommendations.
+   listing candidates, evaluations, and recommendations by lane, and update
+   the candidate register in [`SOURCE_CANDIDATES.md`](SOURCE_CANDIDATES.md).
 4. **Open PRs** for any candidates recommended for admission. Each PR is
    self-contained: `sources.yaml` entry, parser, test fixture, ADR, and
    scoring test.
@@ -267,7 +268,7 @@ recorded so the candidate is not re-surveyed.
 | **Independence** | Must not be a mirror or aggregate of existing sources. Measure Jaccard overlap against current sources. If >0.5 overlap with any single existing source, it shares that source's independence class and cannot add a vote. |
 | **Sensor method** | Must document how indicators are collected and verified. "Scraped from other lists" is not a sensor method. |
 | **Update cadence** | Must have a declared update frequency or a feed-level timestamp that allows freshness evaluation. Sources with no timestamp and no content change detection cannot be evaluated for staleness. |
-| **Endpoint stability** | Must be a stable URL, not a ad-hoc paste. Auth requirements are acceptable if the key is free. |
+| **Endpoint stability** | Must be a stable URL, not an ad-hoc paste. Free keys are acceptable. Paid or credentialed access is acceptable for a `redistribute: false` scoring-only source; any purchase or trial is a separate maintainer decision. |
 | **Volume and churn** | Must not push the published feed outside its committed volume range without an explicit ADR. Measure churn across several runs before enabling. |
 | **False-positive risk** | Cloud-hosted and dynamically allocated IPs are high FP risk. All-time lists that never remove entries are rejected unless they document a verification step. |
 | **Address families** | IPv4, IPv6, or both. IPv6 host-level sources are specifically valuable (open item from ADR-033). |
