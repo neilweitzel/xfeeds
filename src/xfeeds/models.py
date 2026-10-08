@@ -35,6 +35,7 @@ VALID_PARSERS = {
     "github_meta",
     "google_json",
     "ipsum_levels",
+    "isc_threatintel",
     "ipthreat",
     "netset",
     "plain_text",
@@ -118,6 +119,16 @@ class SourceConfig(BaseModel):
     Superseded ADR-052/053 behaviour, where dormant meant a damped, non-admitting
     vote. Half-counting evidence from a threat we have already declared dead was
     a distinction without a defensible purpose.
+    """
+    benign_cap: bool = False
+    """This source only ever lowers confidence: a listed address is capped high -> medium.
+
+    For curated lists of research and measurement scanners. It is the GreyNoise
+    rule (ADR-049) from a second, free provider: scanning by a known research
+    operator is the consumer's policy choice, not a threat assertion at high
+    confidence. A benign-cap source must not vote and must not be redistributed;
+    its records are removed before scoring, so they never enter observations,
+    state, or the corpus statistics, and no marker is written onto any record.
     """
     max_row_age_days: int | None = None
     """Drop rows whose own last-seen date is older than this many days.
@@ -244,6 +255,14 @@ class Registry(BaseModel):
 
             if source.parser not in VALID_PARSERS:
                 raise ValueError(f"Unknown parser '{source.parser}' for source {source.name}")
+
+            if source.benign_cap and (
+                source.vote or source.redistribute or source.redistribute_noncommercial
+            ):
+                raise ValueError(
+                    f"Source {source.name} is a benign_cap source; it must set vote: false, "
+                    "redistribute: false and redistribute_noncommercial: false"
+                )
 
             if source.vote and source.weight == 0.0:
                 raise ValueError(f"Source {source.name} is a voting source but has weight 0.0")

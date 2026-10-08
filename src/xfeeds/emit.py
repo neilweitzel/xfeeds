@@ -614,6 +614,7 @@ def build_manifest(
     filter_stats: dict[str, Any],
     withheld: int = 0,
     benign_scanners_capped: int = 0,
+    research_scanners_capped: int = 0,
 ) -> dict[str, Any]:
     """Machine-readable run summary. Drives the dashboard and the health checks."""
     bands = Counter(r.band.value for r in records)
@@ -688,6 +689,7 @@ def build_manifest(
             # and it is also the health signal for the enrichment: this dropping to
             # zero while the feed grows means the lookup is failing silently.
             "benign_scanners_capped": benign_scanners_capped,
+            "research_scanners_capped": research_scanners_capped,
         },
         "corroboration_histogram": {str(k): v for k, v in sorted(class_hist.items())},
         "deltas": {

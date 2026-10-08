@@ -1598,3 +1598,37 @@ def test_carpathian_admits_with_a_second_class() -> None:
     assert pair.band is Band.MEDIUM
     assert score_indicators([_real_obs(reg, "carpathian")], reg, NOW)[0].band is Band.WITHHELD
     assert "carpathian" in permissive_sources(reg)
+
+
+def test_benign_cap_rows_never_become_evidence_and_only_cap_high() -> None:
+    from xfeeds.greynoise import cap_benign_scanners
+    from xfeeds.pipeline import split_benign_cap
+
+    cap = src("cap", "isc_labels", weight=0.0, vote=False, redistribute=False, benign_cap=True)
+    reg = registry_of(src("a", "alpha"), src("b", "beta"), src("c", "gamma"), cap)
+    labelled = "45.33.32.156"
+    records = [obs("a", "alpha"), obs("b", "beta"), obs("c", "gamma"), obs("cap", "isc_labels")]
+    records += [obs(n, cls, ip="45.33.32.157") for n, cls in (("a", "alpha"), ("b", "beta"))]
+
+    evidence, scanners = split_benign_cap(records, reg)
+    assert scanners == {labelled}
+    assert all(r.source != "cap" for r in evidence)
+
+    scored = {str(r.ip_or_cidr): r for r in score_indicators(evidence, reg, NOW)}
+    assert scored[labelled].band is Band.HIGH
+    assert scored["45.33.32.157"].band is Band.MEDIUM
+    capped = cap_benign_scanners(list(scored.values()), scanners)
+    assert capped == 1
+    assert scored[labelled].band is Band.MEDIUM, "capped, not removed"
+    assert scored["45.33.32.157"].band is Band.MEDIUM
+
+
+def test_greynoise_caps_first_so_its_count_is_unchanged_by_research_labels() -> None:
+    from xfeeds.greynoise import cap_benign_scanners
+
+    reg = registry_of(src("a", "alpha"), src("b", "beta"), src("c", "gamma"))
+    records = [obs(n, cls) for n, cls in (("a", "alpha"), ("b", "beta"), ("c", "gamma"))]
+    scored = score_indicators(records, reg, NOW)
+    both = {"45.33.32.156"}
+    assert cap_benign_scanners(scored, both) == 1  # GreyNoise
+    assert cap_benign_scanners(scored, both) == 0  # research labels: already medium

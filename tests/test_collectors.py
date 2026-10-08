@@ -872,3 +872,25 @@ def test_carpathian_drops_undated_rows_when_age_limited() -> None:
     records = list(carpathian_json(content, config, datetime(2026, 10, 8, tzinfo=UTC)))
     assert [str(r.ip_or_cidr) for r in records] == ["45.33.32.1"]
     assert list(carpathian_json(b"[]", config, datetime(2026, 10, 8, tzinfo=UTC))) == []
+
+
+def test_isc_threatintel_keeps_only_configured_research_scanner_labels() -> None:
+    from xfeeds.collectors.parsers import isc_threatintel
+    from xfeeds.config import load_registry
+
+    config = next(
+        s for s in load_registry(Path("sources.yaml")).sources if s.name == "isc_research_scanners"
+    )
+    content = Path("tests/fixtures/sources/isc_threatintel.txt").read_bytes()
+    records = list(isc_threatintel(content, config, datetime(2026, 10, 8, tzinfo=UTC)))
+    assert len(records) == 20, "the 8 ciarmy/openresolver/anthropic/blocklistde rows are excluded"
+    assert all(r.categories == [] for r in records)
+    assert config.benign_cap and not config.vote and not config.redistribute
+
+
+def test_isc_threatintel_without_labels_keeps_nothing() -> None:
+    from xfeeds.collectors.parsers import isc_threatintel
+
+    content = Path("tests/fixtures/sources/isc_threatintel.txt").read_bytes()
+    config = get_mock_config(name="i", parser="isc_threatintel", vote=False)
+    assert list(isc_threatintel(content, config, datetime(2026, 10, 8, tzinfo=UTC))) == []

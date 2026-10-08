@@ -932,6 +932,85 @@ sources:
       false-positive risk, held down by the 30-day row limit, a 7-day TTL, the
       two-class publication rule, and the allowlist. IPv4 only today.
 
+  - name: isc_research_scanners
+    credit: "SANS Internet Storm Center research-scanner labels - isc.sans.edu (cap only, never republished)"
+    url: https://isc.sans.edu/feeds/threatintel.txt
+    parser: isc_threatintel
+    independence_class: isc_labels
+    weight: 0.0
+    vote: false
+    benign_cap: true
+    redistribute: false
+    redistribute_noncommercial: false
+    noncommercial_compatible: false
+    ttl_days: 7
+    max_row_age_days: 7
+    min_interval_seconds: 3600
+    license: "CC BY-NC-SA 4.0 per the ISC API page. Used only to lower confidence; nothing is republished"
+    license_url: https://isc.sans.edu/feeds_doc.html
+    license_risk: low
+    params:
+      # Research and measurement scanners only. Crawlers (openai, anthropic,
+      # semrush), infrastructure classes (openresolver, mastodon, tldns), and the
+      # third-party blocklists ISC mirrors (ciarmy, blocklistde*, forumspam) are
+      # deliberately absent: they are not scanners, or not ISC's own judgement.
+      labels:
+        - censys
+        - expanse
+        - onyphe
+        - netsystems
+        - driftnet
+        - alphastrikelabs
+        - shadowserver
+        - internetcensus
+        - internetmeasurement
+        - odin
+        - univmichigan
+        - umich
+        - stretchoid
+        - recyber
+        - openportstats
+        - rapid7sonar
+        - normshield
+        - bochum
+        - arbor
+        - cybercasa
+        - modat
+        - internettl
+        - qualys
+        - leakix
+        - shodan
+        - binaryedge
+        - ipip
+        - bufferoverrun
+        - bufferover.run
+        - onlyscans
+        - visionheight
+        - researchscanner
+        - academyforinternetresarch
+        - scorecard
+        - internetresearchproject
+        - erratasec
+        - erratasect
+        - criminalip
+        - project25499
+        - univsydney
+        - spyse
+        - flowiq
+        - blindferret
+        - cybergreen
+        - qrator
+    notes: >
+      ADMITTED in v1.1.0 (ADR-070) as a benign-cap input alongside GreyNoise.
+      threatintel.txt is every label ISC attaches to an address (about 199,500
+      rows); as a whole it is an aggregate and never votes. Only research-scanner
+      labels are kept, and they only ever cap a HIGH record to MEDIUM, after
+      GreyNoise, so benign_scanners_capped still reports GreyNoise alone and
+      research_scanners_capped reports this. Measured 2026-10-08 by the source
+      review: 789 published records carried one of these labels, 46 of them high
+      and not capped by GreyNoise. Rows are kept only if ISC saw them in the last
+      7 days, which the file itself also guarantees.
+
   - name: tor_exits
     credit: "Tor exit relay list - The Tor Project, torproject.org"
     attribution_required: true

@@ -148,6 +148,24 @@ class RunReport:
         return "\n".join(lines)
 
 
+def split_benign_cap(
+    records: list[IndicatorRecord], registry: Registry
+) -> tuple[list[IndicatorRecord], set[str]]:
+    """Separate benign-cap rows from evidence before anything else sees them.
+
+    A benign-cap source (ADR-070) is a list of research scanners. It must not
+    become an observation: it would inflate the corpus, enter state, and appear
+    to "see" addresses it only labels. Its addresses are returned as a set used
+    solely to cap HIGH records to MEDIUM.
+    """
+    cap_names = {s.name for s in registry.sources if s.benign_cap}
+    if not cap_names:
+        return records, set()
+    evidence = [r for r in records if r.source not in cap_names]
+    labelled = {str(r.ip_or_cidr) for r in records if r.source in cap_names}
+    return evidence, labelled
+
+
 def collect_all(
     registry: Registry,
     observed_on: datetime,
@@ -423,6 +441,7 @@ def run(
     records, status, warnings, expired = collect_all(
         registry, observed_on, only=only, ledger=ledger, window=window
     )
+    records, research_scanners = split_benign_cap(records, registry)
     report.source_status = status
     report.warnings = warnings
 
@@ -453,6 +472,13 @@ def run(
     benign_capped = cap_benign_scanners(publishable, benign)
     if benign_capped:
         report.warnings.append(f"{benign_capped} records capped high -> medium as benign scanners")
+    # Research-scanner labels (ADR-070) run second, so benign_scanners_capped keeps
+    # meaning "what GreyNoise capped" and stays usable as its health signal.
+    research_capped = cap_benign_scanners(publishable, research_scanners)
+    if research_capped:
+        report.warnings.append(
+            f"{research_capped} records capped high -> medium as labelled research scanners"
+        )
 
     high_count = sum(1 for r in publishable if r.band is Band.HIGH)
 
@@ -467,6 +493,7 @@ def run(
         # Aggregate only. A per-record marker would disclose GreyNoise membership
         # into a published file, which their terms do not permit.
         "benign_scanners_capped": benign_capped,
+        "research_scanners_capped": research_capped,
     }
     # Deltas describe the PUBLISHED feed. Counting every observation would report
     # tens of thousands of "additions" that were withheld and never shipped.
@@ -504,6 +531,7 @@ def run(
         report.filters,
         withheld=report.counts["withheld"],
         benign_scanners_capped=benign_capped,
+        research_scanners_capped=research_capped,
     )
     emit_all(publishable, registry, manifest, now, feeds_dir=feeds_dir)
 
@@ -573,6 +601,7 @@ def run(
         # same addresses, and a second bulk call would double the quota spend for an
         # identical answer.
         cap_benign_scanners(pm_publishable, benign)
+        cap_benign_scanners(pm_publishable, research_scanners)
         pm_dir = feeds_dir / PERMISSIVE_DIR
         pm_manifest = build_manifest(
             registry,
