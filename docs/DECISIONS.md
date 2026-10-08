@@ -2482,3 +2482,32 @@ it, and ADR-064's contribution report will show what it is decisive for.
 **Role.** Class `carpathian`, admitting, weight 0.6, no solo promotion.
 
 **Burn-in.** `sources.yaml` and `src/` change; part of the v1.1.0 window.
+
+## ADR-070 — A second benign-scanner cap: SANS ISC research-scanner labels
+
+**Date:** 2026-10-08. **Status:** Accepted for v1.1.0. **Source review:** #62.
+**Extends:** ADR-049 (GreyNoise caps benign scanners).
+
+**Why.** GreyNoise's benign classification is the only false-positive cap, and
+RIOT is not on the free tier. The 2026-10-08 review found 789 published records
+carrying an ISC research-scanner label (Censys, Palo Alto Xpanse, Shadowserver,
+Shodan, University of Michigan, and others), 46 of them high and uncapped.
+
+**What.** `https://isc.sans.edu/feeds/threatintel.txt` with only research and
+measurement scanner labels kept (listed in `sources.yaml`). As a whole the file
+is an aggregate label dump and is never a vote.
+
+**New role: `benign_cap`.** A benign-cap source must set `vote: false` and both
+redistribute flags false (the registry rejects anything else). Its rows are
+split off before scoring, so they never enter observations, state, or the
+corpus statistics. They cap HIGH to MEDIUM and do nothing else, the GreyNoise
+rule (ADR-013, ADR-049): research scanning is the consumer's policy choice.
+
+**Ordering and reporting.** GreyNoise caps first, then this; so
+`benign_scanners_capped` still measures GreyNoise alone (the ADR-049 health
+signal), and the new `research_scanners_capped` counts this source. Applied to
+the primary and clean tiers, exactly where the GreyNoise cap already applies.
+
+**Licence.** Nothing is redistributed; no marker is written onto any record.
+
+**Burn-in.** `sources.yaml` and `src/` change; part of the v1.1.0 window.

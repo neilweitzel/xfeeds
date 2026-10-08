@@ -751,6 +751,60 @@ def carpathian_json(
     _log_skips(config.name, malformed_count, non_global_count)
 
 
+def isc_threatintel(
+    content: bytes, config: SourceConfig, fetch_time: datetime
+) -> Iterator[IndicatorRecord]:
+    """Parse SANS ISC ``threatintel.txt`` and keep only the configured labels.
+
+    Tab-separated ``date, lastseen, ip, type, country`` behind a ``#`` header and a
+    column-name row. The file is every label ISC attaches to an address, most of
+    them third-party blocklists, so as a whole it is an aggregate and must never
+    vote. Only ``params.labels`` rows are kept, and the source is used to cap
+    research scanners (``benign_cap``), nothing else.
+    """
+    params = config.params or {}
+    raw_labels = params.get("labels", [])
+    labels = {str(label).strip().lower() for label in raw_labels} if raw_labels else set()
+    if not labels:
+        logger.warning("isc_threatintel_no_labels", source=config.name)
+        return
+
+    malformed_count = 0
+    non_global_count = 0
+    for line in content.decode("utf-8", "replace").splitlines():
+        if not line.strip() or line.startswith("#"):
+            continue
+        columns = line.split("\t")
+        if columns[0] == "date":
+            continue  # the column-name row
+        if len(columns) < 4:
+            malformed_count += 1
+            continue
+        if columns[3].strip().lower() not in labels:
+            continue
+        try:
+            ip_obj: IPOrNet = ipaddress.ip_address(columns[2].strip())
+        except ValueError:
+            malformed_count += 1
+            continue
+        if not _is_global(ip_obj):
+            non_global_count += 1
+            continue
+        seen = _parse_reported_date(columns[1])
+        if _row_too_old(seen, config, fetch_time):
+            continue
+        yield IndicatorRecord(
+            ip_or_cidr=ip_obj,
+            source=config.name,
+            independence_class=config.independence_class,
+            first_seen=fetch_time,
+            last_seen=fetch_time,
+            categories=[],
+            source_last_reported=seen,
+        )
+    _log_skips(config.name, malformed_count, non_global_count)
+
+
 def dataplane(
     content: bytes, config: SourceConfig, fetch_time: datetime
 ) -> Iterator[IndicatorRecord]:
@@ -834,6 +888,7 @@ _IMPLEMENTED = [
     dataplane,
     dshield_api,
     carpathian_json,
+    isc_threatintel,
 ]
 
 PARSERS = {}

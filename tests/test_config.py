@@ -358,3 +358,29 @@ def test_clean_tier_excludes_re_aggregators() -> None:
     assert not (clean & aggregators), (
         f"re-aggregators in the clean tier: {sorted(clean & aggregators)}"
     )
+
+
+def test_a_benign_cap_source_may_not_vote_or_be_redistributed() -> None:
+    from xfeeds.models import DefaultsConfig, Registry, SourceConfig
+
+    def reg(**kw: object) -> Registry:
+        source = SourceConfig(
+            name="cap",
+            url="https://example.com",
+            parser="isc_threatintel",
+            independence_class="isc_labels",
+            weight=0.0,
+            benign_cap=True,
+            **kw,  # type: ignore[arg-type]
+        )
+        return Registry(
+            version=1, defaults=DefaultsConfig(), sources=[source], allowlist_sources=[]
+        )
+
+    reg(vote=False, redistribute=False)
+    with pytest.raises(ValidationError):
+        reg(vote=True, redistribute=False)
+    with pytest.raises(ValidationError):
+        reg(vote=False, redistribute=True)
+    with pytest.raises(ValidationError):
+        reg(vote=False, redistribute=False, redistribute_noncommercial=True)

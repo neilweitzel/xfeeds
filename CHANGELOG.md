@@ -12,6 +12,9 @@ six hours by design. A consumer pinning a tag still fetches the same live URLs.
 
 ### Added
 
+- SANS ISC research-scanner labels added as a benign-scanner cap (ADR-070),
+  alongside GreyNoise. New `benign_cap` source role, `isc_threatintel` parser,
+  and manifest count `research_scanners_capped`.
 - Carpathian admitted as an admitting class (ADR-069): CC BY 4.0 first-party
   infrastructure bans, new `carpathian_json` parser, rows limited to the last 30
   days by their own `last_seen`.
