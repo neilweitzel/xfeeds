@@ -79,7 +79,17 @@ restricted corroboration.
 | GreenSnow | `greensnow` | "Reproduction or republication strictly prohibited" | 0.6 / 10d | 6,908 | 1,963 |
 | DShield block list | `dshield` | CC BY-NC-SA: admits in the non-commercial tier only; 20 /24s | 0.5 / 3d | 22 | 19 |
 
-### Admitted in v1.1.0 (burn-in)
+### Admitted in v1.1.0 (candidate window)
+
+Live contribution from the 2026-10-09 09:00 UTC run (`class_contribution`):
+
+| Class | Observed | Only this class | Supports published (high) | Withheld without it | Lose high without it | Most also seen by |
+|---|---:|---:|---:|---:|---:|---|
+| `reportedip` | 12,997 | 3,935 | 6,425 (3,309) | 4,016 | 1,633 | dataplane 49% |
+| `jacobrakai` | 500 | 66 | 392 (317) | 164 | 92 | reportedip 74% |
+| `carpathian` | 689 | 327 | 237 (181) | 102 | 65 | abuseipdb 37% |
+| `sblam` | 1,234 | 309 | 13 (4) | 0 | 0 | stopforumspam 73% |
+| `dshield` (with `sources/attacks`) | 10,760 | 5,457 | 2,696 (1,125) | 0 | 17 | dataplane 32% |
 
 | Source | Class | How it is used | Tiers | Weight / TTL | PR |
 |---|---|---|---|---|---|

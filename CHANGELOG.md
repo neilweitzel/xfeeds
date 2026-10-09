@@ -10,6 +10,16 @@ six hours by design. A consumer pinning a tag still fetches the same live URLs.
 
 ## [Unreleased]
 
+## [1.1.0-rc.2] - 2026-10-09
+
+Second v1.1.0 candidate, one day into the window. Restarts the window for one
+fix and the source-review issue template; no source or scoring change.
+
+### Changed
+
+- Source-review issue template matches the current admission rules: licences read
+  as written, containment recorded as corroboration, ongoing access only.
+
 ### Fixed
 
 - The non-commercial tier now gets the GreyNoise and research-scanner caps, and
@@ -668,7 +678,8 @@ to `1.0.0` unchanged.
   by manual review get a regression test.
 - No unit test touches the network.
 
-[Unreleased]: https://github.com/neilweitzel/xfeeds/compare/v1.1.0-rc.1...HEAD
+[Unreleased]: https://github.com/neilweitzel/xfeeds/compare/v1.1.0-rc.2...HEAD
+[1.1.0-rc.2]: https://github.com/neilweitzel/xfeeds/releases/tag/v1.1.0-rc.2
 [1.1.0-rc.1]: https://github.com/neilweitzel/xfeeds/releases/tag/v1.1.0-rc.1
 [1.0.0-rc.3]: https://github.com/neilweitzel/xfeeds/releases/tag/v1.0.0-rc.3
 [1.0.0-rc.2]: https://github.com/neilweitzel/xfeeds/releases/tag/v1.0.0-rc.2

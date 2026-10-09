@@ -47,11 +47,13 @@ Every version DOI is also discoverable from the concept DOI's Zenodo version lis
 | `v1.0.0-rc.5` | not deposited | — |
 | `v1.0.0` | 2026-10-05 | [10.5281/zenodo.23163156](https://doi.org/10.5281/zenodo.23163156) |
 | `v1.0.1` | GitHub release only | Not deposited; operational patch |
+| `v1.1.0-rc.1` | GitHub prerelease only | Not deposited; release candidate |
+| `v1.1.0-rc.2` | GitHub prerelease only | Not deposited; release candidate |
 
 Release candidates are not deposited by default. A version DOI may be added to
 `CITATION.cff` only while its version matches that archive. Main now describes
-v1.0.1, so it retains the concept DOI and records the v1.0.0 version DOI here
-rather than implying that v1.0.1 was archived.
+v1.1.0-rc.2, so it retains the concept DOI and records the v1.0.0 version DOI here
+rather than implying that a later version was archived.
 
 ### Verified v1.0.0 deposit
 

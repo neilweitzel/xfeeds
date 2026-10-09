@@ -22,26 +22,18 @@ promotion: the workflow neither researches nor enables candidates automatically.
 Every admission still needs evidence, an independently reviewable PR, tests, and
 an explicit decision.
 
-## Proposed next minor: v1.1.0
+## Next minor: v1.1.0 (candidate window open)
 
-No candidate tag or release date is set yet. Preserve v1.0.1 production behavior
-while the first post-patch automatic refresh completes and the October 8 review
-collects evidence. The detailed quality audit is in
-[`RELEASE_AUDIT_2026-10-05.md`](RELEASE_AUDIT_2026-10-05.md).
+`v1.1.0-rc.1` was cut on 2026-10-08 and `v1.1.0-rc.2` on 2026-10-09 (ADR-071, the
+scanner-cap fix). `v1.0.1` stays the stable release until v1.1.0 is promoted
+through [`RELEASE_CHECKLIST.md`](RELEASE_CHECKLIST.md).
 
-| Priority | Work | Release handling |
-|---|---|---|
-| First | Complete post-patch automatic reservation/fetch/publish observation | Current-release verification, not a feature |
-| October 8 | Discovery lanes and candidate register (3.2/3.3), Spur evaluation (3.1), AbuseIPDB expansion evaluation (4.2), second IPv6 admitting source search | Review and private measurements before admission; no purchase or automatic enablement |
-| Next minor foundation | Retention telemetry (4.1) | Observe for 30 days before proposing expiry changes; does not reopen v1.0.0 burn-in |
-| Separate small PR | Promotion configuration and scorer documentation (1.2/1.5) | Preserve all existing behavior, including the abuse.ch branch; prove fixture equivalence |
-| Independent work | Repository-growth measurement (1.3) and dashboard scope reconciliation (2.1) | Measure first; do not mix source admission, scoring refactor, and dashboard redesign into one unreviewable change |
-
-Before the October 8 review, reconcile discovery instructions: the current brief,
-lifecycle table, and issue-template summary still prefer free access, while 3.2
-explicitly accepts credentialed/commercial scoring-only evaluation. Update them
-together as part of 3.2. Do not reject a candidate solely because it is paid, and
-do not treat this planning decision as permission to buy a subscription.
+| Status | Work |
+|---|---|
+| In the window | Six October-review sources (ADR-065 to ADR-070), contribution reporting (3.4, ADR-064), scanner caps on every tier (ADR-071) |
+| Rejected | AbuseIPDB Basic (4.2): not paying; free tier stays |
+| Blocked | Spur (3.1): feeds need a paid subscription |
+| Not in this window | Retention telemetry (4.1), promotion config (1.2/1.5), repository growth (1.3), dashboard restructure (2.1) |
 
 ## How to use this backlog
 

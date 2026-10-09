@@ -485,8 +485,9 @@ does not claim the new scheduler completed the September burn-in.
 `v1.1.0-rc.1` (2026-10-08) opens the v1.1.0 window. It admits six sources from the
 October review (ReportedIP, jacobrakai, and Carpathian as admitting classes; Sblam
 and SANS ISC `sources/attacks` as voting-only; ISC research-scanner labels as a
-benign cap) and reports what every class contributes. `v1.0.1` remains the stable
-release until v1.1.0 is promoted.
+benign cap) and reports what every class contributes. `v1.1.0-rc.2` (2026-10-09) is
+the current candidate: it applies the scanner caps to every published tier
+(ADR-071). `v1.0.1` remains the stable release until v1.1.0 is promoted.
 
 The promotion steps are enumerated in
 [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md).
