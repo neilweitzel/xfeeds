@@ -2511,3 +2511,26 @@ the primary and clean tiers, exactly where the GreyNoise cap already applies.
 **Licence.** Nothing is redistributed; no marker is written onto any record.
 
 **Burn-in.** `sources.yaml` and `src/` change; part of the v1.1.0 window.
+
+## ADR-071 — Every published tier gets the same scanner caps
+
+**Date:** 2026-10-09. **Status:** Accepted for v1.1.0-rc.2.
+
+**Finding.** In rc.1 and every earlier release, `feeds/noncommercial/` shipped
+with neither the GreyNoise cap (ADR-049) nor, after rc.1, the research-scanner
+cap (ADR-070). No ADR or comment records that as a choice. On 2026-10-09 the tier
+published 20,199 records, 18,893 high, with no false-positive control a primary
+consumer gets. The clean tier was capped but its manifest reported 0 for both
+counts.
+
+**Decision.** One function, `apply_scanner_caps`, caps every published tier,
+GreyNoise first, then research labels, and each tier's manifest reports its own
+`benign_scanners_capped` and `research_scanners_capped`. GreyNoise results are
+reused rather than re-queried; addresses published only in the non-commercial or
+clean tier were not looked up, which is a quota trade and is stated here. A
+regression test asserts all three tiers use the shared path.
+
+**Effect.** A keyless scratch run (no GreyNoise) capped 1,520 non-commercial
+records by research labels. Caps only lower HIGH to MEDIUM; nothing is removed.
+
+**Burn-in.** `src/` changes; cut as `v1.1.0-rc.2`, one day into the window.

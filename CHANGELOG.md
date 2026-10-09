@@ -10,6 +10,12 @@ six hours by design. A consumer pinning a tag still fetches the same live URLs.
 
 ## [Unreleased]
 
+### Fixed
+
+- The non-commercial tier now gets the GreyNoise and research-scanner caps, and
+  the non-commercial and clean manifests report their own capped counts
+  (ADR-071). Previously that tier shipped with no scanner cap.
+
 ## [1.1.0-rc.1] - 2026-10-08
 
 First v1.1.0 candidate. Opens the release window: six sources from the October
