@@ -148,6 +148,22 @@ class RunReport:
         return "\n".join(lines)
 
 
+def apply_scanner_caps(
+    publishable: list[ScoredIndicator], greynoise: set[str], research: set[str]
+) -> tuple[int, int]:
+    """Cap benign and research scanners HIGH -> MEDIUM, GreyNoise first. Returns both counts.
+
+    One function for every published tier, so a tier cannot silently ship without
+    the false-positive controls the others have. Before v1.1.0-rc.2 the
+    non-commercial tier skipped both caps, with no recorded reason. GreyNoise runs
+    first so its count stays its own health signal (ADR-049, ADR-070).
+    """
+    return (
+        cap_benign_scanners(publishable, greynoise),
+        cap_benign_scanners(publishable, research),
+    )
+
+
 def split_benign_cap(
     records: list[IndicatorRecord], registry: Registry
 ) -> tuple[list[IndicatorRecord], set[str]]:
@@ -469,12 +485,9 @@ def run(
     # the run continues. See src/xfeeds/greynoise.py for the licensing constraint:
     # this may only remove confidence, never annotate a record.
     benign = benign_addresses(publishable)
-    benign_capped = cap_benign_scanners(publishable, benign)
+    benign_capped, research_capped = apply_scanner_caps(publishable, benign, research_scanners)
     if benign_capped:
         report.warnings.append(f"{benign_capped} records capped high -> medium as benign scanners")
-    # Research-scanner labels (ADR-070) run second, so benign_scanners_capped keeps
-    # meaning "what GreyNoise capped" and stays usable as its health signal.
-    research_capped = cap_benign_scanners(publishable, research_scanners)
     if research_capped:
         report.warnings.append(
             f"{research_capped} records capped high -> medium as labelled research scanners"
@@ -549,6 +562,9 @@ def run(
             nc_ageing.records, registry, allowlist, redistributable=nc_names
         )
         nc_publishable = [r for r in nc_kept if r.band is not Band.WITHHELD]
+        # GreyNoise is reused, not re-queried: addresses only this tier publishes
+        # were not looked up, which is a quota trade, not a licence one.
+        nc_benign, nc_research = apply_scanner_caps(nc_publishable, benign, research_scanners)
         nc_dir = feeds_dir / NONCOMMERCIAL_DIR
         nc_manifest = build_manifest(
             registry,
@@ -566,6 +582,8 @@ def run(
                 "examples": nc_stats.examples,
             },
             withheld=sum(1 for r in nc_kept if r.band is Band.WITHHELD),
+            benign_scanners_capped=nc_benign,
+            research_scanners_capped=nc_research,
         )
         nc_manifest["tier"] = "noncommercial"
         nc_manifest["license"] = NONCOMMERCIAL_LICENSE
@@ -600,8 +618,7 @@ def run(
         # The same GreyNoise result is reused rather than looked up again: it is the
         # same addresses, and a second bulk call would double the quota spend for an
         # identical answer.
-        cap_benign_scanners(pm_publishable, benign)
-        cap_benign_scanners(pm_publishable, research_scanners)
+        pm_benign, pm_research = apply_scanner_caps(pm_publishable, benign, research_scanners)
         pm_dir = feeds_dir / PERMISSIVE_DIR
         pm_manifest = build_manifest(
             registry,
@@ -619,6 +636,8 @@ def run(
                 "examples": pm_stats.examples,
             },
             withheld=sum(1 for r in pm_kept if r.band is Band.WITHHELD),
+            benign_scanners_capped=pm_benign,
+            research_scanners_capped=pm_research,
         )
         pm_manifest["tier"] = "permissive"
         pm_manifest["license"] = "per-source, all permissive - see clean/LICENSE.txt"

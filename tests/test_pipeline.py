@@ -1632,3 +1632,31 @@ def test_greynoise_caps_first_so_its_count_is_unchanged_by_research_labels() -> 
     both = {"45.33.32.156"}
     assert cap_benign_scanners(scored, both) == 1  # GreyNoise
     assert cap_benign_scanners(scored, both) == 0  # research labels: already medium
+
+
+def test_scanner_caps_run_greynoise_first_and_report_both() -> None:
+    from xfeeds.pipeline import apply_scanner_caps
+
+    reg = registry_of(src("a", "alpha"), src("b", "beta"), src("c", "gamma"))
+    ips = ["45.33.32.1", "45.33.32.2", "45.33.32.3"]
+    records = [
+        obs(n, cls, ip=ip)
+        for ip in ips
+        for n, cls in (("a", "alpha"), ("b", "beta"), ("c", "gamma"))
+    ]
+    scored = score_indicators(records, reg, NOW)
+    assert all(r.band is Band.HIGH for r in scored)
+    greynoise, research = apply_scanner_caps(scored, {ips[0], ips[1]}, {ips[1], ips[2]})
+    assert (greynoise, research) == (2, 1)
+    assert all(r.band is Band.MEDIUM for r in scored)
+
+
+def test_every_published_tier_applies_the_scanner_caps() -> None:
+    """Regression for rc.1: the non-commercial tier shipped with no scanner cap at all."""
+    import inspect
+
+    from xfeeds import pipeline
+
+    body = inspect.getsource(pipeline.run)
+    assert body.count("apply_scanner_caps(") == 3, "primary, non-commercial, and clean"
+    assert "cap_benign_scanners(" not in body, "tiers must share one cap path"
