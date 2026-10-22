@@ -1,4 +1,4 @@
-# xfeeds ipset (IPv4 only) - generated 2026-10-21T22:19:20.722583+00:00
+# xfeeds ipset (IPv4 only) - generated 2026-10-22T13:46:01.626865+00:00
 # https://github.com/neilweitzel/xfeeds
 create xfeeds hash:net family inet -exist
 flush xfeeds
@@ -8,6 +8,7 @@ add xfeeds 2.26.60.228
 add xfeeds 2.57.121.25
 add xfeeds 2.57.121.112
 add xfeeds 2.57.122.53
+add xfeeds 2.57.122.74
 add xfeeds 2.57.122.76
 add xfeeds 2.57.122.150
 add xfeeds 2.57.122.168
@@ -18,7 +19,6 @@ add xfeeds 2.188.206.146
 add xfeeds 2.189.128.6
 add xfeeds 3.129.187.38
 add xfeeds 4.182.219.135
-add xfeeds 4.184.246.230
 add xfeeds 4.185.40.215
 add xfeeds 4.196.65.241
 add xfeeds 4.196.200.15
@@ -32,11 +32,11 @@ add xfeeds 5.89.75.194
 add xfeeds 5.101.157.184
 add xfeeds 5.165.19.3
 add xfeeds 5.181.86.188
+add xfeeds 5.188.86.234
 add xfeeds 5.196.63.130
 add xfeeds 5.202.169.252
 add xfeeds 5.253.38.54
 add xfeeds 5.253.38.188
-add xfeeds 5.253.59.68
 add xfeeds 5.253.84.92
 add xfeeds 8.39.235.18
 add xfeeds 13.70.107.184
@@ -60,10 +60,11 @@ add xfeeds 14.206.0.20
 add xfeeds 14.224.253.94
 add xfeeds 14.225.206.171
 add xfeeds 14.225.206.187
-add xfeeds 14.225.206.198
 add xfeeds 14.225.218.99
 add xfeeds 14.225.239.154
 add xfeeds 15.235.192.186
+add xfeeds 15.236.61.7
+add xfeeds 18.135.209.62
 add xfeeds 18.218.118.203
 add xfeeds 20.5.79.49
 add xfeeds 20.5.85.204
@@ -78,7 +79,6 @@ add xfeeds 20.77.26.9
 add xfeeds 20.89.68.9
 add xfeeds 20.92.72.133
 add xfeeds 20.92.77.159
-add xfeeds 20.92.83.244
 add xfeeds 20.157.117.15
 add xfeeds 20.193.50.139
 add xfeeds 20.193.141.133
@@ -100,13 +100,11 @@ add xfeeds 20.204.16.113
 add xfeeds 20.204.110.107
 add xfeeds 20.204.146.105
 add xfeeds 20.205.12.169
-add xfeeds 20.205.114.149
 add xfeeds 20.205.127.10
 add xfeeds 20.207.202.183
 add xfeeds 20.207.204.56
 add xfeeds 20.210.128.125
 add xfeeds 20.210.166.54
-add xfeeds 20.210.186.186
 add xfeeds 20.211.27.190
 add xfeeds 20.211.36.82
 add xfeeds 20.211.97.120
@@ -126,10 +124,8 @@ add xfeeds 20.249.5.100
 add xfeeds 20.251.194.156
 add xfeeds 23.29.118.81
 add xfeeds 23.94.122.169
-add xfeeds 23.95.35.105
 add xfeeds 23.139.36.16
 add xfeeds 23.148.144.69
-add xfeeds 23.227.147.163
 add xfeeds 24.40.184.51
 add xfeeds 27.72.195.145
 add xfeeds 27.79.3.14
@@ -185,6 +181,7 @@ add xfeeds 41.90.100.147
 add xfeeds 41.93.28.23
 add xfeeds 41.93.82.201
 add xfeeds 41.94.111.190
+add xfeeds 41.111.183.207
 add xfeeds 41.128.181.199
 add xfeeds 41.173.43.34
 add xfeeds 41.181.156.205
@@ -218,7 +215,6 @@ add xfeeds 43.153.124.181
 add xfeeds 43.154.195.142
 add xfeeds 43.155.21.198
 add xfeeds 43.155.134.4
-add xfeeds 43.155.202.36
 add xfeeds 43.156.33.17
 add xfeeds 43.157.200.91
 add xfeeds 43.159.39.203
@@ -228,7 +224,6 @@ add xfeeds 43.173.111.217
 add xfeeds 43.228.157.194
 add xfeeds 43.230.5.42
 add xfeeds 43.245.248.2
-add xfeeds 45.4.179.4
 add xfeeds 45.5.252.250
 add xfeeds 45.33.12.122
 add xfeeds 45.40.57.23
@@ -243,10 +238,8 @@ add xfeeds 45.77.61.56
 add xfeeds 45.78.201.248
 add xfeeds 45.78.202.217
 add xfeeds 45.78.206.111
-add xfeeds 45.78.224.198
 add xfeeds 45.78.230.231
 add xfeeds 45.78.235.121
-add xfeeds 45.79.5.11
 add xfeeds 45.80.27.169
 add xfeeds 45.91.64.7
 add xfeeds 45.91.64.10
@@ -277,7 +270,6 @@ add xfeeds 45.138.12.44
 add xfeeds 45.138.12.46
 add xfeeds 45.138.12.47
 add xfeeds 45.138.12.52
-add xfeeds 45.138.12.53
 add xfeeds 45.138.12.65
 add xfeeds 45.138.12.68
 add xfeeds 45.145.0.60
@@ -287,12 +279,10 @@ add xfeeds 45.148.10.21
 add xfeeds 45.148.10.42
 add xfeeds 45.148.10.61
 add xfeeds 45.148.10.64
-add xfeeds 45.148.10.80
 add xfeeds 45.148.10.120
 add xfeeds 45.148.10.141
 add xfeeds 45.148.10.157
 add xfeeds 45.148.10.171
-add xfeeds 45.148.10.194
 add xfeeds 45.148.10.238
 add xfeeds 45.148.10.240
 add xfeeds 45.152.217.81
@@ -329,7 +319,6 @@ add xfeeds 47.250.174.174
 add xfeeds 49.0.202.115
 add xfeeds 49.64.85.138
 add xfeeds 49.75.185.71
-add xfeeds 49.83.244.53
 add xfeeds 49.164.114.179
 add xfeeds 49.200.99.254
 add xfeeds 49.204.74.149
@@ -379,6 +368,7 @@ add xfeeds 58.147.171.11
 add xfeeds 58.182.58.128
 add xfeeds 58.186.20.101
 add xfeeds 58.186.20.143
+add xfeeds 58.208.84.103
 add xfeeds 58.209.82.184
 add xfeeds 58.211.152.4
 add xfeeds 58.221.60.25
@@ -387,6 +377,7 @@ add xfeeds 58.229.253.119
 add xfeeds 58.240.123.98
 add xfeeds 58.242.64.246
 add xfeeds 58.242.118.12
+add xfeeds 59.6.159.181
 add xfeeds 59.13.125.157
 add xfeeds 59.15.58.148
 add xfeeds 59.16.212.232
@@ -454,6 +445,7 @@ add xfeeds 64.202.191.109
 add xfeeds 64.225.30.2
 add xfeeds 64.225.72.42
 add xfeeds 64.226.110.44
+add xfeeds 64.227.176.23
 add xfeeds 64.253.163.98
 add xfeeds 65.181.71.117
 add xfeeds 65.181.127.40
@@ -504,21 +496,18 @@ add xfeeds 77.90.185.16
 add xfeeds 77.90.185.17
 add xfeeds 77.90.185.20
 add xfeeds 77.91.71.43
-add xfeeds 77.91.71.92
-add xfeeds 77.94.99.50
 add xfeeds 77.105.37.219
 add xfeeds 77.239.124.102
 add xfeeds 77.239.124.112
 add xfeeds 77.239.124.130
-add xfeeds 78.39.48.166
 add xfeeds 78.44.192.210
 add xfeeds 78.44.238.178
-add xfeeds 78.109.200.147
 add xfeeds 78.134.49.171
 add xfeeds 78.135.111.65
 add xfeeds 78.138.168.46
 add xfeeds 79.3.96.178
 add xfeeds 79.143.45.75
+add xfeeds 80.64.218.173
 add xfeeds 80.66.66.31
 add xfeeds 80.66.66.68
 add xfeeds 80.66.83.43
@@ -534,13 +523,11 @@ add xfeeds 80.94.95.83
 add xfeeds 80.94.95.109
 add xfeeds 80.94.95.116
 add xfeeds 80.94.95.211
-add xfeeds 80.99.216.230
 add xfeeds 80.251.156.20
 add xfeeds 81.23.173.32
 add xfeeds 81.28.167.30
 add xfeeds 81.171.72.135
 add xfeeds 81.181.106.69
-add xfeeds 81.192.46.32
 add xfeeds 81.192.46.45
 add xfeeds 81.193.216.17
 add xfeeds 81.211.72.167
@@ -594,6 +581,7 @@ add xfeeds 87.106.141.44
 add xfeeds 87.120.93.159
 add xfeeds 87.120.104.29
 add xfeeds 87.121.84.174
+add xfeeds 87.192.41.180
 add xfeeds 87.241.44.37
 add xfeeds 87.251.64.121
 add xfeeds 87.251.81.76
@@ -627,6 +615,7 @@ add xfeeds 92.27.157.252
 add xfeeds 92.47.46.174
 add xfeeds 92.118.39.14
 add xfeeds 92.118.39.65
+add xfeeds 92.118.39.71
 add xfeeds 92.118.39.77
 add xfeeds 92.207.4.157
 add xfeeds 93.48.225.80
@@ -662,6 +651,7 @@ add xfeeds 94.154.43.122
 add xfeeds 94.154.43.125
 add xfeeds 94.154.43.146
 add xfeeds 94.154.43.164
+add xfeeds 94.154.43.196
 add xfeeds 94.154.43.223
 add xfeeds 94.154.43.254
 add xfeeds 94.154.46.248
@@ -756,7 +746,6 @@ add xfeeds 103.67.162.139
 add xfeeds 103.69.96.120
 add xfeeds 103.70.40.36
 add xfeeds 103.72.56.174
-add xfeeds 103.76.120.114
 add xfeeds 103.78.0.229
 add xfeeds 103.79.90.26
 add xfeeds 103.86.180.10
@@ -781,7 +770,6 @@ add xfeeds 103.113.170.231
 add xfeeds 103.117.145.130
 add xfeeds 103.121.20.18
 add xfeeds 103.123.53.88
-add xfeeds 103.127.29.111
 add xfeeds 103.131.61.136
 add xfeeds 103.142.26.97
 add xfeeds 103.143.10.140
@@ -812,7 +800,6 @@ add xfeeds 103.164.57.37
 add xfeeds 103.165.212.210
 add xfeeds 103.166.103.173
 add xfeeds 103.167.89.222
-add xfeeds 103.168.66.158
 add xfeeds 103.168.135.187
 add xfeeds 103.172.20.218
 add xfeeds 103.172.236.15
@@ -852,10 +839,9 @@ add xfeeds 104.28.254.46
 add xfeeds 104.46.209.135
 add xfeeds 104.143.36.100
 add xfeeds 104.143.77.9
-add xfeeds 104.208.69.113
 add xfeeds 104.208.73.227
-add xfeeds 104.208.105.68
 add xfeeds 104.208.108.166
+add xfeeds 104.218.166.62
 add xfeeds 104.243.133.18
 add xfeeds 104.244.74.84
 add xfeeds 104.248.132.98
@@ -901,7 +887,6 @@ add xfeeds 108.174.156.122
 add xfeeds 108.186.84.69
 add xfeeds 109.91.4.177
 add xfeeds 109.160.32.200
-add xfeeds 109.161.174.28
 add xfeeds 109.226.38.244
 add xfeeds 109.238.86.17
 add xfeeds 110.38.234.222
@@ -910,7 +895,7 @@ add xfeeds 111.22.163.209
 add xfeeds 111.32.153.180
 add xfeeds 111.47.243.219
 add xfeeds 111.48.160.201
-add xfeeds 111.175.88.6
+add xfeeds 111.53.185.153
 add xfeeds 111.238.174.6
 add xfeeds 112.15.161.249
 add xfeeds 112.26.30.212
@@ -918,6 +903,7 @@ add xfeeds 112.47.143.143
 add xfeeds 112.51.5.102
 add xfeeds 112.121.170.74
 add xfeeds 112.123.228.180
+add xfeeds 112.151.168.124
 add xfeeds 112.158.179.84
 add xfeeds 112.166.10.138
 add xfeeds 112.216.120.67
@@ -973,7 +959,6 @@ add xfeeds 117.50.70.125
 add xfeeds 117.50.122.20
 add xfeeds 117.50.178.180
 add xfeeds 117.62.22.127
-add xfeeds 117.72.68.94
 add xfeeds 117.173.156.172
 add xfeeds 117.185.15.67
 add xfeeds 118.36.136.12
@@ -1001,7 +986,6 @@ add xfeeds 119.209.12.20
 add xfeeds 120.28.109.188
 add xfeeds 120.48.6.172
 add xfeeds 120.48.14.72
-add xfeeds 120.48.15.138
 add xfeeds 120.48.39.143
 add xfeeds 120.48.52.177
 add xfeeds 120.48.67.104
@@ -1013,6 +997,8 @@ add xfeeds 120.89.37.150
 add xfeeds 120.198.23.233
 add xfeeds 120.237.113.139
 add xfeeds 121.6.97.6
+add xfeeds 121.10.252.86
+add xfeeds 121.10.252.100
 add xfeeds 121.11.96.13
 add xfeeds 121.15.7.100
 add xfeeds 121.133.167.123
@@ -1029,6 +1015,7 @@ add xfeeds 121.227.152.250
 add xfeeds 121.242.232.147
 add xfeeds 121.242.232.216
 add xfeeds 122.15.129.26
+add xfeeds 122.114.69.235
 add xfeeds 122.158.251.10
 add xfeeds 122.165.56.162
 add xfeeds 122.165.71.110
@@ -1057,6 +1044,7 @@ add xfeeds 124.155.125.131
 add xfeeds 124.174.7.42
 add xfeeds 124.174.32.95
 add xfeeds 124.194.78.4
+add xfeeds 125.16.27.190
 add xfeeds 125.21.59.218
 add xfeeds 125.31.2.160
 add xfeeds 125.46.78.194
@@ -1064,11 +1052,11 @@ add xfeeds 125.77.73.145
 add xfeeds 125.91.33.72
 add xfeeds 125.91.35.169
 add xfeeds 125.122.102.148
+add xfeeds 125.140.145.62
 add xfeeds 125.142.37.91
 add xfeeds 125.182.93.87
 add xfeeds 125.212.244.35
 add xfeeds 125.212.251.7
-add xfeeds 125.228.190.132
 add xfeeds 125.229.194.81
 add xfeeds 125.253.123.34
 add xfeeds 126.209.52.228
@@ -1133,12 +1121,10 @@ add xfeeds 139.59.16.152
 add xfeeds 139.59.83.112
 add xfeeds 139.59.105.244
 add xfeeds 139.59.133.58
-add xfeeds 139.59.151.17
 add xfeeds 139.59.208.225
 add xfeeds 139.59.234.78
 add xfeeds 139.185.55.154
 add xfeeds 139.255.254.163
-add xfeeds 140.246.70.45
 add xfeeds 140.246.137.102
 add xfeeds 141.94.245.19
 add xfeeds 141.95.54.130
@@ -1163,14 +1149,11 @@ add xfeeds 144.31.151.83
 add xfeeds 144.31.152.10
 add xfeeds 144.48.243.18
 add xfeeds 144.172.98.114
-add xfeeds 144.172.99.29
 add xfeeds 144.172.105.41
-add xfeeds 144.217.243.186
 add xfeeds 144.225.6.182
 add xfeeds 144.225.6.184
 add xfeeds 144.225.187.68
 add xfeeds 146.70.40.68
-add xfeeds 146.70.194.238
 add xfeeds 146.190.74.52
 add xfeeds 147.50.103.212
 add xfeeds 147.50.231.36
@@ -1211,7 +1194,6 @@ add xfeeds 152.32.212.226
 add xfeeds 152.32.213.175
 add xfeeds 152.32.217.163
 add xfeeds 152.32.225.117
-add xfeeds 152.32.235.180
 add xfeeds 152.32.236.102
 add xfeeds 152.32.254.89
 add xfeeds 152.52.15.213
@@ -1222,6 +1204,7 @@ add xfeeds 154.40.33.241
 add xfeeds 154.70.102.114
 add xfeeds 154.83.16.14
 add xfeeds 154.83.17.226
+add xfeeds 154.83.17.239
 add xfeeds 154.83.196.237
 add xfeeds 154.91.170.52
 add xfeeds 154.92.2.59
@@ -1283,13 +1266,13 @@ add xfeeds 163.7.4.109
 add xfeeds 163.7.4.169
 add xfeeds 163.7.8.79
 add xfeeds 163.7.9.55
-add xfeeds 163.7.9.84
 add xfeeds 163.7.11.126
 add xfeeds 163.7.13.17
 add xfeeds 163.47.33.70
 add xfeeds 163.52.135.6
 add xfeeds 163.61.134.228
 add xfeeds 163.172.66.206
+add xfeeds 163.223.210.138
 add xfeeds 164.30.17.82
 add xfeeds 164.52.105.37
 add xfeeds 164.68.102.175
@@ -1339,7 +1322,6 @@ add xfeeds 167.234.217.154
 add xfeeds 168.144.60.241
 add xfeeds 168.167.228.85
 add xfeeds 168.167.228.123
-add xfeeds 168.194.164.3
 add xfeeds 168.205.190.245
 add xfeeds 168.228.151.152
 add xfeeds 169.40.142.131
@@ -1347,11 +1329,9 @@ add xfeeds 169.40.142.132
 add xfeeds 169.40.142.172
 add xfeeds 169.40.142.190
 add xfeeds 169.40.142.202
-add xfeeds 169.40.142.224
 add xfeeds 169.239.75.138
 add xfeeds 170.9.29.112
 add xfeeds 170.106.153.232
-add xfeeds 170.106.169.228
 add xfeeds 170.231.236.98
 add xfeeds 170.231.237.214
 add xfeeds 171.25.158.87
@@ -1370,6 +1350,7 @@ add xfeeds 172.83.157.226
 add xfeeds 172.188.89.41
 add xfeeds 172.213.17.173
 add xfeeds 172.232.108.36
+add xfeeds 172.236.228.193
 add xfeeds 172.252.13.101
 add xfeeds 173.15.22.211
 add xfeeds 173.44.62.244
@@ -1377,7 +1358,6 @@ add xfeeds 173.239.211.119
 add xfeeds 173.244.60.241
 add xfeeds 173.249.38.179
 add xfeeds 173.249.54.93
-add xfeeds 173.249.206.137
 add xfeeds 173.249.206.162
 add xfeeds 173.249.206.188
 add xfeeds 173.254.28.219
@@ -1424,7 +1404,6 @@ add xfeeds 179.111.150.75
 add xfeeds 179.184.85.167
 add xfeeds 180.76.179.77
 add xfeeds 180.76.202.69
-add xfeeds 180.76.236.214
 add xfeeds 180.76.243.197
 add xfeeds 180.93.172.213
 add xfeeds 180.106.83.59
@@ -1463,12 +1442,10 @@ add xfeeds 183.91.11.36
 add xfeeds 183.91.186.36
 add xfeeds 183.101.53.155
 add xfeeds 183.109.124.136
-add xfeeds 183.129.148.70
 add xfeeds 183.130.198.16
 add xfeeds 183.222.230.188
 add xfeeds 183.224.97.83
 add xfeeds 183.224.123.132
-add xfeeds 183.224.237.233
 add xfeeds 183.230.9.103
 add xfeeds 183.230.54.87
 add xfeeds 183.238.221.172
@@ -1479,9 +1456,9 @@ add xfeeds 185.12.59.118
 add xfeeds 185.19.40.202
 add xfeeds 185.45.193.72
 add xfeeds 185.93.89.116
-add xfeeds 185.93.89.167
 add xfeeds 185.143.197.45
 add xfeeds 185.158.22.150
+add xfeeds 185.177.72.17
 add xfeeds 185.177.72.38
 add xfeeds 185.177.72.75
 add xfeeds 185.189.15.8
@@ -1512,6 +1489,7 @@ add xfeeds 187.141.71.166
 add xfeeds 187.154.98.53
 add xfeeds 187.174.238.116
 add xfeeds 187.190.35.163
+add xfeeds 187.194.139.92
 add xfeeds 187.212.33.78
 add xfeeds 187.216.224.85
 add xfeeds 187.251.123.104
@@ -1575,7 +1553,6 @@ add xfeeds 193.47.62.69
 add xfeeds 193.162.143.16
 add xfeeds 193.187.110.159
 add xfeeds 193.187.110.214
-add xfeeds 194.50.16.198
 add xfeeds 194.226.49.237
 add xfeeds 195.3.220.7
 add xfeeds 195.58.58.216
@@ -1592,6 +1569,7 @@ add xfeeds 195.178.110.217
 add xfeeds 195.178.110.218
 add xfeeds 195.178.110.232
 add xfeeds 195.178.110.242
+add xfeeds 195.178.110.247
 add xfeeds 195.178.191.5
 add xfeeds 195.182.16.23
 add xfeeds 195.211.124.164
@@ -1672,8 +1650,6 @@ add xfeeds 202.165.14.135
 add xfeeds 202.165.15.132
 add xfeeds 202.165.22.102
 add xfeeds 202.165.22.173
-add xfeeds 202.169.231.90
-add xfeeds 202.181.151.54
 add xfeeds 202.189.23.15
 add xfeeds 203.6.235.51
 add xfeeds 203.25.208.110
@@ -1684,7 +1660,6 @@ add xfeeds 203.150.107.87
 add xfeeds 203.150.107.244
 add xfeeds 203.154.158.195
 add xfeeds 203.156.108.110
-add xfeeds 203.159.90.72
 add xfeeds 203.159.90.90
 add xfeeds 203.170.192.251
 add xfeeds 203.212.9.221
@@ -1752,14 +1727,12 @@ add xfeeds 216.118.231.170
 add xfeeds 216.126.225.6
 add xfeeds 216.155.93.75
 add xfeeds 216.232.226.203
-add xfeeds 216.244.94.253
 add xfeeds 216.250.250.134
 add xfeeds 217.60.76.167
 add xfeeds 217.64.102.75
 add xfeeds 217.154.35.203
 add xfeeds 217.154.38.181
 add xfeeds 217.182.253.249
-add xfeeds 218.0.56.78
 add xfeeds 218.0.63.25
 add xfeeds 218.51.148.194
 add xfeeds 218.78.186.58
@@ -1777,7 +1750,6 @@ add xfeeds 220.118.173.234
 add xfeeds 220.119.37.141
 add xfeeds 220.123.33.105
 add xfeeds 220.126.8.143
-add xfeeds 220.127.148.6
 add xfeeds 220.130.7.191
 add xfeeds 220.132.197.77
 add xfeeds 220.180.119.22
@@ -1801,6 +1773,7 @@ add xfeeds 222.126.105.187
 add xfeeds 222.232.176.7
 add xfeeds 223.15.228.240
 add xfeeds 223.27.18.80
+add xfeeds 223.83.131.241
 add xfeeds 223.123.65.54
 add xfeeds 223.134.89.104
 add xfeeds 223.221.38.226
