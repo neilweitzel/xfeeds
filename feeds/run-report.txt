@@ -1,37 +1,38 @@
-xfeeds run 2026-10-26T12:56:57.148726+00:00
-  sources:   29/29 ok (1 dormant)
-  published: 15029 (high 11059, medium 3970)
-  withheld:  49096 single-source
-  deltas:    +128 / -56
+xfeeds run 2026-10-26T19:17:00.167179+00:00
+  sources:   28/29 ok (1 dormant)
+  published: 15098 (high 11102, medium 3996)
+  withheld:  53720 single-source
+  deltas:    +119 / -50
     abuseipdb_blacklist      10000 records
     binary_defense           540 records
-    blocklist_de             22996 records
+    blocklist_de             27710 records
     blocklist_de_strongips   284 records
-    bruteforceblocker        509 records
-    carpathian               703 records
+    bruteforceblocker        510 records
+    carpathian               706 records
     cins_army                15000 records
-    dataplane_proto41        51956 records
-    dataplane_smtpgreet      9444 records
-    dataplane_sshclient      20983 records
-    dataplane_sshpwauth      10027 records
-    dataplane_telnetlogin    47430 records
-    dataplane_vncrfb         2192 records
-    dshield_attacks          9871 records
+    dataplane_proto41        51946 records
+    dataplane_smtpgreet      9378 records
+    dataplane_sshclient      20791 records
+    dataplane_sshpwauth      9894 records
+    dataplane_telnetlogin    48463 records
+    dataplane_vncrfb         2186 records
+    dshield_attacks          9998 records
     dshield_block            20 records
     et_compromised           482 records
     feodo_tracker            expired
-    greensnow                4684 records
+    greensnow                failed (HTTP 503)
     ipsum_levels             39892 records
-    ipthreat                 5380 records
+    ipthreat                 5370 records
     isc_research_scanners    17176 records
-    jacobrakai_honeypot      553 records
+    jacobrakai_honeypot      550 records
     reportedip               19350 records
     sblam                    1091 records
     spamhaus_drop_v4         1688 records
     spamhaus_drop_v6         91 records
-    stopforumspam_listed     85822 records
-    threatfox                3305 records
-    tor_exits                1209 records
+    stopforumspam_listed     86809 records
+    threatfox                3300 records
+    tor_exits                1214 records
     turris_greylist          11271 records
-  ! 3323 records capped high -> medium as benign scanners
-  ! 114 records capped high -> medium as labelled research scanners
+  ! greensnow: HTTP 503
+  ! 3333 records capped high -> medium as benign scanners
+  ! 125 records capped high -> medium as labelled research scanners
