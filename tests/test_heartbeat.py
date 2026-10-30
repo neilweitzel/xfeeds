@@ -361,6 +361,11 @@ def test_workflow_wires_tested_probe_and_incident_handler_without_weakening_chec
     assert workflow[True]["schedule"] == [{"cron": "47 */6 * * *"}]
     assert "workflow_dispatch" in workflow[True]
     assert workflow["env"]["MAX_AGE_HOURS"] == "24"
+    assert workflow["permissions"] == {
+        "actions": "read",
+        "contents": "read",
+        "issues": "write",
+    }
     assert workflow["concurrency"] == {"group": "heartbeat", "cancel-in-progress": False}
     job = workflow["jobs"]["heartbeat"]
     assert job["timeout-minutes"] == 10

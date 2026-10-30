@@ -2562,6 +2562,8 @@ refresh history. Availability does not imply stale content; fresh repository plu
 stale Pages suggests deployment or CDN propagation, not a confirmed root cause.
 Combined faults retain both findings. Supplementary history lookup failure
 cannot suppress the primary alert.
+The workflow explicitly grants `actions: read` for that history query, alongside
+the existing contents-read and issues-write permissions.
 
 **Lifecycle.** A non-cancelling heartbeat concurrency group serializes probe and
 incident updates, and checkout reads current main after entering that group.
