@@ -10,6 +10,25 @@ six hours by design. A consumer pinning a tag still fetches the same live URLs.
 
 ## [Unreleased]
 
+## [1.1.0-rc.3] - 2026-10-30
+
+Operational heartbeat hardening only. No source, scoring, feed-contract, refresh
+quota, or scheduling-cadence change. The workflow change restarts the candidate
+window under the existing lifecycle policy; stable v1.0.1 is unchanged.
+
+### Fixed
+
+- Transient Pages HTTP/network failures get up to three attempts with bounded
+  request deadlines and 5s/10s backoff instead of immediately opening an incident.
+- Fresh, stale, invalid, and unreachable manifests have distinct diagnoses.
+  Unknown freshness no longer becomes a fictional `9999h` age or an asserted
+  deployment failure. Persistent failures still fail the heartbeat.
+- Incident updates are serialized, recognize the existing legacy issue title,
+  and close only when both committed and published manifests are valid and fresh.
+  Failed supplementary history lookup does not prevent the primary alert.
+- Offline regression tests exercise the workflow command, retry boundary, and
+  actual JavaScript incident handler, including legacy recovery (ADR-072).
+
 ## [1.1.0-rc.2] - 2026-10-09
 
 Second v1.1.0 candidate, one day into the window. Restarts the window for one

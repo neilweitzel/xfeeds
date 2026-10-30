@@ -2534,3 +2534,50 @@ regression test asserts all three tiers use the shared path.
 records by research labels. Caps only lower HIGH to MEDIUM; nothing is removed.
 
 **Burn-in.** `src/` changes; cut as `v1.1.0-rc.2`, one day into the window.
+
+## ADR-072: Heartbeat availability is not freshness
+
+**Date:** 2026-10-30. **Status:** Accepted for v1.1.0-rc.3.
+
+**Finding.** [Heartbeat run 41064826348](https://github.com/neilweitzel/xfeeds/actions/runs/41064826348)
+received HTTP 503 while the committed manifest was five hours old. A single
+failed request became `9999h` of age and [issue #77](https://github.com/neilweitzel/xfeeds/issues/77)
+asserted that publication had stopped. The latest refresh/deploy had succeeded.
+An unavailable observation cannot establish either age or a deployment failure.
+
+**Decision.** Keep the GitHub-only schedule and 24-hour freshness gate. Probe
+committed and published manifests independently as `fresh`, `stale`, `invalid`,
+or `unreachable`; unknown age is null, never a numeric sentinel. Missing,
+malformed, timezone-free, or future `generated_at` values are invalid evidence.
+The standalone stdlib probe invokes curl with a 10s connection timeout, 30s
+request timeout, and 35s process deadline. Transient HTTP 408/429/500/502/503/504
+and transient curl network failures get at most three attempts and 5s/10s
+backoff, a 120s upper bound on request/backoff time. No server Retry-After header
+can extend that budget. Permanent HTTP/TLS failures, invalid data, and stale
+data are not retried. Previous response bodies are removed before each attempt.
+
+**Reporting.** Persistent faults fail the run. The generic heartbeat incident
+includes separate states, measured or unknown ages, attempt results, and recent
+refresh history. Availability does not imply stale content; fresh repository plus
+stale Pages suggests deployment or CDN propagation, not a confirmed root cause.
+Combined faults retain both findings. Supplementary history lookup failure
+cannot suppress the primary alert.
+
+**Lifecycle.** A non-cancelling heartbeat concurrency group serializes probe and
+incident updates, and checkout reads current main after entering that group.
+The handler paginates automated issues and recognizes both its new title and
+the legacy title, migrating an existing incident rather than duplicating it.
+Recovery closes those incidents only when both observations are valid and fresh.
+This checks freshness, not byte equality or availability to every consumer.
+
+**Verification.** Offline tests execute the workflow's actual command with a
+fake curl returning 503 then 200. The old command fails that acceptance test.
+Additional tests cover exhausted retries, transport deadlines, permanent errors,
+invalid/future timestamps, exact age thresholds, combined diagnoses, and the
+actual JavaScript issue handler with a recording GitHub API double. No test
+contacts an upstream source or opens a network socket.
+
+**Burn-in.** Workflow and `src/` changes require rc.3 under the existing policy.
+The new window begins with the first scheduled feed refresh on rc.3; a manual
+heartbeat check is not a scheduled refresh. No source/scoring behavior changes,
+no stable promotion, no external monitor, and no Zenodo deposit.

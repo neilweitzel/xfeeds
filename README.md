@@ -429,16 +429,26 @@ Rebuilds `feeds/index.html` and `feeds/lookup.json` from the feed files already 
 Two workflows exist to make an unattended outage visible, because `update-feeds.yml`
 cannot report on itself failing to run.
 
-`heartbeat.yml` — every 6 hours at `:47`, half an hour after the refresh.
+`heartbeat.yml` has a best-effort schedule every 6 hours at `:47`; GitHub can
+delay execution. It checks committed `feeds/manifest.json` and the live Pages
+manifest independently, classifying each as fresh, stale, invalid, or unreachable.
+The freshness threshold remains 24 hours. Unknown age is never reported as a
+stale age or as proof that deployment stopped.
 
-It checks freshness in two places, because they fail for different reasons:
-`feeds/manifest.json` in the repository answers *did the pipeline produce a feed*,
-and the same file served from Pages answers *did that feed reach consumers*. A fresh
-repo with a stale Pages copy is a deploy problem, not a collector problem, and the
-issue says so rather than leaving you to guess. Threshold is 24 hours — four missed
-refreshes, so a single transient upstream failure never pages you. The issue is
-opened once, commented on rather than duplicated, and **closed automatically on
-recovery**; an alert that never clears is one you learn to ignore.
+Transient HTTP failures (408, 429, 500, 502, 503, 504) and transient network
+errors get up to three attempts with 5s/10s backoff. Each request has a 10s
+connection timeout, 30s total timeout, and 35s outer process deadline, bounding
+request/backoff time to 120s. Permanent HTTP/TLS errors and successfully fetched
+but invalid or stale manifests alert without retrying. Persistent failures still
+fail the workflow; retries do not weaken the freshness gate.
+
+The incident includes separate states and ages, every request attempt's HTTP
+status/transport outcome, and recent refresh runs. A fresh repository with a
+stale public manifest points to deployment or CDN propagation; an unreachable
+public manifest means availability failed and its freshness is unknown.
+One serialized incident is updated rather than duplicated and closes automatically
+only when both manifests are valid and fresh. Existing legacy alerts are also
+recognized and closed on recovery. See ADR-072.
 
 `keepalive.yml` — weekly, and normally does nothing at all.
 
@@ -485,9 +495,12 @@ does not claim the new scheduler completed the September burn-in.
 `v1.1.0-rc.1` (2026-10-08) opens the v1.1.0 window. It admits six sources from the
 October review (ReportedIP, jacobrakai, and Carpathian as admitting classes; Sblam
 and SANS ISC `sources/attacks` as voting-only; ISC research-scanner labels as a
-benign cap) and reports what every class contributes. `v1.1.0-rc.2` (2026-10-09) is
-the current candidate: it applies the scanner caps to every published tier
-(ADR-071). `v1.0.1` remains the stable release until v1.1.0 is promoted.
+benign cap) and reports what every class contributes. `v1.1.0-rc.2` (2026-10-09)
+applies the scanner caps to every published tier (ADR-071). The current candidate,
+`v1.1.0-rc.3` (2026-10-30), hardens heartbeat retries and diagnoses (ADR-072).
+Per the lifecycle policy, this workflow change restarts the candidate window at
+the first scheduled refresh on rc.3, not at a manual heartbeat verification.
+`v1.0.1` remains the stable release until v1.1.0 is promoted.
 
 The promotion steps are enumerated in
 [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md).
