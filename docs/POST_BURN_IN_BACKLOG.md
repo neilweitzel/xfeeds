@@ -25,7 +25,11 @@ an explicit decision.
 ## Next minor: v1.1.0 (candidate window open)
 
 `v1.1.0-rc.1` was cut on 2026-10-08 and `v1.1.0-rc.2` on 2026-10-09 (ADR-071, the
-scanner-cap fix). `v1.0.1` stays the stable release until v1.1.0 is promoted
+scanner-cap fix). `v1.1.0-rc.3` (2026-10-30) adds bounded heartbeat retries and
+distinct availability/freshness diagnoses (ADR-072, incident #77). Its workflow
+change restarts the window at the first scheduled feed refresh on rc.3;
+manual heartbeat verification does not establish that start.
+`v1.0.1` stays the stable release until v1.1.0 is promoted
 through [`RELEASE_CHECKLIST.md`](RELEASE_CHECKLIST.md).
 
 | Status | Work |
