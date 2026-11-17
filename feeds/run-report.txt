@@ -1,37 +1,38 @@
-xfeeds run 2026-11-16T20:27:15.984640+00:00
-  sources:   29/29 ok (1 dormant)
-  published: 13003 (high 8924, medium 4079)
-  withheld:  42918 single-source
-  deltas:    +88 / -60
+xfeeds run 2026-11-17T03:50:17.626540+00:00
+  sources:   28/29 ok (1 dormant)
+  published: 12779 (high 8802, medium 3977)
+  withheld:  42049 single-source
+  deltas:    +158 / -382
     abuseipdb_blacklist      10000 records
-    binary_defense           1100 records
-    blocklist_de             23017 records
-    blocklist_de_strongips   286 records
-    bruteforceblocker        584 records
-    carpathian               641 records
+    binary_defense           1401 records
+    blocklist_de             23264 records
+    blocklist_de_strongips   292 records
+    bruteforceblocker        580 records
+    carpathian               629 records
     cins_army                15000 records
-    dataplane_proto41        51441 records
-    dataplane_smtpgreet      8559 records
-    dataplane_sshclient      25301 records
-    dataplane_sshpwauth      13533 records
-    dataplane_telnetlogin    39131 records
-    dataplane_vncrfb         3442 records
+    dataplane_proto41        51601 records
+    dataplane_smtpgreet      8553 records
+    dataplane_sshclient      25227 records
+    dataplane_sshpwauth      13556 records
+    dataplane_telnetlogin    38802 records
+    dataplane_vncrfb         3729 records
     dshield_attacks          10000 records
     dshield_block            20 records
-    et_compromised           584 records
+    et_compromised           579 records
     feodo_tracker            expired
-    greensnow                1079 records
-    ipsum_levels             29809 records
-    ipthreat                 3874 records
+    greensnow                1383 records
+    ipsum_levels             29530 records
+    ipthreat                 3867 records
     isc_research_scanners    17137 records
-    jacobrakai_honeypot      464 records
+    jacobrakai_honeypot      463 records
     reportedip               11019 records
-    sblam                    1161 records
+    sblam                    failed (request error: [Errno 101] Network is unreachable)
     spamhaus_drop_v4         1736 records
     spamhaus_drop_v6         90 records
-    stopforumspam_listed     52343 records
-    threatfox                1380 records
-    tor_exits                1268 records
-    turris_greylist          8909 records
-  ! 3513 records capped high -> medium as benign scanners
+    stopforumspam_listed     53070 records
+    threatfox                1389 records
+    tor_exits                1269 records
+    turris_greylist          9518 records
+  ! sblam: request error: [Errno 101] Network is unreachable
+  ! 3410 records capped high -> medium as benign scanners
   ! 58 records capped high -> medium as labelled research scanners
