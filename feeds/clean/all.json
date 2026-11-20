@@ -1,6 +1,6 @@
 {
-  "count": 1179,
-  "generated_at": "2026-11-20T03:10:25.199673+00:00",
+  "count": 1204,
+  "generated_at": "2026-11-20T11:31:33.534366+00:00",
   "indicators": [
     {
       "band": "high",
@@ -45,7 +45,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 96.99,
+      "score": 97.18,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -53,7 +53,7 @@
         "reportedip"
       ],
       "tags": [
-        "ipthreat-level-0"
+        "ipthreat-level-25"
       ]
     },
     {
@@ -378,7 +378,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 8,
-      "score": 99.69,
+      "score": 99.73,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -391,7 +391,7 @@
       ]
     },
     {
-      "band": "medium",
+      "band": "high",
       "categories": [
         "brute-force",
         "reported-abuse",
@@ -423,7 +423,7 @@
       ]
     },
     {
-      "band": "medium",
+      "band": "high",
       "categories": [
         "brute-force",
         "reported-abuse",
@@ -610,9 +610,7 @@
         "carpathian",
         "ipthreat"
       ],
-      "tags": [
-        "ipthreat-level-0"
-      ]
+      "tags": []
     },
     {
       "band": "high",
@@ -626,6 +624,7 @@
       ],
       "first_seen": "2026-08-24T00:00:00Z",
       "independence_classes": [
+        "ipthreat",
         "jacobrakai",
         "reportedip"
       ],
@@ -633,14 +632,17 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 3,
-      "score": 92.72,
+      "score": 95.84,
       "source_reference": null,
       "source_registry": null,
       "sources": [
+        "ipthreat",
         "jacobrakai_honeypot",
         "reportedip"
       ],
-      "tags": []
+      "tags": [
+        "ipthreat-level-0"
+      ]
     },
     {
       "band": "high",
@@ -794,7 +796,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 97.03,
+      "score": 97.35,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -883,6 +885,32 @@
       "source_registry": null,
       "sources": [
         "jacobrakai_honeypot",
+        "reportedip"
+      ],
+      "tags": []
+    },
+    {
+      "band": "high",
+      "categories": [
+        "brute-force",
+        "reported-abuse",
+        "scanning",
+        "web-attack"
+      ],
+      "first_seen": "2026-10-14T00:00:00Z",
+      "independence_classes": [
+        "ipthreat",
+        "reportedip"
+      ],
+      "ip_or_cidr": "8.163.69.40",
+      "last_seen": "2026-11-20T00:00:00Z",
+      "promoted_by": null,
+      "restricted_corroboration": 5,
+      "score": 95.49,
+      "source_reference": null,
+      "source_registry": null,
+      "sources": [
+        "ipthreat",
         "reportedip"
       ],
       "tags": []
@@ -1035,11 +1063,39 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 95.34,
+      "score": 96.15,
       "source_reference": null,
       "source_registry": null,
       "sources": [
         "et_compromised",
+        "reportedip"
+      ],
+      "tags": []
+    },
+    {
+      "band": "high",
+      "categories": [
+        "brute-force",
+        "reported-abuse",
+        "scanning",
+        "ssh-attack",
+        "telnet-attack",
+        "web-attack"
+      ],
+      "first_seen": "2026-09-15T00:00:00Z",
+      "independence_classes": [
+        "jacobrakai",
+        "reportedip"
+      ],
+      "ip_or_cidr": "14.33.48.192",
+      "last_seen": "2026-11-20T00:00:00Z",
+      "promoted_by": null,
+      "restricted_corroboration": 5,
+      "score": 96.16,
+      "source_reference": null,
+      "source_registry": null,
+      "sources": [
+        "jacobrakai_honeypot",
         "reportedip"
       ],
       "tags": []
@@ -1334,7 +1390,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 1,
-      "score": 79.01,
+      "score": 82.62,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -1374,7 +1430,35 @@
       ]
     },
     {
-      "band": "medium",
+      "band": "high",
+      "categories": [
+        "brute-force",
+        "reported-abuse",
+        "scanning",
+        "web-attack"
+      ],
+      "first_seen": "2026-11-07T00:00:00Z",
+      "independence_classes": [
+        "ipthreat",
+        "reportedip"
+      ],
+      "ip_or_cidr": "15.235.153.226",
+      "last_seen": "2026-11-20T00:00:00Z",
+      "promoted_by": null,
+      "restricted_corroboration": 1,
+      "score": 80.29,
+      "source_reference": null,
+      "source_registry": null,
+      "sources": [
+        "ipthreat",
+        "reportedip"
+      ],
+      "tags": [
+        "ipthreat-level-100"
+      ]
+    },
+    {
+      "band": "high",
       "categories": [
         "brute-force",
         "reported-abuse",
@@ -1393,7 +1477,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 8,
-      "score": 99.35,
+      "score": 99.53,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -1572,7 +1656,7 @@
         "reportedip"
       ],
       "tags": [
-        "ipthreat-level-100"
+        "ipthreat-level-75"
       ]
     },
     {
@@ -1618,14 +1702,16 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 94.15,
+      "score": 96.04,
       "source_reference": null,
       "source_registry": null,
       "sources": [
         "ipthreat",
         "reportedip"
       ],
-      "tags": []
+      "tags": [
+        "ipthreat-level-0"
+      ]
     },
     {
       "band": "high",
@@ -1755,7 +1841,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 95.31,
+      "score": 96.11,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -1845,6 +1931,34 @@
       ],
       "tags": [
         "ipthreat-level-25"
+      ]
+    },
+    {
+      "band": "high",
+      "categories": [
+        "brute-force",
+        "reported-abuse",
+        "scanning",
+        "web-attack"
+      ],
+      "first_seen": "2026-09-18T00:00:00Z",
+      "independence_classes": [
+        "ipthreat",
+        "reportedip"
+      ],
+      "ip_or_cidr": "20.243.208.191",
+      "last_seen": "2026-11-20T00:00:00Z",
+      "promoted_by": null,
+      "restricted_corroboration": 4,
+      "score": 95.55,
+      "source_reference": null,
+      "source_registry": null,
+      "sources": [
+        "ipthreat",
+        "reportedip"
+      ],
+      "tags": [
+        "ipthreat-level-0"
       ]
     },
     {
@@ -2300,7 +2414,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 1,
-      "score": 79.01,
+      "score": 82.62,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -2356,7 +2470,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 1,
-      "score": 79.01,
+      "score": 82.62,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -2425,6 +2539,63 @@
         "brute-force",
         "reported-abuse",
         "scanning",
+        "web-attack"
+      ],
+      "first_seen": "2026-11-18T00:00:00Z",
+      "independence_classes": [
+        "ipthreat",
+        "reportedip"
+      ],
+      "ip_or_cidr": "31.70.91.79",
+      "last_seen": "2026-11-20T00:00:00Z",
+      "promoted_by": null,
+      "restricted_corroboration": 5,
+      "score": 96.81,
+      "source_reference": null,
+      "source_registry": null,
+      "sources": [
+        "ipthreat",
+        "reportedip"
+      ],
+      "tags": [
+        "ipthreat-level-25"
+      ]
+    },
+    {
+      "band": "high",
+      "categories": [
+        "brute-force",
+        "reported-abuse",
+        "scanning",
+        "ssh-attack",
+        "telnet-attack"
+      ],
+      "first_seen": "2026-10-20T00:00:00Z",
+      "independence_classes": [
+        "ipthreat",
+        "jacobrakai"
+      ],
+      "ip_or_cidr": "31.76.57.198",
+      "last_seen": "2026-11-20T00:00:00Z",
+      "promoted_by": null,
+      "restricted_corroboration": 4,
+      "score": 96.35,
+      "source_reference": null,
+      "source_registry": null,
+      "sources": [
+        "ipthreat",
+        "jacobrakai_honeypot"
+      ],
+      "tags": [
+        "ipthreat-level-0"
+      ]
+    },
+    {
+      "band": "high",
+      "categories": [
+        "brute-force",
+        "reported-abuse",
+        "scanning",
         "ssh-attack",
         "telnet-attack",
         "web-attack"
@@ -2462,14 +2633,16 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 95.86,
+      "score": 96.08,
       "source_reference": null,
       "source_registry": null,
       "sources": [
         "et_compromised",
         "ipthreat"
       ],
-      "tags": []
+      "tags": [
+        "ipthreat-level-0"
+      ]
     },
     {
       "band": "high",
@@ -2634,7 +2807,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 94.37,
+      "score": 95.82,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -2667,9 +2840,7 @@
         "ipthreat",
         "reportedip"
       ],
-      "tags": [
-        "ipthreat-level-0"
-      ]
+      "tags": []
     },
     {
       "band": "high",
@@ -2849,10 +3020,10 @@
         "reportedip"
       ],
       "ip_or_cidr": "37.120.213.13",
-      "last_seen": "2026-11-18T00:00:00Z",
+      "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 7,
-      "score": 98.73,
+      "score": 99.0,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -3022,7 +3193,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 94.43,
+      "score": 95.48,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -3047,8 +3218,8 @@
       "ip_or_cidr": "41.216.167.226",
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
-      "restricted_corroboration": 4,
-      "score": 95.19,
+      "restricted_corroboration": 5,
+      "score": 97.25,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -3326,7 +3497,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 1,
-      "score": 81.49,
+      "score": 82.62,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -3382,7 +3553,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 91.4,
+      "score": 91.92,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -3743,7 +3914,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 94.56,
+      "score": 94.89,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -3929,7 +4100,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 90.24,
+      "score": 90.84,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -4454,7 +4625,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 97.71,
+      "score": 97.85,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -4509,7 +4680,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 3,
-      "score": 88.18,
+      "score": 89.13,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -4669,7 +4840,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 3,
-      "score": 93.05,
+      "score": 93.48,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -4723,7 +4894,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 96.54,
+      "score": 96.75,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -4829,7 +5000,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 93.47,
+      "score": 94.55,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -4855,7 +5026,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 92.32,
+      "score": 92.79,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -4881,7 +5052,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 93.47,
+      "score": 94.55,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -4961,7 +5132,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 94.55,
+      "score": 95.15,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -5097,7 +5268,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 91.9,
+      "score": 92.39,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -5105,7 +5276,7 @@
         "reportedip"
       ],
       "tags": [
-        "ipthreat-level-50"
+        "ipthreat-level-25"
       ]
     },
     {
@@ -5367,7 +5538,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 90.34,
+      "score": 90.93,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -5447,7 +5618,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 3,
-      "score": 91.69,
+      "score": 92.6,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -5499,7 +5670,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 6,
-      "score": 97.46,
+      "score": 97.61,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -5525,7 +5696,32 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 6,
-      "score": 97.83,
+      "score": 97.96,
+      "source_reference": null,
+      "source_registry": null,
+      "sources": [
+        "et_compromised",
+        "reportedip"
+      ],
+      "tags": []
+    },
+    {
+      "band": "high",
+      "categories": [
+        "brute-force",
+        "reported-abuse",
+        "web-attack"
+      ],
+      "first_seen": "2026-10-11T00:00:00Z",
+      "independence_classes": [
+        "bruteforceblocker",
+        "reportedip"
+      ],
+      "ip_or_cidr": "45.156.87.72",
+      "last_seen": "2026-11-20T00:00:00Z",
+      "promoted_by": null,
+      "restricted_corroboration": 6,
+      "score": 97.69,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -5573,7 +5769,7 @@
       "last_seen": "2026-11-18T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 91.07,
+      "score": 91.62,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -5651,14 +5847,16 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 6,
-      "score": 97.26,
+      "score": 98.15,
       "source_reference": null,
       "source_registry": null,
       "sources": [
         "ipthreat",
         "reportedip"
       ],
-      "tags": []
+      "tags": [
+        "ipthreat-level-0"
+      ]
     },
     {
       "band": "high",
@@ -5785,7 +5983,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 2,
-      "score": 89.18,
+      "score": 90.46,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -5820,9 +6018,7 @@
         "ipthreat",
         "reportedip"
       ],
-      "tags": [
-        "ipthreat-level-0"
-      ]
+      "tags": []
     },
     {
       "band": "high",
@@ -5895,7 +6091,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 96.37,
+      "score": 96.6,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -5904,6 +6100,62 @@
       ],
       "tags": [
         "ipthreat-level-25"
+      ]
+    },
+    {
+      "band": "high",
+      "categories": [
+        "brute-force",
+        "reported-abuse",
+        "scanning",
+        "web-attack"
+      ],
+      "first_seen": "2026-11-19T00:00:00Z",
+      "independence_classes": [
+        "ipthreat",
+        "reportedip"
+      ],
+      "ip_or_cidr": "47.250.83.92",
+      "last_seen": "2026-11-20T00:00:00Z",
+      "promoted_by": null,
+      "restricted_corroboration": 1,
+      "score": 82.62,
+      "source_reference": null,
+      "source_registry": null,
+      "sources": [
+        "ipthreat",
+        "reportedip"
+      ],
+      "tags": [
+        "ipthreat-level-0"
+      ]
+    },
+    {
+      "band": "high",
+      "categories": [
+        "brute-force",
+        "reported-abuse",
+        "scanning",
+        "web-attack"
+      ],
+      "first_seen": "2026-11-09T00:00:00Z",
+      "independence_classes": [
+        "ipthreat",
+        "reportedip"
+      ],
+      "ip_or_cidr": "47.251.24.77",
+      "last_seen": "2026-11-20T00:00:00Z",
+      "promoted_by": null,
+      "restricted_corroboration": 1,
+      "score": 80.29,
+      "source_reference": null,
+      "source_registry": null,
+      "sources": [
+        "ipthreat",
+        "reportedip"
+      ],
+      "tags": [
+        "ipthreat-level-75"
       ]
     },
     {
@@ -5951,14 +6203,16 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 97.01,
+      "score": 97.49,
       "source_reference": null,
       "source_registry": null,
       "sources": [
         "ipthreat",
         "reportedip"
       ],
-      "tags": []
+      "tags": [
+        "ipthreat-level-0"
+      ]
     },
     {
       "band": "high",
@@ -6004,7 +6258,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 96.85,
+      "score": 97.04,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -6012,7 +6266,7 @@
         "reportedip"
       ],
       "tags": [
-        "ipthreat-level-25"
+        "ipthreat-level-50"
       ]
     },
     {
@@ -6032,7 +6286,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 95.15,
+      "score": 95.45,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -6090,7 +6344,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 96.65,
+      "score": 96.85,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -6170,7 +6424,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 94.05,
+      "score": 94.41,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -6198,7 +6452,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 95.72,
+      "score": 96.61,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -6276,16 +6530,14 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 97.21,
+      "score": 97.38,
       "source_reference": null,
       "source_registry": null,
       "sources": [
         "ipthreat",
         "reportedip"
       ],
-      "tags": [
-        "ipthreat-level-0"
-      ]
+      "tags": []
     },
     {
       "band": "high",
@@ -6343,9 +6595,7 @@
         "jacobrakai_honeypot",
         "reportedip"
       ],
-      "tags": [
-        "ipthreat-level-0"
-      ]
+      "tags": []
     },
     {
       "band": "high",
@@ -6399,9 +6649,7 @@
         "ipthreat",
         "reportedip"
       ],
-      "tags": [
-        "ipthreat-level-0"
-      ]
+      "tags": []
     },
     {
       "band": "high",
@@ -6463,9 +6711,7 @@
         "jacobrakai_honeypot",
         "reportedip"
       ],
-      "tags": [
-        "ipthreat-level-0"
-      ]
+      "tags": []
     },
     {
       "band": "high",
@@ -6484,7 +6730,7 @@
       "last_seen": "2026-11-17T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 95.55,
+      "score": 96.04,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -6538,7 +6784,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 92.84,
+      "score": 93.63,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -6575,9 +6821,7 @@
         "jacobrakai_honeypot",
         "reportedip"
       ],
-      "tags": [
-        "ipthreat-level-0"
-      ]
+      "tags": []
     },
     {
       "band": "high",
@@ -6596,7 +6840,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 97.49,
+      "score": 97.76,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -6624,16 +6868,14 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 95.76,
+      "score": 96.79,
       "source_reference": null,
       "source_registry": null,
       "sources": [
         "ipthreat",
         "reportedip"
       ],
-      "tags": [
-        "ipthreat-level-0"
-      ]
+      "tags": []
     },
     {
       "band": "high",
@@ -6654,7 +6896,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 95.61,
+      "score": 96.88,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -6771,9 +7013,7 @@
         "ipthreat",
         "reportedip"
       ],
-      "tags": [
-        "ipthreat-level-0"
-      ]
+      "tags": []
     },
     {
       "band": "high",
@@ -6955,7 +7195,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 98.35,
+      "score": 98.53,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -7012,7 +7252,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 96.32,
+      "score": 96.55,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -7070,7 +7310,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 96.2,
+      "score": 97.11,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -7251,6 +7491,7 @@
       ],
       "first_seen": "2026-08-12T00:00:00Z",
       "independence_classes": [
+        "ipthreat",
         "jacobrakai",
         "reportedip"
       ],
@@ -7258,14 +7499,17 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 97.11,
+      "score": 98.53,
       "source_reference": null,
       "source_registry": null,
       "sources": [
+        "ipthreat",
         "jacobrakai_honeypot",
         "reportedip"
       ],
-      "tags": []
+      "tags": [
+        "ipthreat-level-0"
+      ]
     },
     {
       "band": "medium",
@@ -7374,7 +7618,7 @@
         "reportedip"
       ],
       "tags": [
-        "ipthreat-level-25"
+        "ipthreat-level-0"
       ]
     },
     {
@@ -7420,7 +7664,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 6,
-      "score": 98.52,
+      "score": 98.68,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -7614,7 +7858,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 3,
-      "score": 94.1,
+      "score": 94.46,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -7838,7 +8082,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 2,
-      "score": 80.88,
+      "score": 84.17,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -7969,8 +8213,8 @@
       "ip_or_cidr": "65.108.207.77",
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
-      "restricted_corroboration": 1,
-      "score": 79.81,
+      "restricted_corroboration": 2,
+      "score": 89.25,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -8093,9 +8337,7 @@
         "jacobrakai_honeypot",
         "reportedip"
       ],
-      "tags": [
-        "ipthreat-level-0"
-      ]
+      "tags": []
     },
     {
       "band": "high",
@@ -8142,7 +8384,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 1,
-      "score": 79.01,
+      "score": 82.62,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -8306,7 +8548,7 @@
       "last_seen": "2026-11-17T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 94.18,
+      "score": 95.84,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -8413,7 +8655,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 6,
-      "score": 97.63,
+      "score": 97.77,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -8439,7 +8681,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 97.23,
+      "score": 97.54,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -8463,7 +8705,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 96.62,
+      "score": 96.83,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -8521,7 +8763,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 96.2,
+      "score": 96.43,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -8655,14 +8897,16 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 95.94,
+      "score": 96.37,
       "source_reference": null,
       "source_registry": null,
       "sources": [
         "et_compromised",
         "ipthreat"
       ],
-      "tags": []
+      "tags": [
+        "ipthreat-level-25"
+      ]
     },
     {
       "band": "high",
@@ -8689,6 +8933,34 @@
         "reportedip"
       ],
       "tags": []
+    },
+    {
+      "band": "high",
+      "categories": [
+        "brute-force",
+        "reported-abuse",
+        "scanning",
+        "web-attack"
+      ],
+      "first_seen": "2026-11-18T00:00:00Z",
+      "independence_classes": [
+        "ipthreat",
+        "reportedip"
+      ],
+      "ip_or_cidr": "77.52.102.234",
+      "last_seen": "2026-11-20T00:00:00Z",
+      "promoted_by": null,
+      "restricted_corroboration": 1,
+      "score": 81.49,
+      "source_reference": null,
+      "source_registry": null,
+      "sources": [
+        "ipthreat",
+        "reportedip"
+      ],
+      "tags": [
+        "ipthreat-level-100"
+      ]
     },
     {
       "band": "high",
@@ -8735,16 +9007,14 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 96.57,
+      "score": 96.78,
       "source_reference": null,
       "source_registry": null,
       "sources": [
         "ipthreat",
         "reportedip"
       ],
-      "tags": [
-        "ipthreat-level-0"
-      ]
+      "tags": []
     },
     {
       "band": "high",
@@ -8795,7 +9065,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 94.55,
+      "score": 95.45,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -9091,6 +9361,34 @@
         "scanning",
         "web-attack"
       ],
+      "first_seen": "2026-10-11T00:00:00Z",
+      "independence_classes": [
+        "ipthreat",
+        "reportedip"
+      ],
+      "ip_or_cidr": "78.128.112.74",
+      "last_seen": "2026-11-20T00:00:00Z",
+      "promoted_by": null,
+      "restricted_corroboration": 8,
+      "score": 99.17,
+      "source_reference": null,
+      "source_registry": null,
+      "sources": [
+        "ipthreat",
+        "reportedip"
+      ],
+      "tags": [
+        "ipthreat-level-100"
+      ]
+    },
+    {
+      "band": "high",
+      "categories": [
+        "brute-force",
+        "reported-abuse",
+        "scanning",
+        "web-attack"
+      ],
       "first_seen": "2026-10-20T00:00:00Z",
       "independence_classes": [
         "ipthreat",
@@ -9100,7 +9398,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 96.22,
+      "score": 96.45,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -9156,7 +9454,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 94.68,
+      "score": 95.0,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -9208,38 +9506,12 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 96.16,
+      "score": 96.4,
       "source_reference": null,
       "source_registry": null,
       "sources": [
         "et_compromised",
         "ipthreat"
-      ],
-      "tags": []
-    },
-    {
-      "band": "high",
-      "categories": [
-        "brute-force",
-        "reported-abuse",
-        "scanning",
-        "web-attack"
-      ],
-      "first_seen": "2026-11-05T00:00:00Z",
-      "independence_classes": [
-        "ipthreat",
-        "reportedip"
-      ],
-      "ip_or_cidr": "79.124.58.22",
-      "last_seen": "2026-11-20T00:00:00Z",
-      "promoted_by": null,
-      "restricted_corroboration": 3,
-      "score": 79.91,
-      "source_reference": null,
-      "source_registry": null,
-      "sources": [
-        "ipthreat",
-        "reportedip"
       ],
       "tags": []
     },
@@ -9297,7 +9569,7 @@
         "jacobrakai_honeypot"
       ],
       "tags": [
-        "ipthreat-level-100"
+        "ipthreat-level-75"
       ]
     },
     {
@@ -9463,7 +9735,7 @@
         "reportedip"
       ],
       "tags": [
-        "ipthreat-level-50"
+        "ipthreat-level-25"
       ]
     },
     {
@@ -9594,7 +9866,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 95.6,
+      "score": 96.08,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -9701,8 +9973,8 @@
       "ip_or_cidr": "81.171.74.60",
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
-      "restricted_corroboration": 2,
-      "score": 90.07,
+      "restricted_corroboration": 3,
+      "score": 93.48,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -9710,7 +9982,7 @@
         "ipthreat"
       ],
       "tags": [
-        "ipthreat-level-25"
+        "ipthreat-level-0"
       ]
     },
     {
@@ -9782,7 +10054,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 96.51,
+      "score": 97.24,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -9790,7 +10062,7 @@
         "reportedip"
       ],
       "tags": [
-        "ipthreat-level-25"
+        "ipthreat-level-0"
       ]
     },
     {
@@ -9810,16 +10082,14 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 96.73,
+      "score": 96.93,
       "source_reference": null,
       "source_registry": null,
       "sources": [
         "ipthreat",
         "reportedip"
       ],
-      "tags": [
-        "ipthreat-level-0"
-      ]
+      "tags": []
     },
     {
       "band": "high",
@@ -9836,7 +10106,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 95.62,
+      "score": 96.14,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -9966,7 +10236,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 96.67,
+      "score": 96.87,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -10210,7 +10480,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 96.54,
+      "score": 96.75,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -10273,9 +10543,7 @@
         "ipthreat",
         "reportedip"
       ],
-      "tags": [
-        "ipthreat-level-0"
-      ]
+      "tags": []
     },
     {
       "band": "high",
@@ -10546,7 +10814,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 6,
-      "score": 97.97,
+      "score": 98.19,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -10572,7 +10840,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 95.77,
+      "score": 96.27,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -10627,7 +10895,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 97.78,
+      "score": 98.02,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -10635,9 +10903,7 @@
         "jacobrakai_honeypot",
         "reportedip"
       ],
-      "tags": [
-        "ipthreat-level-0"
-      ]
+      "tags": []
     },
     {
       "band": "medium",
@@ -10663,9 +10929,7 @@
         "ipthreat",
         "reportedip"
       ],
-      "tags": [
-        "ipthreat-level-0"
-      ]
+      "tags": []
     },
     {
       "band": "medium",
@@ -10684,7 +10948,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 95.44,
+      "score": 95.71,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -10750,7 +11014,7 @@
         "reportedip"
       ],
       "tags": [
-        "ipthreat-level-25"
+        "ipthreat-level-0"
       ]
     },
     {
@@ -10882,7 +11146,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 96.2,
+      "score": 96.43,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -11187,9 +11451,7 @@
         "ipthreat",
         "reportedip"
       ],
-      "tags": [
-        "ipthreat-level-0"
-      ]
+      "tags": []
     },
     {
       "band": "high",
@@ -11448,7 +11710,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 1,
-      "score": 81.49,
+      "score": 82.62,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -11501,10 +11763,10 @@
         "reportedip"
       ],
       "ip_or_cidr": "92.205.162.243",
-      "last_seen": "2026-11-16T00:00:00Z",
+      "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 89.33,
+      "score": 92.25,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -11590,7 +11852,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 3,
-      "score": 92.45,
+      "score": 93.28,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -11645,7 +11907,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 98.2,
+      "score": 98.31,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -11706,7 +11968,7 @@
         "reportedip"
       ],
       "tags": [
-        "ipthreat-level-25"
+        "ipthreat-level-50"
       ]
     },
     {
@@ -11751,7 +12013,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 6,
-      "score": 98.04,
+      "score": 98.16,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -11866,9 +12128,7 @@
         "ipthreat",
         "reportedip"
       ],
-      "tags": [
-        "ipthreat-level-100"
-      ]
+      "tags": []
     },
     {
       "band": "high",
@@ -11973,7 +12233,7 @@
         "reportedip"
       ],
       "tags": [
-        "ipthreat-level-0"
+        "ipthreat-level-25"
       ]
     },
     {
@@ -12078,9 +12338,7 @@
         "ipthreat",
         "reportedip"
       ],
-      "tags": [
-        "ipthreat-level-0"
-      ]
+      "tags": []
     },
     {
       "band": "high",
@@ -12127,7 +12385,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 89.6,
+      "score": 90.23,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -12270,7 +12528,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 98.35,
+      "score": 98.53,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -12278,9 +12536,7 @@
         "jacobrakai_honeypot",
         "reportedip"
       ],
-      "tags": [
-        "ipthreat-level-25"
-      ]
+      "tags": []
     },
     {
       "band": "high",
@@ -12302,7 +12558,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 97.93,
+      "score": 98.16,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -12332,7 +12588,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 97.19,
+      "score": 97.72,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -12394,9 +12650,7 @@
         "ipthreat",
         "reportedip"
       ],
-      "tags": [
-        "ipthreat-level-0"
-      ]
+      "tags": []
     },
     {
       "band": "high",
@@ -12492,7 +12746,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 3,
-      "score": 93.89,
+      "score": 94.26,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -12689,7 +12943,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 95.48,
+      "score": 95.85,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -12795,7 +13049,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 94.41,
+      "score": 95.58,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -12820,8 +13074,8 @@
       "ip_or_cidr": "102.23.122.235",
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
-      "restricted_corroboration": 4,
-      "score": 92.42,
+      "restricted_corroboration": 5,
+      "score": 94.98,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -12879,7 +13133,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 96.0,
+      "score": 96.24,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -13017,7 +13271,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 96.04,
+      "score": 97.01,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -13054,9 +13308,7 @@
         "jacobrakai_honeypot",
         "reportedip"
       ],
-      "tags": [
-        "ipthreat-level-0"
-      ]
+      "tags": []
     },
     {
       "band": "high",
@@ -13157,7 +13409,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 6,
-      "score": 98.24,
+      "score": 98.53,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -13209,7 +13461,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 6,
-      "score": 96.42,
+      "score": 97.5,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -13264,7 +13516,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 6,
-      "score": 97.15,
+      "score": 97.33,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -13313,8 +13565,8 @@
       "ip_or_cidr": "102.220.161.173",
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
-      "restricted_corroboration": 5,
-      "score": 96.08,
+      "restricted_corroboration": 6,
+      "score": 97.24,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -13338,8 +13590,8 @@
       "ip_or_cidr": "102.220.161.174",
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
-      "restricted_corroboration": 5,
-      "score": 96.91,
+      "restricted_corroboration": 6,
+      "score": 97.83,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -13457,7 +13709,7 @@
         "reportedip"
       ],
       "tags": [
-        "ipthreat-level-100"
+        "ipthreat-level-75"
       ]
     },
     {
@@ -13561,7 +13813,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 1,
-      "score": 80.29,
+      "score": 82.62,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -13673,7 +13925,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 96.61,
+      "score": 97.43,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -13862,7 +14114,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 94.83,
+      "score": 95.68,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -13894,6 +14146,62 @@
         "ipthreat"
       ],
       "tags": []
+    },
+    {
+      "band": "high",
+      "categories": [
+        "brute-force",
+        "reported-abuse",
+        "scanning",
+        "web-attack"
+      ],
+      "first_seen": "2026-08-12T00:00:00Z",
+      "independence_classes": [
+        "ipthreat",
+        "reportedip"
+      ],
+      "ip_or_cidr": "103.69.96.120",
+      "last_seen": "2026-11-20T00:00:00Z",
+      "promoted_by": null,
+      "restricted_corroboration": 5,
+      "score": 95.57,
+      "source_reference": null,
+      "source_registry": null,
+      "sources": [
+        "ipthreat",
+        "reportedip"
+      ],
+      "tags": [
+        "ipthreat-level-0"
+      ]
+    },
+    {
+      "band": "high",
+      "categories": [
+        "brute-force",
+        "reported-abuse",
+        "scanning",
+        "web-attack"
+      ],
+      "first_seen": "2026-08-12T00:00:00Z",
+      "independence_classes": [
+        "ipthreat",
+        "reportedip"
+      ],
+      "ip_or_cidr": "103.70.40.36",
+      "last_seen": "2026-11-20T00:00:00Z",
+      "promoted_by": null,
+      "restricted_corroboration": 4,
+      "score": 96.08,
+      "source_reference": null,
+      "source_registry": null,
+      "sources": [
+        "ipthreat",
+        "reportedip"
+      ],
+      "tags": [
+        "ipthreat-level-100"
+      ]
     },
     {
       "band": "high",
@@ -13998,7 +14306,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 91.37,
+      "score": 94.09,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -14060,7 +14368,7 @@
         "reportedip"
       ],
       "tags": [
-        "ipthreat-level-0"
+        "ipthreat-level-25"
       ]
     },
     {
@@ -14192,7 +14500,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 3,
-      "score": 91.21,
+      "score": 92.18,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -14219,8 +14527,8 @@
       "ip_or_cidr": "103.143.10.140",
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
-      "restricted_corroboration": 4,
-      "score": 95.56,
+      "restricted_corroboration": 5,
+      "score": 96.87,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -14380,7 +14688,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 95.8,
+      "score": 96.52,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -14437,7 +14745,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 98.35,
+      "score": 98.53,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -14465,7 +14773,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 3,
-      "score": 88.45,
+      "score": 91.02,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -14570,16 +14878,14 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 96.07,
+      "score": 96.31,
       "source_reference": null,
       "source_registry": null,
       "sources": [
         "ipthreat",
         "reportedip"
       ],
-      "tags": [
-        "ipthreat-level-0"
-      ]
+      "tags": []
     },
     {
       "band": "high",
@@ -14790,7 +15096,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 96.18,
+      "score": 96.41,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -14850,7 +15156,7 @@
         "reportedip"
       ],
       "tags": [
-        "ipthreat-level-50"
+        "ipthreat-level-25"
       ]
     },
     {
@@ -14870,7 +15176,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 95.72,
+      "score": 96.61,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -15220,7 +15526,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 95.47,
+      "score": 95.75,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -15326,7 +15632,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 1,
-      "score": 81.49,
+      "score": 82.62,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -15410,7 +15716,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 7,
-      "score": 99.04,
+      "score": 99.14,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -15418,7 +15724,7 @@
         "reportedip"
       ],
       "tags": [
-        "ipthreat-level-75"
+        "ipthreat-level-100"
       ]
     },
     {
@@ -15469,7 +15775,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 97.17,
+      "score": 97.34,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -15578,7 +15884,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 95.48,
+      "score": 95.76,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -15693,9 +15999,7 @@
         "ipthreat",
         "reportedip"
       ],
-      "tags": [
-        "ipthreat-level-0"
-      ]
+      "tags": []
     },
     {
       "band": "high",
@@ -15907,7 +16211,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 96.43,
+      "score": 97.43,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -16047,7 +16351,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 96.73,
+      "score": 96.93,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -16157,7 +16461,35 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 1,
-      "score": 80.29,
+      "score": 82.62,
+      "source_reference": null,
+      "source_registry": null,
+      "sources": [
+        "ipthreat",
+        "reportedip"
+      ],
+      "tags": [
+        "ipthreat-level-100"
+      ]
+    },
+    {
+      "band": "high",
+      "categories": [
+        "brute-force",
+        "reported-abuse",
+        "scanning",
+        "web-attack"
+      ],
+      "first_seen": "2026-11-17T00:00:00Z",
+      "independence_classes": [
+        "ipthreat",
+        "reportedip"
+      ],
+      "ip_or_cidr": "110.172.29.185",
+      "last_seen": "2026-11-20T00:00:00Z",
+      "promoted_by": null,
+      "restricted_corroboration": 1,
+      "score": 69.58,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -16193,7 +16525,7 @@
         "reportedip"
       ],
       "tags": [
-        "ipthreat-level-25"
+        "ipthreat-level-50"
       ]
     },
     {
@@ -16215,7 +16547,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 95.04,
+      "score": 95.34,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -16267,7 +16599,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 97.44,
+      "score": 97.6,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -16381,7 +16713,7 @@
         "reportedip"
       ],
       "tags": [
-        "ipthreat-level-50"
+        "ipthreat-level-25"
       ]
     },
     {
@@ -16459,7 +16791,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 95.17,
+      "score": 95.37,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -16594,7 +16926,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 97.85,
+      "score": 97.97,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -16602,7 +16934,9 @@
         "jacobrakai_honeypot",
         "reportedip"
       ],
-      "tags": []
+      "tags": [
+        "ipthreat-level-100"
+      ]
     },
     {
       "band": "high",
@@ -16652,7 +16986,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 98.06,
+      "score": 98.53,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -16681,7 +17015,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 93.79,
+      "score": 94.17,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -16733,7 +17067,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 93.47,
+      "score": 93.87,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -16785,7 +17119,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 95.79,
+      "score": 96.04,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -16843,7 +17177,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 95.6,
+      "score": 95.87,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -16869,7 +17203,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 95.19,
+      "score": 95.76,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -16921,7 +17255,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 96.46,
+      "score": 96.67,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -16975,7 +17309,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 93.08,
+      "score": 93.61,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -17029,7 +17363,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 94.84,
+      "score": 95.45,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -17083,7 +17417,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 95.48,
+      "score": 95.76,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -17150,6 +17484,34 @@
         "scanning",
         "web-attack"
       ],
+      "first_seen": "2026-08-12T00:00:00Z",
+      "independence_classes": [
+        "ipthreat",
+        "reportedip"
+      ],
+      "ip_or_cidr": "116.123.150.231",
+      "last_seen": "2026-11-20T00:00:00Z",
+      "promoted_by": null,
+      "restricted_corroboration": 5,
+      "score": 96.54,
+      "source_reference": null,
+      "source_registry": null,
+      "sources": [
+        "ipthreat",
+        "reportedip"
+      ],
+      "tags": [
+        "ipthreat-level-0"
+      ]
+    },
+    {
+      "band": "high",
+      "categories": [
+        "brute-force",
+        "reported-abuse",
+        "scanning",
+        "web-attack"
+      ],
       "first_seen": "2026-11-05T00:00:00Z",
       "independence_classes": [
         "ipthreat",
@@ -17189,7 +17551,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 94.43,
+      "score": 94.77,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -17215,7 +17577,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 96.57,
+      "score": 97.57,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -17243,7 +17605,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 95.09,
+      "score": 95.39,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -17269,7 +17631,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 96.99,
+      "score": 97.76,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -17332,7 +17694,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 97.34,
+      "score": 97.74,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -17396,9 +17758,7 @@
         "ipthreat",
         "reportedip"
       ],
-      "tags": [
-        "ipthreat-level-0"
-      ]
+      "tags": []
     },
     {
       "band": "high",
@@ -17417,7 +17777,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 94.73,
+      "score": 95.05,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -17469,7 +17829,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 97.12,
+      "score": 97.76,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -17631,7 +17991,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 96.86,
+      "score": 97.05,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -17687,14 +18047,16 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 97.35,
+      "score": 97.76,
       "source_reference": null,
       "source_registry": null,
       "sources": [
         "ipthreat",
         "reportedip"
       ],
-      "tags": []
+      "tags": [
+        "ipthreat-level-0"
+      ]
     },
     {
       "band": "high",
@@ -17713,7 +18075,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 96.1,
+      "score": 96.91,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -17739,7 +18101,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 96.01,
+      "score": 96.33,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -17765,7 +18127,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 96.99,
+      "score": 97.76,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -17823,7 +18185,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 94.6,
+      "score": 94.93,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -17882,9 +18244,7 @@
         "ipthreat",
         "reportedip"
       ],
-      "tags": [
-        "ipthreat-level-0"
-      ]
+      "tags": []
     },
     {
       "band": "high",
@@ -18039,7 +18399,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 93.73,
+      "score": 94.12,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -18047,7 +18407,7 @@
         "reportedip"
       ],
       "tags": [
-        "ipthreat-level-100"
+        "ipthreat-level-25"
       ]
     },
     {
@@ -18078,6 +18438,34 @@
       ],
       "tags": [
         "ipthreat-level-50"
+      ]
+    },
+    {
+      "band": "high",
+      "categories": [
+        "brute-force",
+        "reported-abuse",
+        "scanning",
+        "web-attack"
+      ],
+      "first_seen": "2026-08-12T00:00:00Z",
+      "independence_classes": [
+        "ipthreat",
+        "reportedip"
+      ],
+      "ip_or_cidr": "119.246.15.94",
+      "last_seen": "2026-11-20T00:00:00Z",
+      "promoted_by": null,
+      "restricted_corroboration": 5,
+      "score": 97.49,
+      "source_reference": null,
+      "source_registry": null,
+      "sources": [
+        "ipthreat",
+        "reportedip"
+      ],
+      "tags": [
+        "ipthreat-level-0"
       ]
     },
     {
@@ -18150,8 +18538,8 @@
       "ip_or_cidr": "120.48.33.69",
       "last_seen": "2026-11-19T00:00:00Z",
       "promoted_by": null,
-      "restricted_corroboration": 4,
-      "score": 95.53,
+      "restricted_corroboration": 5,
+      "score": 96.85,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -18179,8 +18567,8 @@
       "ip_or_cidr": "120.48.90.166",
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
-      "restricted_corroboration": 4,
-      "score": 95.5,
+      "restricted_corroboration": 5,
+      "score": 96.83,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -18285,7 +18673,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 96.37,
+      "score": 96.6,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -18311,7 +18699,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 96.37,
+      "score": 96.6,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -18365,7 +18753,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 95.3,
+      "score": 95.82,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -18584,7 +18972,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 94.34,
+      "score": 95.01,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -18740,6 +19128,32 @@
         "scanning",
         "web-attack"
       ],
+      "first_seen": "2026-08-12T00:00:00Z",
+      "independence_classes": [
+        "ipthreat",
+        "reportedip"
+      ],
+      "ip_or_cidr": "122.176.21.104",
+      "last_seen": "2026-11-20T00:00:00Z",
+      "promoted_by": null,
+      "restricted_corroboration": 4,
+      "score": 95.39,
+      "source_reference": null,
+      "source_registry": null,
+      "sources": [
+        "ipthreat",
+        "reportedip"
+      ],
+      "tags": []
+    },
+    {
+      "band": "high",
+      "categories": [
+        "brute-force",
+        "reported-abuse",
+        "scanning",
+        "web-attack"
+      ],
       "first_seen": "2026-10-06T00:00:00Z",
       "independence_classes": [
         "ipthreat",
@@ -18802,7 +19216,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 3,
-      "score": 86.98,
+      "score": 89.23,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -18884,7 +19298,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 96.07,
+      "score": 96.5,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -19016,7 +19430,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 1,
-      "score": 80.29,
+      "score": 82.62,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -19072,7 +19486,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 96.95,
+      "score": 97.4,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -19180,7 +19594,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 94.8,
+      "score": 95.12,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -19214,7 +19628,7 @@
         "reportedip"
       ],
       "tags": [
-        "ipthreat-level-0"
+        "ipthreat-level-25"
       ]
     },
     {
@@ -19234,7 +19648,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 94.84,
+      "score": 95.45,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -19242,7 +19656,7 @@
         "reportedip"
       ],
       "tags": [
-        "ipthreat-level-25"
+        "ipthreat-level-50"
       ]
     },
     {
@@ -19484,7 +19898,7 @@
         "reportedip"
       ],
       "tags": [
-        "ipthreat-level-0"
+        "ipthreat-level-25"
       ]
     },
     {
@@ -19586,7 +20000,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 95.95,
+      "score": 96.72,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -19727,7 +20141,7 @@
         "reportedip"
       ],
       "tags": [
-        "ipthreat-level-25"
+        "ipthreat-level-0"
       ]
     },
     {
@@ -19824,7 +20238,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 7,
-      "score": 98.47,
+      "score": 98.64,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -19905,8 +20319,8 @@
       "ip_or_cidr": "132.145.122.251",
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
-      "restricted_corroboration": 4,
-      "score": 95.45,
+      "restricted_corroboration": 5,
+      "score": 96.79,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -20133,7 +20547,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 96.75,
+      "score": 97.6,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -20304,7 +20718,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 94.59,
+      "score": 95.23,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -20355,17 +20769,19 @@
         "reportedip"
       ],
       "ip_or_cidr": "141.94.245.19",
-      "last_seen": "2026-11-19T00:00:00Z",
+      "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 95.57,
+      "score": 95.81,
       "source_reference": null,
       "source_registry": null,
       "sources": [
         "ipthreat",
         "reportedip"
       ],
-      "tags": []
+      "tags": [
+        "ipthreat-level-0"
+      ]
     },
     {
       "band": "high",
@@ -20383,17 +20799,15 @@
       "ip_or_cidr": "141.95.162.162",
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
-      "restricted_corroboration": 4,
-      "score": 96.83,
+      "restricted_corroboration": 5,
+      "score": 97.76,
       "source_reference": null,
       "source_registry": null,
       "sources": [
         "ipthreat",
         "reportedip"
       ],
-      "tags": [
-        "ipthreat-level-0"
-      ]
+      "tags": []
     },
     {
       "band": "high",
@@ -20438,7 +20852,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 92.62,
+      "score": 93.07,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -20543,7 +20957,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 96.37,
+      "score": 96.59,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -20741,6 +21155,34 @@
       ],
       "tags": [
         "ipthreat-level-75"
+      ]
+    },
+    {
+      "band": "high",
+      "categories": [
+        "brute-force",
+        "reported-abuse",
+        "scanning",
+        "web-attack"
+      ],
+      "first_seen": "2026-10-20T00:00:00Z",
+      "independence_classes": [
+        "ipthreat",
+        "reportedip"
+      ],
+      "ip_or_cidr": "145.239.89.124",
+      "last_seen": "2026-11-20T00:00:00Z",
+      "promoted_by": null,
+      "restricted_corroboration": 4,
+      "score": 95.45,
+      "source_reference": null,
+      "source_registry": null,
+      "sources": [
+        "ipthreat",
+        "reportedip"
+      ],
+      "tags": [
+        "ipthreat-level-0"
       ]
     },
     {
@@ -21028,7 +21470,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 97.17,
+      "score": 97.63,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -21138,7 +21580,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 94.42,
+      "score": 95.48,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -21328,14 +21770,16 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 96.38,
+      "score": 96.58,
       "source_reference": null,
       "source_registry": null,
       "sources": [
         "ipthreat",
         "reportedip"
       ],
-      "tags": []
+      "tags": [
+        "ipthreat-level-0"
+      ]
     },
     {
       "band": "high",
@@ -21354,7 +21798,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 97.49,
+      "score": 97.76,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -21382,7 +21826,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 1,
-      "score": 80.29,
+      "score": 82.62,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -21405,6 +21849,7 @@
       ],
       "first_seen": "2026-08-12T00:00:00Z",
       "independence_classes": [
+        "ipthreat",
         "jacobrakai",
         "reportedip"
       ],
@@ -21412,14 +21857,17 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 96.65,
+      "score": 98.2,
       "source_reference": null,
       "source_registry": null,
       "sources": [
+        "ipthreat",
         "jacobrakai_honeypot",
         "reportedip"
       ],
-      "tags": []
+      "tags": [
+        "ipthreat-level-0"
+      ]
     },
     {
       "band": "high",
@@ -21492,7 +21940,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 7,
-      "score": 99.29,
+      "score": 99.33,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -21631,7 +22079,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 96.11,
+      "score": 96.35,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -21685,7 +22133,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 97.18,
+      "score": 97.76,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -21739,7 +22187,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 1,
-      "score": 81.49,
+      "score": 82.62,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -21820,8 +22268,8 @@
       "ip_or_cidr": "157.66.48.88",
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
-      "restricted_corroboration": 4,
-      "score": 93.92,
+      "restricted_corroboration": 5,
+      "score": 95.71,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -21929,7 +22377,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 95.69,
+      "score": 95.95,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -22061,16 +22509,14 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 96.35,
+      "score": 97.29,
       "source_reference": null,
       "source_registry": null,
       "sources": [
         "ipthreat",
         "reportedip"
       ],
-      "tags": [
-        "ipthreat-level-0"
-      ]
+      "tags": []
     },
     {
       "band": "high",
@@ -22259,7 +22705,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 95.92,
+      "score": 96.17,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -22287,7 +22733,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 96.37,
+      "score": 96.6,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -22526,6 +22972,62 @@
         "brute-force",
         "reported-abuse",
         "scanning",
+        "web-attack"
+      ],
+      "first_seen": "2026-08-28T00:00:00Z",
+      "independence_classes": [
+        "ipthreat",
+        "reportedip"
+      ],
+      "ip_or_cidr": "164.152.250.192",
+      "last_seen": "2026-11-20T00:00:00Z",
+      "promoted_by": null,
+      "restricted_corroboration": 5,
+      "score": 95.48,
+      "source_reference": null,
+      "source_registry": null,
+      "sources": [
+        "ipthreat",
+        "reportedip"
+      ],
+      "tags": [
+        "ipthreat-level-0"
+      ]
+    },
+    {
+      "band": "high",
+      "categories": [
+        "brute-force",
+        "reported-abuse",
+        "scanning",
+        "web-attack"
+      ],
+      "first_seen": "2026-08-13T00:00:00Z",
+      "independence_classes": [
+        "ipthreat",
+        "reportedip"
+      ],
+      "ip_or_cidr": "165.154.120.211",
+      "last_seen": "2026-11-20T00:00:00Z",
+      "promoted_by": null,
+      "restricted_corroboration": 1,
+      "score": 79.01,
+      "source_reference": null,
+      "source_registry": null,
+      "sources": [
+        "ipthreat",
+        "reportedip"
+      ],
+      "tags": [
+        "ipthreat-level-100"
+      ]
+    },
+    {
+      "band": "high",
+      "categories": [
+        "brute-force",
+        "reported-abuse",
+        "scanning",
         "ssh-attack",
         "telnet-attack",
         "web-attack"
@@ -22731,7 +23233,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 97.26,
+      "score": 97.43,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -22760,7 +23262,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 98.2,
+      "score": 98.4,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -22974,6 +23476,36 @@
         "scanning",
         "web-attack"
       ],
+      "first_seen": "2026-11-16T00:00:00Z",
+      "independence_classes": [
+        "carpathian",
+        "ipthreat",
+        "reportedip"
+      ],
+      "ip_or_cidr": "169.40.142.54",
+      "last_seen": "2026-11-20T00:00:00Z",
+      "promoted_by": null,
+      "restricted_corroboration": 3,
+      "score": 96.76,
+      "source_reference": null,
+      "source_registry": null,
+      "sources": [
+        "carpathian",
+        "ipthreat",
+        "reportedip"
+      ],
+      "tags": [
+        "ipthreat-level-0"
+      ]
+    },
+    {
+      "band": "high",
+      "categories": [
+        "brute-force",
+        "reported-abuse",
+        "scanning",
+        "web-attack"
+      ],
       "first_seen": "2026-10-08T00:00:00Z",
       "independence_classes": [
         "ipthreat",
@@ -22983,7 +23515,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 3,
-      "score": 94.1,
+      "score": 94.46,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -23009,7 +23541,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 3,
-      "score": 91.03,
+      "score": 91.58,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -23029,20 +23561,24 @@
       "first_seen": "2026-10-06T00:00:00Z",
       "independence_classes": [
         "carpathian",
+        "ipthreat",
         "reportedip"
       ],
       "ip_or_cidr": "169.40.142.190",
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 3,
-      "score": 91.52,
+      "score": 95.16,
       "source_reference": null,
       "source_registry": null,
       "sources": [
         "carpathian",
+        "ipthreat",
         "reportedip"
       ],
-      "tags": []
+      "tags": [
+        "ipthreat-level-0"
+      ]
     },
     {
       "band": "high",
@@ -23261,7 +23797,7 @@
         "reportedip"
       ],
       "tags": [
-        "ipthreat-level-25"
+        "ipthreat-level-50"
       ]
     },
     {
@@ -23335,7 +23871,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 3,
-      "score": 65.56,
+      "score": 79.2,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -23343,6 +23879,34 @@
         "ipthreat"
       ],
       "tags": []
+    },
+    {
+      "band": "high",
+      "categories": [
+        "brute-force",
+        "reported-abuse",
+        "scanning",
+        "web-attack"
+      ],
+      "first_seen": "2026-11-17T00:00:00Z",
+      "independence_classes": [
+        "ipthreat",
+        "reportedip"
+      ],
+      "ip_or_cidr": "171.237.177.181",
+      "last_seen": "2026-11-20T00:00:00Z",
+      "promoted_by": null,
+      "restricted_corroboration": 4,
+      "score": 94.77,
+      "source_reference": null,
+      "source_registry": null,
+      "sources": [
+        "ipthreat",
+        "reportedip"
+      ],
+      "tags": [
+        "ipthreat-level-25"
+      ]
     },
     {
       "band": "high",
@@ -23385,7 +23949,7 @@
       "last_seen": "2026-11-19T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 95.57,
+      "score": 95.84,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -23413,7 +23977,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 95.54,
+      "score": 95.82,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -23467,7 +24031,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 91.97,
+      "score": 92.46,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -23495,7 +24059,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 95.15,
+      "score": 95.45,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -23503,6 +24067,34 @@
         "reportedip"
       ],
       "tags": []
+    },
+    {
+      "band": "high",
+      "categories": [
+        "brute-force",
+        "reported-abuse",
+        "scanning",
+        "web-attack"
+      ],
+      "first_seen": "2026-11-16T00:00:00Z",
+      "independence_classes": [
+        "ipthreat",
+        "reportedip"
+      ],
+      "ip_or_cidr": "172.188.89.41",
+      "last_seen": "2026-11-20T00:00:00Z",
+      "promoted_by": null,
+      "restricted_corroboration": 4,
+      "score": 96.04,
+      "source_reference": null,
+      "source_registry": null,
+      "sources": [
+        "ipthreat",
+        "reportedip"
+      ],
+      "tags": [
+        "ipthreat-level-0"
+      ]
     },
     {
       "band": "high",
@@ -23521,7 +24113,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 3,
-      "score": 84.93,
+      "score": 87.52,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -23596,10 +24188,10 @@
         "reportedip"
       ],
       "ip_or_cidr": "172.236.228.193",
-      "last_seen": "2026-11-19T00:00:00Z",
+      "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 95.93,
+      "score": 96.25,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -23733,7 +24325,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 2,
-      "score": 86.11,
+      "score": 87.75,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -24117,7 +24709,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 96.22,
+      "score": 96.45,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -24198,7 +24790,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 96.22,
+      "score": 97.01,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -24323,6 +24915,32 @@
         "brute-force",
         "reported-abuse",
         "scanning",
+        "web-attack"
+      ],
+      "first_seen": "2026-10-27T00:00:00Z",
+      "independence_classes": [
+        "ipthreat",
+        "reportedip"
+      ],
+      "ip_or_cidr": "178.253.95.34",
+      "last_seen": "2026-11-20T00:00:00Z",
+      "promoted_by": null,
+      "restricted_corroboration": 5,
+      "score": 94.86,
+      "source_reference": null,
+      "source_registry": null,
+      "sources": [
+        "ipthreat",
+        "reportedip"
+      ],
+      "tags": []
+    },
+    {
+      "band": "high",
+      "categories": [
+        "brute-force",
+        "reported-abuse",
+        "scanning",
         "ssh-attack",
         "telnet-attack",
         "web-attack"
@@ -24336,7 +24954,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 94.37,
+      "score": 95.34,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -24477,8 +25095,8 @@
       "ip_or_cidr": "179.184.0.32",
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
-      "restricted_corroboration": 4,
-      "score": 94.91,
+      "restricted_corroboration": 5,
+      "score": 96.41,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -24512,7 +25130,7 @@
         "reportedip"
       ],
       "tags": [
-        "ipthreat-level-50"
+        "ipthreat-level-0"
       ]
     },
     {
@@ -24563,7 +25181,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 96.66,
+      "score": 97.03,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -24751,7 +25369,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 96.04,
+      "score": 96.79,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -24802,7 +25420,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 96.16,
+      "score": 96.4,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -24829,8 +25447,8 @@
       "ip_or_cidr": "182.73.176.186",
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
-      "restricted_corroboration": 4,
-      "score": 95.71,
+      "restricted_corroboration": 5,
+      "score": 96.98,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -24887,7 +25505,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 96.81,
+      "score": 97.16,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -24968,7 +25586,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 94.62,
+      "score": 95.64,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -25012,23 +25630,26 @@
         "reported-abuse",
         "scanning",
         "ssh-attack",
-        "telnet-attack"
+        "telnet-attack",
+        "web-attack"
       ],
       "first_seen": "2026-09-28T00:00:00Z",
       "independence_classes": [
         "ipthreat",
-        "jacobrakai"
+        "jacobrakai",
+        "reportedip"
       ],
       "ip_or_cidr": "182.237.13.208",
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 95.39,
+      "score": 97.36,
       "source_reference": null,
       "source_registry": null,
       "sources": [
         "ipthreat",
-        "jacobrakai_honeypot"
+        "jacobrakai_honeypot",
+        "reportedip"
       ],
       "tags": [
         "ipthreat-level-25"
@@ -25106,7 +25727,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 97.2,
+      "score": 97.35,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -25114,7 +25735,9 @@
         "jacobrakai_honeypot",
         "reportedip"
       ],
-      "tags": []
+      "tags": [
+        "ipthreat-level-0"
+      ]
     },
     {
       "band": "high",
@@ -25167,7 +25790,7 @@
         "reportedip"
       ],
       "tags": [
-        "ipthreat-level-25"
+        "ipthreat-level-50"
       ]
     },
     {
@@ -25320,7 +25943,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 6,
-      "score": 97.51,
+      "score": 97.66,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -25346,7 +25969,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 84.49,
+      "score": 86.33,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -25379,9 +26002,7 @@
         "ipthreat",
         "reportedip"
       ],
-      "tags": [
-        "ipthreat-level-0"
-      ]
+      "tags": []
     },
     {
       "band": "high",
@@ -25482,7 +26103,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 1,
-      "score": 72.22,
+      "score": 77.01,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -25612,7 +26233,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 2,
-      "score": 85.0,
+      "score": 85.91,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -25637,7 +26258,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 2,
-      "score": 85.0,
+      "score": 85.91,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -25662,7 +26283,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 3,
-      "score": 86.69,
+      "score": 87.51,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -25745,8 +26366,8 @@
       "ip_or_cidr": "185.177.72.9",
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
-      "restricted_corroboration": 5,
-      "score": 97.89,
+      "restricted_corroboration": 6,
+      "score": 98.52,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -25754,7 +26375,7 @@
         "reportedip"
       ],
       "tags": [
-        "ipthreat-level-25"
+        "ipthreat-level-0"
       ]
     },
     {
@@ -25854,14 +26475,16 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 6,
-      "score": 98.65,
+      "score": 98.72,
       "source_reference": null,
       "source_registry": null,
       "sources": [
         "ipthreat",
         "reportedip"
       ],
-      "tags": []
+      "tags": [
+        "ipthreat-level-25"
+      ]
     },
     {
       "band": "high",
@@ -25968,7 +26591,7 @@
         "reportedip"
       ],
       "tags": [
-        "ipthreat-level-25"
+        "ipthreat-level-0"
       ]
     },
     {
@@ -26023,9 +26646,7 @@
         "ipthreat",
         "reportedip"
       ],
-      "tags": [
-        "ipthreat-level-0"
-      ]
+      "tags": []
     },
     {
       "band": "high",
@@ -26044,7 +26665,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 1,
-      "score": 81.49,
+      "score": 82.62,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -26153,8 +26774,8 @@
       "ip_or_cidr": "185.218.86.26",
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
-      "restricted_corroboration": 4,
-      "score": 95.71,
+      "restricted_corroboration": 5,
+      "score": 96.98,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -26262,7 +26883,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 96.29,
+      "score": 96.51,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -26425,7 +27046,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 98.14,
+      "score": 98.53,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -26482,7 +27103,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 96.23,
+      "score": 96.46,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -26520,6 +27141,34 @@
     {
       "band": "high",
       "categories": [
+        "brute-force",
+        "reported-abuse",
+        "scanning",
+        "web-attack"
+      ],
+      "first_seen": "2026-08-12T00:00:00Z",
+      "independence_classes": [
+        "ipthreat",
+        "reportedip"
+      ],
+      "ip_or_cidr": "187.8.120.90",
+      "last_seen": "2026-11-20T00:00:00Z",
+      "promoted_by": null,
+      "restricted_corroboration": 5,
+      "score": 98.06,
+      "source_reference": null,
+      "source_registry": null,
+      "sources": [
+        "ipthreat",
+        "reportedip"
+      ],
+      "tags": [
+        "ipthreat-level-25"
+      ]
+    },
+    {
+      "band": "high",
+      "categories": [
         "reported-abuse",
         "scanning"
       ],
@@ -26532,7 +27181,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 95.29,
+      "score": 95.58,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -26540,7 +27189,7 @@
         "ipthreat"
       ],
       "tags": [
-        "ipthreat-level-0"
+        "ipthreat-level-25"
       ]
     },
     {
@@ -26636,7 +27285,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 96.59,
+      "score": 96.79,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -26718,7 +27367,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 97.01,
+      "score": 97.19,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -26747,7 +27396,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 94.78,
+      "score": 95.36,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -26856,7 +27505,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 96.85,
+      "score": 97.2,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -26936,7 +27585,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 96.98,
+      "score": 97.16,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -27014,7 +27663,7 @@
       "last_seen": "2026-11-15T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 3,
-      "score": 88.43,
+      "score": 89.14,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -27040,7 +27689,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 91.29,
+      "score": 94.4,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -27064,7 +27713,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 95.65,
+      "score": 95.92,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -27250,7 +27899,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 6,
-      "score": 95.46,
+      "score": 95.73,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -27358,7 +28007,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 6,
-      "score": 98.8,
+      "score": 98.93,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -27428,24 +28077,28 @@
     {
       "band": "high",
       "categories": [
+        "brute-force",
         "reported-abuse",
-        "scanning"
+        "scanning",
+        "web-attack"
       ],
       "first_seen": "2026-11-13T00:00:00Z",
       "independence_classes": [
         "bruteforceblocker",
-        "ipthreat"
+        "ipthreat",
+        "reportedip"
       ],
       "ip_or_cidr": "193.24.211.206",
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 97.43,
+      "score": 98.53,
       "source_reference": null,
       "source_registry": null,
       "sources": [
         "et_compromised",
-        "ipthreat"
+        "ipthreat",
+        "reportedip"
       ],
       "tags": [
         "ipthreat-level-75"
@@ -27552,7 +28205,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 6,
-      "score": 98.72,
+      "score": 98.77,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -27560,7 +28213,7 @@
         "reportedip"
       ],
       "tags": [
-        "ipthreat-level-50"
+        "ipthreat-level-75"
       ]
     },
     {
@@ -27714,7 +28367,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 6,
-      "score": 98.35,
+      "score": 98.45,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -28024,7 +28677,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 6,
-      "score": 97.11,
+      "score": 97.29,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -28306,7 +28959,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 88.03,
+      "score": 90.09,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -28496,7 +29149,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 1,
-      "score": 81.49,
+      "score": 82.62,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -28633,34 +29286,6 @@
         "telnet-attack",
         "web-attack"
       ],
-      "first_seen": "2026-09-18T00:00:00Z",
-      "independence_classes": [
-        "jacobrakai",
-        "reportedip"
-      ],
-      "ip_or_cidr": "197.44.229.34",
-      "last_seen": "2026-11-20T00:00:00Z",
-      "promoted_by": null,
-      "restricted_corroboration": 2,
-      "score": 64.19,
-      "source_reference": null,
-      "source_registry": null,
-      "sources": [
-        "jacobrakai_honeypot",
-        "reportedip"
-      ],
-      "tags": []
-    },
-    {
-      "band": "high",
-      "categories": [
-        "brute-force",
-        "reported-abuse",
-        "scanning",
-        "ssh-attack",
-        "telnet-attack",
-        "web-attack"
-      ],
       "first_seen": "2026-08-12T00:00:00Z",
       "independence_classes": [
         "jacobrakai",
@@ -28729,8 +29354,8 @@
       "ip_or_cidr": "197.243.14.52",
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
-      "restricted_corroboration": 4,
-      "score": 95.39,
+      "restricted_corroboration": 5,
+      "score": 96.75,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -28812,7 +29437,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 94.79,
+      "score": 95.4,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -28874,7 +29499,7 @@
         "ipthreat"
       ],
       "tags": [
-        "ipthreat-level-25"
+        "ipthreat-level-0"
       ]
     },
     {
@@ -28920,7 +29545,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 7,
-      "score": 99.05,
+      "score": 99.11,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -29084,11 +29709,39 @@
         "ipthreat",
         "reportedip"
       ],
+      "ip_or_cidr": "200.153.86.250",
+      "last_seen": "2026-11-20T00:00:00Z",
+      "promoted_by": null,
+      "restricted_corroboration": 6,
+      "score": 98.27,
+      "source_reference": null,
+      "source_registry": null,
+      "sources": [
+        "ipthreat",
+        "reportedip"
+      ],
+      "tags": [
+        "ipthreat-level-25"
+      ]
+    },
+    {
+      "band": "high",
+      "categories": [
+        "brute-force",
+        "reported-abuse",
+        "scanning",
+        "web-attack"
+      ],
+      "first_seen": "2026-08-12T00:00:00Z",
+      "independence_classes": [
+        "ipthreat",
+        "reportedip"
+      ],
       "ip_or_cidr": "200.155.66.2",
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 95.95,
+      "score": 96.4,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -29222,7 +29875,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 90.24,
+      "score": 90.84,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -29256,7 +29909,7 @@
         "reportedip"
       ],
       "tags": [
-        "ipthreat-level-25"
+        "ipthreat-level-0"
       ]
     },
     {
@@ -29499,7 +30152,7 @@
         "reportedip"
       ],
       "tags": [
-        "ipthreat-level-25"
+        "ipthreat-level-0"
       ]
     },
     {
@@ -29631,7 +30284,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 96.54,
+      "score": 96.75,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -29718,7 +30371,7 @@
         "reportedip"
       ],
       "tags": [
-        "ipthreat-level-50"
+        "ipthreat-level-25"
       ]
     },
     {
@@ -29766,7 +30419,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 96.62,
+      "score": 96.82,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -29796,7 +30449,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 95.53,
+      "score": 95.8,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -30010,7 +30663,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 93.7,
+      "score": 95.1,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -30044,6 +30697,34 @@
       "tags": [
         "ipthreat-level-50"
       ]
+    },
+    {
+      "band": "high",
+      "categories": [
+        "brute-force",
+        "reported-abuse",
+        "scanning",
+        "ssh-attack",
+        "telnet-attack",
+        "web-attack"
+      ],
+      "first_seen": "2026-10-23T00:00:00Z",
+      "independence_classes": [
+        "jacobrakai",
+        "reportedip"
+      ],
+      "ip_or_cidr": "206.189.63.208",
+      "last_seen": "2026-11-20T00:00:00Z",
+      "promoted_by": null,
+      "restricted_corroboration": 1,
+      "score": 77.33,
+      "source_reference": null,
+      "source_registry": null,
+      "sources": [
+        "jacobrakai_honeypot",
+        "reportedip"
+      ],
+      "tags": []
     },
     {
       "band": "high",
@@ -30090,7 +30771,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 1,
-      "score": 81.49,
+      "score": 82.62,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -30120,7 +30801,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 96.75,
+      "score": 97.43,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -30238,7 +30919,7 @@
         "reportedip"
       ],
       "tags": [
-        "ipthreat-level-50"
+        "ipthreat-level-100"
       ]
     },
     {
@@ -30316,8 +30997,8 @@
       "ip_or_cidr": "209.141.47.217",
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
-      "restricted_corroboration": 4,
-      "score": 97.47,
+      "restricted_corroboration": 5,
+      "score": 98.22,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -30325,9 +31006,7 @@
         "jacobrakai_honeypot",
         "reportedip"
       ],
-      "tags": [
-        "ipthreat-level-0"
-      ]
+      "tags": []
     },
     {
       "band": "high",
@@ -30374,7 +31053,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 1,
-      "score": 79.01,
+      "score": 82.62,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -30596,8 +31275,8 @@
       "ip_or_cidr": "211.251.245.88",
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
-      "restricted_corroboration": 4,
-      "score": 96.21,
+      "restricted_corroboration": 5,
+      "score": 97.49,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -30665,9 +31344,7 @@
         "jacobrakai_honeypot",
         "reportedip"
       ],
-      "tags": [
-        "ipthreat-level-0"
-      ]
+      "tags": []
     },
     {
       "band": "high",
@@ -30882,7 +31559,7 @@
         "reportedip"
       ],
       "tags": [
-        "ipthreat-level-50"
+        "ipthreat-level-25"
       ]
     },
     {
@@ -30968,7 +31645,7 @@
         "reportedip"
       ],
       "tags": [
-        "ipthreat-level-50"
+        "ipthreat-level-0"
       ]
     },
     {
@@ -31044,7 +31721,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 95.65,
+      "score": 95.91,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -31103,7 +31780,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 98.04,
+      "score": 98.45,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -31130,7 +31807,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 89.61,
+      "score": 90.84,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -31211,7 +31888,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 2,
-      "score": 80.33,
+      "score": 84.71,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -31219,7 +31896,7 @@
         "reportedip"
       ],
       "tags": [
-        "ipthreat-level-75"
+        "ipthreat-level-50"
       ]
     },
     {
@@ -31295,7 +31972,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 3,
-      "score": 85.8,
+      "score": 91.66,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -31351,7 +32028,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 92.91,
+      "score": 94.97,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -31405,16 +32082,14 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 97.62,
+      "score": 97.76,
       "source_reference": null,
       "source_registry": null,
       "sources": [
         "ipthreat",
         "reportedip"
       ],
-      "tags": [
-        "ipthreat-level-0"
-      ]
+      "tags": []
     },
     {
       "band": "high",
@@ -31459,7 +32134,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 96.6,
+      "score": 97.43,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -31565,7 +32240,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 95.51,
+      "score": 96.04,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -31781,7 +32456,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 4,
-      "score": 95.79,
+      "score": 96.04,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -31843,7 +32518,7 @@
         "reportedip"
       ],
       "tags": [
-        "ipthreat-level-0"
+        "ipthreat-level-25"
       ]
     },
     {
@@ -31947,7 +32622,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 95.59,
+      "score": 95.86,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -32004,7 +32679,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 98.35,
+      "score": 98.53,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -32087,8 +32762,8 @@
       "ip_or_cidr": "222.108.100.117",
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
-      "restricted_corroboration": 4,
-      "score": 94.77,
+      "restricted_corroboration": 5,
+      "score": 96.31,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -32117,7 +32792,7 @@
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
       "restricted_corroboration": 5,
-      "score": 96.69,
+      "score": 97.89,
       "source_reference": null,
       "source_registry": null,
       "sources": [
@@ -32125,7 +32800,9 @@
         "jacobrakai_honeypot",
         "reportedip"
       ],
-      "tags": []
+      "tags": [
+        "ipthreat-level-50"
+      ]
     },
     {
       "band": "high",
@@ -32229,8 +32906,8 @@
       "ip_or_cidr": "223.247.218.112",
       "last_seen": "2026-11-20T00:00:00Z",
       "promoted_by": null,
-      "restricted_corroboration": 4,
-      "score": 94.2,
+      "restricted_corroboration": 5,
+      "score": 95.92,
       "source_reference": null,
       "source_registry": null,
       "sources": [
