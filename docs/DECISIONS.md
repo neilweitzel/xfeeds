@@ -2583,3 +2583,41 @@ contacts an upstream source or opens a network socket.
 The new window begins with the first scheduled feed refresh on rc.3; a manual
 heartbeat check is not a scheduled refresh. No source/scoring behavior changes,
 no stable promotion, no external monitor, and no Zenodo deposit.
+
+## ADR-073: Retry the Pages fallback deploy after an artifact-lookup miss
+
+**Date:** 2026-11-20. **Status:** Accepted for v1.1.0-rc.4.
+
+**Finding.** On 2026-11-20 the 20:10 UTC refresh committed `d77c639`, then both
+publishers failed: the refresh's own deploy job ([run 44808862055](https://github.com/neilweitzel/xfeeds/actions/runs/44808862055))
+and the `pages.yml` fallback ([run 44810987697](https://github.com/neilweitzel/xfeeds/actions/runs/44810987697))
+about 20 seconds later. In both runs `upload-pages-artifact` finalized the
+`github-pages` artifact, and roughly 0.3 seconds later `deploy-pages` reported
+"Found 0 artifact(s)". Both artifacts were listed by the API afterwards. The same
+failure hit the 03:09 UTC refresh, and that time the fallback recovered on its
+own 20 seconds later. The 11:30 UTC deploy succeeded at the same delay with the
+same action commit SHAs, so this is a lookup race, not a version mismatch.
+
+**Decision.** In `pages.yml`, the first `deploy-pages` attempt may fail without
+failing the job; on failure the job waits 30 seconds and calls `deploy-pages`
+once more, and that retry's result decides the job. The retry runs only when the
+freshness check found Pages stale. One retry, no loop: a fault that outlasts it
+should stay visible.
+
+**Not changed.** `upload-pages-artifact` stays on v3. v3 already uploads with
+`upload-artifact@v4`, which is what the error message asks for. v4 also drops
+dotfiles from the artifact, which would silently remove `_site/.htaccess`; that
+belongs in its own change if it is wanted. The primary deploy in
+`update-feeds.yml` is not changed here; `pages.yml` is the path that already
+exists to recover from it.
+
+**Verification.** `tests/test_pages_workflow.py` reads the real workflow and
+plays out its step conditions for first-attempt success, a single miss, two
+misses, and an already-current site. Replaying the pre-fix workflow with
+`PAGES_REGRESSION_REF=d77c6390` fails the single-miss scenario. These tests check
+which steps the workflow requests; they do not exercise GitHub's artifact API.
+
+**Burn-in.** A change under `.github/workflows/` requires rc.4 under the
+existing policy. The new window begins with the first scheduled feed refresh on
+rc.4; a manual or push-triggered publish is not a scheduled refresh. No source
+or scoring change, no stable promotion, and no Zenodo deposit.

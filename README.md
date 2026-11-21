@@ -414,6 +414,8 @@ A push made with `GITHUB_TOKEN` [does not start another workflow](https://docs.g
 
 Both publishers share the `pages` concurrency group, so they can never deploy at once and land an older artifact last. `pages.yml` compares the committed `feeds/index.html` against the live one by hash and skips when consumers are already current, so the fallback costs nothing on a healthy run.
 
+If `deploy-pages` fails, `pages.yml` waits 30 seconds and tries once more before failing the job. Its artifact lookup can briefly lag the upload: on 2026-11-20 both publishers failed within seconds of each other with "No artifacts named 'github-pages' were found" even though the artifact had uploaded (ADR-073).
+
 Why the fallback exists: on 2026-08-17 a refresh committed new feeds and its deploy job then died fetching an action from codeload (HTTP 429). `main` was fresh, Pages was a build behind, and nothing could retry until the next six-hourly run.
 
 ### Re-rendering the page without running the pipeline
@@ -496,10 +498,12 @@ does not claim the new scheduler completed the September burn-in.
 October review (ReportedIP, jacobrakai, and Carpathian as admitting classes; Sblam
 and SANS ISC `sources/attacks` as voting-only; ISC research-scanner labels as a
 benign cap) and reports what every class contributes. `v1.1.0-rc.2` (2026-10-09)
-applies the scanner caps to every published tier (ADR-071). The current candidate,
-`v1.1.0-rc.3` (2026-10-30), hardens heartbeat retries and diagnoses (ADR-072).
-Per the lifecycle policy, this workflow change restarts the candidate window at
-the first scheduled refresh on rc.3, not at a manual heartbeat verification.
+applies the scanner caps to every published tier (ADR-071). `v1.1.0-rc.3`
+(2026-10-30) hardens heartbeat retries and diagnoses (ADR-072). The current
+candidate, `v1.1.0-rc.4` (2026-11-20), retries the Pages fallback deploy after an
+artifact-lookup miss (ADR-073). Per the lifecycle policy, this workflow change
+restarts the candidate window at the first scheduled refresh on rc.4, not at a
+manual publish.
 `v1.0.1` remains the stable release until v1.1.0 is promoted.
 
 The promotion steps are enumerated in
