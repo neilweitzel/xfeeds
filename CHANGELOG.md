@@ -10,6 +10,14 @@ six hours by design. A consumer pinning a tag still fetches the same live URLs.
 
 ## [Unreleased]
 
+### Fixed
+
+- `pages.yml` retries `deploy-pages` once, 30 seconds after a failure, so a
+  brief lag between artifact upload and artifact lookup no longer leaves Pages a
+  build behind until the next refresh (ADR-073). A second failure still fails
+  the job. This is a workflow change, so under the lifecycle policy it restarts
+  the RC burn-in clock and needs a new candidate.
+
 ## [1.1.0-rc.3] - 2026-10-30
 
 Operational heartbeat hardening only. No source, scoring, feed-contract, refresh

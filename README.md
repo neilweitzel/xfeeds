@@ -414,6 +414,8 @@ A push made with `GITHUB_TOKEN` [does not start another workflow](https://docs.g
 
 Both publishers share the `pages` concurrency group, so they can never deploy at once and land an older artifact last. `pages.yml` compares the committed `feeds/index.html` against the live one by hash and skips when consumers are already current, so the fallback costs nothing on a healthy run.
 
+If `deploy-pages` fails, `pages.yml` waits 30 seconds and tries once more before failing the job. Its artifact lookup can briefly lag the upload: on 2026-11-20 both publishers failed within seconds of each other with "No artifacts named 'github-pages' were found" even though the artifact had uploaded (ADR-073).
+
 Why the fallback exists: on 2026-08-17 a refresh committed new feeds and its deploy job then died fetching an action from codeload (HTTP 429). `main` was fresh, Pages was a build behind, and nothing could retry until the next six-hourly run.
 
 ### Re-rendering the page without running the pipeline

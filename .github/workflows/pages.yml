@@ -42,7 +42,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deployment.outputs.page_url || steps.deployment_retry.outputs.page_url }}
     steps:
       # main rather than github.sha. Under workflow_run, github.sha is the head of
       # the run that triggered us, which for a refresh is the commit *before* it
@@ -101,6 +101,28 @@ jobs:
         if: steps.freshness.outputs.stale == 'true'
         with:
           path: _site
+
+      # deploy-pages looks up the artifact by listing this run's artifacts, and
+      # that listing can briefly lag the upload. On 2026-11-20 at 03:23 and 20:24
+      # UTC the upload step finalized "github-pages" and, about 0.3s later,
+      # deploy-pages found 0 artifacts and failed; the artifact was listed when
+      # checked afterwards. The same action versions found it at the same delay
+      # earlier that day, so this is a timing race, not a version mismatch.
+      #
+      # The refresh's own deploy job and this workflow can both hit the same
+      # window, because workflow_run fires seconds after the refresh ends. So
+      # this path waits and retries once instead of relying on another workflow.
+      # The first attempt's failure is tolerated only so the retry can run. If
+      # the retry also fails, the job fails as before.
       - id: deployment
         if: steps.freshness.outputs.stale == 'true'
+        continue-on-error: true
+        uses: actions/deploy-pages@v4
+
+      - name: Wait for the artifact listing to catch up
+        if: steps.freshness.outputs.stale == 'true' && steps.deployment.outcome == 'failure'
+        run: sleep 30
+
+      - id: deployment_retry
+        if: steps.freshness.outputs.stale == 'true' && steps.deployment.outcome == 'failure'
         uses: actions/deploy-pages@v4
