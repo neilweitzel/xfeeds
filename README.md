@@ -498,10 +498,12 @@ does not claim the new scheduler completed the September burn-in.
 October review (ReportedIP, jacobrakai, and Carpathian as admitting classes; Sblam
 and SANS ISC `sources/attacks` as voting-only; ISC research-scanner labels as a
 benign cap) and reports what every class contributes. `v1.1.0-rc.2` (2026-10-09)
-applies the scanner caps to every published tier (ADR-071). The current candidate,
-`v1.1.0-rc.3` (2026-10-30), hardens heartbeat retries and diagnoses (ADR-072).
-Per the lifecycle policy, this workflow change restarts the candidate window at
-the first scheduled refresh on rc.3, not at a manual heartbeat verification.
+applies the scanner caps to every published tier (ADR-071). `v1.1.0-rc.3`
+(2026-10-30) hardens heartbeat retries and diagnoses (ADR-072). The current
+candidate, `v1.1.0-rc.4` (2026-11-20), retries the Pages fallback deploy after an
+artifact-lookup miss (ADR-073). Per the lifecycle policy, this workflow change
+restarts the candidate window at the first scheduled refresh on rc.4, not at a
+manual publish.
 `v1.0.1` remains the stable release until v1.1.0 is promoted.
 
 The promotion steps are enumerated in

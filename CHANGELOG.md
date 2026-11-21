@@ -10,13 +10,18 @@ six hours by design. A consumer pinning a tag still fetches the same live URLs.
 
 ## [Unreleased]
 
+## [1.1.0-rc.4] - 2026-11-20
+
+Pages publishing hardening only. No source, scoring, feed-contract, refresh
+quota, or scheduling-cadence change. The workflow change restarts the candidate
+window under the existing lifecycle policy; stable v1.0.1 is unchanged.
+
 ### Fixed
 
 - `pages.yml` retries `deploy-pages` once, 30 seconds after a failure, so a
   brief lag between artifact upload and artifact lookup no longer leaves Pages a
   build behind until the next refresh (ADR-073). A second failure still fails
-  the job. This is a workflow change, so under the lifecycle policy it restarts
-  the RC burn-in clock and needs a new candidate.
+  the job. The window restarts at the first scheduled feed refresh on rc.4.
 
 ## [1.1.0-rc.3] - 2026-10-30
 
@@ -705,7 +710,9 @@ to `1.0.0` unchanged.
   by manual review get a regression test.
 - No unit test touches the network.
 
-[Unreleased]: https://github.com/neilweitzel/xfeeds/compare/v1.1.0-rc.2...HEAD
+[Unreleased]: https://github.com/neilweitzel/xfeeds/compare/v1.1.0-rc.4...HEAD
+[1.1.0-rc.4]: https://github.com/neilweitzel/xfeeds/releases/tag/v1.1.0-rc.4
+[1.1.0-rc.3]: https://github.com/neilweitzel/xfeeds/releases/tag/v1.1.0-rc.3
 [1.1.0-rc.2]: https://github.com/neilweitzel/xfeeds/releases/tag/v1.1.0-rc.2
 [1.1.0-rc.1]: https://github.com/neilweitzel/xfeeds/releases/tag/v1.1.0-rc.1
 [1.0.0-rc.3]: https://github.com/neilweitzel/xfeeds/releases/tag/v1.0.0-rc.3

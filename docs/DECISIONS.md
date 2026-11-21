@@ -2586,7 +2586,7 @@ no stable promotion, no external monitor, and no Zenodo deposit.
 
 ## ADR-073: Retry the Pages fallback deploy after an artifact-lookup miss
 
-**Date:** 2026-11-20. **Status:** Accepted; ships in the next release candidate.
+**Date:** 2026-11-20. **Status:** Accepted for v1.1.0-rc.4.
 
 **Finding.** On 2026-11-20 the 20:10 UTC refresh committed `d77c639`, then both
 publishers failed: the refresh's own deploy job ([run 44808862055](https://github.com/neilweitzel/xfeeds/actions/runs/44808862055))
@@ -2617,5 +2617,7 @@ misses, and an already-current site. Replaying the pre-fix workflow with
 `PAGES_REGRESSION_REF=d77c6390` fails the single-miss scenario. These tests check
 which steps the workflow requests; they do not exercise GitHub's artifact API.
 
-**Burn-in.** This is a change under `.github/workflows/`, so it restarts the RC
-clock and requires a new candidate.
+**Burn-in.** A change under `.github/workflows/` requires rc.4 under the
+existing policy. The new window begins with the first scheduled feed refresh on
+rc.4; a manual or push-triggered publish is not a scheduled refresh. No source
+or scoring change, no stable promotion, and no Zenodo deposit.
