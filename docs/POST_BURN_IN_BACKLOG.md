@@ -28,9 +28,10 @@ an explicit decision.
 scanner-cap fix). `v1.1.0-rc.3` (2026-10-30) adds bounded heartbeat retries and
 distinct availability/freshness diagnoses (ADR-072, incident #77).
 `v1.1.0-rc.4` (2026-11-20) retries the Pages fallback deploy once after an
-artifact-lookup miss (ADR-073). Its workflow change restarts the window at the
-first scheduled feed refresh on rc.4; a manual publish does not establish that
-start.
+artifact-lookup miss (ADR-073). `v1.1.0-rc.5` (2026-11-21) adds the same retry to
+the deploy job in `update-feeds.yml` (ADR-074). Its workflow change restarts the
+window at the first scheduled feed refresh on rc.5; a manual publish does not
+establish that start.
 `v1.0.1` stays the stable release until v1.1.0 is promoted
 through [`RELEASE_CHECKLIST.md`](RELEASE_CHECKLIST.md).
 

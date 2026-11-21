@@ -224,7 +224,7 @@ jobs:
       cancel-in-progress: false
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deployment.outputs.page_url || steps.deployment_retry.outputs.page_url }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -239,5 +239,22 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
+
+      # Same artifact-lookup race as pages.yml (ADR-073, ADR-074): deploy-pages
+      # can list this run's artifacts before the upload shows up and find none.
+      # On 2026-11-21 at 09:54 UTC that failed this job about 0.4s after the
+      # upload finalized; pages.yml then published 15s later. Publishing was
+      # fine, but the refresh run was marked failed, and an alert that needs no
+      # action teaches you to ignore the ones that do. Wait and retry once here.
+      # If the retry also fails, this job fails and pages.yml still runs behind it.
       - id: deployment
+        continue-on-error: true
+        uses: actions/deploy-pages@v4
+
+      - name: Wait for the artifact listing to catch up
+        if: steps.deployment.outcome == 'failure'
+        run: sleep 30
+
+      - id: deployment_retry
+        if: steps.deployment.outcome == 'failure'
         uses: actions/deploy-pages@v4
