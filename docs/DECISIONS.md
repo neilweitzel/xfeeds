@@ -2621,3 +2621,38 @@ which steps the workflow requests; they do not exercise GitHub's artifact API.
 existing policy. The new window begins with the first scheduled feed refresh on
 rc.4; a manual or push-triggered publish is not a scheduled refresh. No source
 or scoring change, no stable promotion, and no Zenodo deposit.
+
+## ADR-074: The refresh's own deploy retries the artifact lookup too
+
+**Date:** 2026-11-21. **Status:** Accepted for v1.1.0-rc.5. Supersedes the
+"primary deploy is not changed" part of ADR-073.
+
+**Finding.** The first scheduled refresh on rc.4
+([run 44891006387](https://github.com/neilweitzel/xfeeds/actions/runs/44891006387),
+09:44 UTC) committed `6f3cde9`. Its `deploy-pages` job then logged "Found 0
+artifact(s)" about 0.4 seconds after the upload finalized, the same race as
+ADR-073. The `pages.yml` fallback
+([run 44891801912](https://github.com/neilweitzel/xfeeds/actions/runs/44891801912))
+published 15 seconds later on its first attempt, so consumers were current. The
+refresh run was still marked failed. That makes three primary-path misses in
+about 30 hours (2026-11-20 03:23 and 20:24, 2026-11-21 09:54 UTC), each one a
+failure notice that needed no action.
+
+**Decision.** Give the `deploy-pages` job in `update-feeds.yml` the same shape as
+`pages.yml`: the first attempt may fail without failing the job; on failure the
+job waits 30 seconds and calls `deploy-pages` once more, and that retry decides
+the job. One retry, no loop. If both attempts fail, the job fails and `pages.yml`
+still runs as the independent second path. Both jobs stay in the non-cancelling
+`pages` concurrency group, so the longer job cannot overlap the other publisher.
+
+**Verification.** `tests/test_pages_workflow.py` now plays out both deploy jobs
+for first-attempt success, one miss, and two misses, and checks the concurrency
+group. Replaying `PAGES_REGRESSION_REF=6f3cde9` fails the update-feeds race
+cases; `d77c6390` fails both publishers. The tests check which steps the
+workflows request; they do not exercise GitHub's artifact API.
+
+**Burn-in.** A change under `.github/workflows/` requires rc.5 under the
+existing policy. The rc.4 window, which began with the 09:44 UTC refresh on
+2026-11-21, ends here. The rc.5 window begins with the first scheduled feed
+refresh on rc.5. No source or scoring change, no stable promotion, and no
+Zenodo deposit.

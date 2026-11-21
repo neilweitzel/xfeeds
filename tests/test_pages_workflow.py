@@ -1,10 +1,15 @@
-"""Check that the Pages fallback retries deploy-pages after the artifact-listing race.
+"""Check that both Pages publishers retry deploy-pages after the artifact-listing race.
 
-These tests read the real workflow file and play out its step conditions for the
-outcomes that matter. They model only the small part of the Actions expression
-language that pages.yml uses (`a == 'b'` joined by `&&`), and fail loudly on
-anything else rather than guessing. They do not prove how GitHub's runner or the
-artifact API behaves; they prove the workflow asks for the intended steps.
+These tests read the real workflow files and play out their step conditions for
+the outcomes that matter. They model only the small part of the Actions
+expression language the deploy jobs use (`a == 'b'` joined by `&&`), and fail
+loudly on anything else rather than guessing. They do not prove how GitHub's
+runner or the artifact API behaves; they prove the workflows ask for the
+intended steps.
+
+Setting PAGES_REGRESSION_REF replays both workflows from an older commit. At
+d77c6390 (the 2026-11-20 failures) both race cases must fail; at 6f3cde9 (the
+2026-11-21 failure) the update-feeds case must fail.
 """
 
 import os
@@ -13,34 +18,52 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
+import pytest
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
-WORKFLOW = ROOT / ".github/workflows/pages.yml"
 DEPLOY = "actions/deploy-pages@v4"
 CLAUSE = re.compile(r"^(steps\.[a-z_]+\.(?:outputs\.[a-z_]+|outcome)) == '([a-z]+)'$")
 
+# (workflow file, deploy job, whether the job gates on the freshness check)
+PUBLISHERS = [
+    pytest.param("pages.yml", "deploy", True, id="pages"),
+    pytest.param("update-feeds.yml", "deploy-pages", False, id="update-feeds"),
+]
 
-def deploy_steps(text: str) -> list[dict[str, Any]]:
-    workflow = yaml.safe_load(text)
-    steps: list[dict[str, Any]] = workflow["jobs"]["deploy"]["steps"]
-    return steps
+
+def read(name: str) -> str:
+    """Read a workflow, or an older commit's copy when replaying a regression."""
+    baseline = os.environ.get("PAGES_REGRESSION_REF")
+    if baseline:
+        return subprocess.check_output(
+            ["git", "show", f"{baseline}:.github/workflows/{name}"], cwd=ROOT, text=True
+        )
+    return (ROOT / ".github/workflows" / name).read_text()
+
+
+def job(name: str, job_id: str) -> dict[str, Any]:
+    workflow = yaml.safe_load(read(name))
+    found: dict[str, Any] = workflow["jobs"][job_id]
+    return found
 
 
 def evaluate(condition: str | None, context: dict[str, str]) -> bool:
-    """Evaluate the `if:` subset used by pages.yml, rejecting anything wider."""
+    """Evaluate the `if:` subset used by the deploy jobs, rejecting anything wider."""
     if condition is None:
         return True
     result = True
     for clause in condition.split("&&"):
         match = CLAUSE.match(clause.strip())
         if match is None:
-            raise AssertionError(f"unsupported condition in pages.yml: {condition!r}")
+            raise AssertionError(f"unsupported condition in workflow: {condition!r}")
         result = result and context.get(match.group(1), "") == match.group(2)
     return result
 
 
-def play(text: str, stale: bool, deploy_results: list[str]) -> tuple[list[str], bool]:
+def play(
+    name: str, job_id: str, deploy_results: list[str], stale: bool = True
+) -> tuple[list[str], bool]:
     """Return the deploy-pages steps that ran and whether the job succeeded.
 
     deploy_results supplies the outcome of each deploy-pages invocation in order.
@@ -51,7 +74,7 @@ def play(text: str, stale: bool, deploy_results: list[str]) -> tuple[list[str], 
     results = iter(deploy_results)
     ran: list[str] = []
     job_ok = True
-    for step in deploy_steps(text):
+    for step in job(name, job_id)["steps"]:
         if step.get("uses") != DEPLOY or not evaluate(step.get("if"), context):
             continue
         outcome = next(results)
@@ -62,54 +85,58 @@ def play(text: str, stale: bool, deploy_results: list[str]) -> tuple[list[str], 
     return ran, job_ok
 
 
-def current() -> str:
-    """Read pages.yml, or replay an older commit's copy for a regression check.
-
-    Setting PAGES_REGRESSION_REF=d77c6390 replays the workflow that failed on
-    2026-11-20; the race test must fail there.
-    """
-    baseline = os.environ.get("PAGES_REGRESSION_REF")
-    if baseline:
-        return subprocess.check_output(
-            ["git", "show", f"{baseline}:.github/workflows/pages.yml"], cwd=ROOT, text=True
-        )
-    return WORKFLOW.read_text()
+@pytest.mark.parametrize(("name", "job_id", "gated"), PUBLISHERS)
+def test_first_attempt_success_does_not_retry(name: str, job_id: str, gated: bool) -> None:
+    assert play(name, job_id, ["success"]) == (["deployment"], True)
 
 
-def test_first_attempt_success_does_not_retry() -> None:
-    assert play(current(), stale=True, deploy_results=["success"]) == (["deployment"], True)
-
-
-def test_artifact_race_is_retried_once_and_the_job_succeeds() -> None:
-    ran, job_ok = play(current(), stale=True, deploy_results=["failure", "success"])
+@pytest.mark.parametrize(("name", "job_id", "gated"), PUBLISHERS)
+def test_artifact_race_is_retried_once_and_the_job_succeeds(
+    name: str, job_id: str, gated: bool
+) -> None:
+    ran, job_ok = play(name, job_id, ["failure", "success"])
     assert ran == ["deployment", "deployment_retry"]
     assert job_ok
 
 
-def test_persistent_deploy_failure_still_fails_the_job() -> None:
-    ran, job_ok = play(current(), stale=True, deploy_results=["failure", "failure"])
+@pytest.mark.parametrize(("name", "job_id", "gated"), PUBLISHERS)
+def test_persistent_deploy_failure_still_fails_the_job(name: str, job_id: str, gated: bool) -> None:
+    ran, job_ok = play(name, job_id, ["failure", "failure"])
     assert ran == ["deployment", "deployment_retry"]
     assert not job_ok
 
 
 def test_current_pages_never_deploys() -> None:
-    assert play(current(), stale=False, deploy_results=[]) == ([], True)
+    assert play("pages.yml", "deploy", [], stale=False) == ([], True)
 
 
-def test_retry_waits_first_and_is_the_only_tolerated_failure() -> None:
-    steps = deploy_steps(current())
+@pytest.mark.parametrize(("name", "job_id", "gated"), PUBLISHERS)
+def test_retry_waits_first_and_is_the_only_tolerated_failure(
+    name: str, job_id: str, gated: bool
+) -> None:
+    deploy_job = job(name, job_id)
+    steps = deploy_job["steps"]
     ids = [step.get("id") for step in steps]
     first, retry = ids.index("deployment"), ids.index("deployment_retry")
     wait = steps[first + 1]
     assert retry == first + 2
     assert wait["run"] == "sleep 30"
     assert wait["if"] == steps[retry]["if"]
-    assert steps[retry]["uses"] == DEPLOY
+    assert "steps.deployment.outcome == 'failure'" in steps[retry]["if"]
+    assert ("steps.freshness.outputs.stale == 'true'" in steps[retry]["if"]) is gated
+    assert steps[first]["uses"] == steps[retry]["uses"] == DEPLOY
     assert "continue-on-error" not in steps[retry]
     tolerated = [step.get("id") for step in steps if "continue-on-error" in step]
     assert tolerated == ["deployment"]
-    job = yaml.safe_load(current())["jobs"]["deploy"]
-    assert "continue-on-error" not in job
-    url = job["environment"]["url"]
+    assert "continue-on-error" not in deploy_job
+    url = deploy_job["environment"]["url"]
     assert "steps.deployment.outputs.page_url" in url
     assert "steps.deployment_retry.outputs.page_url" in url
+
+
+def test_publishers_still_share_the_pages_group_without_cancelling() -> None:
+    """The retry lengthens a deploy job; overlap protection must stay intact."""
+    pages = yaml.safe_load(read("pages.yml"))
+    assert pages["concurrency"] == {"group": "pages", "cancel-in-progress": False}
+    primary = job("update-feeds.yml", "deploy-pages")
+    assert primary["concurrency"] == {"group": "pages", "cancel-in-progress": False}
