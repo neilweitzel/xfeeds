@@ -73,35 +73,40 @@ Configured entirely in [`sources.yaml`](sources.yaml). Adding a source means add
 
 For what each upstream documents about its own sensors and scoring — and why we derive our own score from independent presence rather than composing theirs — see [`docs/source-methodology-2026-08.md`](docs/source-methodology-2026-08.md).
 
-**Eleven independent voting classes**, each a distinct sensor network, reporter community, or research team. AbuseIPDB and ThreatFox are keyed sources: both are enabled in `sources.yaml`, and both skip cleanly when their key is absent from the environment, so a fresh clone with no secrets still produces a correct feed and simply gains accuracy once the keys are set. `ABUSEIPDB_API_KEY` was added to repo secrets on 2026-08-14; AbuseIPDB remains `redistribute: false` per ADR-012, so it raises confidence without contributing rows to any published file.
+**Seventeen active voting classes** (9 admitting, 8 voting-only as of 2026-11-23), each a distinct sensor network, reporter community, or research team. AbuseIPDB and ThreatFox are keyed sources: both are enabled in `sources.yaml`, and both skip cleanly when their key is absent from the environment, so a fresh clone with no secrets still produces a correct feed and simply gains accuracy once the keys are set. `ABUSEIPDB_API_KEY` was added to repo secrets on 2026-08-14; AbuseIPDB remains `redistribute: false` per ADR-012, so it raises confidence without contributing rows to any published file.
 
-| Source | Class | Weight | Volume | Notes |
+| Source | Class | Weight | Volume (2026-11-23) | Notes |
 |---|---|---|---|---|
-| [Spamhaus DROP](https://www.spamhaus.org/blocklists/do-not-route-or-peer/) v4/v6 | `spamhaus` | 1.0 | 1,687 + 92 CIDRs | Auto-promotes to high confidence |
-| [Feodo Tracker](https://feodotracker.abuse.ch/) | `abusech` | 1.0 | 5 IPs | **Expired** — frozen since March 2026, contributes nothing |
-| [SSLBL](https://sslbl.abuse.ch/) | `abusech` | 1.0 | 0 currently | Wired up, harmless |
-| ThreatFox | `abusech` | 1.0 | key required | Auth-Key mandatory |
-| [Blocklist.de](https://blocklist.de/) | `blocklist_de` | 0.8 | 28,605 | Largest independent sensor net |
+| [Spamhaus DROP](https://www.spamhaus.org/blocklists/do-not-route-or-peer/) v4/v6 | `spamhaus` | 1.0 | 1,752 + 90 CIDRs | Auto-promotes to high confidence |
+| [Feodo Tracker](https://feodotracker.abuse.ch/) | `abusech` | 1.0 | 0 (expired) | **Expired** (`dormant: true`) — frozen since March 2026, contributes nothing |
+| ThreatFox | `abusech` | 1.0 | ~2,662 (keyed) | Auth-Key mandatory; scoring only (`redistribute: false`) |
+| [Blocklist.de](https://blocklist.de/) (`all` + `strongips`) | `blocklist_de` | 0.8 | 22,574 + 281 | Largest independent admitting sensor net |
 | [CINS Army](https://cinsscore.com/) | `cins` | 0.8 | 15,000 | No formal licence — see ADR-012 |
+| [IPThreat](https://ipthreat.net/) | `ipthreat` | 0.8 | 3,813 | CC BY-SA 4.0; clean-tier eligible, excluded from non-commercial tier (ADR-041/042) |
 | [AbuseIPDB](https://docs.abuseipdb.com/) | `abuseipdb` | 0.9 | 10,000 | Scoring only, not redistributed |
-| GreenSnow | `greensnow` | 0.6 | 3,595 | |
-| Binary Defense | `binary_defense` | 0.6 | 3,300 | Requires browser-like UA |
-| bruteforceblocker | `bruteforceblocker` | 0.6 | 549 | Upstream of ET compromised-ips |
-| [DataPlane.org](https://dataplane.org/sshpwauth.txt) | `dataplane` | 0.7 | 9,771 | Own SSH sensors, 7-day window. Scoring only in **both** tiers |
-| [DShield](https://isc.sans.edu/api/) | `dshield` | 0.5 | 20 × /24 | CC BY-NC-SA — non-commercial tier only |
+| [ReportedIP](https://reportedip.com/) | `reportedip` | 0.7 | 10,601 | CC BY 4.0; clean-tier eligible; includes IPv6 hosts (ADR-067) |
+| [DataPlane.org](https://dataplane.org/) (6 feeds) | `dataplane` | 0.7 | ~149,620 rows | Own SSH/Telnet/SMTP/VNC/proto41 sensors. Scoring only in **both** tiers |
+| [Turris Sentinel](https://view.sentinel.turris.cz/) | `turris` | 0.7 | 9,418 | CC BY-NC-SA 4.0 — non-commercial tier only (ADR-041/061) |
+| GreenSnow | `greensnow` | 0.6 | 2,247 | Scoring only, not redistributed (ADR-040) |
+| Binary Defense | `binary_defense` | 0.6 | 613 | Requires browser-like UA |
+| bruteforceblocker + ET compromised-ips | `bruteforceblocker` | 0.6 | 570 + 596 | Class-pinned (Jaccard 0.953); ET carries an explicit BSD grant for `feeds/clean/` (ADR-051) |
+| [Carpathian](https://api.carpathian.ai/public/threat-intel/blocklist.json) | `carpathian` | 0.6 | 647 | CC BY 4.0; clean-tier eligible; 30-day per-row age cap (ADR-069) |
+| [jacobrakai](https://jacobrakai.org/feed/blocklist.txt) | `jacobrakai` | 0.6 | 414 | CC0 1.0 first-party honeypots; clean-tier eligible (ADR-066) |
+| [DShield](https://isc.sans.edu/api/) (`block` + `attacks`) | `dshield` | 0.5 | 20 × /24 + 9,999 | `block` in non-commercial tier (CC BY-NC-SA); `attacks` voting-only in all tiers (ADR-068) |
+| [StopForumSpam](https://www.stopforumspam.com/) | `stopforumspam` | 0.5 | 55,414 | Scoring only, not redistributed (ADR-050) |
+| [Sblam](https://sblam.com/blacklist.txt) | `sblam` | 0.5 | ~1,171 | Scoring only, not redistributed (ADR-065) |
 
 **Not voting, and why** — the important half of the design:
 
 | Source | Status | Reason |
 |---|---|---|
 | IPsum L3–L8 | Prior only, weight 0 | Aggregates 30+ lists including most of ours. 35% of Blocklist.de and 64% of Binary Defense reappear inside it. |
+| SANS ISC research scanners | Benign cap (`benign_cap`) | Curated research/measurement scanner labels (Censys, Shodan, Shadowserver, etc.); caps `HIGH → MEDIUM` without voting or redistributing (ADR-070/071). |
+| Tor exits | Tag only | Blocking Tor is the consumer's policy choice, not a threat assertion. |
 | FireHOL level1 | Disabled | Its header declares it composed of sources we already ingest — and it spans 611M addresses including `224.0.0.0/3`. |
-| ET compromised-ips | Disabled | Jaccard **0.953** against bruteforceblocker. A mirror, not a second opinion. |
-| ET compromised-ips | Disabled | Also 96% contained in the duggytuxy list, and class-pinned to bruteforceblocker, so it cannot add a vote. |
 | SSLBL (IP list) | Disabled | Not empty — **retired**. The file says "deprecated on 2025-01-03". |
 | [sefinek](https://github.com/sefinek/Malicious-IP-Addresses) | Disabled | MIT and the most independent list we have measured, but measured across 140 upstream commits it removes **nothing** — zero retractions in 32 days. See ADR-057. |
 | [duggytuxy Data-Shield](https://github.com/duggytuxy/Data-Shield_IPv4_Blocklist) | Disabled | Claims own probes; contains **90.7% of everything we publish**. A re-aggregator by measurement. |
-| Tor exits | Tag only | Blocking Tor is the consumer's policy choice, not a threat assertion. |
 
 ---
 
@@ -125,9 +130,9 @@ One vote per class, and exponential saturation, so no single source can alone re
 | `feeds/noncommercial/` | Adds CC BY-NC-SA sources | CC BY-NC-SA 4.0 |
 | `feeds/clean/` | **Only** sources with a written, named licence permitting commercial redistribution | Per-source, all permissive — see `clean/LICENSE.txt` |
 
-Use `feeds/clean/` if you have to satisfy a legal review. It is much smaller — 23 entries against 4,270 on a 2026-08-14 run — and that is the trade: the primary feed also contains data from publishers who distribute freely but never actually granted a reuse licence, and absence of a prohibition is not a grant. `clean/LICENSE.txt` names the licence, the licence URL and the required credit for every contributing source. See ADR-051.
+Use `feeds/clean/` if you have to satisfy a legal review. It is much smaller — 1,161 entries against 12,210 on a 2026-11-23 run (up from 23 against 4,270 when the tier launched in August 2026, before explicit-licence sources such as ReportedIP, Carpathian, and jacobrakai were admitted) — and that is the trade: the primary feed also contains data from publishers who distribute freely but never actually granted a reuse licence, and absence of a prohibition is not a grant. `clean/LICENSE.txt` names the licence, the licence URL and the required credit for every contributing source. See ADR-051.
 
-Only classes we are licensed to republish count toward the threshold that admits a record. Sources we may consume but not republish (AbuseIPDB, GreenSnow, ThreatFox, DataPlane) can raise a record from medium to high, but can never bring one into the feed on their own, and their names are withheld from published records so the feed cannot disclose their membership. See ADR-035.
+Only classes we are licensed to republish count toward the threshold that admits a record. Sources we may consume but not republish (AbuseIPDB, GreenSnow, ThreatFox, DataPlane, StopForumSpam, Sblam, plus Turris and DShield in the primary tier) can raise a record from medium to high, but can never bring one into the feed on their own, and their names are withheld from published records so the feed cannot disclose their membership. See ADR-035.
 
 That split is what makes a restricted source safe to use, and ADR-048 measured the payoff: adding DataPlane and DShield left the published count **unchanged at 3,518** while upgrading 375 records from medium to high. Pure corroboration, zero new exposure.
 
@@ -149,22 +154,21 @@ Expired sources are still fetched. The fetch stops being a scoring input and bec
 
 ### Voting is not admitting
 
-Those are two different rights, and the difference is larger than it looks. As of 2026-09-01 there are **13 voting classes and 6 admitting ones**. The other seven — `abusech`, `abuseipdb`, `dataplane`, `dshield`, `greensnow`, `stopforumspam`, `turris` — can strengthen a record that two live classes already admitted, and can never be one of those two, because their licence forbids redistribution or the upstream behind them has stopped publishing.
+Those are two different rights, and the difference is larger than it looks. As of 2026-11-23 there are **17 voting classes and 9 admitting ones**. The other eight — `abusech`, `abuseipdb`, `dataplane`, `dshield`, `greensnow`, `sblam`, `stopforumspam`, `turris` — can strengthen a record that two live classes already admitted, and can never be one of those two, because their licence forbids redistribution or the upstream behind them has stopped publishing.
 
-`manifest.json` reports both, plus `voting_only_classes` and a per-category `category_coverage` block. Four categories currently have **no** admitting class at all:
+`manifest.json` reports both, plus `voting_only_classes` and a per-category `category_coverage` block. Three categories currently have **no** admitting class at all (`telnet-attack` gained its first admitting class with `jacobrakai` in ADR-066):
 
 | Category | Voting | Admitting | Why |
 |---|---|---|---|
 | `botnet-c2` | 1 | 0 | Feodo Tracker expired, ThreatFox non-redistributable |
-| `abuse` | 2 | 0 | StopForumSpam and DataPlane both non-redistributable |
-| `spam-source` | 2 | 0 | the same two |
-| `telnet-attack` | 1 | 0 | DataPlane only |
+| `abuse` | 3 | 0 | StopForumSpam, DataPlane, and Sblam all non-redistributable |
+| `spam-source` | 3 | 0 | the same three |
 
-Those are reported as `status: "corroboration-only"` rather than as a bare zero, because the two situations a zero could mean are very different: we watch all four categories and vote on them, we just may not publish an address on that evidence alone. It is a licensing outcome, not a blind spot. See ADR-058.
+Those are reported as `status: "corroboration-only"` rather than as a bare zero, because the two situations a zero could mean are very different: we watch all three categories and vote on them, we just may not publish an address on that evidence alone. It is a licensing outcome, not a blind spot. See ADR-058.
 
 For `botnet-c2` specifically the free ecosystem has no fix, and the 2026-09-01 review measured why: ET's `emerging-botcc.rules` is generated from abuse.ch and carries the identical five dead addresses as Feodo; Viriback states no licence and accumulates back to 2019; TweetFeed is CC0 but its sensor method is "somebody tweeted it". The one live, high-quality option is ThreatFox, and licence is the single thing blocking it.
 
-Measured against live data on 2026-08-11, of 54,241 unique candidate IPs:
+Measured against live data at initial calibration on 2026-08-11, of 54,241 unique candidate IPs:
 
 | Distinct classes | IPs | Share | Band |
 |---|---|---|---|
@@ -172,7 +176,7 @@ Measured against live data on 2026-08-11, of 54,241 unique candidate IPs:
 | 2 | 10,294 | 19.0% | medium |
 | 3+ | 1,913 | 3.5% | high |
 
-Expected published high-confidence feed: **~2,000–4,000 entries** — the same order of magnitude as the original 2022 list. Discarding 77% of the input is the product working, not a bug.
+That initial 11-class calibration produced ~2,000–4,000 high-confidence entries. With 17 active voting classes as of 2026-11-23, **235,798** observed addresses narrow to **12,210 published** (**8,745 high**, **3,465 medium**), with **81.8%** (`192,853`) seen by only a single class and withheld. Discarding the overwhelming majority of single-source input is the product working, not a bug.
 
 ---
 
@@ -233,33 +237,38 @@ Cloudflare lists, nginx `deny` maps: point them at `high-confidence.txt`, or at
 ### IPv6 coverage
 
 xfeeds publishes IPv6 as a separate track. It is small and structurally different
-from the IPv4 feed: **91 prefixes from a single source family, Spamhaus DROPv6.**
+from the IPv4 feed: **90 prefixes in `high` from a single source family, Spamhaus
+DROPv6**, plus a handful of corroborated `/128` hosts in `medium` (4 on the
+2026-11-23 run, agreed on by Blocklist.de and ReportedIP).
 
-**What the limitation actually is.** Those records are promoted on that source's
-precision alone. So are 1,681 IPv4 records — 44% of the IPv4 high-confidence feed
-rests on exactly the same basis. The problem with IPv6 is not that the data is
-weaker; it is that there is no second source, so nothing corroborates it and
-nothing covers for it if that source degrades. Treat it as a **concentration
-risk**, not a quality one. The feed header says so, and says it only while it
-remains true — the notice is computed from the independence-class count.
+**What the limitation actually is.** The 90 high-confidence prefixes are promoted
+on Spamhaus's precision alone. So are 1,751 IPv4 records — 20% of the IPv4
+high-confidence feed rests on exactly the same basis. The problem with IPv6 `high`
+is not that the data is weaker; it is that there is no second source corroborating
+those prefixes and nothing covering for it if that source degrades. Treat it as a
+**concentration risk**, not a quality one. The feed header says so, and says it
+only while it remains true — the notice is computed from the independence-class
+count.
 
-**The prefixes are wide on purpose.** /29 to /48, with no individual addresses.
-General IPv6 practice is to work at /64 and to treat a /32 as an entire ISP that
-should almost never be blocked wholesale. DROP is the documented exception: it
-lists netblocks leased or stolen outright by criminal operations, published for
-firewall and backbone use, where the whole allocation is the finding.
+**The prefixes are wide on purpose.** /29 to /48, with no individual addresses in
+`high`. General IPv6 practice is to work at /64 and to treat a /32 as an entire
+ISP that should almost never be blocked wholesale. DROP is the documented
+exception: it lists netblocks leased or stolen outright by criminal operations,
+published for firewall and backbone use, where the whole allocation is the finding.
 
-Applying the IPv6 feed covers **11,488,576 /48 sites**, and 18 entries account for
-82% of that. Entry count is a poor guide here — review the widest entries before
-deploying them. The dashboard breaks this down by prefix width.
+Applying the IPv6 feed covers **11,494,981 /48 sites**, and 18 `/29` entries
+account for 82% of that. Entry count is a poor guide here — review the widest
+entries before deploying them. The dashboard breaks this down by prefix width.
 
-**Other sources do report IPv6, and it is deliberately not published.**
-Blocklist.de contributes about 431 IPv6 hosts per run. Every one is withheld,
-because nothing corroborates them: zero of those hosts fall inside a Spamhaus
-DROPv6 prefix. The two sources observe different things — compromised individual
-hosts versus criminal-controlled allocations — so they cannot corroborate each
-other even in principle. Publishing IPv6 host indicators needs a second
-redistributable source that also reports hosts. `insights.json` reports the
+**Most host-level IPv6 observations are still withheld.**
+Blocklist.de (~328 IPv6 hosts) and ReportedIP (~37 IPv6 hosts) are both
+redistributable, and adding ReportedIP (ADR-067) produced the first corroborated
+IPv6 host entries in `medium-confidence-v6.txt` — 4 hosts on 2026-11-23. Zero of
+those hosts fall inside a Spamhaus DROPv6 prefix: the two kinds of sources
+observe different things — compromised individual hosts versus criminal-controlled
+allocations — so they cannot corroborate each other even in principle. Meanwhile
+larger non-redistributable IPv6 host feeds (such as StopForumSpam at ~4,263 IPv6
+observations) cannot admit records on their own. `insights.json` reports the
 per-source IPv6 observation counts so this stays measurable.
 
 **Which file.** Single-stack IPv4: `high-confidence-v4.txt` and `iptables.ipset`.
@@ -299,11 +308,11 @@ feeds, which firewalls parse.
 
 ## What the dashboard shows
 
-**The IPv4 space as one strip.** 512 slices of 8.4 million addresses, log-scaled, lowest address on the left. It answers something the feed files cannot: how much of the internet we see activity in at all. Currently 402 of 512 slices. Multicast and reserved space is shaded so an empty tail is not mistaken for a broken chart.
+**The IPv4 space as one strip.** 512 slices of 8.4 million addresses, log-scaled, lowest address on the left. It answers something the feed files cannot: how much of the internet we see activity in at all. Currently 405 of 512 slices. Multicast and reserved space is shaded so an empty tail is not mistaken for a broken chart.
 
-**IPv6 gets structure, not a copy of the IPv4 charts.** The v6 corpus has zero variance in score, band, source and category, so a corroboration histogram or score distribution would render one bar each — the appearance of analysis with none of the substance. Those are suppressed, and the page lists which ones and why, so a reader can tell "no signal" from "we did not look". What is shown instead is structural and clears the same `MIN_CELL` threshold used for named ASN cells: entries by prefix width, the /64 subnets each width actually reaches, which /12 of `2000::/3` the listings fall in, and adjacent prefixes under apparent common control. Adjacency is reported, never merged — merging would diverge from what Spamhaus published and destroy the per-entry listing reference.
+**IPv6 gets structure, not a copy of the IPv4 charts.** The v6 high-confidence corpus comes from one source family, so a corroboration histogram or score distribution would mostly mirror one bar — the appearance of analysis with little substance. Those are suppressed where they carry no variance, and the page lists which ones and why, so a reader can tell "no signal" from "we did not look". What is shown instead is structural and clears the same `MIN_CELL` threshold used for named ASN cells: entries by prefix width, the /64 subnets each width actually reaches, which /12 of `2000::/3` the listings fall in, and adjacent prefixes under apparent common control. Adjacency is reported, never merged — merging would diverge from what Spamhaus published and destroy the per-entry listing reference.
 
-**Reach, not entry count.** For IPv6 the bar beside each prefix width encodes address space reached rather than number of entries, which is why the most numerous row (/48, 32 entries) has the shortest bar and the least numerous (/29, 18 entries) carries 82% of the total. A feed that reports "91 entries" and stops has told an operator nothing about what applying it does.
+**Reach, not entry count.** For IPv6 the bar beside each prefix width encodes address space reached rather than number of entries, which is why the most numerous row (/48, 33 entries) has the shortest bar and the least numerous (/29, 18 entries) carries 82% of the total. A feed that reports "94 entries" and stops has told an operator nothing about what applying it does.
 
 **ASN analysis is IPv4-only,** because the `iptoasn.com` enrichment table is. That is now reported as its own figure rather than folded into an unexplained "unenriched" residual.
 
@@ -317,7 +326,7 @@ Statistics are computed over **every** source, including those whose licences fo
 
 ASN data from [iptoasn.com](https://iptoasn.com/) (Public Domain, PDDL v1.0). No geography is published anywhere, including as a table column: the country in an IP-to-ASN table is a registration detail, not a location.
 
-## Two tiers
+## Primary vs. non-commercial tier
 
 Most public IP feeds that forbid something forbid *commercial use*, not redistribution. Those are two different restrictions, and treating them the same was costing real coverage.
 
@@ -325,10 +334,10 @@ Most public IP feeds that forbid something forbid *commercial use*, not redistri
 |---|---|---|
 | Licence | Source terms only; no commercial restriction | CC BY-NC-SA 4.0 |
 | Use at work, or in a paid product | Yes | **No** |
-| Published addresses (last run) | 4,204 | **5,281** |
+| Published addresses (2026-11-23) | 12,210 | **20,000** |
 | Extra sources published in full | — | Turris Sentinel, DShield |
 
-If you are running a home lab, a personal server, a school or a charity, take the non-commercial tier: it sees about a quarter more. If you are at a company or building anything anyone pays for, take the primary feed. The distinction is real, not a formality — `feeds/noncommercial/LICENSE.txt` states it plainly and every file in that directory leads with a banner.
+If you are running a home lab, a personal server, a school or a charity, take the non-commercial tier: it sees substantially more (20,000 vs. 12,210 on 2026-11-23). If you are at a company or building anything anyone pays for, take the primary feed (or `feeds/clean/` if you need written, named permissive licences for every contributing source). The distinction is real, not a formality — `feeds/noncommercial/LICENSE.txt` states it plainly and every file in that directory leads with a banner.
 
 The tier is built by a second scoring pass rather than by filtering the first, because which sources are publishable changes what counts as corroboration, which changes the confidence bands.
 
@@ -536,7 +545,7 @@ or expose its source identity in published records. See ADR-040 and ADR-053 in
 - [x] All output formats, manifest, rolling history
 - [x] Churn guard, run report, `xfeeds explain`
 - [x] 6-hour scheduled refresh, self-committing, Pages dashboard
-- [x] 52 tests, no network access in the suite
+- [x] Offline test suite with recorded fixtures (52 at MVP; 381 tests as of 2026-11-23, no network access)
 
 **Phase 2b — enrichment**
 - [x] AbuseIPDB and ThreatFox collectors (quota-aware; keys configured)
