@@ -1,38 +1,38 @@
-xfeeds run 2026-11-22T18:32:55.583454+00:00
+xfeeds run 2026-11-23T00:17:44.385351+00:00
   sources:   27/29 ok (1 dormant)
-  published: 12445 (high 8783, medium 3662)
-  withheld:  44318 single-source
-  deltas:    +145 / -39
+  published: 12031 (high 8572, medium 3459)
+  withheld:  44378 single-source
+  deltas:    +205 / -619
     abuseipdb_blacklist      10000 records
-    binary_defense           888 records
-    blocklist_de             22695 records
-    blocklist_de_strongips   283 records
-    bruteforceblocker        582 records
-    carpathian               658 records
+    binary_defense           613 records
+    blocklist_de             22539 records
+    blocklist_de_strongips   282 records
+    bruteforceblocker        578 records
+    carpathian               645 records
     cins_army                15000 records
-    dataplane_proto41        51565 records
-    dataplane_smtpgreet      10436 records
-    dataplane_sshclient      26004 records
-    dataplane_sshpwauth      13838 records
-    dataplane_telnetlogin    43417 records
-    dataplane_vncrfb         4406 records
-    dshield_attacks          10000 records
+    dataplane_proto41        51626 records
+    dataplane_smtpgreet      10499 records
+    dataplane_sshclient      26191 records
+    dataplane_sshpwauth      13893 records
+    dataplane_telnetlogin    43494 records
+    dataplane_vncrfb         4343 records
+    dshield_attacks          empty
     dshield_block            20 records
     et_compromised           596 records
     feodo_tracker            expired
-    greensnow                1840 records
+    greensnow                2195 records
     ipsum_levels             33927 records
-    ipthreat                 3633 records
+    ipthreat                 3724 records
     isc_research_scanners    812 records
     jacobrakai_honeypot      414 records
     reportedip               10421 records
     sblam                    failed (request error: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1032))
     spamhaus_drop_v4         1752 records
     spamhaus_drop_v6         90 records
-    stopforumspam_listed     54690 records
-    threatfox                failed (request error: peer closed connection without sending complete message body (incomplete chunked read))
-    tor_exits                1253 records
-    turris_greylist          9727 records
-  ! threatfox: request error: peer closed connection without sending complete message body (incomplete chunked read)
+    stopforumspam_listed     55414 records
+    threatfox                2662 records
+    tor_exits                1254 records
+    turris_greylist          9418 records
   ! sblam: request error: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1032)
-  ! 3244 records capped high -> medium as benign scanners
+  ! dshield_attacks: returned zero usable records
+  ! 3038 records capped high -> medium as benign scanners
