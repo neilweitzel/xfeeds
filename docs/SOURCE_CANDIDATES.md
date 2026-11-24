@@ -140,7 +140,13 @@ Live contribution from the 2026-10-09 09:00 UTC run (`class_contribution`):
 | CrowdSec community blocklist | abuse | deferred | Free with a running engine | 2026-10-08 | Requires a Security Engine sharing signals; pairs naturally with the xfeeds honeypot | [2026-10](source-discovery-2026-10.md) |
 | FraudGuard threat feeds | commercial | deferred | Ongoing paid ($299/mo Business) | 2026-10-08 | Budget decision | [2026-10 addendum](source-discovery-2026-10.md#addendum-second-pass) |
 | Stratosphere AIP | abuse | deferred | Free | 2026-10-08 | Files stale since 2026-08-05; no licence stated | [2026-10 addendum](source-discovery-2026-10.md#addendum-second-pass) |
-| DigitalSide Threat-Intel | c2 | new | Free, MIT | 2026-10-08 | Endpoint reset the connection; retry and measure | [2026-10 addendum](source-discovery-2026-10.md#addendum-second-pass) |
+| DigitalSide Threat-Intel | c2 | new | Free, MIT | 2026-10-08 | Endpoint reset the connection (still timed out 2026-11-24); retry and measure or reject | [2026-10 addendum](source-discovery-2026-10.md#addendum-second-pass) |
+| OffSeq Mirage Feed (`ipv4-7d` / `attackers-7d`) | abuse | new | Free, CC BY 4.0 | 2026-11-24 | First-party handshake-verified honeypots (`≥3` sensors, `≥2` nets), clean-tier eligible; 2,210 hosts, Jaccard 0.0302 vs published on 2026-11-24 (`ipv6-7d` empty). Verify 30d continuity, raw containment, and datacenter share | [mirage-feed](https://github.com/offseq/mirage-feed) |
+| OffSeq Mirage Feed (`known-scanners`) | fp | new | Free, CC BY 4.0 | 2026-11-24 | 7,515 IPv4 + 42 IPv6 research scanners; matched 294 uncapped HIGH records on 2026-11-24. Evaluate as `benign_cap` and check against over-capping real attackers | [mirage-feed](https://github.com/offseq/mirage-feed) |
+| NetAPI Nightwatch (`netapi-compromised-ips`) | abuse | new | Free, CC BY 4.0 | 2026-11-24 | Multi-continent first-party honeypots, clean-tier eligible, hourly rebuild; 41,463 IPv4 hosts, Jaccard 0.0654 vs published on 2026-11-24. Measure removal churn, raw containment, cloud/scanner share, and churn-guard impact | [netapi.com/compromised-ips](https://netapi.com/compromised-ips/) |
+| MISP Warninglists (scanner & infra lists) | fp | new | Free, CC0 1.0 | 2026-11-24 | 15 CIRCL/community scanner lists matched 114 uncapped HIGH records on 2026-11-24 (FOFA, Shadowserver, ZoomEye, universities). Evaluate actively maintained `-nt-scanning` lists for `benign_cap` and CDN/crawler lists for allowlist | [MISP/misp-warninglists](https://github.com/MISP/misp-warninglists) |
+| DataPlane.org unused signals (`sip*`, `dns*`) | existing, ipv6 | new | Free (`redistribute: false`) | 2026-11-24 | Same `dataplane` class and parser: `sipquery` (7,579; 295 IPv6), `sipregistration` (369), `sipinvitation` (95), `dnsrd` (11,313; 670 IPv6), `dnsversion` (9,214; 230 IPv6). Evaluate `sip*` first; check `dns*` for benign-resolver FP risk | [dataplane.org/signals](https://dataplane.org/) |
+| GreedyBear (The Honeynet Project) | abuse | new | Free, CC BY-NC-SA 4.0 | 2026-11-24 | T-Pot honeypot feeds (`FEEDS_LICENSE.md`, non-commercial tier); `all/all/recent.json` returned empty `iocs` on 2026-11-24. Confirm public endpoint parameters/activity on Jan 8 or reject as empty | [GreedyBear](https://github.com/GreedyBear-Project/GreedyBear) |
 
 ## Rejected
 
@@ -185,3 +191,6 @@ Live contribution from the 2026-10-09 09:00 UTC run (`class_contribution`):
 | OpenPhish community | fraud | 2026-08-13 | Personal use only; URLs, not IPs | Never |
 | Project Honey Pot directory, CleanTalk, 3CORESec, CyberCure, Rescure, Charles Haley, NoThink, Mirai tracker | various | 2026-08-13 | Dead, HTML-only, or no parseable list | Endpoint returns |
 | SSLBL | c2 | 2026-08-15 | Deprecated upstream; capability moved to paid feeds | Never |
+| LureScope (`top-attack-lists`) | abuse | 2026-11-24 | CC BY 4.0 first-party honeypots, but publishes only credential wordlists on GitHub; attacker IPs require a 100-query/mo API | Bulk IP feed published |
+| FFraud-com (`ip-fraud-database`) | abuse | 2026-11-24 | GitHub reports `NOASSERTION`, stale since 2026-11-03, 1.2M-IP corpus suggests aggregate/no-expiry | Licence published and expiry documented |
+| UCEPROTECT | spam | 2026-11-24 | Paid express-delisting model and ASN-wide boycott tiers (L2/L3); high FP risk | Never |
