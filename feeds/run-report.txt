@@ -1,28 +1,28 @@
-xfeeds run 2026-11-25T09:50:48.443927+00:00
-  sources:   28/29 ok (1 dormant)
-  published: 12120 (high 8769, medium 3351)
-  withheld:  42794 single-source
-  deltas:    +262 / -114
+xfeeds run 2026-11-25T19:56:10.753567+00:00
+  sources:   27/29 ok (1 dormant)
+  published: 12195 (high 8856, medium 3339)
+  withheld:  43505 single-source
+  deltas:    +139 / -64
     abuseipdb_blacklist      10000 records
     binary_defense           462 records
-    blocklist_de             24140 records
-    blocklist_de_strongips   281 records
-    bruteforceblocker        572 records
-    carpathian               638 records
+    blocklist_de             23864 records
+    blocklist_de_strongips   282 records
+    bruteforceblocker        577 records
+    carpathian               654 records
     cins_army                15000 records
-    dataplane_proto41        50851 records
-    dataplane_smtpgreet      10319 records
-    dataplane_sshclient      22996 records
-    dataplane_sshpwauth      11162 records
-    dataplane_telnetlogin    43704 records
-    dataplane_vncrfb         3539 records
-    dshield_attacks          10000 records
+    dataplane_proto41        50900 records
+    dataplane_smtpgreet      10364 records
+    dataplane_sshclient      23655 records
+    dataplane_sshpwauth      11352 records
+    dataplane_telnetlogin    44291 records
+    dataplane_vncrfb         3455 records
+    dshield_attacks          9997 records
     dshield_block            20 records
     et_compromised           575 records
     feodo_tracker            expired
-    greensnow                3217 records
+    greensnow                2201 records
     ipsum_levels             29778 records
-    ipthreat                 4212 records
+    ipthreat                 4289 records
     isc_research_scanners    812 records
     jacobrakai_honeypot      414 records
     reportedip               10529 records
@@ -30,8 +30,9 @@ xfeeds run 2026-11-25T09:50:48.443927+00:00
     spamhaus_drop_v4         1737 records
     spamhaus_drop_v6         90 records
     stopforumspam_listed     55499 records
-    threatfox                7925 records
+    threatfox                failed (request error: peer closed connection without sending complete message body (incomplete chunked read))
     tor_exits                1254 records
     turris_greylist          9558 records
+  ! threatfox: request error: peer closed connection without sending complete message body (incomplete chunked read)
   ! sblam: request error: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1032)
-  ! 2891 records capped high -> medium as benign scanners
+  ! 2893 records capped high -> medium as benign scanners
