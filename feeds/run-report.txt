@@ -1,38 +1,37 @@
-xfeeds run 2026-11-25T00:41:20.393554+00:00
-  sources:   27/29 ok (1 dormant)
-  published: 11972 (high 8643, medium 3329)
-  withheld:  44860 single-source
-  deltas:    +114 / -333
+xfeeds run 2026-11-25T09:50:48.443927+00:00
+  sources:   28/29 ok (1 dormant)
+  published: 12120 (high 8769, medium 3351)
+  withheld:  42794 single-source
+  deltas:    +262 / -114
     abuseipdb_blacklist      10000 records
     binary_defense           462 records
-    blocklist_de             24049 records
-    blocklist_de_strongips   280 records
-    bruteforceblocker        576 records
-    carpathian               631 records
+    blocklist_de             24140 records
+    blocklist_de_strongips   281 records
+    bruteforceblocker        572 records
+    carpathian               638 records
     cins_army                15000 records
-    dataplane_proto41        50653 records
-    dataplane_smtpgreet      10310 records
-    dataplane_sshclient      25198 records
-    dataplane_sshpwauth      13200 records
-    dataplane_telnetlogin    44069 records
-    dataplane_vncrfb         3572 records
-    dshield_attacks          empty
+    dataplane_proto41        50851 records
+    dataplane_smtpgreet      10319 records
+    dataplane_sshclient      22996 records
+    dataplane_sshpwauth      11162 records
+    dataplane_telnetlogin    43704 records
+    dataplane_vncrfb         3539 records
+    dshield_attacks          10000 records
     dshield_block            20 records
     et_compromised           575 records
     feodo_tracker            expired
-    greensnow                3245 records
-    ipsum_levels             27317 records
-    ipthreat                 4144 records
+    greensnow                3217 records
+    ipsum_levels             29778 records
+    ipthreat                 4212 records
     isc_research_scanners    812 records
     jacobrakai_honeypot      414 records
-    reportedip               10592 records
+    reportedip               10529 records
     sblam                    failed (request error: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1032))
     spamhaus_drop_v4         1737 records
     spamhaus_drop_v6         90 records
-    stopforumspam_listed     55702 records
-    threatfox                7726 records
-    tor_exits                1251 records
+    stopforumspam_listed     55499 records
+    threatfox                7925 records
+    tor_exits                1254 records
     turris_greylist          9558 records
   ! sblam: request error: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1032)
-  ! dshield_attacks: returned zero usable records
-  ! 2874 records capped high -> medium as benign scanners
+  ! 2891 records capped high -> medium as benign scanners
