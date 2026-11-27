@@ -1,37 +1,37 @@
-xfeeds run 2026-11-27T05:01:50.412997+00:00
+xfeeds run 2026-11-27T15:01:54.495886+00:00
   sources:   28/29 ok (1 dormant)
-  published: 12281 (high 8952, medium 3329)
-  withheld:  44343 single-source
-  deltas:    +304 / -323
+  published: 12452 (high 9114, medium 3338)
+  withheld:  44930 single-source
+  deltas:    +227 / -56
     abuseipdb_blacklist      10000 records
     binary_defense           954 records
-    blocklist_de             25718 records
-    blocklist_de_strongips   280 records
+    blocklist_de             25857 records
+    blocklist_de_strongips   279 records
     bruteforceblocker        578 records
-    carpathian               639 records
+    carpathian               644 records
     cins_army                15000 records
-    dataplane_proto41        50823 records
-    dataplane_smtpgreet      10159 records
-    dataplane_sshclient      24026 records
-    dataplane_sshpwauth      11646 records
-    dataplane_telnetlogin    43985 records
-    dataplane_vncrfb         2850 records
-    dshield_attacks          9000 records
+    dataplane_proto41        50658 records
+    dataplane_smtpgreet      10171 records
+    dataplane_sshclient      24217 records
+    dataplane_sshpwauth      11705 records
+    dataplane_telnetlogin    44260 records
+    dataplane_vncrfb         2808 records
+    dshield_attacks          10000 records
     dshield_block            20 records
     et_compromised           578 records
     feodo_tracker            expired
-    greensnow                2715 records
+    greensnow                2167 records
     ipsum_levels             30090 records
-    ipthreat                 4696 records
+    ipthreat                 4867 records
     isc_research_scanners    812 records
     jacobrakai_honeypot      414 records
     reportedip               10518 records
-    sblam                    failed (request error: [Errno 101] Network is unreachable)
+    sblam                    failed (request error: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1032))
     spamhaus_drop_v4         1737 records
     spamhaus_drop_v6         90 records
-    stopforumspam_listed     56912 records
-    threatfox                8978 records
-    tor_exits                1263 records
+    stopforumspam_listed     56283 records
+    threatfox                9263 records
+    tor_exits                1264 records
     turris_greylist          10041 records
-  ! sblam: request error: [Errno 101] Network is unreachable
-  ! 2786 records capped high -> medium as benign scanners
+  ! sblam: request error: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1032)
+  ! 2805 records capped high -> medium as benign scanners
